@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Stocktake" %}{% endblock %}
+{% block page_header %}
+{% can "inventory.stocktake.start" as can_start %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stocktake" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Count a branch's pieces and bulk gold, then record what is missing." %}</p>
+  </div>
+  {% if can_start %}<a href="{% url 'stocktake-new' %}" class="btn btn-primary">{% icon "clipboard-check" "size-4" %}{% translate "Start a count" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Scope" %}</th>
+        <th class="text-end">{% translate "Counted" %}</th><th class="text-end">{% translate "Missing" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for take in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ take.number }}</span></td>
+          <td><span class="num">{{ take.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ take.branch.name }}</td>
+          <td class="text-slate-600">{% if take.category %}<bdi>{{ take.category.name }}</bdi>{% endif %}{% if take.category and take.karat %} · {% endif %}{% if take.karat %}{{ take.karat.label }}{% endif %}{% if not take.category and not take.karat %}{% translate "Everything" %}{% endif %}</td>
+          <td class="text-end"><span class="num">{{ take.summary.counted }} / {{ take.summary.expected }}</span></td>
+          <td class="text-end">{% if take.status == "posted" %}<span class="num {% if take.summary.missing %}text-red-600{% endif %}">{{ take.summary.missing }}</span>{% else %}—{% endif %}</td>
+          <td>{% if take.status == "draft" %}<span class="badge badge-warning">{% translate "Counting" %}</span>{% else %}{% include "components/doc_status.html" with status=take.status label=take.get_status_display %}{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'stocktake' take.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No stocktakes yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="clipboard-check" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Treasury movements" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'treasury' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Cash & banks" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Treasury movements" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Transfers, deposits, withdrawals, currency exchanges and card settlements." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <select name="kind" class="form-input sm:w-72" aria-label="{% translate 'Type' %}">
+      <option value="">{% translate "All" %}</option>
+      {% for value, label in kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Type" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+        <th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for doc in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ doc.number }}</span></td>
+          <td><span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ doc.title }}</td>
+          <td><bdi>{{ doc.source.label }}</bdi>{% if doc.source_box %} <span class="text-xs text-slate-400">{{ doc.branch.name }}</span>{% endif %}</td>
+          <td><bdi>{{ doc.destination.label }}</bdi>{% if doc.dest_box %} <span class="text-xs text-slate-400">{{ doc.to_branch.name }}</span>{% endif %}</td>
+          <td class="text-end whitespace-nowrap"><span class="num">{{ doc.amount|num:2 }}</span> {{ doc.currency.code }}{% if doc.kind == "exchange" %} → <span class="num">{{ doc.dest_amount|num:2 }}</span> {{ doc.dest_currency.code }}{% endif %}</td>
+          <td>{% if doc.in_transit %}<span class="badge badge-warning">{% translate "In transit" %}</span>{% else %}{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'treasury-document' doc.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing recorded yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="arrow-left-right" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

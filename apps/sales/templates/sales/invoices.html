@@ -1,0 +1,59 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Sales" %}{% endblock %}
+{% block page_header %}
+{% can "sales.invoice.create" as can_sell %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sales" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Every sale, newest first." %}</p>
+  </div>
+  {% if can_sell %}<a href="{% url 'sale-new' %}" class="btn btn-primary">{% icon "scan-barcode" "size-4" %}{% translate "New sale" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <select name="status" class="form-input sm:w-52" aria-label="{% translate 'Status' %}">
+      <option value="">{% translate "All" %}</option>
+      {% for value, label in statuses %}{% if value != "draft" %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Customer" %}</th>
+        <th>{% translate "Payment" %}</th><th class="text-end">{% translate "Total" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for invoice in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ invoice.number }}</span></td>
+          <td><span class="num">{{ invoice.posted_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{{ invoice.buyer|default:"—" }}</td>
+          <td>{{ invoice.get_payment_terms_display }}</td>
+          <td class="text-end"><span class="num">{{ invoice.total_amount|num:2 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'sale-detail' invoice.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No sales yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="receipt" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

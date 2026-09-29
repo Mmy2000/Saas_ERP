@@ -1,0 +1,8 @@
+-r base.txt
+pytest==9.1.1
+pytest-django==4.14.0
+hypothesis==6.168.1
+factory-boy==3.3.3
+ruff==0.16.8
+polib==1.2.0        # ops/i18n/messages.py (no GNU gettext needed)
+playwright>=1.47    # browser screenshots / future E2E (python -m playwright install chromium)

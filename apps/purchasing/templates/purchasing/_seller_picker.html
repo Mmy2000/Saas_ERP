@@ -1,0 +1,23 @@
+{% load i18n %}{# Who the goods come from: a supplier or a trade account (static/purchasing/js/seller.js). Takes `seller_role` and optional `seller` (a Party). #}
+<div data-seller-picker>
+  <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+    <span class="form-label mb-0">{% translate "From" %}</span>
+    <div class="segmented text-xs">
+      <label><input type="radio" name="seller_role" value="supplier" class="peer sr-only" data-seller-role {% if seller_role != "trade_account" %}checked{% endif %}>
+        <span class="segment px-2.5 py-0.5">{% translate "Supplier" %}</span></label>
+      <label><input type="radio" name="seller_role" value="trade_account" class="peer sr-only" data-seller-role {% if seller_role == "trade_account" %}checked{% endif %}>
+        <span class="segment px-2.5 py-0.5">{% translate "Trade account" %}</span></label>
+    </div>
+  </div>
+  <div data-seller-for="supplier" {% if seller_role == "trade_account" %}hidden{% endif %}>
+    <select class="form-input" data-seller-select data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}">
+      {% if seller and seller_role != "trade_account" %}<option value="{{ seller.pk }}" selected>{{ seller.name }}</option>{% endif %}
+    </select>
+  </div>
+  <div data-seller-for="trade_account" {% if seller_role != "trade_account" %}hidden{% endif %}>
+    <select class="form-input" data-seller-select data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}">
+      {% if seller and seller_role == "trade_account" %}<option value="{{ seller.pk }}" selected>{{ seller.name }}</option>{% endif %}
+    </select>
+  </div>
+  <p class="form-error" data-error-for="supplier"></p>
+</div>

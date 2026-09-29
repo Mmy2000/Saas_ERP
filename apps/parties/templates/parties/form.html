@@ -1,0 +1,205 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% if party %}{{ config.edit_title }}{% else %}{{ config.new_title }}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{{ list_url }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900">
+    <span class="rtl:rotate-180">←</span>{{ config.title }}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if party %}{{ party.name }}{% else %}{{ config.new_title }}{% endif %}</h1>
+    {% if party %}
+      <span class="badge badge-neutral">{% translate "Code" %} <span class="num">{{ party.code }}</span></span>
+      {% if not party.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{{ endpoint }}" data-method="{{ method }}"
+      data-redirect="{{ list_url }}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Details" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <input id="f-name" name="name" class="form-input" value="{{ party.name|default:'' }}" required maxlength="200">
+          <p class="form-error" data-error-for="name"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-kind">{% translate "Type" %}</label>
+          <select id="f-kind" name="kind" class="form-input">
+            {% for value, label in kinds %}
+              <option value="{{ value }}" {% if party and party.kind == value or not party and role != "customer" and value == "organization" or not party and role == "customer" and value == "person" %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Home branch" %}</label>
+          <select id="f-branch" name="home_branch" class="form-input" data-empty="null">
+            <option value="">—</option>
+            {% for branch in branches %}<option value="{{ branch.pk }}" {% if party.home_branch_id == branch.pk %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="home_branch"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-phone">{% translate "Phone" %}</label>
+          <input id="f-phone" name="phone" class="form-input num w-full text-start" inputmode="tel" value="{{ party.phone|default:'' }}" autocomplete="off">
+          <p class="form-error" data-error-for="phone"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-alt">{% translate "Other phone" %}</label>
+          <input id="f-alt" name="alt_phone" class="form-input num w-full text-start" inputmode="tel" value="{{ party.alt_phone|default:'' }}" autocomplete="off">
+          <p class="form-error" data-error-for="alt_phone"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-email">{% translate "Email" %}</label>
+          <input id="f-email" name="email" type="email" class="form-input" dir="ltr" value="{{ party.email|default:'' }}">
+          <p class="form-error" data-error-for="email"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-nid">{% translate "National ID" %}</label>
+          <input id="f-nid" name="national_id" class="form-input num w-full text-start" data-empty="omit" autocomplete="off"
+                 placeholder="{% if party.national_id_hash %}{% translate 'On file · type to replace' %}{% endif %}">
+          <p class="form-error" data-error-for="national_id"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-address">{% translate "Address" %}</label>
+          <textarea id="f-address" name="address" rows="2" class="form-input">{{ party.address|default:'' }}</textarea>
+        </div>
+      </div>
+    </section>
+
+    {% if role == "customer" %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Customer profile" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-gender">{% translate "Gender" %}</label>
+          <select id="f-gender" name="gender" class="form-input">
+            <option value="">—</option>
+            {% for value, label in genders %}<option value="{{ value }}" {% if profile.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-birth">{% translate "Birth date" %}</label>
+          <input id="f-birth" name="birth_date" type="date" class="form-input" data-empty="null" value="{{ profile.birth_date|date:'Y-m-d' }}">
+          <p class="form-error" data-error-for="birth_date"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-anniv">{% translate "Anniversary" %}</label>
+          <input id="f-anniv" name="anniversary" type="date" class="form-input" data-empty="null" value="{{ profile.anniversary|date:'Y-m-d' }}">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label" for="f-ring">{% translate "Ring size" %}</label>
+            <input id="f-ring" name="ring_size" class="form-input" value="{{ profile.ring_size|default:'' }}" maxlength="10">
+          </div>
+          <div>
+            <label class="form-label" for="f-bracelet">{% translate "Bracelet size" %}</label>
+            <input id="f-bracelet" name="bracelet_size" class="form-input" value="{{ profile.bracelet_size|default:'' }}" maxlength="10">
+          </div>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-prefs">{% translate "Preferences" %}</label>
+          <textarea id="f-prefs" name="preferences" rows="2" class="form-input">{{ profile.preferences|default:'' }}</textarea>
+        </div>
+      </div>
+    </section>
+    {% elif role == "supplier" %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Supplier settings" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-karat">{% translate "Gold account karat" %}</label>
+          <select id="f-karat" name="account_karat" class="form-input" data-empty="null">
+            <option value="">—</option>
+            {% for karat in karats %}<option value="{{ karat.pk }}" {% if profile.account_karat_id == karat.pk %}selected{% endif %}>{{ karat.label }}</option>{% endfor %}
+          </select>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "The karat this supplier's gold balance is shown in." %}</p>
+        </div>
+        <div>
+          <label class="form-label" for="f-rule">{% translate "Weight in supplier barcode" %}</label>
+          <select id="f-rule" name="barcode_weight_rule" class="form-input">
+            {% for value, label in barcode_rules %}<option value="{{ value }}" {% if profile.barcode_weight_rule == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-url">{% translate "Item lookup URL" %}</label>
+          <input id="f-url" name="lookup_url" type="url" class="form-input" dir="ltr" value="{{ profile.lookup_url|default:'' }}">
+          <p class="form-error" data-error-for="lookup_url"></p>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-6">
+    {% if party %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Balance" %}</h2></div>
+      {% if balances %}
+      <dl class="divide-y divide-slate-100 text-sm">
+        {% for row in balances %}
+        <div class="flex items-center justify-between gap-4 px-5 py-3">
+          <dt class="text-slate-500">{{ row.commodity.label }}</dt>
+          <dd class="num font-semibold {% if row.amount < 0 %}text-red-600{% else %}text-slate-900{% endif %}">{{ row.amount|num:row.commodity.decimal_places }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+      <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{{ config.sign_hint }}</p>
+      {% else %}
+      <p class="card-body text-sm text-slate-500">{% translate "Settled — nothing owed either way." %}</p>
+      {% endif %}
+      {% for extra in extras %}
+      <div class="border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-sm">
+        {% for row in extra.rows %}
+        <div class="flex items-center justify-between gap-4">
+          <dt><a class="text-slate-600 hover:text-slate-900 hover:underline" href="{{ extra.link }}">{{ extra.label }}</a> <span class="text-xs text-slate-400">{{ row.commodity.label }}</span></dt>
+          <dd class="num font-semibold text-slate-900">{{ row.amount|absolute|num:row.commodity.decimal_places }}</dd>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+      <div class="flex flex-wrap gap-2 border-t border-slate-100 p-4">
+        <a class="btn btn-secondary text-xs" href="{% url config.statement_url party.pk %}">{% icon "book-open" "size-4" %}{% translate "Statement" %}</a>
+        <a class="btn btn-secondary text-xs" href="{% url 'settlement-new' %}?side={{ role }}&party={{ party.pk }}&kind={{ config.settle_kind }}">{% icon "arrow-left-right" "size-4" %}{{ config.settle_label }}</a>
+        {% for url_name, param, label, icon_name, permission in config.actions %}{% can permission as allowed %}{% if allowed %}
+        <a class="btn btn-secondary text-xs" href="{% url url_name %}?{{ param }}={{ party.pk }}">{% icon icon_name "size-4" %}{{ label }}</a>
+        {% endif %}{% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Notes" %}</h2></div>
+      <div class="card-body"><textarea name="notes" rows="5" class="form-input" aria-label="{% translate 'Notes' %}">{{ party.notes|default:'' }}</textarea></div>
+    </section>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{{ list_url }}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+
+{% if party %}
+{% with perm="parties."|add:role|add:".deactivate" %}{% can perm as can_toggle %}
+{% if can_toggle %}
+<section class="card mt-6 lg:w-2/3">
+  <div class="card-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="card-title">{% if party.is_active %}{% translate "Deactivate" %}{% else %}{% translate "Reactivate" %}{% endif %}</h2>
+      <p class="mt-1 text-sm text-slate-500">{% if party.is_active %}{% translate "Inactive records stay in history but can't be used on new documents." %}{% else %}{% translate "Make this record available on new documents again." %}{% endif %}</p>
+    </div>
+    <form data-api-form data-method="POST" data-redirect="{{ list_url }}"
+          data-endpoint="{{ endpoint }}{% if party.is_active %}deactivate/{% else %}activate/{% endif %}"
+          data-success="{% translate 'Saved.' %}">
+      <button type="submit" class="btn btn-secondary">{% if party.is_active %}{% translate "Deactivate" %}{% else %}{% translate "Reactivate" %}{% endif %}</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+{% endwith %}
+{% endif %}
+{% endblock %}

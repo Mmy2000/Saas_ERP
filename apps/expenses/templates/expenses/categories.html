@@ -1,0 +1,49 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Expense categories" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'expenses' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Expenses" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Expense categories" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Each category posts to an expense account in the chart of accounts." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "expenses.category.manage" as can_manage %}
+{% if can_manage %}
+<form class="card mb-6" data-api-form data-method="POST" data-endpoint="{% url 'expense-category-list' %}" data-success="{% translate 'Saved.' %}" data-empty="null" novalidate>
+  <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-3" data-form-error role="alert"></div>
+    <div><label class="form-label" for="f-name">{% translate "New category" %}</label><input id="f-name" name="name" class="form-input" maxlength="100" placeholder="{% translate 'e.g. Rent' %}"><p class="form-error" data-error-for="name"></p></div>
+    <div><label class="form-label" for="f-account">{% translate "Expense account" %}</label>
+      <select id="f-account" name="account" class="form-input">{% for account in accounts %}<option value="{{ account.pk }}" {% if account.role == "expenses" %}selected{% endif %}>{{ account.code }} {{ account.label }}</option>{% endfor %}</select>
+      <p class="form-error" data-error-for="account"></p></div>
+    <button type="submit" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+  </div>
+</form>
+{% endif %}
+<section class="card overflow-hidden">
+  {% if categories %}
+  <ul class="divide-y divide-slate-100">
+    {% for c in categories %}
+    <li class="px-5 py-3">
+      {% if can_manage %}
+      <form class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center" data-api-form data-method="PUT" data-endpoint="{% url 'expense-category-detail' c.pk %}" data-success="{% translate 'Saved.' %}" novalidate>
+        <div><input name="name" class="form-input" value="{{ c.name }}" maxlength="100" aria-label="{% translate 'Name' %}"><p class="form-error" data-error-for="name"></p></div>
+        <select name="account" class="form-input" aria-label="{% translate 'Expense account' %}">{% for account in accounts %}<option value="{{ account.pk }}" {% if account.pk == c.account_id %}selected{% endif %}>{{ account.code }} {{ account.label }}</option>{% endfor %}</select>
+        <button type="submit" class="btn btn-secondary text-xs">{% translate "Save" %}</button>
+        <span>{% if c.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</span>
+        <div class="hidden text-sm text-red-700 sm:col-span-4" data-form-error role="alert"></div>
+      </form>
+      {% else %}
+      <div class="flex justify-between text-sm"><span class="font-medium text-slate-900">{{ c.name }}</span><span class="text-slate-500">{{ c.account }}</span></div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    {% translate "No categories yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="layers" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

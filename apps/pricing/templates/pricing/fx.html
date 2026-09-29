@@ -1,0 +1,87 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Exchange rates" %}{% endblock %}
+{% block page_header %}
+  {% translate "Exchange rates" as title %}
+  {% blocktranslate trimmed asvar subtitle with home=home_currency %}How many {{ home }} one unit of each currency is worth.{% endblocktranslate %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+{% can "pricing.fx.publish" as can_publish %}
+<div class="grid grid-cols-1 gap-6 {% if can_publish %}xl:grid-cols-3{% endif %}">
+  <section class="card overflow-hidden {% if can_publish %}xl:col-span-2{% endif %}">
+    <div class="card-header"><h2 class="card-title">{% translate "Current rates" %}</h2></div>
+    {% if current %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Rate" %}</th><th>{% translate "Effective" %}</th></tr></thead>
+        <tbody>
+        {% for row in current %}
+          <tr>
+            <td><span class="font-medium text-slate-900">{{ row.currency.code }}</span> <span class="text-slate-500">{{ row.currency.label }}</span></td>
+            <td class="text-end">{% if row.rate %}<span class="num">{{ row.rate.rate|num:4 }}</span> <span class="text-xs text-slate-500">{{ home_currency }}</span>{% else %}—{% endif %}</td>
+            <td>{% if row.rate %}<span class="num">{{ row.rate.effective_at|date:"SHORT_DATETIME_FORMAT" }}</span>{% else %}<span class="badge badge-warning">{% translate "Not published yet" %}</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "Only the company currency is active" as empty_title %}
+      {% include "components/empty_state.html" with icon="arrow-left-right" title=empty_title %}
+    {% endif %}
+  </section>
+
+  {% if can_publish and currencies %}
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Publish a rate" %}</h2></div>
+    <form class="card-body space-y-4" data-api-form data-endpoint="{% url 'fx-rate-list' %}" data-method="POST"
+          data-success="{% translate 'Exchange rate published.' %}" novalidate>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <div>
+        <label class="form-label" for="f-currency">{% translate "Currency" %}</label>
+        <select id="f-currency" name="currency" class="form-input">
+          {% for currency in currencies %}<option value="{{ currency.code }}">{{ currency.code }} · {{ currency.label }}</option>{% endfor %}
+        </select>
+        <p class="form-error" data-error-for="currency"></p>
+      </div>
+      <div>
+        <label class="form-label" for="f-rate">{% blocktranslate trimmed with home=home_currency %}Rate in {{ home }}{% endblocktranslate %}</label>
+        <input id="f-rate" name="rate" class="form-input num w-full text-start" inputmode="decimal" required>
+        <p class="form-error" data-error-for="rate"></p>
+      </div>
+      <div>
+        <label class="form-label" for="f-when">{% translate "Effective from" %} <span class="font-normal text-slate-400">({% translate "empty = now" %})</span></label>
+        <input id="f-when" name="effective_at" type="datetime-local" class="form-input" data-empty="omit">
+        <p class="form-error" data-error-for="effective_at"></p>
+      </div>
+      <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Publish rate" %}</button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "Rate history" %}</h2></div>
+  {% if history %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Effective" %}</th><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Rate" %}</th><th>{% translate "Published by" %}</th></tr></thead>
+      <tbody>
+      {% for rate in history %}
+        <tr>
+          <td><span class="num">{{ rate.effective_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td class="font-medium text-slate-900">{{ rate.currency.code }}</td>
+          <td class="text-end"><span class="num">{{ rate.rate|num:4 }}</span></td>
+          <td>{{ rate.created_by.display_name|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No history yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="history" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

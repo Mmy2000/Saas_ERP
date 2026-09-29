@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Start a count" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'stocktakes' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Stocktake" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Start a count" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "The pieces in stock now become the list to count. Sales and transfers can go on while you count." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form data-api-form data-method="POST" data-endpoint="{% url 'stocktake-api-list' %}" data-redirect="{% url 'stocktakes' %}{id}/"
+      data-success="{% translate 'Count started.' %}" novalidate class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" name="branch" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="branch"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-category">{% translate "Category" %}</label>
+          <select id="f-category" name="category" class="form-input" data-empty="null">
+            <option value="">{% translate "All categories" %}</option>
+            {% for c in categories %}<option value="{{ c.pk }}">{{ c.code }} · {{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-karat">{% translate "Karat" %}</label>
+          <select id="f-karat" name="karat" class="form-input" data-empty="null">
+            <option value="">{% translate "All karats" %}</option>
+            {% for k in karats %}<option value="{{ k.pk }}">{{ k.label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="sm:col-span-3"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"></div>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "clipboard-check" "size-4" %}{% translate "Start" %}</button>
+      <a href="{% url 'stocktakes' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

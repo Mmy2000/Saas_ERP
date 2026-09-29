@@ -1,0 +1,247 @@
+/* Gweb design system. Source for static/core/css/app.css (npm run build:css).
+   Layout uses logical properties (ms-/me-/ps-/pe-/start-/end-) so one set of classes serves
+   both RTL (Arabic) and LTR (English). */
+
+@import "tailwindcss" source(none);
+/* Tom Select structure; the look comes from the overrides at the end of this file. */
+@import "../../node_modules/tom-select/dist/css/tom-select.css" layer(components);
+@source "../../templates/**/*.html";
+@source "../../apps/**/*.html";
+@source "../../apps/**/*.py";
+@source "../../static/core/js";
+@source "../../static/*/js/*.js";
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-wght.woff2") format("woff2");
+}
+@font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 400; font-display: swap;
+  src: url("../fonts/plex-arabic-400.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 500; font-display: swap;
+  src: url("../fonts/plex-arabic-500.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 600; font-display: swap;
+  src: url("../fonts/plex-arabic-600.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 700; font-display: swap;
+  src: url("../fonts/plex-arabic-700.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+
+@theme {
+  --font-sans: "Inter", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand: a restrained gold, used for accents and primary actions only. */
+  --color-brand-50: #fbf8ef;
+  --color-brand-100: #f5edd4;
+  --color-brand-200: #ead8a6;
+  --color-brand-300: #ddbd6f;
+  --color-brand-400: #d2a547;
+  --color-brand-500: #c28a30;
+  --color-brand-600: #a86c27;
+  --color-brand-700: #8a5123;
+  --color-brand-800: #724223;
+  --color-brand-900: #5f3720;
+
+  /* Dark ink (login panel). */
+  --color-ink-800: #1c1c1f;
+  --color-ink-900: #131316;
+  --color-ink-950: #0a0a0c;
+
+  /* Neutral greys (zinc). Templates use slate-* throughout; redefining the scale here gives
+     the whole UI the neutral look in one place. */
+  --color-slate-50: #fafafa;
+  --color-slate-100: #f4f4f5;
+  --color-slate-200: #e4e4e7;
+  --color-slate-300: #d4d4d8;
+  --color-slate-400: #a1a1aa;
+  --color-slate-500: #71717a;
+  --color-slate-600: #52525b;
+  --color-slate-700: #3f3f46;
+  --color-slate-800: #27272a;
+  --color-slate-900: #18181b;
+  --color-slate-950: #09090b;
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.03), 0 1px 3px 0 rgb(0 0 0 / 0.02);
+  --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.14), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+
+  --animate-enter: enter 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-toast: toast-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { @apply bg-slate-50 text-slate-800; font-feature-settings: "cv11", "ss01"; }
+  ::selection { @apply bg-brand-200 text-slate-900; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-brand-500/70; }
+  h1, h2, h3 { @apply tracking-tight; }
+  * { scrollbar-width: thin; scrollbar-color: var(--color-slate-300) transparent; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  }
+}
+
+@layer components {
+  /* Numbers: tabular, and always left-to-right even inside Arabic text. */
+  .num { font-variant-numeric: tabular-nums; unicode-bidi: isolate; direction: ltr; display: inline-block; white-space: nowrap; }
+
+  .card { @apply rounded-xl border border-slate-200/80 bg-white shadow-card; }
+  .card-header { @apply flex min-h-14 items-center justify-between gap-4 border-b border-slate-100 px-5 py-3; }
+  .card-title { @apply text-sm font-semibold tracking-tight text-slate-900; }
+  .card-body { @apply p-5; }
+
+  .btn { @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap
+                 transition-[color,background-color,border-color,box-shadow,transform] duration-150
+                 select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50; }
+  .btn.text-xs { @apply h-8 gap-1.5 rounded-md px-2.5; }
+  .btn-primary { @apply bg-slate-900 text-white shadow-xs hover:bg-slate-800 focus-visible:outline-slate-900/40; }
+  .btn-secondary { @apply border border-slate-200 bg-white text-slate-800 shadow-xs hover:border-slate-300
+                           hover:bg-slate-50 hover:text-slate-900; }
+  .btn-ghost { @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
+  .btn-brand { @apply bg-brand-500 text-white shadow-xs hover:bg-brand-600; }
+
+  .form-label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
+  .form-input { @apply block w-full rounded-lg border border-slate-200 bg-white px-3 py-[7px] text-sm text-slate-900
+                       shadow-xs transition-[border-color,box-shadow] duration-150 placeholder:text-slate-400
+                       hover:border-slate-300 focus:border-brand-400 focus:ring-[3px] focus:ring-brand-500/15
+                       focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400; }
+  .form-input[aria-invalid="true"] { @apply border-red-400 focus:ring-red-500/15; }
+  .form-error { @apply mt-1.5 text-sm text-red-600 empty:hidden; }
+
+  .badge { @apply inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap
+                  ring-1 ring-inset; }
+  .badge-neutral { @apply bg-slate-50 text-slate-600 ring-slate-200; }
+  .badge-brand { @apply bg-brand-50 text-brand-700 ring-brand-200; }
+  .badge-success { @apply bg-emerald-50 text-emerald-700 ring-emerald-200; }
+  .badge-warning { @apply bg-amber-50 text-amber-800 ring-amber-200; }
+  .badge-danger { @apply bg-red-50 text-red-700 ring-red-200; }
+  .badge-dot { @apply size-1.5 shrink-0 rounded-full bg-current; }
+
+  .table { @apply w-full text-sm; }
+  .table thead th { @apply h-10 border-b border-slate-100 bg-slate-50/70 px-5 text-start text-xs font-medium whitespace-nowrap
+                           text-slate-500; }
+  .table tbody td { @apply border-t border-slate-100 px-5 py-3 text-slate-700; }
+  .table tbody tr:first-child td { @apply border-t-0; }
+  .table tbody tr { @apply transition-colors; }
+  .table tbody tr:hover td { @apply bg-slate-50/70; }
+
+  /* Sidebar */
+  .nav-link { @apply flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-600
+                     transition-colors hover:bg-slate-200/50 hover:text-slate-900; }
+  .nav-link svg { @apply text-slate-400 transition-colors; }
+  .nav-link:hover svg { @apply text-slate-600; }
+  .nav-link[aria-current="page"] { @apply bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/80; }
+  .nav-link[aria-current="page"] svg { @apply text-brand-600; }
+  .nav-section { @apply mt-5 mb-1 px-2.5 text-xs font-medium text-slate-400; }
+
+  /* Segmented control: <div class="segmented"><label><input class="peer sr-only"><span class="segment">. */
+  .segmented { @apply inline-flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 text-sm font-medium; }
+  .segment { @apply block cursor-pointer rounded-md px-3.5 py-1 text-slate-500 transition-all duration-150
+                    hover:text-slate-900; }
+  .peer:checked ~ .segment, .segment-active { @apply bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/60; }
+  .peer:focus-visible ~ .segment { @apply outline-2 outline-offset-1 outline-brand-500/70; }
+
+  /* Filter tabs above a list: <a class="tab tab-active">. */
+  .tab { @apply inline-flex h-8 items-center rounded-md px-3 text-sm font-medium text-slate-500 transition-colors
+                hover:bg-slate-100 hover:text-slate-900; }
+  .tab-active { @apply bg-slate-100 text-slate-900; }
+
+  /* Keyboard hint, e.g. Ctrl K. */
+  .kbd { @apply inline-flex h-5 items-center rounded border border-slate-200 bg-white px-1.5 font-sans text-[11px]
+                font-medium text-slate-500; }
+
+  /* Notifications */
+  .toast { @apply pointer-events-auto flex w-full max-w-sm animate-toast items-start gap-3 rounded-xl border border-slate-200
+                  bg-white px-4 py-3 text-sm text-slate-800 shadow-pop; }
+  .toast-error { @apply border-red-200 text-red-800; }
+
+  /* Command palette (native <dialog>). */
+  .cmdk { @apply m-auto mt-[12vh] w-[min(36rem,calc(100vw-2rem))] animate-pop overflow-hidden rounded-2xl border border-slate-200
+                 bg-white p-0 text-slate-800 shadow-pop backdrop:bg-slate-900/30 backdrop:backdrop-blur-[2px]; }
+  .cmdk-item { @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700; }
+  .cmdk-item[aria-selected="true"] { @apply bg-slate-100 text-slate-900; }
+}
+
+@layer components {
+  .login-glow {
+    background:
+      radial-gradient(60% 50% at 20% 15%, rgb(194 138 48 / 0.35), transparent 70%),
+      radial-gradient(50% 40% at 85% 90%, rgb(210 165 71 / 0.22), transparent 70%);
+  }
+  .login-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(70% 60% at 30% 40%, black, transparent);
+  }
+}
+
+/* Searchable selects (Tom Select), styled like .form-input. Logical properties keep the caret
+   and clear button on the correct side in RTL. */
+@layer components {
+  .ts-wrapper.form-input { @apply border-0 bg-transparent p-0 shadow-none ring-0; }
+  .ts-wrapper { --ts-pr-min: 0.75rem; --ts-pr-caret: 2rem; }
+  .ts-wrapper .ts-control {
+    @apply flex min-h-9 cursor-pointer items-center rounded-lg border border-slate-200 bg-white py-[7px]
+           text-sm text-slate-900 shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-slate-300;
+    padding-inline-start: 0.75rem;
+  }
+  .ts-wrapper .ts-control > input { @apply text-sm text-slate-900 placeholder:text-slate-400; }
+  .ts-wrapper.focus .ts-control { @apply border-brand-400 ring-[3px] ring-brand-500/15; }
+  .ts-wrapper.disabled .ts-control { @apply cursor-not-allowed bg-slate-50 opacity-70; }
+  .ts-wrapper[aria-invalid="true"] .ts-control, select[aria-invalid="true"] + .ts-wrapper .ts-control {
+    @apply border-red-400;
+  }
+  .ts-wrapper.single .ts-control::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: 0.85rem;
+    top: 50%;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-top: -0.35rem;
+    border-right: 1.5px solid var(--color-slate-400); /* physical: a chevron must not mirror */
+    border-bottom: 1.5px solid var(--color-slate-400);
+    transform: rotate(45deg);
+    transition: transform 150ms;
+  }
+  .ts-wrapper.single.dropdown-active .ts-control::after { transform: rotate(225deg); margin-top: -0.1rem; }
+  .plugin-clear_button .clear-button,
+  .plugin-clear_button.single .clear-button {
+    right: auto;
+    left: auto;
+    inset-inline-end: 2rem;
+    @apply text-base leading-none text-slate-400 hover:text-slate-700;
+  }
+
+  .ts-dropdown {
+    @apply z-[60] mt-1.5 animate-pop overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-sm text-slate-700 shadow-pop;
+  }
+  .ts-dropdown .ts-dropdown-content { @apply max-h-64 py-1; }
+  .ts-dropdown .option { @apply cursor-pointer rounded-md px-2.5 py-1.5; }
+  .ts-dropdown .option.active { @apply bg-slate-100 text-slate-900; }
+  .ts-dropdown .option.selected { @apply font-medium text-slate-900; }
+  .ts-dropdown .no-results, .ts-dropdown .loading { @apply px-3 py-2 text-slate-500; }
+  .ts-dropdown .highlight { @apply rounded-sm bg-brand-100 text-inherit; }
+  .plugin-dropdown_input .dropdown-input {
+    @apply -mx-1 -mt-1 mb-1 border-b border-slate-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none
+           placeholder:text-slate-400;
+  }
+}
+
+/* Printing (receipts): only the document itself. */
+@media print {
+  #sidebar, [data-no-print], [data-sidebar-backdrop], #toasts { display: none !important; }
+  .lg\:ps-64 { padding-inline-start: 0 !important; }
+  main { padding: 0 !important; }
+  body { background: #fff; }
+  .card { border: 0; box-shadow: none; }
+  header[data-no-print] { display: none !important; }
+  .receipt { grid-column: 1 / -1; }
+}

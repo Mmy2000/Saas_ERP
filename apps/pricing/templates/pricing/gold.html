@@ -1,0 +1,129 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Gold prices" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'pricing/js/board.js' %}"></script>{% endblock %}
+{% block page_header %}
+  {% translate "Gold prices" as title %}{% translate "Per-gram prices by karat. Documents keep the price that was in force when they were made." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+{% can "pricing.board.publish" as can_publish %}
+<div class="grid grid-cols-1 gap-6 {% if can_publish %}xl:grid-cols-3{% endif %}">
+  <section class="card {% if can_publish %}xl:col-span-2{% endif %}">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">{% translate "Current prices" %}</h2>
+        {% if board %}
+          <p class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">{% icon "clock" "size-3.5" %}
+            {% blocktranslate trimmed with when=board.effective_at|date:"SHORT_DATETIME_FORMAT" %}Effective {{ when }}{% endblocktranslate %}</p>
+        {% endif %}
+      </div>
+      {% if board %}<span class="badge badge-neutral">{{ home_currency }} / {% translate "gram" %}</span>{% endif %}
+    </div>
+    {% if board %}
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr>
+            <th>{% translate "Karat" %}</th><th class="text-end">{% translate "Sell" %}</th>
+            <th class="text-end">{% translate "Buy" %}</th><th class="text-end">{% translate "Scrap buy" %}</th><th></th>
+          </tr></thead>
+          <tbody>
+          {% for line in board_rows %}
+            <tr>
+              <td class="font-medium text-slate-900">{{ line.karat.label }}</td>
+              <td class="text-end"><span class="num">{{ line.sell_price_per_g|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.buy_price_per_g|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.scrap_buy_price_per_g|num:2 }}</span></td>
+              <td class="text-end">
+                {% if line.karat_id == board.reference_karat_id %}<span class="badge badge-brand">{% translate "Reference" %}</span>
+                {% elif line.is_derived %}<span class="badge badge-neutral">{% translate "Calculated" %}</span>
+                {% else %}<span class="badge badge-neutral">{% translate "Entered" %}</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {% translate "No gold price published yet" as empty_title %}
+      {% translate "Publish today's 21K price and the other karats are calculated for you." as empty_text %}
+      {% include "components/empty_state.html" with icon="coins" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  {% if can_publish %}
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Publish new prices" %}</h2></div>
+    <form class="card-body space-y-4" data-api-form data-shape="price-board" data-endpoint="{% url 'price-board-list' %}"
+          data-method="POST" data-success="{% translate 'Prices published.' %}" novalidate>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <input type="hidden" name="reference_karat" value="{{ reference_karat.pk }}">
+      <p class="text-sm text-slate-500">{% blocktranslate trimmed with karat=reference_karat.label %}Enter {{ karat }} prices per gram. Other gold karats are calculated from their fineness.{% endblocktranslate %}</p>
+      <div>
+        <label class="form-label" for="f-sell">{% translate "Selling price" %}</label>
+        <input id="f-sell" name="sell" class="form-input num w-full text-start" inputmode="decimal" required>
+        <p class="form-error" data-error-for="reference.sell_price_per_g"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="form-label" for="f-buy">{% translate "Buying price" %}</label>
+          <input id="f-buy" name="buy" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="reference.buy_price_per_g"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-scrap">{% translate "Scrap buying price" %}</label>
+          <input id="f-scrap" name="scrap" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="reference.scrap_buy_price_per_g"></p>
+        </div>
+      </div>
+      {% for karat in silver_karats %}
+      <div>
+        <label class="form-label" for="f-silver-{{ karat.pk }}">{% blocktranslate trimmed with karat=karat.label %}{{ karat }} selling price (optional){% endblocktranslate %}</label>
+        <input id="f-silver-{{ karat.pk }}" name="silver" data-karat="{{ karat.pk }}" class="form-input num w-full text-start" inputmode="decimal">
+      </div>
+      {% endfor %}
+      <div>
+        <label class="form-label" for="f-when">{% translate "Effective from" %} <span class="font-normal text-slate-400">({% translate "empty = now" %})</span></label>
+        <input id="f-when" name="effective_at" type="datetime-local" class="form-input">
+        <p class="form-error" data-error-for="effective_at"></p>
+      </div>
+      <div>
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" name="note" class="form-input" maxlength="200">
+      </div>
+      <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Publish prices" %}</button>
+    </form>
+  </section>
+  {% endif %}
+</div>
+
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "Price history" %}</h2></div>
+  {% if history %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Effective" %}</th><th>{% translate "Reference" %}</th><th class="text-end">{% translate "Sell" %}</th>
+        <th class="text-end">{% translate "Buy" %}</th><th>{% translate "Published by" %}</th><th>{% translate "Note" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for past in history %}
+        <tr>
+          <td><span class="num">{{ past.effective_at|date:"SHORT_DATETIME_FORMAT" }}</span>
+            {% if board and past.pk == board.pk %}<span class="badge badge-success ms-2">{% translate "Current" %}</span>{% endif %}</td>
+          <td>{{ past.reference_karat.label }}</td>
+          <td class="text-end"><span class="num">{{ past.reference_line.sell_price_per_g|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ past.reference_line.buy_price_per_g|num:2 }}</span></td>
+          <td>{{ past.created_by.display_name|default:"—" }}</td>
+          <td class="max-w-xs truncate text-slate-500">{{ past.note|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No history yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="history" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

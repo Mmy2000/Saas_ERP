@@ -1,0 +1,64 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Scrap gold" %}{% endblock %}
+{% block page_header %}
+{% can "purchasing.scrap.buy" as can_buy %}{% can "purchasing.scrap.sell" as can_sell %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Scrap gold" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Scrap bought from walk-in sellers and customers, and sold to dealers." %}</p>
+  </div>
+  <div class="flex gap-2">
+    {% if can_sell %}<a href="{% url 'scrap-sell' %}" class="btn btn-secondary">{% icon "send" "size-4" %}{% translate "Sell scrap" %}</a>{% endif %}
+    {% if can_buy %}<a href="{% url 'scrap-buy' %}" class="btn btn-primary">{% icon "coins" "size-4" %}{% translate "Buy scrap" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="mb-6">
+  <h2 class="mb-3 text-sm font-semibold text-slate-900">{% translate "Scrap on hand" %}</h2>
+  {% if stock %}
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+    {% for balance in stock %}
+    <div class="card card-body py-3">
+      <p class="text-xs text-slate-500"><bdi>{{ balance.lot.branch.name }}</bdi> · <bdi>{{ balance.lot.karat.label }}</bdi></p>
+      <p class="mt-1 text-lg font-semibold text-slate-900"><span class="num">{{ balance.gross_weight_g|num:3 }}</span> <span class="text-sm font-normal text-slate-500">{% translate "g" %}</span></p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}<p class="text-sm text-slate-500">{% translate "No scrap in stock." %}</p>{% endif %}
+</section>
+<div>
+  <section class="card overflow-hidden">
+    <div class="flex gap-1 overflow-x-auto border-b border-slate-100 p-2.5">
+      <a href="?tab=purchases" class="tab{% if tab == 'purchases' %} tab-active{% endif %}"{% if tab == 'purchases' %} aria-current="true"{% endif %}>{% translate "Bought" %}</a>
+      <a href="?tab=sales" class="tab{% if tab == 'sales' %} tab-active{% endif %}"{% if tab == 'sales' %} aria-current="true"{% endif %}>{% translate "Sold" %}</a>
+    </div>
+    {% if page.object_list %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% if tab == "sales" %}{% translate "Buyer" %}{% else %}{% translate "Seller" %}{% endif %}</th>
+          <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th><th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+        <tbody>
+        {% for doc in page.object_list %}
+          <tr>
+            <td><span class="num font-medium text-slate-900">{{ doc.number }}</span></td>
+            <td><span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+            <td>{% if tab == "sales" %}{{ doc.buyer.name }}{% else %}{{ doc.seller_label }}{% endif %}</td>
+            <td class="text-end"><span class="num">{{ doc.total_gross_weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ doc.total_fine_weight_g|num:4 }}</span></td>
+            <td class="text-end"><span class="num">{{ doc.total_amount|num:2 }}</span></td>
+            <td>{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</td>
+            <td class="text-end"><a class="btn btn-ghost text-xs" href="{% if tab == 'sales' %}{% url 'scrap-sale' doc.pk %}{% else %}{% url 'scrap-purchase' doc.pk %}{% endif %}">{% translate "Open" %}</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "Nothing recorded yet" as empty_title %}
+      {% include "components/empty_state.html" with icon="coins" title=empty_title %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

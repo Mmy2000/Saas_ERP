@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Sign in" %}{% endblock %}
+{% block body %}
+<div class="flex min-h-full">
+  <section class="relative hidden w-[44%] overflow-hidden bg-ink-950 lg:flex lg:flex-col lg:justify-between lg:p-12">
+    <div aria-hidden="true" class="login-glow absolute inset-0 opacity-70"></div>
+    <div aria-hidden="true" class="login-grid absolute inset-0"></div>
+    <div class="relative flex items-center gap-3">
+      <span class="grid grid-cols-1 size-10 place-items-center rounded-xl bg-gradient-to-br from-brand-300 to-brand-600 text-ink-950">{% icon "gem" "size-5" %}</span>
+      <span class="text-lg font-semibold text-white">Gweb</span>
+    </div>
+    <div class="relative max-w-md">
+      <h2 class="text-3xl leading-tight font-semibold text-white">{% translate "Run every branch of your jewelry business from one place." %}</h2>
+      <p class="mt-4 text-base text-slate-300">{% translate "Gold prices, stock, sales and balances in grams and money, always in step." %}</p>
+      <ul class="mt-8 space-y-3 text-sm text-slate-300">
+        <li class="flex items-center gap-3">{% icon "scale" "size-5 text-brand-300" %}{% translate "Weights and karats handled precisely" %}</li>
+        <li class="flex items-center gap-3">{% icon "store" "size-5 text-brand-300" %}{% translate "All your branches, one set of books" %}</li>
+        <li class="flex items-center gap-3">{% icon "shield-check" "size-5 text-brand-300" %}{% translate "Your data kept private to your company" %}</li>
+      </ul>
+    </div>
+    <p class="relative text-xs text-slate-500">© Gweb</p>
+  </section>
+
+  <section class="flex flex-1 flex-col px-6 py-8 sm:px-12">
+    <div class="flex justify-end">{% include "components/lang_switch.html" %}</div>
+    <div class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
+      <div class="mb-8 lg:hidden">
+        <span class="grid grid-cols-1 size-11 place-items-center rounded-xl bg-gradient-to-br from-brand-300 to-brand-600 text-ink-950">{% icon "gem" "size-6" %}</span>
+      </div>
+      <h1 class="text-[26px] font-semibold tracking-tight text-slate-900">{% translate "Sign in to your workspace" %}</h1>
+      <p class="mt-2 text-sm text-slate-500">{{ request.tenant.name }}</p>
+
+      <form method="post" class="mt-8 space-y-5" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">
+            {% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div>
+          </div>
+        {% endif %}
+        <div>
+          <label for="id_username" class="form-label">{% translate "Username or email" %}</label>
+          <input id="id_username" name="username" class="form-input" autocomplete="username" required autofocus
+                 value="{{ form.username.value|default:'' }}">
+        </div>
+        <div>
+          <label for="id_password" class="form-label">{% translate "Password" %}</label>
+          <input id="id_password" name="password" type="password" class="form-input" autocomplete="current-password" required>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="btn btn-primary h-10 w-full">{% translate "Sign in" %}</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

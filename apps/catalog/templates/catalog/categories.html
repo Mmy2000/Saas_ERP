@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Item categories" %}{% endblock %}
+{% block page_header %}
+  {% translate "Item categories" as title %}{% translate "Groups of items with their default karat and making charges." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if categories %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Category" %}</th><th>{% translate "Family" %}</th><th>{% translate "Tracking" %}</th>
+        <th>{% translate "Default karat" %}</th><th class="text-end">{% translate "Making charge / g" %}</th>
+        <th>{% translate "Barcode prefix" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for category in categories %}
+        <tr>
+          <td>
+            <div class="flex items-center gap-2 {% if category.depth == 2 %}ps-6{% elif category.depth == 3 %}ps-12{% endif %}">
+              <span class="num text-xs text-slate-400">{{ category.code }}</span>
+              <span class="font-medium text-slate-900">{{ category.name }}</span>
+              {% if not category.is_active %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}
+            </div>
+          </td>
+          <td>{{ category.get_product_family_display }}</td>
+          <td><span class="badge {% if category.tracking == 'serialized' %}badge-brand{% else %}badge-neutral{% endif %}">{{ category.get_tracking_display }}</span></td>
+          <td>{{ category.default_karat.label|default:"—" }}</td>
+          <td class="text-end">
+            {% for charge in category.making_charges.all %}
+              <div><span class="num">{{ charge.list_rate_per_g|num:2 }}</span> <span class="text-xs text-slate-500">{{ charge.currency.code }}</span></div>
+            {% empty %}—{% endfor %}
+          </td>
+          <td><span class="num">{{ category.barcode_prefix|default:"—" }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No item categories yet" as empty_title %}
+    {% translate "Categories group your items (rings, chains, bullion…) and set their defaults." as empty_text %}
+    {% include "components/empty_state.html" with icon="layers" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

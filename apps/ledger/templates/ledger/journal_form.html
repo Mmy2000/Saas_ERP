@@ -1,0 +1,91 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New journal entry" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'ledger/js/journal.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'journal' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Journal" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New journal entry" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "For opening balances and adjustments. Daily documents post their own entries." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form data-api-form data-shape="journal" data-endpoint="{% url 'ledger-entry-list' %}" data-method="POST"
+      data-redirect="{% url 'journal' %}" data-success="{% translate 'Entry posted.' %}" novalidate class="space-y-6">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+  <section class="card">
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
+      <div>
+        <label class="form-label" for="f-date">{% translate "Date" %}</label>
+        <input id="f-date" name="business_date" type="date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+        <p class="form-error" data-error-for="business_date"></p>
+      </div>
+      <div>
+        <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+        <select id="f-branch" name="branch" class="form-input">
+          {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+        </select>
+        <p class="form-error" data-error-for="branch"></p>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="form-label" for="f-memo">{% translate "Description" %}</label>
+        <input id="f-memo" name="memo" class="form-input" maxlength="300">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Lines" %}</h2>
+      <button type="button" class="btn btn-secondary text-xs" data-add-line>{% icon "plus" "size-4" %}{% translate "Add line" %}</button>
+    </div>
+    <div class="divide-y divide-slate-100" data-lines></div>
+    <p class="form-error px-5" data-error-for="lines"></p>
+    <div class="flex flex-wrap justify-end gap-6 border-t border-slate-100 bg-slate-50 px-5 py-3 text-sm">
+      <span class="text-slate-500">{% translate "Total debit" %} <span class="num font-semibold text-slate-900" data-total="debit">0.00</span></span>
+      <span class="text-slate-500">{% translate "Total credit" %} <span class="num font-semibold text-slate-900" data-total="credit">0.00</span></span>
+      <span class="hidden font-medium text-red-600" data-unbalanced>{% translate "Not balanced yet" %}</span>
+    </div>
+  </section>
+
+  <div class="flex gap-3">
+    <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Post entry" %}</button>
+    <a href="{% url 'journal' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+  </div>
+</form>
+
+<template id="line-template">
+  <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-line>
+    <div class="lg:col-span-3">
+      <label class="form-label">{% translate "Account" %}</label>
+      <select class="form-input" data-field="account">
+        {% for account in accounts %}<option value="{{ account.pk }}" data-party="{% if account.subledger == 'party' %}1{% endif %}">{{ account.code }} · {{ account.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="lg:col-span-2">
+      <label class="form-label">{% translate "Customer/supplier" %}</label>
+      <select class="form-input" data-field="party" data-remote="{% url 'ledger-party-lookup' %}" data-label-field="name">
+        <option value="">—</option>
+      </select>
+    </div>
+    <div class="lg:col-span-2">
+      <label class="form-label">{% translate "Commodity" %}</label>
+      <select class="form-input" data-field="commodity">
+        {% for commodity in commodities %}<option value="{{ commodity.pk }}" data-functional="{% if commodity.is_functional %}1{% endif %}">{{ commodity.code }}{% if commodity.kind == 'metal' %} · {{ commodity.label }}{% endif %}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="grid grid-cols-2 gap-3 lg:col-span-3">
+      <label><span class="form-label">{% translate "Debit" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="debit"></label>
+      <label><span class="form-label">{% translate "Credit" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="credit"></label>
+    </div>
+    <div class="lg:col-span-2">
+      <label class="form-label">{% translate "Value" %} <span class="font-normal text-slate-400" data-value-hint></span></label>
+      <div class="flex gap-2">
+        <input class="form-input num w-full text-start" inputmode="decimal" data-field="functional_amount">
+        <button type="button" class="btn btn-ghost px-2" data-remove-line aria-label="{% translate 'Remove line' %}">{% icon "x" "size-4" %}</button>
+      </div>
+    </div>
+    <p class="form-error lg:col-span-12" data-line-error></p>
+  </div>
+</template>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% load i18n ui %}{# Pieces by barcode + bulk gold by weight, driven by static/inventory/js/goods_picker.js. Needs `lots`. #}
+<section class="card overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2><span class="text-sm text-slate-500"><span class="num" data-piece-count>0</span></span></div>
+  <form class="flex gap-3 border-b border-slate-100 p-4" data-scan>
+    <input class="form-input num w-full text-start" placeholder="{% translate 'Scan or type a barcode' %}" autocomplete="off" aria-label="{% translate 'Barcode' %}">
+    <button class="btn btn-secondary" type="submit">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+  </form>
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Item" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th></th></tr></thead>
+      <tbody data-pieces></tbody>
+    </table>
+  </div>
+  <p class="px-5 py-8 text-center text-sm text-slate-400" data-pieces-empty>{% translate "No pieces yet" %}</p>
+</section>
+
+<section class="card overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Bulk gold by weight" %}</h2>
+    <button type="button" class="btn btn-ghost text-xs" data-add-bulk>{% icon "plus" "size-4" %}{% translate "Add a line" %}</button></div>
+  <div class="divide-y divide-slate-100" data-bulk></div>
+  <template id="bulk-row">
+    <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[1fr_9rem_7rem_auto] sm:items-start" data-bulk-row>
+      <div><select class="form-input" data-lot aria-label="{% translate 'Stock' %}">
+        {% for balance in lots %}<option value="{{ balance.lot.category_id }}:{{ balance.lot.karat_id|default:'' }}" data-branch="{{ balance.lot.branch_id }}">{{ balance.lot.category.name }}{% if balance.lot.karat %} · {{ balance.lot.karat.label }}{% endif %} — {{ balance.gross_weight_g|num:3 }} {% translate "g" %}</option>{% endfor %}
+      </select><p class="form-error" data-row-error></p></div>
+      <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Weight (g)' %}" data-weight aria-label="{% translate 'Weight (g)' %}">
+      <input class="form-input num w-full text-start" inputmode="numeric" placeholder="{% translate 'Pieces' %}" data-qty aria-label="{% translate 'Pieces' %}">
+      <button type="button" class="btn btn-ghost text-slate-400" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+    </div>
+  </template>
+</section>
+
+<template id="piece-row">
+  <tr>
+    <td><span class="num font-medium text-slate-900" data-f="barcode"></span></td>
+    <td><bdi data-f="category"></bdi> · <bdi data-f="karat"></bdi></td>
+    <td class="text-end"><span class="num" data-f="weight"></span></td>
+    <td class="text-end"><button type="button" class="btn btn-ghost text-slate-400" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></td>
+  </tr>
+</template>

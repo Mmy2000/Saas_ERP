@@ -1,0 +1,94 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New reservation" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'sales/js/reservation.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'reservations' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Reservations" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New reservation" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "The pieces are held for the customer and cannot be sold to anyone else until the reservation is completed or cancelled." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not board %}
+<div class="card card-body text-sm text-red-700">{% translate "No gold price has been published yet." %}</div>
+{% else %}
+<div id="reservation-new" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-quote-url="{{ quote_url }}" data-post-url="{{ post_url }}"
+     data-detail-url="{% url 'reservations' %}{id}/" data-saved="{% translate 'Reserved.' %}" data-home-currency="{{ home_currency }}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-customer">{% translate "Customer" %}</label>
+          <select id="f-customer" class="form-input" data-customer data-remote="{% url 'customer-list' %}" data-label-field="name"></select>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-expires">{% translate "Hold until" %}</label>
+          <input id="f-expires" type="date" class="form-input" data-expires>
+        </div>
+        <label class="flex items-center gap-3 self-end pb-2">
+          <input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-locked>
+          <span class="text-sm text-slate-700">{% translate "Lock today's gold price" %}</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2></div>
+      <form class="flex gap-3 border-b border-slate-100 p-4" data-scan>
+        <input class="form-input num w-full text-start" placeholder="{% translate 'Scan or type a barcode' %}" autocomplete="off" aria-label="{% translate 'Barcode' %}">
+        <button class="btn btn-secondary" type="submit">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+      </form>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Item" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Price today" %}</th><th></th></tr></thead>
+          <tbody data-lines></tbody>
+        </table>
+      </div>
+      <p class="px-5 py-8 text-center text-sm text-slate-400" data-lines-empty>{% translate "No pieces yet" %}</p>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Deposit" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3" data-payment>
+        <div><label class="form-label" for="f-method">{% translate "How" %}</label>
+          <select id="f-method" class="form-input" data-method>
+            <option value="cash">{% translate "Cash" %}</option><option value="card">{% translate "Card" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option>
+          </select></div>
+        <div><label class="form-label" for="f-currency">{% translate "Currency" %}</label>
+          <select id="f-currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="f-amount">{% translate "Amount" %}</label>
+          <input id="f-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount></div>
+        {% include "treasury/holder_selects.html" %}
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num" data-count>0</dd></div>
+        <div class="flex justify-between px-5 py-4 text-base font-semibold"><dt>{% translate "Total today" %}</dt><dd><span class="num" data-total>0.00</span> {{ home_currency }}</dd></div>
+      </dl>
+      <div class="border-t border-slate-100 p-5"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" class="form-input" data-note></div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "bookmark" "size-4" %}{% translate "Reserve" %}</button>
+      </div>
+    </section>
+  </aside>
+</div>
+<template id="reservation-line">
+  <tr>
+    <td><span class="num font-medium text-slate-900" data-f="barcode"></span></td>
+    <td><bdi data-f="description"></bdi> · <bdi data-f="karat"></bdi></td>
+    <td class="text-end"><span class="num" data-f="weight"></span></td>
+    <td class="text-end"><span class="num" data-f="total"></span></td>
+    <td class="text-end"><button type="button" class="btn btn-ghost text-slate-400" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></td>
+  </tr>
+</template>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Reservations" %}{% endblock %}
+{% block page_header %}
+{% can "sales.reservation.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Reservations" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Pieces held for customers against a deposit." %}</p>
+  </div>
+  {% if can_create %}<a href="{% url 'reservation-new' %}" class="btn btn-primary">{% icon "bookmark" "size-4" %}{% translate "New reservation" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap gap-1 border-b border-slate-100 p-2.5">
+    <a href="?state=open{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'open' %} tab-active{% endif %}"{% if state == 'open' %} aria-current="true"{% endif %}>{% translate "In progress" %}</a>
+    <a href="?state=overdue{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'overdue' %} tab-active{% endif %}"{% if state == 'overdue' %} aria-current="true"{% endif %}>{% translate "Past their date" %}</a>
+    <a href="?state=completed{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'completed' %} tab-active{% endif %}"{% if state == 'completed' %} aria-current="true"{% endif %}>{% translate "Completed" %}</a>
+    <a href="?state=cancelled{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'cancelled' %} tab-active{% endif %}"{% if state == 'cancelled' %} aria-current="true"{% endif %}>{% translate "Cancelled" %}</a>
+    <a href="?state=all{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'all' %} tab-active{% endif %}"{% if state == 'all' %} aria-current="true"{% endif %}>{% translate "All" %}</a>
+    {% if customer %}<a href="?state={{ state }}" class="badge badge-brand ms-auto self-center">{% translate "One customer" %} {% icon "x" "size-3" %}</a>{% endif %}
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Customer" %}</th><th>{% translate "Until" %}</th>
+        <th class="text-end">{% translate "Reserved at" %}</th><th class="text-end">{% translate "Deposits" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for r in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ r.number }}</span></td>
+          <td><span class="num">{{ r.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ r.customer.name }}</td>
+          <td>{% if r.expires_on %}<span class="num {% if r.is_overdue %}text-red-600{% endif %}">{{ r.expires_on|date:"SHORT_DATE_FORMAT" }}</span>{% else %}—{% endif %}</td>
+          <td class="text-end"><span class="num">{{ r.quoted_total|num:2 }}</span>{% if r.price_locked %} <span class="badge badge-neutral">{% translate "Locked" %}</span>{% endif %}</td>
+          <td class="text-end"><span class="num">{{ r.deposit_amount|num:2 }}</span></td>
+          <td>{% include "sales/_reservation_state.html" with reservation=r %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'reservation' r.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No reservations here" as empty_title %}
+    {% include "components/empty_state.html" with icon="bookmark" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

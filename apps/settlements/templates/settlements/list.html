@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Receipts & payments" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Receipts & payments" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Money and gold received from or given to customers, suppliers and traders." %}</p>
+  </div>
+  <a href="{% url 'settlement-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New settlement" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <select name="kind" class="form-input sm:w-72" aria-label="{% translate 'Type' %}">
+      <option value="">{% translate "All" %}</option>
+      {% for value, label in kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Type" %}</th><th>{% translate "With" %}</th>
+        <th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for s in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ s.number }}</span></td>
+          <td><span class="num">{{ s.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ s.get_kind_display }}</td>
+          <td>{{ s.party.name }} <span class="text-xs text-slate-400">({{ s.get_side_display }})</span></td>
+          <td class="text-end">{% if s.kind == "metal_in" or s.kind == "metal_out" %}<span class="num">{{ s.gross_weight_g|num:3 }}</span> {% translate "g" %} <bdi>{{ s.karat.label }}</bdi>{% elif s.kind == "conversion" %}<span class="num">{{ s.fine_weight_g|num:3 }}</span> {% translate "g" %} → <span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% else %}<span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% endif %}</td>
+          <td>{% include "components/doc_status.html" with status=s.status label=s.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'settlement-view' s.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing recorded yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="arrow-left-right" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

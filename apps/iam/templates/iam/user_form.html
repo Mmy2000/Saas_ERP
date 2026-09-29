@@ -1,0 +1,133 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% if member %}{% translate "Edit user" %}{% else %}{% translate "New user" %}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'iam/js/forms.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'users' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Users" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if member %}{{ member.user.display_name }}{% else %}{% translate "New user" %}{% endif %}</h1>
+    {% if member and not member.is_active %}<span class="badge badge-warning">{{ member.get_status_display }}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-shape="member" data-endpoint="{{ endpoint }}"
+      data-method="{{ method }}" data-redirect="{% url 'users' %}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Details" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-display">{% translate "Full name" %}</label>
+          <input id="f-display" name="display_name" class="form-input" value="{{ member.user.display_name|default:'' }}" required maxlength="150">
+          <p class="form-error" data-error-for="display_name"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-username">{% translate "Username" %}</label>
+          <input id="f-username" name="username" class="form-input" dir="ltr" value="{{ member.username|default:'' }}" required maxlength="150" autocomplete="off">
+          <p class="form-error" data-error-for="username"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-email">{% translate "Email" %} <span class="font-normal text-slate-400">({% translate "optional" %})</span></label>
+          <input id="f-email" name="email" type="email" class="form-input" dir="ltr" value="{{ member.user.email|default:'' }}">
+          <p class="form-error" data-error-for="email"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-phone">{% translate "Phone" %} <span class="font-normal text-slate-400">({% translate "optional" %})</span></label>
+          <input id="f-phone" name="phone" class="form-input num w-full text-start" value="{{ member.user.phone|default:'' }}">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-branch">{% translate "Default branch" %}</label>
+          <select id="f-branch" name="default_branch" class="form-input" data-empty="null">
+            <option value="">—</option>
+            {% for branch in branches %}<option value="{{ branch.pk }}" {% if member.default_branch_id == branch.pk %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="default_branch"></p>
+        </div>
+        {% if not member %}
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-password">{% translate "Initial password" %}</label>
+          <input id="f-password" name="password" type="password" class="form-input" autocomplete="new-password" required>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "At least 10 characters. Share it privately; the user can change it later." %}</p>
+          <p class="form-error" data-error-for="password"></p>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">{% translate "Roles" %}</h2>
+          <p class="mt-0.5 text-xs text-slate-500">{% translate "A role can apply to every branch or only to some." %}</p>
+        </div>
+      </div>
+      <div class="divide-y divide-slate-100">
+      {% for item in roles %}
+        <div class="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-5 sm:items-center" data-role-row="{{ item.role.pk }}">
+          <label class="flex items-start gap-3 sm:col-span-2">
+            <input type="checkbox" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600" data-role-toggle
+                   {% if item.assignment %}checked{% endif %}>
+            <span>
+              <span class="block font-medium text-slate-900">{{ item.role.label }}{% if item.is_owner %} <span class="badge badge-brand ms-1">{% translate "Full access" %}</span>{% endif %}</span>
+              {% if item.role.label_description %}<span class="block text-xs text-slate-500">{{ item.role.label_description }}</span>{% endif %}
+            </span>
+          </label>
+          <div class="sm:col-span-3 {% if not item.assignment %}hidden{% endif %}" data-role-scope>
+            <div class="grid grid-cols-1 gap-2">
+              <select class="form-input" data-scope aria-label="{% translate 'Branches' %}">
+                <option value="all" {% if not item.assignment or item.assignment.all %}selected{% endif %}>{% translate "All branches" %}</option>
+                <option value="some" {% if item.assignment and not item.assignment.all %}selected{% endif %}>{% translate "Selected branches" %}</option>
+              </select>
+              <div class="{% if not item.assignment or item.assignment.all %}hidden{% endif %}" data-branch-picker>
+                <select multiple class="form-input" data-branches aria-label="{% translate 'Branches' %}">
+                  {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk in item.assignment.branches %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+      <p class="form-error px-5 pb-4" data-error-for="roles"></p>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'users' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+
+{% if member %}
+<div class="mt-6 grid grid-cols-1 gap-6 lg:w-2/3 lg:grid-cols-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "key-round" "size-4 text-slate-400" %}{% translate "Set a new password" %}</h2></div>
+    <form class="card-body space-y-3" data-api-form data-method="POST" data-endpoint="{{ endpoint }}set-password/"
+          data-success="{% translate 'Password changed. The user was signed out everywhere.' %}" novalidate>
+      <input name="password" type="password" class="form-input" autocomplete="new-password" aria-label="{% translate 'New password' %}">
+      <p class="form-error" data-error-for="password"></p>
+      <button type="submit" class="btn btn-secondary">{% translate "Change password" %}</button>
+    </form>
+  </section>
+  {% if member.pk != request.membership.pk %}
+  <section class="card">
+    <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "lock" "size-4 text-slate-400" %}{% if member.is_active %}{% translate "Suspend access" %}{% else %}{% translate "Restore access" %}{% endif %}</h2></div>
+    <div class="card-body space-y-3">
+      <p class="text-sm text-slate-500">{% if member.is_active %}{% translate "The user can no longer sign in. Their history is kept." %}{% else %}{% translate "The user can sign in again with their roles." %}{% endif %}</p>
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}{% if member.is_active %}suspend/{% else %}activate/{% endif %}"
+            data-success="{% translate 'Saved.' %}">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <button type="submit" class="btn btn-secondary">{% if member.is_active %}{% translate "Suspend" %}{% else %}{% translate "Restore" %}{% endif %}</button>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

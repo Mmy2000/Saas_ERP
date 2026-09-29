@@ -1,0 +1,71 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3" data-no-print>
+  <div>
+    <a href="{% url 'reports' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Reports" %}</a>
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ report.title }}</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ report.description }}</p>
+  </div>
+  <div class="flex gap-2">
+    <a class="btn btn-secondary" href="?{{ query }}{% if query %}&{% endif %}format=csv">{% icon "list" "size-4" %}{% translate "Excel (CSV)" %}</a>
+    <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end" data-no-print>
+  {% for spec in report.filters %}
+    {% if spec.kind == "date" %}
+      <label><span class="form-label">{{ spec.label }}</span><input type="date" name="{{ spec.key }}" class="form-input" value="{% for key, value in params.items %}{% if key == spec.key %}{{ value|date:'Y-m-d' }}{% endif %}{% endfor %}"></label>
+    {% elif spec.kind == "branch" %}
+      <label class="sm:w-56"><span class="form-label">{{ spec.label }}</span>
+        <select name="{{ spec.key }}" class="form-input">
+          <option value="">{% translate "All branches" %}</option>
+          {% for branch in branches %}<option value="{{ branch.pk }}" {% if params.branch.pk == branch.pk %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+        </select></label>
+    {% else %}
+      <label class="sm:w-48"><span class="form-label">{{ spec.label }}</span>
+        <select name="{{ spec.key }}" class="form-input">
+          {% for value, label in spec.choices %}<option value="{{ value }}" {% for key, chosen in params.items %}{% if key == spec.key and chosen == value %}selected{% endif %}{% endfor %}>{{ label }}</option>{% endfor %}
+        </select></label>
+    {% endif %}
+  {% endfor %}
+  <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+</form>
+
+<article class="card receipt">
+  <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+    <div>
+      <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+      <p class="text-sm text-slate-500">{{ report.title }}</p>
+    </div>
+    <div class="text-end text-sm text-slate-500">
+      {% if params.date %}<p class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}</p>{% endif %}
+      {% if params.date_from %}<p class="num">{{ params.date_from|date:"SHORT_DATE_FORMAT" }} → {{ params.date_to|date:"SHORT_DATE_FORMAT" }}</p>{% endif %}
+      <p>{% if params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>
+      <p class="text-xs text-slate-400">{% translate "Printed" %} <span class="num">{% now "SHORT_DATETIME_FORMAT" %}</span></p>
+    </div>
+  </header>
+  {% for table in tables %}
+  <section class="border-b border-slate-100 last:border-0">
+    <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{{ table.title }}</h2>
+    {% if table.rows %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="text-end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for row in table.rows %}<tr>{% for cell in row %}{% include "reports/_cell.html" %}{% endfor %}</tr>{% endfor %}
+        </tbody>
+        {% if table.totals %}<tfoot><tr class="border-t-2 border-slate-200 font-semibold">{% for cell in table.totals %}{% include "reports/_cell.html" %}{% endfor %}</tr></tfoot>{% endif %}
+      </table>
+    </div>
+    {% else %}
+    <p class="px-6 pb-5 text-sm text-slate-400">{% translate "Nothing in this period." %}</p>
+    {% endif %}
+    {% if table.note %}<p class="px-6 pb-4 text-xs text-slate-500">{{ table.note }}</p>{% endif %}
+  </section>
+  {% endfor %}
+</article>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Transfers" %}{% endblock %}
+{% block page_header %}
+{% can "inventory.transfer.send" as can_send %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Transfers" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Pieces and bulk gold sent between branches." %}</p>
+  </div>
+  {% if can_send %}<a href="{% url 'stock-transfer-new' %}" class="btn btn-primary">{% icon "send" "size-4" %}{% translate "Send goods" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="flex gap-1 overflow-x-auto border-b border-slate-100 p-2.5">
+    <a href="?" class="tab{% if not show %} tab-active{% endif %}"{% if not show %} aria-current="true"{% endif %}>{% translate "All" %}</a>
+    <a href="?show=transit" class="tab{% if show == 'transit' %} tab-active{% endif %}"{% if show == 'transit' %} aria-current="true"{% endif %}>{% translate "In transit" %}</a>
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+        <th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for t in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ t.number }}</span></td>
+          <td><span class="num">{{ t.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ t.branch.name }}</td>
+          <td>{{ t.to_branch.name }}</td>
+          <td class="text-end"><span class="num">{{ t.total_qty }}</span></td>
+          <td class="text-end"><span class="num">{{ t.total_gross_weight_g|num:3 }}</span></td>
+          <td>{% if t.in_transit %}<span class="badge badge-warning">{% translate "In transit" %}</span>{% elif t.status == "posted" %}<span class="badge badge-success">{% translate "Received" %}</span>{% else %}{% include "components/doc_status.html" with status=t.status label=t.get_status_display %}{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'stock-transfer' t.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No transfers yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="truck" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

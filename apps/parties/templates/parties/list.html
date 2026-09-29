@@ -1,0 +1,77 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ config.title }}{% endblock %}
+{% block page_header %}
+{% with perm_create="parties."|add:role|add:".create" %}{% can perm_create as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ config.title }}</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ config.subtitle }}</p>
+  </div>
+  {% if can_create %}<a href="{% url config.new_url %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ config.new_title }}</a>{% endif %}
+</div>
+{% endwith %}
+{% endblock %}
+{% block content %}
+{% with perm_edit="parties."|add:role|add:".edit" %}{% can perm_edit as can_edit %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <label class="relative flex-1">
+      <span class="sr-only">{% translate "Search" %}</span>
+      <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" name="q" value="{{ term }}" class="form-input ps-9"
+             placeholder="{% translate 'Name, phone, code or national ID' %}">
+    </label>
+    <select name="status" class="form-input sm:w-44" aria-label="{% translate 'Status' %}">
+      <option value="active" {% if status == "active" %}selected{% endif %}>{% translate "Active" %}</option>
+      <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{% translate "Inactive" %}</option>
+      <option value="all" {% if status == "all" %}selected{% endif %}>{% translate "All" %}</option>
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
+  </form>
+
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Phone" %}</th>
+        <th>{% translate "Branch" %}</th><th>{% translate "Status" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for party in page.object_list %}
+        <tr>
+          <td><span class="num text-slate-500">{{ party.code }}</span></td>
+          <td>
+            <div class="font-medium text-slate-900">{{ party.name }}</div>
+            {% if party.kind == "organization" %}<div class="text-xs text-slate-500">{{ party.get_kind_display }}</div>{% endif %}
+          </td>
+          <td><span class="num">{{ party.phone|default:"—" }}</span></td>
+          <td>{{ party.home_branch.name|default:"—" }}</td>
+          <td>{% if party.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end">{% if can_edit %}<a class="btn btn-ghost text-xs" href="{% url config.edit_url party.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm" aria-label="{% translate 'Pagination' %}">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% if term %}
+      {% translate "Nothing matches your search" as empty_title %}
+      {% translate "Try part of the name, the phone number or the code." as empty_text %}
+      {% include "components/empty_state.html" with icon="search" title=empty_title text=empty_text %}
+    {% else %}
+      {% include "components/empty_state.html" with icon="users" title=config.empty %}
+    {% endif %}
+  {% endif %}
+</section>
+{% endwith %}
+{% endblock %}

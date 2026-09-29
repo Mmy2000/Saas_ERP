@@ -1,0 +1,29 @@
+{% load i18n static %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+  {% if template %}{% include "printing/_label_style.html" %}{% endif %}
+</head>
+<body class="bg-slate-100">
+  {% if problem %}
+  <p class="p-4 text-sm text-red-700">{{ problem }}</p>
+  {% else %}
+  <div class="pages flex items-start justify-center p-4">
+    {% for page in pages %}<div class="page">{% for label in page.cells %}{% if label %}{% include "printing/_label.html" %}{% endif %}{% endfor %}</div>{% endfor %}
+  </div>
+  <script>
+    // Largest zoom (at most 3×) at which the page still fits the frame.
+    const pages = document.querySelector(".pages");
+    const page = pages.querySelector(".page");
+    const fit = () => {
+      pages.style.zoom = 1;
+      const scale = Math.min(3, (window.innerWidth - 32) / page.offsetWidth, (window.innerHeight - 32) / page.offsetHeight);
+      pages.style.zoom = Math.max(0.2, scale).toFixed(2);
+    };
+    window.addEventListener("resize", fit);
+    fit();
+  </script>
+  {% endif %}
+</body>
+</html>

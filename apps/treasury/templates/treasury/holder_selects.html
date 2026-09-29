@@ -1,0 +1,24 @@
+{% load i18n %}
+{# Cash box / bank account / card terminal choices for a payment (static/treasury/js/holders.js). Optional `prefix` keeps ids unique when a page has several. #}
+<div class="col-span-full" data-holder="cash">
+  <label class="form-label" for="{{ prefix }}f-box">{% translate "Cash box" %}</label>
+  <select id="{{ prefix }}f-box" class="form-input" data-box>
+    <option value="">{% translate "Default cash box" %}</option>
+    {% for box in boxes %}<option value="{{ box.pk }}" data-branch="{{ box.branch_id }}" data-currency="{{ box.currency.code }}">{{ box.label }} · {{ box.currency.code }}</option>{% endfor %}
+  </select>
+  <p class="form-error" data-error-for="cash_box"></p>
+</div>
+<div class="hidden col-span-full" data-holder="bank_transfer">
+  <label class="form-label" for="{{ prefix }}f-bank">{% translate "Bank account" %}</label>
+  <select id="{{ prefix }}f-bank" class="form-input" data-bank>
+    {% for bank in banks %}<option value="{{ bank.pk }}" data-currency="{{ bank.currency.code }}" data-branches="{% if bank.all_branches %}*{% else %}{% for link in bank.branch_links.all %} {{ link.branch_id }} {% endfor %}{% endif %}">{{ bank.label }} · {{ bank.currency.code }}</option>{% endfor %}
+  </select>
+  <p class="form-error" data-error-for="bank_account"></p>
+</div>
+<div class="hidden col-span-full" data-holder="card">
+  <label class="form-label" for="{{ prefix }}f-terminal">{% translate "Card terminal" %}</label>
+  <select id="{{ prefix }}f-terminal" class="form-input" data-terminal>
+    {% for terminal in terminals %}<option value="{{ terminal.pk }}" data-currency="{{ terminal.bank_account.currency.code }}" data-branch="{{ terminal.branch_id|default:'' }}">{{ terminal.label }}</option>{% endfor %}
+  </select>
+  <p class="form-error" data-error-for="terminal"></p>
+</div>

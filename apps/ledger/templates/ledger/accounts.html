@@ -1,0 +1,39 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Chart of accounts" %}{% endblock %}
+{% block page_header %}
+  {% translate "Chart of accounts" as title %}{% translate "Every balance in the system is the sum of the entries on these accounts." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Account" %}</th><th>{% translate "Type" %}</th><th>{% translate "Takes" %}</th>
+        <th class="text-end">{% translate "Balance" %}</th><th class="text-end">{% translate "Gold (fine g)" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}{% with account=row.account %}
+        <tr class="{% if not account.is_postable %}bg-slate-50/70{% endif %}">
+          <td>
+            <div class="flex items-center gap-2 {% if row.depth == 1 %}ps-5{% elif row.depth == 2 %}ps-10{% endif %}">
+              <span class="num text-xs text-slate-400">{{ account.code }}</span>
+              <span class="{% if account.is_postable %}text-slate-800{% else %}font-semibold text-slate-900{% endif %}">{{ account.label }}</span>
+              {% if account.subledger == "party" %}<span class="badge badge-neutral">{% translate "per customer/supplier" %}</span>{% endif %}
+            </div>
+          </td>
+          <td class="text-slate-500">{{ account.get_type_display }}</td>
+          <td class="text-slate-500">{% if account.is_postable %}{{ account.get_commodity_scope_display }}{% endif %}</td>
+          <td class="text-end">{% if row.balance %}<span class="num">{{ row.balance.functional|num:2 }}</span>{% endif %}</td>
+          <td class="text-end">{% if row.balance.XAU %}<span class="num">{{ row.balance.XAU|num:3 }}</span>{% endif %}</td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="flex items-center gap-2 border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+    {% icon "info" "size-4" %}{% translate "Balances are debit-positive: credits (payables, income, equity) show as negative numbers." %}
+  </p>
+</section>
+{% endblock %}

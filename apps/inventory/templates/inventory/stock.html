@@ -1,0 +1,129 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Stock" %}{% endblock %}
+{% block page_header %}
+  {% translate "Stock" as title %}{% translate "What is in your branches now: pieces by barcode and bulk gold by weight." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "By karat" %}</h2></div>
+  {% if summary %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th>
+        <th class="text-end">{% translate "Pieces weight (g)" %}</th><th class="text-end">{% translate "Bulk weight (g)" %}</th>
+        <th class="text-end">{% translate "Fine (g)" %}</th><th class="text-end">{% translate "21K equivalent (g)" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for line in summary %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ line.karat.label|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ line.pieces }}</span></td>
+          <td class="text-end"><span class="num">{{ line.piece_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ line.bulk_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ line.fine_weight_g|num:4 }}</span></td>
+          <td class="text-end">{% if line.karat.metal.code == "gold" %}<span class="num font-semibold text-slate-900">{{ line.equivalent_21k_g|num:3 }}</span>{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No stock yet" as empty_title %}
+    {% translate "Post a purchase to bring goods into stock." as empty_text %}
+    {% include "components/empty_state.html" with icon="layers" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2></div>
+  <form method="get" class="grid grid-cols-1 gap-3 border-b border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Barcode" %}</span>
+      <input name="q" value="{{ filters.q }}" class="form-input num w-full text-start" autofocus autocomplete="off" placeholder="{% translate 'Scan or type' %}"></label>
+    <label><span class="form-label">{% translate "Status" %}</span>
+      <select name="status" class="form-input">
+        {% for value, label in statuses %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        <option value="all" {% if filters.status == "all" %}selected{% endif %}>{% translate "All" %}</option>
+      </select></label>
+    <label><span class="form-label">{% translate "Category" %}</span>
+      <select name="category" class="form-input"><option value="">{% translate "All" %}</option>
+        {% for category in categories %}<option value="{{ category.pk }}" {% if filters.category == category.pk|stringformat:"d" %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
+      </select></label>
+    <label><span class="form-label">{% translate "Karat" %}</span>
+      <select name="karat" class="form-input"><option value="">{% translate "All" %}</option>
+        {% for karat in karats %}<option value="{{ karat.pk }}" {% if filters.karat == karat.pk|stringformat:"d" %}selected{% endif %}>{{ karat.label }}</option>{% endfor %}
+      </select></label>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+  </form>
+  {% if page.object_list %}
+  {% can "inventory.item.print_label" as can_label %}
+  {% if can_label %}
+  <form id="labels-form" action="{% url 'labels' %}" method="get" class="flex items-center justify-end border-b border-slate-100 px-4 py-2">
+    <button type="submit" class="btn btn-secondary text-xs" data-needs-checked="item">{% icon "printer" "size-4" %}{% translate "Print labels" %}</button>
+  </form>
+  {% endif %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        {% if can_label %}<th class="w-10"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-check-all="item" aria-label="{% translate 'Select all' %}"></th>{% endif %}
+        <th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th>
+        <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Sale making / g" %}</th>
+        <th>{% translate "Branch" %}</th><th>{% translate "Status" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for item in page.object_list %}
+        <tr>
+          {% if can_label %}<td><input type="checkbox" name="item" value="{{ item.pk }}" form="labels-form" class="size-4 rounded border-slate-300 accent-brand-600" aria-label="{{ item.barcode }}"></td>{% endif %}
+          <td><a href="{% url 'stock-item' item.pk %}" class="num font-medium text-brand-700 hover:underline">{{ item.barcode }}</a></td>
+          <td>{{ item.category.name }}</td>
+          <td>{{ item.karat.label|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ item.gross_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ item.list_making_rate|num:2 }}</span></td>
+          <td>{{ item.branch.name }}</td>
+          <td>{% include "inventory/_status.html" with item=item %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No pieces match" as empty_title %}
+    {% include "components/empty_state.html" with icon="search" title=empty_title %}
+  {% endif %}
+</section>
+
+{% if lots %}
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Bulk stock" %}</h2></div>
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th>{% translate "Branch" %}</th>
+        <th class="text-end">{% translate "Count" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine (g)" %}</th></tr></thead>
+      <tbody>
+      {% for balance in lots %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ balance.lot.category.name }}</td>
+          <td>{{ balance.lot.karat.label|default:"—" }}</td>
+          <td>{{ balance.lot.branch.name }}</td>
+          <td class="text-end"><span class="num">{{ balance.qty }}</span></td>
+          <td class="text-end"><span class="num">{{ balance.gross_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ balance.fine_weight_g|num:4 }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

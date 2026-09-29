@@ -1,0 +1,97 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ doc.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'sales/js/trade_return.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'trade-sales' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Wholesale" %}</a>
+  <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div>
+        <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{{ doc.branch.name }}</p>
+      </div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{% translate "Wholesale" %}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ doc.number }}</p>
+        <p class="num text-sm text-slate-500">{{ doc.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</div>
+      </div>
+    </header>
+    <dl class="grid grid-cols-1 gap-2 border-b border-slate-100 px-6 py-4 text-sm sm:grid-cols-2 sm:gap-8">
+      <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Trade account" %}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{% url 'trade-account-edit' doc.trade_account_id %}">{{ doc.trade_account.name }}</a></dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "The trader pays" %}</dt><dd class="font-medium">{{ doc.get_settlement_basis_display }}</dd></div>
+    </dl>
+    {% include "sales/_trade_lines.html" with in_metal=doc.in_metal %}
+    <dl class="ms-auto max-w-sm divide-y divide-slate-100 border-t border-slate-100 text-sm">
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Weight (g)" %}</dt><dd class="num">{{ doc.total_gross_weight_g|num:3 }}</dd></div>
+      {% if doc.in_metal %}
+      <div class="flex justify-between px-6 py-2.5"><dt class="font-medium text-slate-700">{% translate "Fine gold owed (g)" %}</dt><dd class="num font-semibold">{{ doc.total_fine_weight_g|num:4 }}</dd></div>
+      {% else %}
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Gold value" %}</dt><dd class="num">{{ doc.metal_amount|num:2 }}</dd></div>
+      {% endif %}
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Making charge" %}</dt><dd class="num">{{ doc.making_amount|num:2 }}</dd></div>
+      <div class="flex justify-between bg-slate-50 px-6 py-3"><dt class="font-medium text-slate-700">{% translate "Owed in money" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-base font-semibold">{{ doc.money_amount|num:2 }}</dd></div>
+    </dl>
+    {% if doc.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ doc.note }}</p>{% endif %}
+    {% if doc.status == "voided" and doc.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ doc.void_reason }}</p>{% endif %}
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Handed over by" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+    </div>
+  </article>
+
+  <aside class="space-y-6" data-no-print>
+    {% can "sales.trade.return" doc.branch as can_return %}
+    {% if can_return and doc.status == "posted" and lines|length > returned|length %}
+    <form data-api-form data-shape="trade-return" data-method="POST" data-endpoint="{% url 'trade-return-api-list' %}"
+          data-redirect="{% url 'trade-sales' %}returns/{id}/" data-success="{% translate 'Return recorded.' %}" class="card" data-sale="{{ doc.pk }}">
+      <div class="card-header"><h2 class="card-title">{% translate "Take a return" %}</h2></div>
+      <div class="card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% for line in lines %}{% if line.pk not in returned %}
+        <label class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-2.5 text-sm">
+          <span class="flex items-center gap-2"><input type="checkbox" class="size-4 accent-brand-600" data-return-line="{{ line.pk }}">{% if line.item_id %}<span class="num">{{ line.item.barcode }}</span>{% else %}<bdi>{{ line.category.name }}</bdi>{% endif %}</span>
+          <span class="num">{{ line.gross_weight_g|num:3 }} {% translate "g" %}</span>
+        </label>
+        {% endif %}{% endfor %}
+        <p class="form-error" data-error-for="lines"></p>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <p class="text-xs text-slate-500">{% translate "The goods come back into stock and the trader's balance goes down by what they were charged for them." %}</p>
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Record return" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if returns %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Returns" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for r in returns %}<li class="flex items-center justify-between px-5 py-3"><a class="num text-brand-700 hover:underline" href="{% url 'trade-return' r.pk %}">{{ r.number }}</a>
+          <span>{% include "components/doc_status.html" with status=r.status label=r.get_status_display %} <span class="num">{{ r.total_gross_weight_g|num:3 }}</span> {% translate "g" %}</span></li>{% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+    {% can "sales.trade.void" doc.branch as can_void %}
+    {% if can_void and doc.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling brings the goods back into stock and takes the sale off the trader's balance." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel sale" %}</button>
+    </form>
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Price board" %}</dt><dd class="num">{{ doc.price_board.effective_at|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+        {% if doc.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ doc.journal_entry.number }}</dd></div>{% endif %}
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Statement" %}</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'trade-account-statement' doc.trade_account_id %}">{{ doc.trade_account.name }}</a></dd></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Users" %}{% endblock %}
+{% block page_header %}
+{% can "admin.users.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Users" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "People who can sign in to this workspace, and what they may do." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'user-new' %}" class="btn btn-primary">{% icon "user-plus" "size-4" %}{% translate "New user" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "admin.users.manage" as can_manage %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "User" %}</th><th>{% translate "Username" %}</th><th>{% translate "Roles" %}</th>
+        <th>{% translate "Last sign-in" %}</th><th>{% translate "Status" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for member in members %}
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              <span class="grid size-8 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{{ member.user.display_name|slice:":1"|upper }}</span>
+              <div class="min-w-0">
+                <div class="truncate font-medium text-slate-900">{{ member.user.display_name }}{% if member.pk == request.membership.pk %} <span class="text-xs font-normal text-slate-400">({% translate "you" %})</span>{% endif %}</div>
+                <div class="truncate text-xs text-slate-500" dir="ltr">{{ member.user.email|default:"" }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="num text-slate-600">{{ member.username }}</span></td>
+          <td>
+            <div class="flex flex-wrap gap-1">
+            {% for assignment in member.roles.all %}
+              <span class="badge badge-neutral">{{ assignment.role.label }}{% if not assignment.all_branches %} · {% for b in assignment.branches.all %}{{ b.branch.name }}{% if not forloop.last %}، {% endif %}{% endfor %}{% endif %}</span>
+            {% empty %}<span class="text-slate-400">—</span>{% endfor %}
+            </div>
+          </td>
+          <td><span class="num text-slate-500">{{ member.user.last_login|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</span></td>
+          <td>{% if member.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-warning">{{ member.get_status_display }}</span>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'user-edit' member.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

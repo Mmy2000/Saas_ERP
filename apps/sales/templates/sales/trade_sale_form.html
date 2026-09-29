@@ -1,0 +1,95 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New wholesale" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'sales/js/trade.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'trade-sales' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Wholesale" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New wholesale" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Goods sold to another shop by weight, with a making charge per gram." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="trade-sale" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
+     data-items-url="{% url 'item-list' %}" data-quote-url="{% url 'trade-quote' %}" data-post-url="{% url 'trade-sale-api-list' %}"
+     data-detail-url="{% url 'trade-sales' %}{id}/" data-not-found="{% translate 'no piece has this barcode' %}" data-saved="{% translate 'Sale recorded.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-account">{% translate "Trade account" %}</label>
+          <select id="f-account" class="form-input" data-account data-remote="{% url 'trade-account-list' %}" data-label-field="name">{% if account %}<option value="{{ account.pk }}" selected>{{ account.name }}</option>{% endif %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-span-full">
+          <span class="form-label">{% translate "The trader pays" %}</span>
+          <div class="segmented">
+            {% for value, label in bases %}
+            <label><input type="radio" name="basis" value="{{ value }}" class="peer sr-only" data-basis {% if forloop.first %}checked{% endif %}>
+              <span class="segment">{{ label }}</span></label>
+            {% endfor %}
+          </div>
+          <p class="mt-1.5 text-xs text-slate-500" data-basis-hint="metal">{% translate "The trader owes you the fine gold, and the making charge in money." %}</p>
+          <p class="mt-1.5 hidden text-xs text-slate-500" data-basis-hint="money">{% translate "The trader owes you the whole value in money, at today's gold price." %}</p>
+        </div>
+      </div>
+    </section>
+
+    {% include "inventory/_goods_picker.html" %}
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Making charge per gram" %}</h2></div>
+      <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2" data-rates></div>
+      <p class="px-5 pb-5 text-sm text-slate-400" data-rates-empty>{% translate "Add goods to set their making charge." %}</p>
+      <template id="rate-row">
+        <label class="block"><span class="form-label" data-f="name"></span>
+          <input class="form-input num w-full text-start" inputmode="decimal" data-rate></label>
+      </template>
+    </section>
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Priced lines" %}</h2></div>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th>
+            <th class="text-end">{% translate "Gold value" %}</th><th class="text-end">{% translate "Making" %}</th></tr></thead>
+          <tbody data-priced></tbody>
+        </table>
+      </div>
+      <template id="priced-row">
+        <tr>
+          <td><span class="num font-medium text-slate-900" data-f="barcode"></span> <bdi class="text-slate-500" data-f="category"></bdi></td>
+          <td data-f="karat"></td>
+          <td class="text-end"><span class="num" data-f="weight"></span></td>
+          <td class="text-end"><span class="num" data-f="fine"></span></td>
+          <td class="text-end"><span class="num" data-f="metal"></span></td>
+          <td class="text-end"><span class="num" data-f="making"></span></td>
+        </tr>
+      </template>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card xl:sticky xl:top-6">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num" data-t="qty">0</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Weight (g)" %}</dt><dd class="num" data-t="gross_weight_g">0.000</dd></div>
+        <div class="flex justify-between px-5 py-3" data-show-for="metal"><dt class="text-slate-500">{% translate "Fine gold owed (g)" %}</dt><dd class="num font-semibold text-slate-900" data-t="fine_weight_g">0.0000</dd></div>
+        <div class="flex justify-between px-5 py-3" data-show-for="money"><dt class="text-slate-500">{% translate "Gold value" %}</dt><dd class="num" data-t="metal_amount">0.00</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making charge" %}</dt><dd class="num" data-t="making_amount">0.00</dd></div>
+        <div class="flex justify-between bg-slate-50 px-5 py-4"><dt class="font-medium text-slate-700">{% translate "Owed in money" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-lg font-semibold text-slate-900" data-t="money_amount">0.00</dd></div>
+      </dl>
+      <div class="border-t border-slate-100 p-5">
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" class="form-input" data-note>
+      </div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "check" "size-4" %}{% translate "Record sale" %}</button>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

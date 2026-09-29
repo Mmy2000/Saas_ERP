@@ -1,0 +1,73 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New expense" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'expenses/js/form.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'expenses' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Expenses" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New expense" %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+{% if not categories %}
+<div class="card card-body mb-6 text-sm text-slate-600">{% translate "Add an expense category first." %} <a class="font-medium text-brand-700 hover:underline" href="{% url 'expense-categories' %}">{% translate "Categories" %}</a></div>
+{% endif %}
+<form data-api-form data-shape="expense" data-method="POST" data-endpoint="{% url 'expense-voucher-list' %}"
+      data-redirect="{% url 'expenses' %}{id}/" data-success="{% translate 'Recorded.' %}" novalidate
+      class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-category">{% translate "Expense category" %}</label>
+          <select id="f-category" name="category" class="form-input">{% for c in categories %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="category"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" name="branch" class="form-input" data-branch>{% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="branch"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-payee">{% translate "Paid to" %}</label>
+          <input id="f-payee" name="payee" class="form-input" maxlength="200">
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div>
+          <label class="form-label" for="f-method">{% translate "Paid from" %}</label>
+          <select id="f-method" name="method" class="form-input" data-method-select>
+            <option value="cash">{% translate "Cash" %}</option>
+            <option value="bank_transfer">{% translate "Bank account" %}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-currency">{% translate "Currency" %}</label>
+          <select id="f-currency" name="currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-amount">{% translate "Amount" %}</label>
+          <input id="f-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="amount"></p>
+        </div>
+        {% include "treasury/holder_selects.html" %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div><label class="form-label" for="f-ref">{% translate "Reference" %}</label><input id="f-ref" name="reference" class="form-input" maxlength="60"></div>
+        <div class="sm:col-span-2"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"></div>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Record" %}</button>
+      <a href="{% url 'expenses' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

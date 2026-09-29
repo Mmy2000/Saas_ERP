@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Send goods" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'inventory/js/transfer_form.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'stock-transfers' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Transfers" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Send goods" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Scan the pieces going to the other branch and add any bulk gold by weight." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="transfer" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
+     data-items-url="{% url 'item-list' %}" data-post-url="{% url 'stock-transfer-api-list' %}" data-detail-url="{% url 'stock-transfers' %}{id}/"
+     data-not-found="{% translate 'no piece has this barcode' %}" data-sent="{% translate 'Sent.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-from">{% translate "From" %}</label>
+          <select id="f-from" class="form-input" data-from>{% for b in sources %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-to">{% translate "To" %}</label>
+          <select id="f-to" class="form-input" data-to>
+            <option value="">—</option>
+            {% for b in destinations %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </section>
+
+    {% include "inventory/_goods_picker.html" %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num" data-total-pieces>0</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Weight of pieces (g)" %}</dt><dd class="num" data-total-weight>0.000</dd></div>
+      </dl>
+      <div class="border-t border-slate-100 p-5">
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" class="form-input" data-note>
+      </div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-send>{% icon "send" "size-4" %}{% translate "Send" %}</button>
+        <p class="mt-2 text-xs text-slate-500">{% translate "The goods stay in transit until the other branch receives them." %}</p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

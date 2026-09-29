@@ -1,0 +1,26 @@
+[project]
+name = "gweb-platform"
+version = "0.1.0"
+description = "Multi-tenant jewelry/gold ERP (see PROJECT_PLAN.md)"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["venv", "saas"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S608"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E501", "I"]
+"**/tests/**" = ["S608"]
+"tests/**" = ["S608"]
+"apps/ledger/chart.py" = ["E501"]  # one account per line reads best
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+testpaths = ["apps", "tests"]
+python_files = ["test_*.py"]
+addopts = "--strict-markers -p no:cacheprovider"
+markers = ["e2e: browser tests with Playwright; run with --e2e"]

@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Reports" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Reports" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Figures straight from the books, for any day, period or branch. Each can be printed or downloaded for Excel." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+  {% for report in reports %}
+  <a href="{% url 'report' report.code %}" class="card card-body group flex items-start gap-4 transition hover:border-brand-300 hover:shadow-md">
+    <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">{% icon "chart-column" "size-5" %}</span>
+    <span>
+      <span class="block font-semibold text-slate-900 group-hover:text-brand-700">{{ report.title }}</span>
+      <span class="mt-1 block text-sm text-slate-500">{{ report.description }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

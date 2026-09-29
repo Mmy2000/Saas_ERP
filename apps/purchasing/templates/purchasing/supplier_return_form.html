@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Return goods" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'purchasing/js/supplier_return.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'supplier-returns' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Returns to suppliers" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Return goods" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Scan the pieces going back and add any bulk gold by weight." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="supplier-return" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
+     data-items-url="{% url 'item-list' %}" data-post-url="{% url 'supplier-return-api-list' %}" data-detail-url="{% url 'supplier-returns' %}{id}/"
+     data-not-found="{% translate 'no piece has this barcode' %}" data-saved="{% translate 'Recorded.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          {% include "purchasing/_seller_picker.html" %}
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+      </div>
+    </section>
+    {% include "inventory/_goods_picker.html" %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num" data-total-pieces>0</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Weight of pieces (g)" %}</dt><dd class="num" data-total-weight>0.000</dd></div>
+      </dl>
+      <div class="border-t border-slate-100 p-5">
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" class="form-input" data-note>
+      </div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "undo-2" "size-4" %}{% translate "Return to supplier" %}</button>
+        <p class="mt-2 text-xs text-slate-500">{% translate "The supplier's gold balance goes down by the fine gold returned, and their money balance by the making cost you paid." %}</p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

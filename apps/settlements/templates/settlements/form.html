@@ -1,0 +1,119 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New settlement" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'settlements/js/form.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'settlements' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Receipts & payments" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New settlement" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Money or gold moving between you and a customer, supplier or trader." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form data-api-form data-shape="settlement" data-method="POST" data-endpoint="{% url 'settlement-list' %}"
+      data-redirect="{% url 'settlements' %}{id}/" data-success="{% translate 'Recorded.' %}" novalidate
+      class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-kind">{% translate "What happened" %}</label>
+          <select id="f-kind" name="kind" class="form-input" data-kind>
+            {% for value, label in kinds %}<option value="{{ value }}" {% if value == kind %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" name="branch" class="form-input">
+            {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="form-label">{% translate "With" %}</span>
+          <div class="segmented">
+            <label><input type="radio" name="side" value="customer" class="peer sr-only" data-side {% if side == "customer" %}checked{% endif %}>
+              <span class="segment">{% translate "Customer" %}</span></label>
+            <label><input type="radio" name="side" value="supplier" class="peer sr-only" data-side {% if side == "supplier" %}checked{% endif %}>
+              <span class="segment">{% translate "Supplier" %}</span></label>
+            <label><input type="radio" name="side" value="trade_account" class="peer sr-only" data-side {% if side == "trade_account" %}checked{% endif %}>
+              <span class="segment">{% translate "Trade account" %}</span></label>
+          </div>
+        </div>
+        <div class="sm:col-span-2 {% if side != 'customer' %}hidden{% endif %}" data-party-for="customer">
+          <select class="form-input" data-party data-remote="{% url 'customer-list' %}" data-label-field="name" aria-label="{% translate 'Customer' %}">
+            {% if party and side == "customer" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+          </select>
+        </div>
+        <div class="sm:col-span-2 {% if side != 'supplier' %}hidden{% endif %}" data-party-for="supplier">
+          <select class="form-input" data-party data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}">
+            {% if party and side == "supplier" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+          </select>
+        </div>
+        <div class="sm:col-span-2 {% if side != 'trade_account' %}hidden{% endif %}" data-party-for="trade_account">
+          <select class="form-input" data-party data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}">
+            {% if party and side == "trade_account" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+          </select>
+        </div>
+        <p class="form-error sm:col-span-2" data-error-for="party"></p>
+      </div>
+    </section>
+
+    <section class="card" data-group="money">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div><label class="form-label" for="f-method">{% translate "How" %}</label>
+          <select id="f-method" name="method" class="form-input">{% for value, label in methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="method"></p></div>
+        <div><label class="form-label" for="f-currency">{% translate "Currency" %}</label>
+          <select id="f-currency" name="currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="f-amount">{% translate "Amount" %}</label>
+          <input id="f-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="amount"></p></div>
+        {% include "treasury/holder_selects.html" %}
+      </div>
+    </section>
+
+    <section class="card hidden" data-group="metal">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div><label class="form-label" for="f-karat">{% translate "Karat" %}</label>
+          <select id="f-karat" name="karat" class="form-input">{% for k in karats %}<option value="{{ k.pk }}" {% if k.is_reference and k.metal.code == "gold" %}selected{% endif %}>{{ k.label }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="karat"></p></div>
+        <div><label class="form-label" for="f-gross">{% translate "Weight (g)" %}</label>
+          <input id="f-gross" name="gross_weight_g" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="gross_weight_g"></p></div>
+        <p class="text-xs text-slate-500 sm:col-span-2">{% translate "Gold is taken from or added to the branch's scrap gold." %}</p>
+      </div>
+    </section>
+
+    <section class="card hidden" data-group="conversion">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="sm:col-span-3"><label class="form-label" for="f-direction">{% translate "Which way" %}</label>
+          <select id="f-direction" name="direction" class="form-input">{% for value, label in directions %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="direction"></p></div>
+        <div><label class="form-label" for="f-fine">{% translate "Fine gold (g)" %}</label>
+          <input id="f-fine" name="fine_weight_g" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="fine_weight_g"></p></div>
+        <div><label class="form-label" for="f-price">{% translate "Price per fine gram" %}</label>
+          <input id="f-price" name="price_per_fine_g" class="form-input num w-full text-start" inputmode="decimal" placeholder="{{ gold_value|num:2 }}">
+          <p class="form-error" data-error-for="price_per_fine_g"></p></div>
+        <div><label class="form-label" for="f-conv-currency">{% translate "Settled in" %}</label>
+          <select id="f-conv-currency" class="form-input" data-conversion-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <p class="text-xs text-slate-500 sm:col-span-3">{% blocktranslate trimmed with value=gold_value|num:2 home=home_currency %}Today's board values a fine gram at {{ value }} {{ home }}.{% endblocktranslate %}</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div><label class="form-label" for="f-ref">{% translate "Reference" %}</label><input id="f-ref" name="reference" class="form-input" maxlength="60"></div>
+        <div class="sm:col-span-2"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"></div>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Record" %}</button>
+      <a href="{% url 'settlements' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

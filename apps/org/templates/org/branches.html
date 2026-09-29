@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Branches" %}{% endblock %}
+{% block page_header %}
+{% can "org.branch.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Branches" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Your shops and offices." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'branch-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New branch" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "org.branch.manage" as can_manage %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th>
+        <th>{% translate "Phone" %}</th><th>{% translate "Type" %}</th><th>{% translate "Status" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for branch in branches %}
+        <tr>
+          <td><span class="num text-slate-500">{{ branch.code|stringformat:"02d" }}</span></td>
+          <td class="font-medium text-slate-900">{{ branch.name }}</td>
+          <td><span class="num">{{ branch.phone|default:"—" }}</span></td>
+          <td>
+            {% if branch.is_head_office %}<span class="badge badge-brand">{% translate "Head office" %}</span>{% endif %}
+            {% if branch.handles_diamonds %}<span class="badge badge-neutral">{% translate "Diamonds" %}</span>{% endif %}
+          </td>
+          <td>{% if branch.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'branch-edit' branch.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

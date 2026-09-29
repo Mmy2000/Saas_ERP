@@ -1,0 +1,28 @@
+{% load l10n %}{% localize off %}<style>
+  @page { size: {% if template.media == "sheet" %}{{ template.page_width_mm }}mm {{ template.page_height_mm }}mm{% else %}{{ template.width_mm }}mm {{ template.height_mm }}mm{% endif %}; margin: 0; }
+  .label { width: {{ template.width_mm }}mm; height: {{ template.height_mm }}mm; display: flex; overflow: hidden;
+           background: #fff; color: #000; font-size: {{ template.font_size_pt }}pt; line-height: 1.15; }
+  .label .area { width: {{ template.area_width_mm }}mm; height: 100%; padding: 0.6mm 1mm; display: flex; flex-direction: column;
+                 justify-content: center; gap: 0.3mm; overflow: hidden; }
+  .label .tail { width: {{ template.tail_mm }}mm; flex: none; }
+  .label .bars { height: {{ template.barcode_height_mm }}mm; flex: none; }
+  .label .bars svg { display: block; height: 100%; }
+  .label .line { white-space: nowrap; overflow: hidden; font-weight: 600; }
+  .page { background: #fff; box-sizing: border-box; overflow: hidden;
+          {% if template.media == "sheet" %}width: {{ template.page_width_mm }}mm; height: {{ template.page_height_mm }}mm;
+          padding-block-start: {{ template.margin_top_mm }}mm; padding-inline-start: {{ template.margin_start_mm }}mm;
+          display: grid; grid-template-columns: repeat({{ template.columns }}, {{ template.width_mm }}mm);
+          grid-auto-rows: {{ template.height_mm }}mm; column-gap: {{ template.gap_x_mm }}mm; row-gap: {{ template.gap_y_mm }}mm; align-content: start;
+          {% else %}width: {{ template.width_mm }}mm; height: {{ template.height_mm }}mm;{% endif %} }
+  @media screen {
+    .page { box-shadow: 0 1px 3px rgb(15 23 42 / 0.15), 0 0 0 1px rgb(15 23 42 / 0.06); }
+    .page .label { outline: 1px dashed rgb(148 163 184 / 0.6); }
+    .label .tail { background: repeating-linear-gradient(45deg, #f1f5f9 0 2px, #fff 2px 5px); }
+  }
+  @media print {
+    html, body { background: #fff !important; margin: 0; }
+    .pages { zoom: 1 !important; display: block !important; gap: 0 !important; padding: 0 !important; }
+    .page { break-after: page; box-shadow: none; }
+    .page:last-child { break-after: auto; }
+  }
+</style>{% endlocalize %}

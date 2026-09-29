@@ -1,0 +1,10 @@
+{% load i18n ui %}<li class="flex items-center justify-between gap-3 px-5 py-2.5 text-sm" data-line="{{ line.pk }}">
+  <div class="min-w-0">
+    <span class="num font-medium text-slate-900">{{ line.barcode }}</span>
+    <span class="text-slate-500">{% if line.item %}· <bdi>{{ line.item.category.name }}</bdi>{% if line.item.karat %} · {{ line.item.karat.label }}{% endif %}{% endif %}</span>
+  </div>
+  <div class="flex items-center gap-2">
+    {% if line.expected %}<span class="badge badge-success">{% translate "Counted" %}</span>{% else %}<span class="badge badge-warning">{% translate "Not expected here" %}</span>{% endif %}
+    <button type="button" class="btn btn-ghost text-xs" data-undo="{{ line.pk }}">{% icon "undo-2" "size-4" %}{% translate "Undo" %}</button>
+  </div>
+</li>

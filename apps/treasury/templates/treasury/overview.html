@@ -1,0 +1,155 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Cash & banks" %}{% endblock %}
+{% block page_header %}
+{% can "treasury.transfer.create" as can_transfer %}{% can "treasury.exchange.create" as can_exchange %}{% can "treasury.card_settlement.create" as can_settle %}
+<div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Cash & banks" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Cash boxes, bank accounts and card terminals, with what each one holds now." %}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'treasury-documents' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{% translate "Movements" %}</a>
+    {% if can_settle %}<a href="{% url 'treasury-document-new' %}?kind=card_settlement" class="btn btn-secondary">{% icon "credit-card" "size-4" %}{% translate "Card settlement" %}</a>{% endif %}
+    {% if can_exchange %}<a href="{% url 'treasury-document-new' %}?kind=exchange" class="btn btn-secondary">{% icon "repeat" "size-4" %}{% translate "Exchange" %}</a>{% endif %}
+    {% if can_transfer %}<a href="{% url 'treasury-document-new' %}?kind=transfer" class="btn btn-primary">{% icon "arrow-left-right" "size-4" %}{% translate "Transfer" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% can "treasury.setup.manage" as can_manage %}{% can "treasury.transfer.receive" as can_receive %}
+{% if cash_totals %}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% for code, total in cash_totals %}
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "Cash on hand" %} · {{ code }}</p>
+    <p class="mt-2 text-2xl font-semibold tracking-tight {% if total < 0 %}text-red-600{% else %}text-slate-900{% endif %}"><span class="num">{{ total|num:2 }}</span></p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if incoming %}
+<section class="card mb-6 border-amber-200 bg-amber-50/40">
+  <div class="card-header"><h2 class="card-title">{% icon "inbox" "size-4 inline" %} {% translate "Cash on its way to you" %}</h2></div>
+  <ul class="divide-y divide-amber-100">
+    {% for doc in incoming %}
+    <li class="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="text-sm">
+        <a class="num font-medium text-brand-700 hover:underline" href="{% url 'treasury-document' doc.pk %}">{{ doc.number }}</a>
+        <span class="text-slate-500">· {{ doc.branch.name }} → {{ doc.to_branch.name }} · <bdi>{{ doc.dest_box.label }}</bdi></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="num font-semibold text-slate-900">{{ doc.amount|num:2 }} {{ doc.currency.code }}</span>
+        {% if can_receive %}
+        <form data-api-form data-method="POST" data-endpoint="{% url 'treasury-doc-receive' doc.pk %}" data-success="{% translate 'Received.' %}">
+          <button type="submit" class="btn btn-primary text-xs">{% icon "check" "size-4" %}{% translate "Receive" %}</button>
+        </form>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if outgoing %}
+<section class="card mb-6">
+  <div class="card-header"><h2 class="card-title">{% translate "Sent, not received yet" %}</h2></div>
+  <ul class="divide-y divide-slate-100 text-sm">
+    {% for doc in outgoing %}
+    <li class="flex justify-between gap-3 px-5 py-3"><a class="num text-brand-700 hover:underline" href="{% url 'treasury-document' doc.pk %}">{{ doc.number }}</a>
+      <span class="text-slate-500">{{ doc.to_branch.name }}</span><span class="num font-medium">{{ doc.amount|num:2 }} {{ doc.currency.code }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Cash boxes" %}</h2>
+      {% if can_manage %}<a href="{% url 'treasury-holder-new' 'box' %}" class="btn btn-ghost text-xs">{% icon "plus" "size-4" %}{% translate "Add cash box" %}</a>{% endif %}
+    </div>
+    {% if boxes_by_branch %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Branch" %}</th><th>{% translate "Cash box" %}</th><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Balance" %}</th><th></th></tr></thead>
+        <tbody>
+        {% for branch, rows in boxes_by_branch %}{% for row in rows %}
+          <tr>
+            <td class="text-slate-500">{% if forloop.first %}{{ branch.name }}{% endif %}</td>
+            <td class="font-medium text-slate-900">{{ row.holder.label }} {% if row.holder.is_default %}<span class="badge badge-neutral">{% translate "Default" %}</span>{% endif %}</td>
+            <td>{{ row.currency.code }}</td>
+            <td class="text-end"><span class="num font-medium {% if row.quantity < 0 %}text-red-600{% endif %}">{{ row.quantity|num:2 }}</span></td>
+            <td class="text-end whitespace-nowrap">
+              <a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-statement' 'box' row.holder.pk %}">{% translate "Statement" %}</a>
+              {% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-edit' 'box' row.holder.pk %}">{% translate "Edit" %}</a>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No cash boxes yet" as empty_title %}{% translate "A branch's main cash box opens by itself with its first cash sale." as empty_text %}
+      {% include "components/empty_state.html" with icon="wallet" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Bank accounts" %}</h2>
+      {% if can_manage %}<a href="{% url 'treasury-holder-new' 'bank' %}" class="btn btn-ghost text-xs">{% icon "plus" "size-4" %}{% translate "Add bank account" %}</a>{% endif %}
+    </div>
+    {% if banks %}
+    <ul class="divide-y divide-slate-100">
+      {% for row in banks %}
+      <li class="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <p class="truncate font-medium text-slate-900">{{ row.holder.label }}</p>
+          <p class="truncate text-xs text-slate-500">{{ row.holder.bank_name|default:"" }}{% if row.holder.account_number %} · <span class="num">{{ row.holder.account_number }}</span>{% endif %}</p>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="num me-2 font-medium {% if row.quantity < 0 %}text-red-600{% endif %}">{{ row.quantity|num:2 }} {{ row.currency.code }}</span>
+          <a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-statement' 'bank' row.holder.pk %}">{% translate "Statement" %}</a>
+          {% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-edit' 'bank' row.holder.pk %}">{% translate "Edit" %}</a>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      {% translate "No bank accounts yet" as empty_title %}{% translate "Add one to take bank transfers and card payments." as empty_text %}
+      {% include "components/empty_state.html" with icon="landmark" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Card terminals" %}</h2>
+      {% if can_manage %}<a href="{% url 'treasury-holder-new' 'terminal' %}" class="btn btn-ghost text-xs">{% icon "plus" "size-4" %}{% translate "Add card terminal" %}</a>{% endif %}
+    </div>
+    {% if terminals %}
+    <ul class="divide-y divide-slate-100">
+      {% for row in terminals %}
+      <li class="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <p class="truncate font-medium text-slate-900">{{ row.holder.label }}</p>
+          <p class="truncate text-xs text-slate-500">{{ row.holder.bank_account.label }} · {% if row.holder.branch %}{{ row.holder.branch.name }}{% else %}{% translate "Any branch" %}{% endif %} · {% translate "Fee" %} <span class="num">{{ row.holder.fee_rate|percent }}</span></p>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="me-2 text-end"><p class="text-xs text-slate-500">{% translate "Unsettled" %}</p><p class="num font-medium">{{ row.quantity|num:2 }} {{ row.currency.code }}</p></div>
+          {% can "treasury.card_settlement.create" as can_settle %}
+          {% if can_settle and row.quantity > 0 %}<a class="btn btn-secondary text-xs" href="{% url 'treasury-document-new' %}?kind=card_settlement&source={{ row.holder.pk }}">{% translate "Settle" %}</a>{% endif %}
+          <a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-statement' 'terminal' row.holder.pk %}">{% translate "Statement" %}</a>
+          {% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-edit' 'terminal' row.holder.pk %}">{% translate "Edit" %}</a>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      {% translate "No card terminals yet" as empty_title %}{% translate "Card payments need a terminal paying into a bank account." as empty_text %}
+      {% include "components/empty_state.html" with icon="credit-card" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

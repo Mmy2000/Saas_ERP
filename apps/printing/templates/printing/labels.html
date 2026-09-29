@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Print labels" %}{% endblock %}
+{% block head %}{% include "printing/_label_style.html" %}{% endblock %}
+{% block body %}
+<div class="min-h-full bg-slate-100">
+  <header class="sticky top-0 z-10 border-b border-slate-200 bg-white" data-no-print>
+    <form method="get" class="mx-auto flex max-w-6xl flex-wrap items-end gap-3 px-4 py-3">
+      {% for key, value in request.GET.lists %}{% if key != "template" and key != "copies" and key != "skip" %}{% for v in value %}<input type="hidden" name="{{ key }}" value="{{ v }}">{% endfor %}{% endif %}{% endfor %}
+      <a href="{{ back }}" class="btn btn-ghost"><span class="rtl:rotate-180">←</span>{% translate "Back" %}</a>
+      <label class="min-w-56 flex-1"><span class="form-label">{% translate "Label template" %}</span>
+        <select name="template" class="form-input" onchange="this.form.submit()">
+          {% for t in templates %}<option value="{{ t.pk }}" {% if t.pk == template.pk %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+        </select></label>
+      <label><span class="form-label">{% translate "Copies of each" %}</span>
+        <input name="copies" type="number" min="1" max="20" value="{{ copies }}" class="form-input num w-24 text-start"></label>
+      {% if template.media == "sheet" %}
+      <label><span class="form-label">{% translate "Skip used labels" %}</span>
+        <input name="skip" type="number" min="0" max="{{ template.per_page|add:'-1' }}" value="{{ skip }}" class="form-input num w-24 text-start"></label>
+      {% endif %}
+      <button type="submit" class="btn btn-secondary">{% translate "Update" %}</button>
+      <div class="ms-auto flex gap-2">
+        {% if template.media == "roll" and items %}<a class="btn btn-secondary" href="{% url 'labels-zpl' %}?{{ request.GET.urlencode }}{% if not request.GET.template %}&template={{ template.pk }}{% endif %}">{% icon "receipt" "size-4" %}{% translate "Zebra (ZPL)" %}</a>{% endif %}
+        <button type="button" class="btn btn-primary" data-print {% if not items %}disabled{% endif %}>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+      </div>
+    </form>
+    <p class="mx-auto max-w-6xl px-4 pb-3 text-sm text-slate-500">
+      {% blocktranslate trimmed count counter=count %}{{ counter }} label{% plural %}{{ counter }} labels{% endblocktranslate %}
+      · {{ template.width_mm|floatformat:"-2" }} × {{ template.height_mm|floatformat:"-2" }} {% translate "mm" %} · {{ template.get_media_display }}
+      {% if template.media == "roll" %} · {% translate "Set the printer's paper size to the label size and margins to none." %}{% endif %}
+    </p>
+  </header>
+  {% if items %}
+  <main class="pages flex flex-col items-center gap-6 p-8" style="zoom: {% if template.media == 'roll' %}2{% else %}1{% endif %}">
+    {% for page in pages %}<div class="page">{% for label in page.cells %}{% if label %}{% include "printing/_label.html" %}{% else %}<div class="label"></div>{% endif %}{% endfor %}</div>{% endfor %}
+  </main>
+  {% else %}
+  <div class="mx-auto max-w-lg p-8" data-no-print>
+    <div class="card">{% translate "No pieces chosen" as empty_title %}{% translate "Pick pieces on the stock page, or open this from a purchase or a transfer." as empty_text %}
+      {% include "components/empty_state.html" with icon="scan-barcode" title=empty_title text=empty_text %}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

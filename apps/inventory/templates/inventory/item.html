@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ item.barcode }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'stock' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Stock" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{{ item.barcode }}</span></h1>
+    {% include "inventory/_status.html" with item=item %}
+    {% can "inventory.item.print_label" as can_label %}
+    {% if can_label %}<a href="{% url 'labels' %}?item={{ item.pk }}" class="btn btn-secondary ms-auto">{% icon "printer" "size-4" %}{% translate "Print label" %}</a>{% endif %}
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><bdi>{{ item.category.name }}</bdi> · <bdi>{{ item.karat.label|default:"—" }}</bdi> · <bdi>{{ item.branch.name }}</bdi></p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "inventory.item.view_cost" as can_cost %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Piece" %}</h2></div>
+    <dl class="divide-y divide-slate-100 text-sm">
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Gross weight" %}</dt><dd class="num font-semibold">{{ item.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Metal weight" %}</dt><dd class="num">{{ item.metal_weight_g|num:3 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Fine weight" %}</dt><dd class="num">{{ item.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Sale making / g" %}</dt><dd class="num">{{ item.list_making_rate|num:2 }}</dd></div>
+      {% if can_cost %}
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost / g" %}</dt><dd class="num">{{ item.cost_making_rate|num:2 }} {{ item.cost_currency.code }}</dd></div>
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost" %}</dt><dd class="num">{{ item.cost_amount|num:2 }}</dd></div>
+      {% endif %}
+      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Supplier" %}</dt><dd>{{ item.supplier.name|default:"—" }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "History" %}</h2></div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Date" %}</th><th>{% translate "What happened" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Document" %}</th></tr></thead>
+        <tbody>
+        {% for movement in movements %}
+          <tr>
+            <td><span class="num">{{ movement.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+            <td>{{ movement.get_movement_type_display }}</td>
+            <td>{{ movement.branch.name }}</td>
+            <td>{% if movement.doc_url %}<a class="text-brand-700 hover:underline" href="{{ movement.doc_url }}"><bdi>{{ movement.doc_title }}</bdi> <span class="num">{{ movement.doc_number }}</span></a>{% else %}—{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

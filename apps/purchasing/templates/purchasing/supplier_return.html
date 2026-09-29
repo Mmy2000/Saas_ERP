@@ -1,0 +1,74 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ doc.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'supplier-returns' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Returns to suppliers" %}</a>
+  <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "inventory.item.view_cost" as can_cost %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div>
+        <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{{ doc.branch.name }}</p>
+      </div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{% translate "Return to supplier" %}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ doc.number }}</p>
+        <p class="num text-sm text-slate-500">{{ doc.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</div>
+      </div>
+    </header>
+    <dl class="border-b border-slate-100 px-6 py-4 text-sm">
+      <div class="flex justify-between"><dt class="text-slate-500">{{ doc.get_seller_role_display }}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{% url doc.seller_page doc.supplier_id %}">{{ doc.supplier.name }}</a></dd></div>
+    </dl>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th>
+          {% if can_cost %}<th class="text-end">{% translate "Making cost" %}</th>{% endif %}</tr></thead>
+        <tbody>
+        {% for line in lines %}
+          <tr>
+            <td>{% if line.item %}<a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' line.item_id %}">{{ line.item.barcode }}</a> <span class="text-xs text-slate-500"><bdi>{{ line.category.name }}</bdi></span>{% else %}<bdi>{{ line.category.name }}</bdi> <span class="badge badge-neutral">{% translate "By weight" %}</span>{% endif %}</td>
+            <td>{{ line.karat.label|default:"—" }}</td>
+            <td class="text-end"><span class="num">{{ line.qty }}</span></td>
+            <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.fine_weight_g|num:4 }}</span></td>
+            {% if can_cost %}<td class="text-end"><span class="num">{{ line.cost_amount|num:2 }}</span></td>{% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="border-t-2 border-slate-200 font-semibold">
+          <td class="px-5 py-3" colspan="2">{% translate "Total" %}</td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ doc.total_qty }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ doc.total_gross_weight_g|num:3 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ doc.total_fine_weight_g|num:4 }}</span></td>
+          {% if can_cost %}<td class="px-5 py-3 text-end"><span class="num">{{ doc.total_cost|num:2 }}</span></td>{% endif %}
+        </tr></tfoot>
+      </table>
+    </div>
+    {% if doc.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ doc.note }}</p>{% endif %}
+    {% if doc.status == "voided" and doc.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ doc.void_reason }}</p>{% endif %}
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Handed over by" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+    </div>
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% can "purchasing.return.void" doc.branch as can_void %}
+    {% if can_void and doc.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling brings the goods back into stock and restores what you owe the supplier." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel" %}</button>
+    </form>
+    {% endif %}
+    {% if doc.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ doc.journal_entry.number }}</dd></div></dl></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

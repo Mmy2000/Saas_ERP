@@ -1,0 +1,1 @@
+{% if item.status == "in_stock" %}<span class="badge badge-success">{{ item.get_status_display }}</span>{% elif item.status == "sold" or item.status == "voided" or item.status == "returned_to_supplier" %}<span class="badge badge-neutral">{{ item.get_status_display }}</span>{% else %}<span class="badge badge-warning">{{ item.get_status_display }}</span>{% endif %}

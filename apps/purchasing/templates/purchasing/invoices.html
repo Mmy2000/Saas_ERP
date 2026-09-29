@@ -1,0 +1,65 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Purchases" %}{% endblock %}
+{% block page_header %}
+{% can "purchasing.invoice.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Purchases" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Supplier invoices. Posting one brings its goods into stock and records what you owe." %}</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'supplier-returns' %}" class="btn btn-secondary">{% icon "undo-2" "size-4" %}{% translate "Returns to suppliers" %}</a>
+    {% if can_create %}<a href="{% url 'invoice-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New purchase" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <select name="status" class="form-input sm:w-52" aria-label="{% translate 'Status' %}">
+      <option value="">{% translate "All" %}</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th>
+        <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Making charges" %}</th>
+        <th>{% translate "Status" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for invoice in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ invoice.number|default:"—" }}</span>
+            {% if invoice.supplier_reference %}<div class="text-xs text-slate-400">{{ invoice.supplier_reference }}</div>{% endif %}</td>
+          <td><span class="num">{{ invoice.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ invoice.supplier.name }}{% if invoice.seller_role == "trade_account" %} <span class="badge badge-brand">{{ invoice.get_seller_role_display }}</span>{% endif %}</td>
+          <td class="text-end"><span class="num">{{ invoice.weight|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ invoice.making|num:2 }}</span> <span class="text-xs text-slate-500">{{ invoice.currency.code }}</span></td>
+          <td>{% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'invoice-detail' invoice.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No purchases yet" as empty_title %}
+    {% translate "Record a supplier invoice to bring gold into stock." as empty_text %}
+    {% include "components/empty_state.html" with icon="truck" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

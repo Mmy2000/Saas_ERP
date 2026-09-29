@@ -1,0 +1,10 @@
+{% load i18n %}{% get_available_languages as languages %}
+<form method="post" action="{% url 'set_language' %}" class="segmented text-xs {{ lang_class|default:'' }}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% for code, name in languages %}{% get_language_info for code as info %}
+    <button type="submit" name="language" value="{{ code }}" lang="{{ code }}"
+            class="segment px-2.5 py-0.5 {% if code == LANGUAGE_CODE %}segment-active{% endif %}"
+            {% if code == LANGUAGE_CODE %}aria-pressed="true"{% endif %}>{{ info.name_local }}</button>
+  {% endfor %}
+</form>

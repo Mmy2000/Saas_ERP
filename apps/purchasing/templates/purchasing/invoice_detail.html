@@ -1,0 +1,109 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% if invoice.number %}{{ invoice.number }}{% else %}{% translate "Draft purchase" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'invoices' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Purchases" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{% if invoice.number %}{{ invoice.number }}{% else %}{% translate "Draft purchase" %}{% endif %}</span></h1>
+    {% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><a class="font-medium text-slate-700 hover:underline" href="{% url invoice.seller_page invoice.supplier_id %}">{{ invoice.supplier.name }}</a>{% if invoice.seller_role == "trade_account" %} <span class="badge badge-brand">{{ invoice.get_seller_role_display }}</span>{% endif %} · <span class="num">{{ invoice.business_date|date:"DATE_FORMAT" }}</span> · {{ invoice.branch.name }}{% if invoice.supplier_reference %} · {% translate "their no." %} <span class="num">{{ invoice.supplier_reference }}</span>{% endif %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "purchasing.invoice.create" as can_edit %}{% can "purchasing.invoice.post" as can_post %}{% can "purchasing.invoice.void" as can_void %}
+{% can "inventory.item.view_cost" as can_cost %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Goods" %}</h2></div>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr>
+            <th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th>
+            <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine (g)" %}</th>
+            {% if can_cost %}<th class="text-end">{% translate "Making cost" %}</th>{% endif %}
+          </tr></thead>
+          <tbody>
+          {% for line in lines %}
+            <tr>
+              <td class="font-medium text-slate-900">{{ line.category.name }}</td>
+              <td>{{ line.karat.label|default:"—" }}</td>
+              <td class="text-end"><span class="num">{{ line.qty }}</span></td>
+              <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.fine_weight_g|num:4 }}</span></td>
+              {% if can_cost %}<td class="text-end"><span class="num">{{ line.making_cost_amount|num:2 }}</span> <span class="text-xs text-slate-500">{{ invoice.currency.code }}</span>
+                <div class="text-xs text-slate-400"><span class="num">{{ line.making_cost_rate|num:2 }}</span> / {% translate "g" %}</div></td>{% endif %}
+            </tr>
+            {% if line.pieces.all %}
+            <tr><td colspan="{% if can_cost %}6{% else %}5{% endif %}" class="bg-slate-50/60">
+              <div class="flex flex-wrap gap-2">
+              {% for piece in line.pieces.all %}
+                {% if piece.item %}<a href="{% url 'stock-item' piece.item_id %}" class="badge badge-brand"><span class="num">{{ piece.item.barcode }}</span> · <span class="num">{{ piece.gross_weight_g|num:3 }}</span> {% translate "g" %}</a>
+                {% else %}<span class="badge badge-neutral"><span class="num">{{ piece.gross_weight_g|num:3 }}</span> {% translate "g" %}</span>{% endif %}
+              {% endfor %}
+              </div>
+            </td></tr>
+            {% endif %}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% if invoice.note %}<section class="card card-body text-sm text-slate-600">{{ invoice.note|linebreaksbr }}</section>{% endif %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Summary" %}</h2></div>
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num font-medium">{{ totals.pieces }}</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Total weight" %}</dt><dd class="num font-medium">{{ totals.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
+        {% for metal, fine in totals.fine_by_metal.items %}
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% if metal == "gold" %}{% translate "Gold owed (fine g)" %}{% else %}{% translate "Silver owed (fine g)" %}{% endif %}</dt><dd class="num font-semibold text-slate-900">{{ fine|num:4 }}</dd></div>
+        {% endfor %}
+        {% if can_cost %}
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making charges" %}</dt><dd class="num font-semibold text-slate-900">{{ totals.making_cost_amount|num:2 }} {{ invoice.currency.code }}</dd></div>
+        {% if invoice.fx_rate %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Rate" %}</dt><dd class="num">{{ invoice.fx_rate|num:4 }} {{ home_currency }}</dd></div>{% endif %}
+        {% endif %}
+        {% if invoice.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd><a class="num text-brand-700 hover:underline" href="{% url 'journal' %}">{{ invoice.journal_entry.number }}</a></dd></div>{% endif %}
+      </dl>
+    </section>
+
+    {% if invoice.status == "draft" %}
+      {% if can_post %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}post/" data-success="{% translate 'Posted. The goods are in stock.' %}" class="card card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <p class="text-sm text-slate-600">{% translate "Posting gives every piece a barcode, adds the goods to stock and records what you owe the supplier. It cannot be edited afterwards." %}</p>
+        <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Post purchase" %}</button>
+      </form>
+      {% endif %}
+      {% if can_edit %}
+      <div class="flex gap-3">
+        <a href="{% url 'invoice-edit' invoice.pk %}" class="btn btn-secondary flex-1">{% icon "pencil" "size-4" %}{% translate "Edit draft" %}</a>
+        <form data-api-form data-method="DELETE" data-endpoint="{{ endpoint }}" data-redirect="{% url 'invoices' %}" data-success="{% translate 'Draft deleted.' %}">
+          <button type="submit" class="btn btn-ghost text-red-600 hover:bg-red-50">{% translate "Delete" %}</button>
+        </form>
+      </div>
+      {% endif %}
+    {% elif invoice.status == "posted" %}
+      {% can "inventory.item.print_label" as can_label %}
+      {% if can_label %}<a href="{% url 'labels' %}?invoice={{ invoice.pk }}" class="btn btn-secondary w-full">{% icon "printer" "size-4" %}{% translate "Print labels" %}</a>{% endif %}
+      {% if can_void %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Purchase cancelled.' %}" class="card card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <p class="text-sm text-slate-600">{% translate "Cancelling takes the goods back out of stock and reverses the amounts owed. Only possible while every piece is still in stock." %}</p>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel purchase" %}</button>
+      </form>
+      {% endif %}
+    {% elif invoice.status == "voided" %}
+      <section class="card card-body text-sm text-slate-600">
+        {% translate "Cancelled" %} <span class="num">{{ invoice.voided_at|date:"SHORT_DATETIME_FORMAT" }}</span>{% if invoice.voided_by %} · {{ invoice.voided_by.display_name }}{% endif %}
+        {% if invoice.void_reason %}<p class="mt-2 text-slate-500">{{ invoice.void_reason }}</p>{% endif %}
+      </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

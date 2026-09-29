@@ -1,0 +1,69 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% if role %}{% translate "Edit role" %}{% else %}{% translate "New role" %}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'iam/js/forms.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'roles' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Roles" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if role %}{{ role.label }}{% else %}{% translate "New role" %}{% endif %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-shape="role" data-endpoint="{{ endpoint }}"
+      data-method="{{ method }}" data-redirect="{% url 'roles' %}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5">
+        <div>
+          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <input id="f-name" name="name" class="form-input" value="{{ role.name|default:'' }}" required maxlength="100">
+          <p class="form-error" data-error-for="name"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-desc">{% translate "Description" %}</label>
+          <input id="f-desc" name="description" class="form-input" value="{{ role.description|default:'' }}" maxlength="300">
+        </div>
+      </div>
+    </section>
+
+    {% for group, definitions in groups %}
+    <section class="card" data-permission-group>
+      <div class="card-header">
+        <h2 class="card-title">{{ group }}</h2>
+        <label class="flex items-center gap-2 text-xs text-slate-500">
+          <input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-group-toggle>{% translate "All" %}
+        </label>
+      </div>
+      <div class="card-body grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {% for definition in definitions %}
+        <label class="flex items-start gap-3 rounded-lg p-2 hover:bg-slate-50">
+          <input type="checkbox" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600" data-permission="{{ definition.code }}"
+                 {% if definition.code in granted %}checked{% endif %}>
+          <span>
+            <span class="block text-sm text-slate-900">{{ definition.label }}</span>
+            <span class="block text-xs text-slate-400" dir="ltr">{{ definition.code }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+    <p class="form-error" data-error-for="permissions"></p>
+  </div>
+  <aside class="space-y-4">
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'roles' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+    <p class="flex gap-2 text-xs text-slate-500">{% icon "info" "size-4 shrink-0" %}{% translate "You can only grant permissions you have yourself." %}</p>
+  </aside>
+</form>
+{% if role and not role.is_system %}
+<form class="mt-6" data-api-form data-method="DELETE" data-endpoint="{{ endpoint }}" data-redirect="{% url 'roles' %}"
+      data-success="{% translate 'Role deleted.' %}">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  <button type="submit" class="btn btn-ghost text-red-600 hover:bg-red-50 hover:text-red-700">{% translate "Delete this role" %}</button>
+</form>
+{% endif %}
+{% endblock %}

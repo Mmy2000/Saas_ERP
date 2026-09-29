@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Returns to suppliers" %}{% endblock %}
+{% block page_header %}
+{% can "purchasing.return.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <a href="{% url 'invoices' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Purchases" %}</a>
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Returns to suppliers" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Goods sent back to a supplier. What you owe them goes down by the gold and the making cost." %}</p>
+  </div>
+  {% if can_create %}<a href="{% url 'supplier-return-new' %}" class="btn btn-primary">{% icon "undo-2" "size-4" %}{% translate "Return goods" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th>
+        <th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for doc in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ doc.number }}</span></td>
+          <td><span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ doc.supplier.name }}{% if doc.seller_role == "trade_account" %} <span class="badge badge-brand">{{ doc.get_seller_role_display }}</span>{% endif %}</td>
+          <td class="text-end"><span class="num">{{ doc.total_qty }}</span></td>
+          <td class="text-end"><span class="num">{{ doc.total_gross_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ doc.total_fine_weight_g|num:4 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'supplier-return' doc.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing returned yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="undo-2" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

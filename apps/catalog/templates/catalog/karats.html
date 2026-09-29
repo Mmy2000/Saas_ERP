@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Karats" %}{% endblock %}
+{% block page_header %}
+  {% translate "Karats" as title %}{% translate "Purity of each karat. Every weight conversion in the system uses these values." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Karat" %}</th><th>{% translate "Metal" %}</th>
+        <th class="text-end">{% translate "Fineness (‰)" %}</th><th class="text-end">{% translate "Equivalent to 21K" %}</th>
+        <th>{% translate "Status" %}</th>
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ row.karat.label }}
+            {% if row.karat.is_reference %}<span class="badge badge-brand ms-2">{% translate "Reference" %}</span>{% endif %}</td>
+          <td>{{ row.karat.metal.get_code_display }}</td>
+          <td class="text-end"><span class="num">{{ row.karat.fineness|num:3 }}</span></td>
+          <td class="text-end">{% if row.ratio %}<span class="num">× {{ row.ratio|num:4 }}</span>{% else %}—{% endif %}</td>
+          <td>{% if row.karat.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="flex items-center gap-2 border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+    {% icon "info" "size-4" %}{% translate "Balances are kept in pure (fine) grams and shown as 21K-equivalent." %}
+  </p>
+</section>
+{% endblock %}

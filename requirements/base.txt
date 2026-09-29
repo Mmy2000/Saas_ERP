@@ -1,0 +1,10 @@
+# Runtime dependencies (ADR-016: Django 5.2 LTS, supported to April 2028).
+Django==5.2.17
+djangorestframework==3.18.1
+django-filter==26.1
+drf-spectacular==0.30.0
+psycopg[binary]==3.3.6
+django-environ==0.14.0
+argon2-cffi==25.1.0
+cryptography==50.0.1
+phonenumbers==9.0.40

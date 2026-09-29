@@ -1,0 +1,32 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Label templates" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Label templates" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Label sizes and what is printed on each piece's tag." %}</p>
+  </div>
+  <a href="{% url 'label-template-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New template" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Size" %}</th><th>{% translate "Printer" %}</th><th>{% translate "Layout" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for t in templates %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ t.name }} {% if t.is_default %}<span class="badge badge-neutral">{% translate "Default" %}</span>{% endif %}</td>
+          <td><span class="num">{{ t.width_mm|floatformat:"-2" }} × {{ t.height_mm|floatformat:"-2" }}</span> {% translate "mm" %}</td>
+          <td>{{ t.get_media_display }}{% if t.media == "sheet" %} · <span class="num">{{ t.columns }} × {{ t.rows }}</span>{% endif %}</td>
+          <td>{{ t.get_layout_display }}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'label-template-edit' t.pk %}">{% translate "Edit" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

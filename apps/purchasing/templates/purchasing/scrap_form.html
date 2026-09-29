@@ -1,0 +1,105 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% if mode == "buy" %}{% translate "Buy scrap" %}{% else %}{% translate "Sell scrap" %}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'purchasing/js/scrap.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'scrap' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Scrap gold" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if mode == "buy" %}{% translate "Buy scrap" %}{% else %}{% translate "Sell scrap" %}{% endif %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% if mode == "buy" %}{% translate "Priced at today's scrap price per karat, less the loss." %}{% else %}{% translate "Out of the branch's scrap stock, at the price agreed per gram." %}{% endif %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if mode == "buy" and not board %}
+<div class="card card-body text-sm text-red-700">{% translate "No gold price has been published yet." %}</div>
+{% else %}
+<div id="scrap" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-mode="{{ mode }}" data-quote-url="{{ quote_url|default:'' }}"
+     data-post-url="{{ post_url }}" data-detail-url="{{ detail_url }}" data-saved="{% translate 'Recorded.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div>
+          <span class="form-label">{% if mode == "buy" %}{% translate "Seller" %}{% else %}{% translate "Buyer" %}{% endif %}</span>
+          <div class="segmented">
+            {% if mode == "buy" %}
+            <label><input type="radio" name="who" value="walk-in" class="peer sr-only" data-who checked>
+              <span class="segment">{% translate "Walk-in" %}</span></label>
+            {% endif %}
+            <label><input type="radio" name="who" value="customer" class="peer sr-only" data-who>
+              <span class="segment">{% translate "Customer" %}</span></label>
+            <label><input type="radio" name="who" value="supplier" class="peer sr-only" data-who {% if mode == "sell" %}checked{% endif %}>
+              <span class="segment">{% translate "Supplier" %}</span></label>
+          </div>
+        </div>
+        {% if mode == "buy" %}
+        <div class="grid grid-cols-1 gap-5 sm:col-span-2 sm:grid-cols-3" data-who-for="walk-in">
+          <div><label class="form-label" for="f-name">{% translate "Name" %}</label><input id="f-name" class="form-input" data-seller-name maxlength="200"></div>
+          <div><label class="form-label" for="f-phone">{% translate "Phone" %}</label><input id="f-phone" class="form-input num w-full text-start" data-seller-phone maxlength="30"></div>
+          <div><label class="form-label" for="f-nid">{% translate "National ID" %}</label><input id="f-nid" class="form-input num w-full text-start" data-seller-id autocomplete="off" maxlength="40"></div>
+        </div>
+        {% endif %}
+        <div class="hidden sm:col-span-2" data-who-for="customer">
+          <select class="form-input" data-party="customer" data-remote="{% url 'customer-list' %}" data-label-field="name" aria-label="{% translate 'Customer' %}"></select>
+        </div>
+        <div class="hidden sm:col-span-2" data-who-for="supplier">
+          <select class="form-input" data-party="supplier" data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}"></select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Gold" %}</h2>
+        <button type="button" class="btn btn-ghost text-xs" data-add-line>{% icon "plus" "size-4" %}{% translate "Add a line" %}</button></div>
+      <div class="divide-y divide-slate-100" data-lines></div>
+      <template id="scrap-line">
+        <div class="grid grid-cols-2 items-start gap-3 p-4 sm:grid-cols-[1fr_7rem_7rem_8rem_7rem_auto]" data-line>
+          <div class="col-span-2 sm:col-span-1">
+            <select class="form-input" data-karat aria-label="{% translate 'Karat' %}">
+              {% if mode == "buy" %}{% for k in karats %}<option value="{{ k.pk }}" {% if k.code == 21 %}selected{% endif %}>{{ k.label }}</option>{% endfor %}
+              {% else %}{% for balance in stock %}<option value="{{ balance.lot.karat_id }}" data-branch="{{ balance.lot.branch_id }}">{{ balance.lot.karat.label }} — {{ balance.gross_weight_g|num:3 }} {% translate "g" %}</option>{% endfor %}{% endif %}
+            </select>
+            <p class="form-error" data-line-error></p>
+          </div>
+          <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Weight (g)' %}" data-gross aria-label="{% translate 'Weight (g)' %}">
+          {% if mode == "buy" %}<input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Loss (g)' %}" data-loss aria-label="{% translate 'Loss (g)' %}">
+          {% else %}<span class="hidden sm:block"></span>{% endif %}
+          <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Price / g' %}" data-price aria-label="{% translate 'Price / g' %}" {% if mode == "buy" and not can_override %}readonly{% endif %}>
+          <span class="num self-center text-end font-medium text-slate-900" data-amount>—</span>
+          <button type="button" class="btn btn-ghost text-slate-400" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+        </div>
+      </template>
+    </section>
+
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3" data-payment>
+        <div><label class="form-label" for="f-method">{% if mode == "buy" %}{% translate "Paid" %}{% else %}{% translate "Received" %}{% endif %}</label>
+          <select id="f-method" class="form-input" data-method>
+            <option value="cash">{% translate "Cash" %}</option>
+            <option value="bank_transfer">{% translate "Bank transfer" %}</option>
+            <option value="account">{% translate "On their account" %}</option>
+          </select></div>
+        <input type="hidden" data-currency value="{{ home_currency }}">
+        {% include "treasury/holder_selects.html" %}
+        <div class="sm:col-span-3"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" class="form-input" data-note></div>
+      </div>
+    </section>
+  </div>
+
+  <aside>
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Weight (g)" %}</dt><dd class="num" data-total-weight>0.000</dd></div>
+        <div class="flex justify-between px-5 py-4 text-base font-semibold"><dt>{% if mode == "buy" %}{% translate "To pay" %}{% else %}{% translate "To receive" %}{% endif %}</dt><dd><span class="num" data-total>0.00</span> {{ home_currency }}</dd></div>
+      </dl>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "check" "size-4" %}{% if mode == "buy" %}{% translate "Buy" %}{% else %}{% translate "Sell" %}{% endif %}</button>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

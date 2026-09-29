@@ -1,0 +1,136 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'sales/js/returns.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'sales' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Sales" %}</a>
+  <div class="flex gap-2">
+    {% can "sales.invoice.create" as can_sell %}
+    {% if can_sell %}<a href="{% url 'sale-new' %}" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "New sale" %}</a>{% endif %}
+    <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div>
+        <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{{ invoice.branch.name }}{% if profile.phone %} · <span class="num">{{ profile.phone }}</span>{% endif %}</p>
+        {% if profile.tax_registration_no %}<p class="text-xs text-slate-400">{% translate "Tax no." %} <span class="num">{{ profile.tax_registration_no }}</span></p>{% endif %}
+      </div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{% translate "Sales invoice" %}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ invoice.number }}</p>
+        <p class="num text-sm text-slate-500">{{ invoice.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}</div>
+      </div>
+    </header>
+    <div class="flex flex-wrap justify-between gap-4 px-6 py-4 text-sm">
+      <div><span class="text-slate-500">{% translate "Customer" %}:</span> <span class="font-medium text-slate-900">{{ invoice.buyer|default:_("Walk-in customer") }}</span>
+        {% if invoice.customer_phone %}<span class="num text-slate-500">· {{ invoice.customer_phone }}</span>{% endif %}</div>
+      <div><span class="text-slate-500">{% translate "Payment" %}:</span> {{ invoice.get_payment_terms_display }}</div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>
+          <th>{% translate "Piece" %}</th><th class="text-end">{% translate "Weight (g)" %}</th>
+          <th class="text-end">{% translate "Gold / g" %}</th><th class="text-end">{% translate "Making / g" %}</th><th class="text-end">{% translate "Total" %}</th>
+        </tr></thead>
+        <tbody>
+        {% for line in lines %}
+          <tr>
+            <td>{% if line.item_id %}<div class="num font-medium">{{ line.item.barcode }}</div>{% else %}<div class="font-medium">{% translate "By weight" %}{% if line.qty %} · <span class="num">{{ line.qty }}</span> {% translate "pcs" %}{% endif %}</div>{% endif %}<div class="text-xs text-slate-500"><bdi>{{ line.category.name }}</bdi> · <bdi>{{ line.karat.label }}</bdi></div></td>
+            <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.metal_price_per_g|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.making_rate_net|num:2 }}</span>{% if line.discount_rate %}<div class="text-xs text-emerald-700"><span class="num">−{{ line.discount_amount|num:2 }}</span></div>{% endif %}</td>
+            <td class="text-end font-medium"><span class="num">{{ line.line_total|num:2 }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if trade_ins %}
+    <div class="border-t border-slate-100 px-6 py-4">
+      <p class="mb-2 text-sm font-semibold text-slate-900">{% translate "Scrap gold received" %}</p>
+      {% for trade in trade_ins %}
+      <div class="flex justify-between text-sm"><span><bdi>{{ trade.karat.label }}</bdi> · <span class="num">{{ trade.net_weight_g|num:3 }}</span> {% translate "g" %} × <span class="num">{{ trade.price_per_g|num:2 }}</span></span><span class="num">{{ trade.amount|num:2 }}</span></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <dl class="border-t border-slate-100 px-6 py-4 text-sm">
+      {% if invoice.discount_amount %}<div class="flex justify-between py-1"><dt class="text-slate-500">{% translate "Discount" %}</dt><dd class="num">−{{ invoice.discount_amount|num:2 }}</dd></div>{% endif %}
+      <div class="flex justify-between py-1"><dt class="text-slate-500">{% translate "Total" %}</dt><dd class="num font-medium">{{ invoice.total_amount|num:2 }} {{ home_currency }}</dd></div>
+      {% if invoice.trade_in_amount %}<div class="flex justify-between py-1"><dt class="text-slate-500">{% translate "Scrap trade-in" %}</dt><dd class="num">−{{ invoice.trade_in_amount|num:2 }}</dd></div>{% endif %}
+      {% for payment in payments %}
+      <div class="flex justify-between py-1"><dt class="text-slate-500">{{ payment.get_kind_display }}{% if payment.currency.code != home_currency %} ({{ payment.currency.code }} <span class="num">{{ payment.amount|num:2 }}</span> × <span class="num">{{ payment.fx_rate|num:4 }}</span>){% endif %}</dt><dd class="num">{{ payment.functional_amount|num:2 }}</dd></div>
+      {% endfor %}
+      {% if invoice.change_amount %}<div class="flex justify-between py-1 font-semibold"><dt>{% translate "Change given" %}</dt><dd class="num">{{ invoice.change_amount|num:2 }}</dd></div>{% endif %}
+      {% if invoice.balance_amount %}<div class="flex justify-between py-1 font-semibold"><dt>{% translate "On the customer's account" %}</dt><dd class="num">{{ invoice.balance_amount|num:2 }}</dd></div>{% endif %}
+    </dl>
+    <p class="border-t border-slate-100 px-6 py-3 text-center text-xs text-slate-400">{% translate "Thank you for your visit." %}</p>
+  </article>
+
+  <aside class="space-y-6" data-no-print>
+    {% if invoice.status == "posted" %}
+    {% can "sales.invoice.void" as can_void %}
+    {% if can_void %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Sale cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling puts the pieces back in stock, takes the scrap out and reverses the entry." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel sale" %}</button>
+    </form>
+    {% endif %}
+    {% endif %}
+    {% can "sales.return.create" as can_return %}
+    {% if can_return and returnable %}
+    <form data-api-form data-shape="sales-return" data-method="POST" data-endpoint="{% url 'sales-return-list' %}"
+          data-redirect="{% url 'sales' %}returns/{id}/" data-success="{% translate 'Return recorded.' %}" class="card" data-invoice="{{ invoice.pk }}">
+      <div class="card-header"><h2 class="card-title">{% translate "Take a return" %}</h2></div>
+      <div class="card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% for line in lines %}{% if line.pk not in returned %}
+        <label class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-2.5 text-sm">
+          <span class="flex items-center gap-2"><input type="checkbox" class="size-4 accent-brand-600" data-return-line="{{ line.pk }}">{% if line.item_id %}<span class="num">{{ line.item.barcode }}</span>{% else %}<span><bdi>{{ line.category.name }}</bdi> · <span class="num">{{ line.gross_weight_g|num:3 }}</span> {% translate "g" %}</span>{% endif %}</span>
+          <span class="num">{{ line.line_total|num:2 }}</span>
+        </label>
+        {% endif %}{% endfor %}
+        <p class="form-error" data-error-for="lines"></p>
+        <label class="block"><span class="form-label">{% translate "Refund" %}</span>
+          <select name="refund_method" class="form-input">
+            <option value="cash">{% translate "Cash" %}</option>
+            {% if invoice.customer_id %}<option value="customer_credit">{% translate "Customer's account" %}</option>{% endif %}
+          </select></label>
+        <label class="block"><span class="form-label">{% translate "Deduction (kept)" %}</span>
+          <input name="deduction_amount" class="form-input num w-full text-start" inputmode="decimal" placeholder="0.00"></label>
+        <p class="form-error" data-error-for="deduction_amount"></p>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Record return" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if returns %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Returns" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for r in returns %}<li class="flex items-center justify-between px-5 py-3"><a class="num text-brand-700 hover:underline" href="{% url 'sale-return-detail' r.pk %}">{{ r.number }}</a>
+          <span>{% include "components/doc_status.html" with status=r.status label=r.get_status_display %} <span class="num">{{ r.refund_amount|num:2 }}</span></span></li>{% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+    {% if invoice.status == "voided" %}
+    <section class="card card-body text-sm text-slate-600">{% translate "Cancelled" %} <span class="num">{{ invoice.voided_at|date:"SHORT_DATETIME_FORMAT" }}</span>{% if invoice.void_reason %}<p class="mt-2 text-slate-500">{{ invoice.void_reason }}</p>{% endif %}</section>
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Sold by" %}</dt><dd>{{ invoice.sold_by.display_name|default:"—" }}</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Price board" %}</dt><dd class="num">{{ invoice.price_board.effective_at|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+        {% if invoice.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ invoice.journal_entry.number }}</dd></div>{% endif %}
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

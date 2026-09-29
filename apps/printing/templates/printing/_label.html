@@ -1,0 +1,4 @@
+{% load i18n %}{# One label; `label` from printing.labels.build_label, sizes from the page style. #}
+<div class="label">{% for part in label.parts %}{% if not forloop.first %}<div class="tail"></div>{% endif %}
+  <div class="area">{% for kind, value in part.elements %}{% if kind == "barcode" %}<div class="bars">{{ value|safe }}</div>{% else %}<div class="line"><bdi>{{ value }}</bdi></div>{% endif %}{% endfor %}</div>
+{% endfor %}</div>

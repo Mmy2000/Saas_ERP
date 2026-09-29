@@ -1,0 +1,58 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ settlement.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'settlements' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Receipts & payments" %}</a>
+  <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p><p class="text-sm text-slate-500">{{ settlement.branch.name }}</p></div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{{ settlement.get_kind_display }}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ settlement.number }}</p>
+        <p class="num text-sm text-slate-500">{{ settlement.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=settlement.status label=settlement.get_status_display %}</div>
+      </div>
+    </header>
+    <dl class="divide-y divide-slate-100 text-sm">
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{{ settlement.get_side_display }}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{{ party_url }}">{{ settlement.party.name }}</a></dd></div>
+      {% if settlement.kind == "receipt" or settlement.kind == "payment" %}
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "How" %}</dt><dd>{{ settlement.get_method_display }}</dd></div>
+      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
+      {% if settlement.currency.code != home_currency %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Value" %}</dt><dd class="num">{{ settlement.functional_amount|num:2 }} {{ home_currency }} (× {{ settlement.fx_rate|num:4 }})</dd></div>{% endif %}
+      {% elif settlement.kind == "conversion" %}
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Which way" %}</dt><dd>{{ settlement.get_direction_display }}</dd></div>
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Fine gold" %}</dt><dd class="num">{{ settlement.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Price per fine gram" %}</dt><dd class="num">{{ settlement.price_per_fine_g|num:2 }}</dd></div>
+      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
+      {% else %}
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Karat" %}</dt><dd>{{ settlement.karat.label }}</dd></div>
+      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Weight" %}</dt><dd class="num">{{ settlement.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Fine gold" %}</dt><dd class="num">{{ settlement.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
+      {% endif %}
+      {% if settlement.reference %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Reference" %}</dt><dd>{{ settlement.reference }}</dd></div>{% endif %}
+      {% if settlement.note %}<div class="px-6 py-3 text-slate-600">{{ settlement.note }}</div>{% endif %}
+    </dl>
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Paid by" %}</div>
+    </div>
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% can "settlements.void" as can_void %}
+    {% if can_void and settlement.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel" %}</button>
+    </form>
+    {% endif %}
+    {% if settlement.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ settlement.journal_entry.number }}</dd></div></dl></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

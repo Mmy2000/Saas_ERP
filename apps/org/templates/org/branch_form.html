@@ -1,0 +1,63 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if branch %}{% translate "Edit branch" %}{% else %}{% translate "New branch" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'branches' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Branches" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if branch %}{{ branch.name }}{% else %}{% translate "New branch" %}{% endif %}</h1>
+    {% if branch and not branch.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{{ endpoint }}" data-method="{{ method }}"
+      data-redirect="{% url 'branches' %}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
+        <div>
+          <label class="form-label" for="f-code">{% translate "Code" %}</label>
+          <input id="f-code" name="code" class="form-input num w-full text-start" inputmode="numeric" value="{{ branch.code|default:next_code }}" required>
+          <p class="form-error" data-error-for="code"></p>
+        </div>
+        <div class="sm:col-span-3">
+          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <input id="f-name" name="name" class="form-input" value="{{ branch.name|default:'' }}" required maxlength="200">
+          <p class="form-error" data-error-for="name"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-phone">{% translate "Phone" %}</label>
+          <input id="f-phone" name="phone" class="form-input num w-full text-start" value="{{ branch.phone|default:'' }}">
+        </div>
+        <div class="sm:col-span-4">
+          <label class="form-label" for="f-address">{% translate "Address" %}</label>
+          <textarea id="f-address" name="address" rows="2" class="form-input">{{ branch.address|default:'' }}</textarea>
+        </div>
+        <label class="flex items-center gap-3 sm:col-span-2">
+          <input type="checkbox" name="is_head_office" class="size-4 rounded border-slate-300 accent-brand-600" {% if branch.is_head_office %}checked{% endif %}>
+          <span class="text-sm text-slate-700">{% translate "Head office" %}</span>
+        </label>
+        <label class="flex items-center gap-3 sm:col-span-2">
+          <input type="checkbox" name="handles_diamonds" class="size-4 rounded border-slate-300 accent-brand-600" {% if branch.handles_diamonds %}checked{% endif %}>
+          <span class="text-sm text-slate-700">{% translate "Sells diamonds" %}</span>
+        </label>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'branches' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% if branch and not branch.is_head_office %}
+<form class="mt-6" data-api-form data-method="POST" data-redirect="{% url 'branches' %}" data-success="{% translate 'Saved.' %}"
+      data-endpoint="{{ endpoint }}{% if branch.is_active %}deactivate/{% else %}activate/{% endif %}">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  <button type="submit" class="btn btn-secondary">{% if branch.is_active %}{% translate "Deactivate" %}{% else %}{% translate "Reactivate" %}{% endif %}</button>
+</form>
+{% endif %}
+{% endblock %}

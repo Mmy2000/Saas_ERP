@@ -1,0 +1,88 @@
+{% extends "layouts/app.html" %}
+{% load i18n l10n static ui %}
+{% block title %}{% if is_new %}{% translate "New template" %}{% else %}{{ template.name }}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'printing/js/template_form.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'label-templates' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Label templates" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if is_new %}{% translate "New template" %}{% else %}{{ template.name }}{% endif %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+{% localize off %}
+<form data-api-form data-shape="label-template" data-method="{{ method }}" data-endpoint="{{ endpoint }}"
+      data-redirect="{% url 'label-templates' %}" data-success="{% translate 'Saved.' %}" data-preview="{% url 'label-preview' %}" novalidate
+      class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+  <div class="space-y-6 xl:col-span-3">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2"><label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <input id="f-name" name="name" class="form-input" maxlength="100" value="{{ template.name }}"><p class="form-error" data-error-for="name"></p></div>
+        <div><label class="form-label" for="f-media">{% translate "Printer" %}</label>
+          <select id="f-media" name="media" class="form-input" data-native>{% for v, l in medias %}<option value="{{ v }}" {% if v == template.media %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="f-layout">{% translate "Layout" %}</label>
+          <select id="f-layout" name="layout" class="form-input" data-native>{% for v, l in layouts %}<option value="{{ v }}" {% if v == template.layout %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="f-w">{% translate "Label width (mm)" %}</label><input id="f-w" name="width_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.width_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="width_mm"></p></div>
+        <div><label class="form-label" for="f-h">{% translate "Label height (mm)" %}</label><input id="f-h" name="height_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.height_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="height_mm"></p></div>
+        <div data-when-layout="split"><label class="form-label" for="f-tail">{% translate "Fold between the wings (mm)" %}</label><input id="f-tail" name="tail_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.tail_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="tail_mm"></p></div>
+        <div><label class="form-label" for="f-font">{% translate "Text size (pt)" %}</label><input id="f-font" name="font_size_pt" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.font_size_pt|floatformat:'-1' }}"><p class="form-error" data-error-for="font_size_pt"></p></div>
+        <div><label class="form-label" for="f-bh">{% translate "Barcode height (mm)" %}</label><input id="f-bh" name="barcode_height_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.barcode_height_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="barcode_height_mm"></p></div>
+        <label class="flex items-center gap-3 sm:col-span-2"><input type="checkbox" name="is_default" class="size-4 rounded border-slate-300 accent-brand-600" {% if template.is_default %}checked{% endif %}><span class="text-sm text-slate-700">{% translate "Use by default" %}</span></label>
+      </div>
+    </section>
+
+    <section class="card" data-when-media="sheet">
+      <div class="card-header"><h2 class="card-title">{% translate "Sheet" %}</h2></div>
+      <div class="card-body grid grid-cols-2 gap-5 sm:grid-cols-4">
+        <div><label class="form-label" for="f-pw">{% translate "Page width (mm)" %}</label><input id="f-pw" name="page_width_mm" class="form-input num w-full text-start" value="{{ template.page_width_mm|floatformat:'-2' }}"></div>
+        <div><label class="form-label" for="f-ph">{% translate "Page height (mm)" %}</label><input id="f-ph" name="page_height_mm" class="form-input num w-full text-start" value="{{ template.page_height_mm|floatformat:'-2' }}"></div>
+        <div><label class="form-label" for="f-cols">{% translate "Columns" %}</label><input id="f-cols" name="columns" class="form-input num w-full text-start" inputmode="numeric" value="{{ template.columns }}"><p class="form-error" data-error-for="columns"></p></div>
+        <div><label class="form-label" for="f-rows">{% translate "Rows" %}</label><input id="f-rows" name="rows" class="form-input num w-full text-start" inputmode="numeric" value="{{ template.rows }}"></div>
+        <div><label class="form-label" for="f-mt">{% translate "Top margin (mm)" %}</label><input id="f-mt" name="margin_top_mm" class="form-input num w-full text-start" value="{{ template.margin_top_mm|floatformat:'-2' }}"></div>
+        <div><label class="form-label" for="f-ms">{% translate "Side margin (mm)" %}</label><input id="f-ms" name="margin_start_mm" class="form-input num w-full text-start" value="{{ template.margin_start_mm|floatformat:'-2' }}"></div>
+        <div><label class="form-label" for="f-gx">{% translate "Gap across (mm)" %}</label><input id="f-gx" name="gap_x_mm" class="form-input num w-full text-start" value="{{ template.gap_x_mm|floatformat:'-2' }}"></div>
+        <div><label class="form-label" for="f-gy">{% translate "Gap down (mm)" %}</label><input id="f-gy" name="gap_y_mm" class="form-input num w-full text-start" value="{{ template.gap_y_mm|floatformat:'-2' }}"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "What to print" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div data-fields="fields">
+          <p class="form-label"><span data-when-layout="single">{% translate "On the label" %}</span><span data-when-layout="split">{% translate "First wing" %}</span></p>
+          <select multiple class="form-input" data-field-select="fields" aria-label="{% translate 'On the label' %}">
+            {% for key, label, on in options_a %}<option value="{{ key }}" {% if on %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="fields"></p>
+        </div>
+        <div data-fields="fields_b" data-when-layout="split">
+          <p class="form-label">{% translate "Second wing" %}</p>
+          <select multiple class="form-input" data-field-select="fields_b" aria-label="{% translate 'Second wing' %}">
+            {% for key, label, on in options_b %}<option value="{{ key }}" {% if on %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <p class="text-xs text-slate-500 sm:col-span-2">{% translate "Printed in the order chosen. Zebra (ZPL) labels leave out Arabic text: the printer's fonts cannot join Arabic letters." %}</p>
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-6 xl:col-span-2">
+    <section class="card overflow-hidden xl:sticky xl:top-6">
+      <div class="card-header"><h2 class="card-title">{% translate "Preview" %}</h2></div>
+      <iframe class="h-80 w-full border-0 bg-slate-100" title="{% translate 'Preview' %}" data-preview-frame></iframe>
+      <div class="flex gap-3 border-t border-slate-100 p-5">
+        <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+        <a href="{% url 'label-templates' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+      </div>
+    </section>
+  </aside>
+</form>
+{% if not is_new %}
+<form class="mt-6" data-api-form data-method="DELETE" data-endpoint="{{ endpoint }}" data-redirect="{% url 'label-templates' %}" data-success="{% translate 'Deleted.' %}">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  <button type="submit" class="btn btn-secondary">{% translate "Delete template" %}</button>
+</form>
+{% endif %}
+{% endlocalize %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Trial balance" %}{% endblock %}
+{% block page_header %}
+  {% translate "Trial balance" as title %}{% translate "Debits equal credits in the company currency; metal columns show net fine grams." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-end">
+    <label class="sm:w-56"><span class="form-label">{% translate "As of" %}</span>
+      <input type="date" name="as_of" class="form-input" value="{{ as_of|date:'Y-m-d' }}"></label>
+    <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+    <p class="text-xs text-slate-500 sm:ms-auto">{% if as_of %}{% blocktranslate trimmed with day=as_of|date:"DATE_FORMAT" %}Balances at the end of {{ day }}.{% endblocktranslate %}{% else %}{% translate "Current balances." %}{% endif %}</p>
+  </form>
+  {% if tb.rows %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>{% translate "Account" %}</th>
+        <th class="text-end">{% translate "Debit" %} <span class="font-normal normal-case">({{ home_currency }})</span></th>
+        <th class="text-end">{% translate "Credit" %} <span class="font-normal normal-case">({{ home_currency }})</span></th>
+        {% for code in tb.metal_codes %}<th class="text-end">{{ code }} <span class="font-normal normal-case">({% translate "fine g" %})</span></th>{% endfor %}
+      </tr></thead>
+      <tbody>
+      {% for row in tb.rows %}
+        <tr>
+          <td><span class="num text-xs text-slate-400">{{ row.account.code }}</span> {{ row.account.label }}</td>
+          <td class="text-end">{% if row.debit %}<span class="num">{{ row.debit|num:2 }}</span>{% endif %}</td>
+          <td class="text-end">{% if row.credit %}<span class="num">{{ row.credit|num:2 }}</span>{% endif %}</td>
+          {% for code in tb.metal_codes %}<td class="text-end">{% for metal, grams in row.metals.items %}{% if metal == code %}<span class="num">{{ grams|num:3 }}</span>{% endif %}{% endfor %}</td>{% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+          <td class="px-5 py-3">{% translate "Total" %}</td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ tb.total_debit|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ tb.total_credit|num:2 }}</span></td>
+          {% for code in tb.metal_codes %}<td></td>{% endfor %}
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing posted yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="scale" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

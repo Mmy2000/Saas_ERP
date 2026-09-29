@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Expenses" %}{% endblock %}
+{% block page_header %}
+{% can "expenses.voucher.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Expenses" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Rent, utilities and other running costs paid from a cash box or a bank account." %}</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'expense-categories' %}" class="btn btn-secondary">{% icon "layers" "size-4" %}{% translate "Categories" %}</a>
+    {% if can_create %}<a href="{% url 'expense-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New expense" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <select name="category" class="form-input sm:w-72" aria-label="{% translate 'Expense category' %}">
+      <option value="">{% translate "All categories" %}</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
+    <p class="text-sm text-slate-500 sm:ms-auto">{% translate "Total" %}: <span class="num font-semibold text-slate-900">{{ total|num:2 }}</span> {{ home_currency }}</p>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Expense category" %}</th><th>{% translate "Paid to" %}</th><th>{% translate "Paid from" %}</th>
+        <th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for v in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ v.number }}</span></td>
+          <td><span class="num">{{ v.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ v.category.name }}</td>
+          <td>{{ v.payee|default:"—" }}</td>
+          <td><bdi>{{ v.paid_from.label }}</bdi>{% if v.cash_box %} <span class="text-xs text-slate-400">{{ v.branch.name }}</span>{% endif %}</td>
+          <td class="text-end whitespace-nowrap"><span class="num">{{ v.amount|num:2 }}</span> {{ v.currency.code }}</td>
+          <td>{% include "components/doc_status.html" with status=v.status label=v.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'expense-view' v.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No expenses recorded yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="receipt-text" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

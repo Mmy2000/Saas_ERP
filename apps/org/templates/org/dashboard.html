@@ -1,0 +1,223 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Dashboard" %}{% endblock %}
+{% block page_header %}
+  {% blocktranslate trimmed asvar greeting with name=request.user.display_name %}Welcome back, {{ name }}{% endblocktranslate %}
+  {% include "components/page_header.html" with title=greeting subtitle=today_label %}
+{% endblock %}
+{% block content %}
+{% can "pricing.board.view" as can_prices %}
+
+{# Today at a glance: each card only for people allowed to see it. #}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% if sales_today %}
+  <a href="{% url 'sales' %}" class="card card-body block transition hover:border-slate-300">
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <span>{% translate "Today's sales" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "shopping-bag" "size-4" %}</span>
+    </div>
+    <p class="mt-3 flex items-baseline gap-2 text-2xl font-semibold text-slate-900">
+      <span class="num">{{ sales_today.total|num:2 }}</span><span class="text-xs font-normal text-slate-400">{{ home_currency }}</span>
+    </p>
+    <p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
+      <span>{% blocktranslate count counter=sales_today.count %}{{ counter }} sale{% plural %}{{ counter }} sales{% endblocktranslate %} · <span class="num">{{ sales_today.weight|num:3 }}</span> {% translate "g" %}</span>
+      {% if sales_today.change is not None %}
+      <span class="badge {% if sales_today.change >= 0 %}badge-success{% else %}badge-warning{% endif %}" title="{% translate 'Compared with yesterday' %}"><span class="num" dir="ltr">{% if sales_today.change >= 0 %}+{% endif %}{{ sales_today.change|num:0 }}%</span></span>
+      {% endif %}
+    </p>
+  </a>
+  {% endif %}
+  {% if wholesale_today %}
+  <a href="{% url 'trade-sales' %}" class="card card-body block transition hover:border-slate-300">
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <span>{% translate "Wholesale today" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "scale" "size-4" %}</span>
+    </div>
+    <p class="mt-3 flex items-baseline gap-2 text-2xl font-semibold text-slate-900">
+      <span class="num">{{ wholesale_today.gross|num:3 }}</span><span class="text-xs font-normal text-slate-400">{% translate "g" %}</span>
+    </p>
+    <p class="mt-1 text-xs text-slate-500"><span class="whitespace-nowrap">{% blocktranslate count counter=wholesale_today.count %}{{ counter }} sale{% plural %}{{ counter }} sales{% endblocktranslate %}</span> · <span class="whitespace-nowrap"><span class="num">{{ wholesale_today.fine|num:3 }}</span> {% translate "fine g" %}</span> · <span class="whitespace-nowrap"><span class="num">{{ wholesale_today.money|num:2 }}</span> {{ home_currency }}</span></p>
+  </a>
+  {% endif %}
+  {% if cash_on_hand is not None %}
+  <a href="{% url 'treasury' %}" class="card card-body block transition hover:border-slate-300">
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <span>{% translate "Cash on hand" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "wallet" "size-4" %}</span>
+    </div>
+    {% with first=cash_on_hand.0 %}
+    <p class="mt-3 flex items-baseline gap-2 text-2xl font-semibold text-slate-900">
+      {% if first %}<span class="num">{{ first.quantity|num:2 }}</span><span class="text-xs font-normal text-slate-400">{{ first.commodity.code }}</span>{% else %}<span class="num">0.00</span><span class="text-xs font-normal text-slate-400">{{ home_currency }}</span>{% endif %}
+    </p>
+    {% endwith %}
+    <p class="mt-1 text-xs text-slate-500">{% for amount in cash_on_hand|slice:"1:" %}<span class="num">{{ amount.quantity|num:2 }}</span> {{ amount.commodity.code }}{% if not forloop.last %} · {% endif %}{% empty %}{% translate "In every cash box" %}{% endfor %}</p>
+  </a>
+  {% endif %}
+  {% if gold_stock %}
+  <a href="{% url 'stock' %}" class="card card-body block transition hover:border-slate-300">
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <span>{% translate "Gold in stock (21K)" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "package" "size-4" %}</span>
+    </div>
+    <p class="mt-3 flex items-baseline gap-2 text-2xl font-semibold text-slate-900">
+      <span class="num">{{ gold_stock.eq21|num:3 }}</span><span class="text-xs font-normal text-slate-400">{% translate "g" %}</span>
+    </p>
+    <p class="mt-1 text-xs text-slate-500">{% blocktranslate count counter=gold_stock.pieces %}{{ counter }} piece{% plural %}{{ counter }} pieces{% endblocktranslate %}</p>
+  </a>
+  {% endif %}
+  {% if can_prices and not sales_today and not gold_stock %}
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500">
+      <span>{% blocktranslate trimmed with karat=reference_line.karat.label|default:"21K" %}{{ karat }} selling price{% endblocktranslate %}</span>
+      {% icon "trending-up" "size-4 text-emerald-500" %}
+    </div>
+    <p class="mt-3 text-2xl font-semibold text-slate-900">{% if reference_line %}<span class="num">{{ reference_line.sell_price_per_g|num:2 }}</span>{% else %}—{% endif %}</p>
+    <p class="mt-1 text-xs text-slate-500">{{ home_currency }} / {% translate "gram" %}</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  {% if sales_week %}
+  <section class="card xl:col-span-2">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Sales, last 7 days" %}</h2>
+      <a href="{% url 'report' 'sales' %}" class="btn btn-ghost text-xs">{% translate "Sales analysis" %}</a>
+    </div>
+    <div class="grid h-56 grid-cols-7 items-end gap-3 px-5 pt-6 pb-4">
+      {% for day in sales_week %}
+      <div class="flex h-full flex-col items-center justify-end gap-2" title="{{ day.day|date:'SHORT_DATE_FORMAT' }}: {{ day.total|num:2 }}">
+        <span class="num text-[11px] text-slate-500">{% if day.total %}{{ day.total|num:0 }}{% endif %}</span>
+        <div class="w-full max-w-12 rounded-t-md {% if day.today %}bg-brand-600{% else %}bg-brand-200{% endif %}" style="height: {{ day.height }}%; min-height: 2px"></div>
+        <span class="text-xs {% if day.today %}font-semibold text-slate-900{% else %}text-slate-500{% endif %}">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="card {% if not sales_week %}xl:col-span-3{% endif %}">
+    <div class="card-header"><h2 class="card-title">{% translate "Needs attention" %}</h2></div>
+    {% if attention %}
+    <ul class="divide-y divide-slate-100 text-sm">
+      {% for item in attention %}
+      <li><a href="{{ item.url }}" class="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50">
+        <span class="flex items-center gap-3 text-slate-700">{% icon item.icon "size-4 text-slate-400" %}{{ item.label }}</span>
+        <span class="badge badge-warning num">{{ item.count }}</span>
+      </a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="flex flex-col items-center gap-2 px-5 py-10 text-center text-sm text-slate-500">
+      {% icon "circle-check" "size-8 text-emerald-500" %}
+      <p class="font-medium text-slate-700">{% translate "All clear" %}</p>
+      <p>{% translate "Nothing is waiting for you." %}</p>
+    </div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  {% if can_prices %}
+  <section class="card xl:col-span-2">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">{% translate "Today's gold prices" %}</h2>
+        {% if board %}<p class="mt-0.5 text-xs text-slate-500">{% blocktranslate trimmed with when=board.effective_at|date:"SHORT_DATETIME_FORMAT" %}Effective {{ when }}{% endblocktranslate %}{% if usd_rate %} · {% translate "US dollar rate" %} <span class="num">{{ usd_rate.rate|num:2 }}</span>{% endif %}</p>{% endif %}
+      </div>
+      <a href="{% url 'gold-prices' %}" class="btn btn-ghost text-xs">{% translate "Manage prices" %}</a>
+    </div>
+    {% if board %}
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr>
+            <th>{% translate "Karat" %}</th><th class="text-end">{% translate "Sell" %}</th>
+            <th class="text-end">{% translate "Buy" %}</th><th class="text-end">{% translate "Scrap buy" %}</th>
+          </tr></thead>
+          <tbody>
+          {% for line in board_rows %}
+            <tr>
+              <td class="font-medium text-slate-900">{{ line.karat.label }}
+                {% if line.karat_id == board.reference_karat_id %}<span class="badge badge-brand ms-2">{% translate "Reference" %}</span>{% endif %}</td>
+              <td class="text-end"><span class="num">{{ line.sell_price_per_g|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.buy_price_per_g|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.scrap_buy_price_per_g|num:2 }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {% translate "No gold price published yet" as empty_title %}
+      {% translate "Publish today's 21K price and the other karats are calculated for you." as empty_text %}
+      {% include "components/empty_state.html" with icon="coins" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if balances %}
+  <section class="card {% if not can_prices %}xl:col-span-3{% endif %}">
+    <div class="card-header"><h2 class="card-title">{% translate "Balances" %}</h2></div>
+    <div class="divide-y divide-slate-100">
+      {% for group in balances %}
+      <div class="px-5 py-3.5">
+        <div class="flex items-center justify-between">
+          <a href="{{ group.url }}" class="text-sm font-medium text-slate-900 hover:underline">{{ group.label }}</a>
+          <span class="text-[11px] text-slate-400">{{ group.hint }}</span>
+        </div>
+        <dl class="mt-2 space-y-1 text-sm">
+          {% for amount in group.amounts %}
+          <div class="flex justify-between gap-4"><dt class="text-slate-500">{{ amount.commodity.label }}</dt>
+            <dd class="num font-medium {% if amount.quantity < 0 %}text-red-600{% else %}text-slate-900{% endif %}">{{ amount.quantity|num:amount.commodity.decimal_places }}</dd></div>
+          {% empty %}
+          <p class="text-slate-400">{% translate "Settled — nothing owed either way." %}</p>
+          {% endfor %}
+          {% for amount in group.deposits %}
+          <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Deposits held" %} <span class="text-xs text-slate-400">{{ amount.commodity.code }}</span></dt>
+            <dd class="num font-medium text-slate-900">{{ amount.quantity|absolute|num:amount.commodity.decimal_places }}</dd></div>
+          {% endfor %}
+        </dl>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  {% if recent is not None %}
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header">
+      <h2 class="card-title">{% translate "Today's activity" %}</h2>
+      <a href="{% url 'journal' %}" class="btn btn-ghost text-xs">{% translate "Journal" %}</a>
+    </div>
+    {% if recent %}
+    <ul class="divide-y divide-slate-100 text-sm">
+      {% for doc in recent %}
+      <li class="flex items-center justify-between gap-4 px-5 py-3">
+        <div class="min-w-0">
+          <p class="truncate text-slate-900">{{ doc.label }}{% if doc.reversal %} <span class="badge badge-warning">{% translate "Cancelled" %}</span>{% endif %}</p>
+          <p class="text-xs text-slate-500">{{ doc.branch }}{% if doc.by %} · {{ doc.by }}{% endif %}</p>
+        </div>
+        <div class="shrink-0 text-end">
+          {% if doc.url %}<a class="num text-brand-700 hover:underline" href="{{ doc.url }}">{{ doc.number }}</a>{% else %}<span class="num">{{ doc.number }}</span>{% endif %}
+          <p class="num text-xs text-slate-400">{{ doc.at|time:"H:i" }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      {% translate "Nothing posted today yet" as empty_title %}
+      {% include "components/empty_state.html" with icon="history" title=empty_title %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section class="card {% if recent is None %}xl:col-span-3{% endif %}">
+    <div class="card-header"><h2 class="card-title">{% translate "Workspace" %}</h2></div>
+    <dl class="divide-y divide-slate-100 text-sm">
+      <div class="flex justify-between gap-4 px-5 py-3"><dt class="text-slate-500">{% translate "Company" %}</dt><dd class="font-medium text-slate-900">{{ tenant_profile.display_name }}</dd></div>
+      <div class="flex justify-between gap-4 px-5 py-3"><dt class="text-slate-500">{% translate "Currency" %}</dt><dd class="font-medium text-slate-900">{{ tenant_profile.functional_currency }}</dd></div>
+      <div class="flex justify-between gap-4 px-5 py-3"><dt class="text-slate-500">{% translate "Time zone" %}</dt><dd class="font-medium text-slate-900" dir="ltr">{{ tenant_profile.timezone }}</dd></div>
+      <div class="flex justify-between gap-4 px-5 py-3"><dt class="text-slate-500">{% translate "Your branch" %}</dt><dd class="font-medium text-slate-900">{{ request.membership.default_branch.name|default:"—" }}</dd></div>
+      <div class="flex justify-between gap-4 px-5 py-3"><dt class="text-slate-500">{% translate "Active karats" %}</dt><dd class="font-medium text-slate-900"><span class="num">{{ karat_count }}</span></dd></div>
+    </dl>
+  </section>
+</div>
+{% endblock %}
