@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from apps.core.errors import ValidationError
 from apps.core.tenancy import tenant_context
 
-from .models import RESERVED_SLUGS, Tenant, TenantDomain, TenantStatus
+from .models import RESERVED_SLUGS, Tenant, TenantDomain, TenantStatus, ensure_plans
 
 
 @dataclass(frozen=True)
@@ -52,6 +52,7 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
                               fields={"slug": [_("Reserved.")]})
 
     with transaction.atomic(), translation.override(cmd.locale):
+        ensure_plans()
         tenant = Tenant(slug=slug, name=cmd.name, status=TenantStatus.PROVISIONING)
         tenant.full_clean()
         tenant.save()

@@ -12,27 +12,28 @@ from .models import Tenant
 
 def _tenant() -> Tenant | None:
     tenant_id = get_current_tenant_id()
-    return Tenant.objects.filter(pk=tenant_id).first() if tenant_id else None
+    return (Tenant.objects.select_related("plan").filter(pk=tenant_id).first()
+            if tenant_id else None)
 
 
 def check_branch_limit() -> None:
     from apps.org.models import Branch
 
     tenant = _tenant()
-    if tenant and tenant.max_branches is not None and (
-            Branch.objects.filter(is_active=True).count() >= tenant.max_branches):
+    limit = tenant.branch_limit if tenant else None
+    if limit is not None and Branch.objects.filter(is_active=True).count() >= limit:
         raise DomainError(
             _("Your plan allows %(limit)s branches. Contact us to add more.")
-            % {"limit": tenant.max_branches}, code="PLAN_BRANCH_LIMIT")
+            % {"limit": limit}, code="PLAN_BRANCH_LIMIT")
 
 
 def check_user_limit() -> None:
     from apps.iam.models import Membership, MembershipStatus
 
     tenant = _tenant()
-    if tenant and tenant.max_users is not None and (
-            Membership.objects.filter(status=MembershipStatus.ACTIVE).count()
-            >= tenant.max_users):
+    limit = tenant.user_limit if tenant else None
+    if limit is not None and (
+            Membership.objects.filter(status=MembershipStatus.ACTIVE).count() >= limit):
         raise DomainError(
             _("Your plan allows %(limit)s users. Contact us to add more.")
-            % {"limit": tenant.max_users}, code="PLAN_USER_LIMIT")
+            % {"limit": limit}, code="PLAN_USER_LIMIT")

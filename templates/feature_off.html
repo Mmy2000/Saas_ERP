@@ -1,0 +1,14 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Not in your plan" %}{% endblock %}
+{% block content %}
+<div class="grid min-h-[60vh] place-items-center">
+  <div class="max-w-md text-center">
+    <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">{% icon "lock" "size-6" %}</span>
+    <h1 class="mt-5 text-2xl font-semibold tracking-tight text-slate-900">{% translate "This feature is not in your plan" %}</h1>
+    <p class="mt-3 text-sm text-slate-500">{% blocktranslate trimmed with name=brand.name %}Contact {{ name }} to add it to your workspace.{% endblocktranslate %}</p>
+    {% if brand.links %}<div class="mt-5 flex flex-wrap justify-center gap-2">{% for link in brand.links %}<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary text-xs">{{ link.label }}</a>{% endfor %}</div>{% endif %}
+    <a href="{% url 'home' %}" class="btn btn-primary mt-6">{% translate "Back to the dashboard" %}</a>
+  </div>
+</div>
+{% endblock %}

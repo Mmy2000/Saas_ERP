@@ -1,0 +1,5 @@
+{% load i18n %}{# A switch that submits its form. with on=True|False label="…" #}
+<button type="submit" role="switch" aria-checked="{{ on|yesno:'true,false' }}" aria-label="{{ label }}" title="{{ label }}"
+        class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 {% if on %}bg-emerald-500{% else %}bg-slate-300{% endif %}">
+  <span class="inline-block size-4 rounded-full bg-white shadow-xs transition-transform {% if on %}translate-x-4.5 rtl:-translate-x-4.5{% else %}translate-x-0.5 rtl:-translate-x-0.5{% endif %}"></span>
+</button>

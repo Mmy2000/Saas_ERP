@@ -1,0 +1,33 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Delete plan" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-plans' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Plans" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% blocktranslate trimmed with name=plan.label %}Delete {{ name }}?{% endblocktranslate %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="card max-w-2xl" novalidate>
+  {% csrf_token %}
+  <div class="card-body space-y-5">
+    <div class="flex items-start gap-4">
+      <span class="grid size-10 shrink-0 place-items-center rounded-full bg-red-50 text-red-600">{% icon "trash-2" "size-5" %}</span>
+      <div class="text-sm text-slate-600">
+        {% if clients %}
+        <p>{% blocktranslate trimmed count n=clients|length %}{{ n }} client is on this plan. It moves to the plan you choose, with that plan's features and limits (its own settings stay).{% plural %}{{ n }} clients are on this plan. They move to the plan you choose, with that plan's features and limits (their own settings stay).{% endblocktranslate %}</p>
+        <ul class="mt-2 flex flex-wrap gap-1.5">{% for tenant in clients|slice:":12" %}<li class="badge badge-neutral">{{ tenant.name }}</li>{% endfor %}{% if clients|length > 12 %}<li class="text-xs text-slate-400">…</li>{% endif %}</ul>
+        {% else %}
+        <p>{% translate "No client is on this plan." %}</p>
+        {% endif %}
+        <p class="mt-2">{% translate "The plan and its feature choices are removed. This cannot be undone." %}</p>
+      </div>
+    </div>
+    {% if clients %}{% include "console/_field.html" with field=form.move_to %}{% else %}<input type="hidden" name="move_to" value="{{ form.move_to.value }}">{% endif %}
+  </div>
+  <div class="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+    <a href="{% url 'console-plans' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    <button type="submit" class="btn btn-danger">{% translate "Delete plan" %}</button>
+  </div>
+</form>
+{% endblock %}

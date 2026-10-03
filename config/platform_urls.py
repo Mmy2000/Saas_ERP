@@ -37,6 +37,13 @@ urlpatterns = [
     path("traffic/", console.traffic, name="console-traffic"),
     path("traffic/live/", console.traffic_live, name="console-traffic-live"),
     path("settings/", console.platform_settings, name="console-settings"),
+    path("plans/", console.plans, name="console-plans"),
+    path("plans/new/", console.plan_new, name="console-plan-new"),
+    path("plans/<int:pk>/", console.plan_edit, name="console-plan-edit"),
+    path("plans/<int:pk>/delete/", console.plan_delete, name="console-plan-delete"),
+    path("features/", console.features, name="console-features"),
+    path("features/plan/", console.plan_feature, name="console-plan-feature"),
+    path("clients/<int:pk>/features/", console.tenant_feature, name="console-tenant-feature"),
     path("activity/", console.events, name="console-events"),
     # The raw Django admin, for emergencies.
     path("django-admin/", admin.site.urls),

@@ -96,6 +96,29 @@ and password of a user with `is_platform_staff`. New clients get `<slug>.<TENANT
 (`localhost` by default); a custom domain added in the console must also point at the server
 and be allowed by `DJANGO_ALLOWED_HOSTS`.
 
+### Plans
+
+Plans live in the database (`tenants.Plan`) and are managed in Console → **Plans**: name in
+English and Arabic, price and billing period, default limits (branches, users, requests per
+minute), trial days for new clients, whether it is offered and which one is the default, and
+its features. A client's own limits (client page) win over its plan's. Deleting a plan moves
+its clients to the plan you pick in the same step; the last plan cannot be deleted. The four
+original plans (trial, standard, professional, enterprise) were created by migration
+`tenants.0006_plans`, so no client changed.
+
+### Features (modules per client)
+
+Console → **Features** (or a plan's own page) sets what each plan includes; a client's page (**Features** card) switches
+one on or off for that client only, or back to its plan. A feature with no saved choice is on.
+A feature owns permission prefixes (`apps/platform/tenants/features.py`); when it is off, those
+permissions are not granted to anyone in that workspace, Owners included, so its menu entries,
+buttons, dashboard blocks, pages ("not in your plan") and API (403) all go away together.
+
+To add a module as a feature: give it its own permission codes (`register_permissions`), check
+them in its views/API/templates as usual, and add a `Feature(...)` listing their prefix. It then
+appears in the console. `tests/test_features.py` fails if a prefix matches no permission or two
+features claim the same one.
+
 ### Branding and uploaded files
 
 Console → **Settings**: the platform's name, logo (and one for dark backgrounds), the line shown

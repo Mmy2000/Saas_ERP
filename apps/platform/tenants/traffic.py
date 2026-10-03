@@ -29,8 +29,11 @@ def slow_ms() -> int:
 
 
 def limit_for(tenant: Tenant) -> int | None:
-    """Requests per minute this client may make, or None for no limit."""
+    """Requests per minute this client may make, or None for no limit: the client's own
+    setting, else its plan's, else the platform default; 0 at any level means no limit."""
     limit = tenant.requests_per_minute
+    if limit is None:
+        limit = tenant.plan.requests_per_minute
     if limit is None:
         limit = settings.TENANT_REQUESTS_PER_MINUTE
     return limit or None

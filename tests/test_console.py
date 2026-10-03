@@ -60,7 +60,7 @@ def test_create_a_client(console):
         "contact_phone": "01000000000"})
     tenant = Tenant.objects.get(slug="nile")
     assert response.status_code == 302 and response["Location"] == f"/clients/{tenant.pk}/"
-    assert (tenant.status, tenant.plan, tenant.max_branches, tenant.max_users) == (
+    assert (tenant.status, tenant.plan_id, tenant.max_branches, tenant.max_users) == (
         TenantStatus.ACTIVE, "trial", 2, 3)
     assert tenant.domains.get().domain == "nile.localhost"
     assert PlatformEvent.objects.filter(tenant=tenant, action="tenant.created").exists()

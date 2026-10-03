@@ -75,7 +75,7 @@
         {% for usage in data.tenants %}
           <tr>
             <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant' usage.tenant.pk %}">{{ usage.tenant.name }}</a><div class="num text-xs text-slate-400">{{ usage.tenant.slug }}</div></td>
-            <td><span class="badge badge-neutral">{{ usage.tenant.get_plan_display }}</span></td>
+            <td><span class="badge badge-neutral">{{ usage.tenant.plan.label }}</span></td>
             <td class="text-end"><span class="num">{{ usage.users }}{% if usage.tenant.max_users %}<span class="text-slate-400">/{{ usage.tenant.max_users }}</span>{% endif %}</span></td>
             <td class="text-end"><span class="num">{{ usage.branches }}{% if usage.tenant.max_branches %}<span class="text-slate-400">/{{ usage.tenant.max_branches }}</span>{% endif %}</span></td>
             <td class="text-end"><span class="num">{{ usage.documents_30d }}</span></td>

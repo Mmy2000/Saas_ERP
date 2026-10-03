@@ -24,4 +24,9 @@ class HasTenantPermission(BasePermission):
         if getattr(request, "tenant", None) is None or actor is None:
             return False
         code = required_permission(view, request)
+        if code is not None and actor.feature_off(code):
+            from django.utils.translation import gettext
+
+            self.message = gettext("This feature is not available in your plan.")
+            return False
         return code is not None and actor.can(code)

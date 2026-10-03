@@ -16,6 +16,9 @@ NOT_TENANT_SCOPED = {
     "tenants.TenantRouteTraffic",
     "tenants.PlatformSettings",  # the platform's own branding (console settings)
     "tenants.PlatformLink",
+    "tenants.Plan",  # commercial plans (console → Plans)
+    "tenants.PlanFeature",  # feature switches (console)
+    "tenants.TenantFeature",
     "iam.User",  # global identity (ADR-004)
     "iam.User_groups",  # Django admin permissions for platform staff
     "iam.User_user_permissions",

@@ -1,0 +1,50 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Plans" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Plans" %}</h1>
+    <p class="mt-1.5 text-sm text-slate-500">{% translate "What you sell: each plan's price, limits and features. Clients get their plan's unless you set their own." %}</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'console-features' %}" class="btn btn-secondary">{% icon "layers" "size-4" %}{% translate "Compare features" %}</a>
+    <a href="{% url 'console-plan-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New plan" %}</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+  {% for row in plans %}{% with plan=row.plan %}
+  <article class="card flex flex-col {% if not plan.is_active %}opacity-70{% endif %}">
+    <div class="card-body flex-1">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="truncate text-base font-semibold text-slate-900">{{ plan.label }}</h2>
+          <p class="num text-xs text-slate-400">{{ plan.code }}</p>
+        </div>
+        <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
+          {% if plan.is_default %}<span class="badge badge-brand">{% translate "Default" %}</span>{% endif %}
+          {% if plan.is_active %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Offered" %}</span>{% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Hidden" %}</span>{% endif %}
+        </div>
+      </div>
+      <p class="mt-4 text-2xl font-semibold text-slate-900">{% if plan.price is not None %}<span class="num">{{ plan.price|num:2 }}</span> <span class="text-sm font-normal text-slate-500">{{ plan.currency }} / {{ plan.get_billing_period_display }}</span>{% else %}<span class="text-base font-normal text-slate-400">{% translate "No price set" %}</span>{% endif %}</p>
+      {% if plan.description %}<p class="mt-2 line-clamp-2 text-sm text-slate-500">{{ plan.description }}</p>{% endif %}
+      <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dt class="text-slate-500">{% translate "Branches" %}</dt><dd class="text-end">{% if plan.max_branches %}<span class="num">{{ plan.max_branches }}</span>{% else %}<span class="text-slate-400">{% translate "No limit" %}</span>{% endif %}</dd>
+        <dt class="text-slate-500">{% translate "Users" %}</dt><dd class="text-end">{% if plan.max_users %}<span class="num">{{ plan.max_users }}</span>{% else %}<span class="text-slate-400">{% translate "No limit" %}</span>{% endif %}</dd>
+        <dt class="text-slate-500">{% translate "Features" %}</dt><dd class="text-end"><span class="num">{{ row.features_on }} / {{ row.features_total }}</span></dd>
+        {% if plan.trial_days %}<dt class="text-slate-500">{% translate "Trial days" %}</dt><dd class="text-end"><span class="num">{{ plan.trial_days }}</span></dd>{% endif %}
+      </dl>
+    </div>
+    <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3">
+      <a href="{% url 'console-tenants' %}?plan={{ plan.code }}" class="text-xs text-slate-500 hover:text-brand-700">{% blocktranslate trimmed count n=plan.clients %}{{ n }} client{% plural %}{{ n }} clients{% endblocktranslate %}</a>
+      <div class="flex gap-1">
+        <a href="{% url 'console-plan-edit' plan.pk %}" class="btn btn-ghost text-xs">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</a>
+        <a href="{% url 'console-plan-delete' plan.pk %}" class="btn btn-ghost text-xs text-slate-400 hover:text-red-700" aria-label="{% translate 'Delete' %}" title="{% translate 'Delete' %}">{% icon "trash-2" "size-4" %}</a>
+      </div>
+    </div>
+  </article>
+  {% endwith %}{% endfor %}
+</div>
+{% endblock %}

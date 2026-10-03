@@ -35,7 +35,7 @@
           <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant' row.tenant.pk %}">{{ row.tenant.name }}</a>
             {% if row.tenant.contact_name %}<div class="text-xs text-slate-400">{{ row.tenant.contact_name }}</div>{% endif %}</td>
           <td><span class="num text-xs text-slate-500">{{ row.domain|default:"—" }}</span></td>
-          <td><span class="badge badge-neutral">{{ row.tenant.get_plan_display }}</span>{% if row.tenant.plan == "trial" and row.tenant.trial_ends_on %}<div class="num mt-0.5 text-xs text-slate-400">{{ row.tenant.trial_ends_on|date:"SHORT_DATE_FORMAT" }}</div>{% endif %}</td>
+          <td><span class="badge badge-neutral">{{ row.tenant.plan.label }}</span>{% if row.tenant.trial_ends_on %}<div class="num mt-0.5 text-xs text-slate-400">{{ row.tenant.trial_ends_on|date:"SHORT_DATE_FORMAT" }}</div>{% endif %}</td>
           <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.users }}{% if row.tenant.max_users %}<span class="text-slate-400">/{{ row.tenant.max_users }}</span>{% endif %}</span>{% else %}—{% endif %}</td>
           <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.branches }}{% if row.tenant.max_branches %}<span class="text-slate-400">/{{ row.tenant.max_branches }}</span>{% endif %}</span>{% else %}—{% endif %}</td>
           <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.sales_30d }}</span>{% else %}—{% endif %}</td>

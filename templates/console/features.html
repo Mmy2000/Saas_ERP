@@ -1,0 +1,58 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Features" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Features" %}</h1>
+  <p class="mt-1.5 max-w-3xl text-sm text-slate-500">{% translate "What each plan includes. A client gets its plan's features unless you switch one on or off on the client's own page. A feature that is off disappears from the client's menus, pages and API." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <div class="card card-body flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
+    <span class="font-medium text-slate-900">{% translate "Always included" %}</span>
+    <span>{% translate "Dashboard, retail sales and returns, gold prices, stock, purchases, customers and suppliers, receipts and payments, branches, users and roles, company settings." %}</span>
+  </div>
+
+  {% for group, rows in groups.items %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{{ group }}</h2></div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>
+          <th class="w-full">{% translate "Feature" %}</th>
+          {% for value, label in plans %}<th class="text-center">{{ label }}</th>{% endfor %}
+          <th class="text-end">{% translate "Clients using it" %}</th>
+        </tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr id="f-{{ row.feature.key }}" class="scroll-mt-24">
+            <td>
+              <div class="flex items-start gap-3">
+                <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">{% icon row.feature.icon "size-[18px]" %}</span>
+                <div class="min-w-0">
+                  <p class="font-medium text-slate-900">{{ row.feature.label }}</p>
+                  <p class="mt-0.5 text-xs text-slate-500">{{ row.feature.description }}</p>
+                </div>
+              </div>
+            </td>
+            {% for plan, label, on in row.plans %}
+            <td class="text-center">
+              <form method="post" action="{% url 'console-plan-feature' %}" class="inline-flex">{% csrf_token %}
+                <input type="hidden" name="plan" value="{{ plan }}"><input type="hidden" name="key" value="{{ row.feature.key }}">
+                <input type="hidden" name="enabled" value="{{ on|yesno:'0,1' }}"><input type="hidden" name="next" value="{{ request.path }}">
+                {% blocktranslate asvar switch_label with feature=row.feature.label plan=label %}{{ feature }} in {{ plan }}{% endblocktranslate %}
+                {% include "console/_switch_button.html" with on=on label=switch_label %}
+              </form>
+            </td>
+            {% endfor %}
+            <td class="text-end whitespace-nowrap"><span class="num"><span class="font-medium text-slate-900">{{ row.used_by }}</span><span class="text-xs text-slate-400"> / {{ clients }}</span></span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

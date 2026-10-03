@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -14,6 +15,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
@@ -21,13 +23,14 @@ from django.views.decorators.http import require_POST
 from apps.core.errors import ValidationError
 from apps.core.media import replace_file
 from apps.core.tenancy import tenant_context
+from apps.platform.tenants import features as feature_registry
 from apps.platform.tenants.models import (
+    Plan,
     PlatformEvent,
     PlatformLink,
     PlatformSettings,
     Tenant,
     TenantDomain,
-    TenantPlan,
     TenantStatus,
 )
 from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
@@ -36,6 +39,8 @@ from . import metrics
 from . import traffic as traffic_report
 from .forms import (
     DomainForm,
+    PlanDeleteForm,
+    PlanForm,
     PlatformLinkFormSet,
     PlatformSettingsForm,
     ProfileForm,
@@ -50,6 +55,11 @@ LIMIT_FIELDS = ("plan", "trial_ends_on", "max_branches", "max_users", "contact_n
                 "contact_email", "contact_phone", "notes")
 # The traffic pages' enable/disable switch moves a client between these two only.
 ACCESS_STATUSES = (TenantStatus.ACTIVE, TenantStatus.SUSPENDED)
+def _attr(name: str) -> str:
+    """Form field → Tenant attribute (the plan is stored by its code)."""
+    return "plan_id" if name == "plan" else name
+
+
 # Which statuses can be set from the console, and from which.
 TRANSITIONS = {
     TenantStatus.ACTIVE: (TenantStatus.SUSPENDED, TenantStatus.ARCHIVED,
@@ -109,7 +119,7 @@ def home(request):
 def tenants(request):
     term = request.GET.get("q", "").strip()
     status = request.GET.get("status", "")
-    queryset = Tenant.objects.prefetch_related("domains").order_by("name")
+    queryset = Tenant.objects.select_related("plan").prefetch_related("domains").order_by("name")
     if term:
         queryset = queryset.filter(Q(name__icontains=term) | Q(slug__icontains=term)
                                    | Q(contact_name__icontains=term)
@@ -117,6 +127,9 @@ def tenants(request):
                                    | Q(domains__domain__icontains=term)).distinct()
     if status in TenantStatus.values:
         queryset = queryset.filter(status=status)
+    plan_code = request.GET.get("plan", "")
+    if plan_code:
+        queryset = queryset.filter(plan_id=plan_code)
     page = Paginator(queryset, 25).get_page(request.GET.get("page"))
     usages = {}
     for tenant in page.object_list:
@@ -132,7 +145,8 @@ def tenants(request):
 
 @staff_required
 def tenant_new(request):
-    form = TenantCreateForm(request.POST or None, initial={"plan": TenantPlan.TRIAL})
+    form = TenantCreateForm(request.POST or None,
+                            initial={"plan": Tenant._meta.get_field("plan").get_default()})
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         try:
@@ -146,10 +160,13 @@ def tenant_new(request):
             form.add_error(None, exc.message)
         else:
             for name in LIMIT_FIELDS:
-                setattr(tenant, name, d[name] if d[name] is not None else
+                setattr(tenant, _attr(name), d[name] if d[name] is not None else
                         Tenant._meta.get_field(name).get_default())
+            plan = Plan.objects.get(code=tenant.plan_id)
+            if tenant.trial_ends_on is None and plan.trial_days:
+                tenant.trial_ends_on = timezone.localdate() + timedelta(days=plan.trial_days)
             tenant.save()
-            record(request, "tenant.created", tenant, slug=tenant.slug, plan=tenant.plan)
+            record(request, "tenant.created", tenant, slug=tenant.slug, plan=tenant.plan_id)
             messages.success(request, _("%(name)s is ready.") % {"name": tenant.name})
             return redirect("console-tenant", tenant.pk)
     return render(request, "console/tenant_new.html", {
@@ -176,7 +193,7 @@ def tenant(request, pk):
         with tenant_context(tenant.id):
             profile = TenantProfile.objects.first()
     settings_form = TenantSettingsForm(initial={
-        "name": tenant.name, **{name: getattr(tenant, name) for name in LIMIT_FIELDS}})
+        "name": tenant.name, **{name: getattr(tenant, _attr(name)) for name in LIMIT_FIELDS}})
     profile_form = ProfileForm(initial={
         "display_name": profile.display_name, "locale": profile.locale,
         "country": profile.country, "timezone": profile.timezone,
@@ -188,6 +205,7 @@ def tenant(request, pk):
         "owners": _owners(tenant) if profile else [],
         "profile_logo_url": profile.logo.url if profile and profile.logo else "",
         "events": tenant.events.select_related("actor")[:12],
+        "feature_states": feature_registry.states(tenant),
         "settings_form": settings_form, "profile_form": profile_form, "domain_form": DomainForm(),
         "transitions": [(s, TenantStatus(s).label) for s in TRANSITIONS
                         if tenant.status in TRANSITIONS[s]],
@@ -205,17 +223,17 @@ def _invalid(request, form) -> None:
 @require_POST
 def tenant_settings(request, pk):
     tenant = _tenant(pk)
-    form = TenantSettingsForm(request.POST)
+    form = TenantSettingsForm(request.POST, initial={"plan": tenant.plan_id})
     if not form.is_valid():
         _invalid(request, form)
         return redirect("console-tenant", pk)
-    before = {name: getattr(tenant, name) for name in ("name", *LIMIT_FIELDS)}
+    before = {name: getattr(tenant, _attr(name)) for name in ("name", *LIMIT_FIELDS)}
     tenant.name = form.cleaned_data["name"]
     for name in LIMIT_FIELDS:
-        setattr(tenant, name, form.cleaned_data[name])
+        setattr(tenant, _attr(name), form.cleaned_data[name])
     tenant.save()
-    changed = {name: getattr(tenant, name) for name in before
-               if getattr(tenant, name) != before[name]}
+    changed = {name: getattr(tenant, _attr(name)) for name in before
+               if getattr(tenant, _attr(name)) != before[name]}
     record(request, "tenant.updated", tenant, **changed)
     messages.success(request, _("Saved."))
     return redirect("console-tenant", pk)
@@ -445,3 +463,160 @@ def platform_settings(request):
         messages.error(request, _("Please correct the highlighted fields."))
     return render(request, "console/settings.html", {
         "form": form, "links": links, "settings_row": row, "section": "settings"})
+
+
+# ---- Features (apps.platform.tenants.features) ----
+
+def _back(request, fallback: str, anchor: str = ""):
+    next_url = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+        next_url = fallback
+    return redirect(f"{next_url}{anchor}")
+
+
+@staff_required
+def features(request):
+    """Every feature, which plans include it by default, and how many clients have it on."""
+    defaults = feature_registry.plan_defaults()
+    live = list(Tenant.objects.filter(status__in=(TenantStatus.ACTIVE, TenantStatus.SUSPENDED)))
+    usage = {f.key: 0 for f in feature_registry.FEATURES}
+    for tenant in live:
+        for key in feature_registry.enabled_keys(tenant.pk):
+            if key in usage:
+                usage[key] += 1
+    plans = [(p.code, p.label) for p in Plan.objects.all()]
+    groups: dict[str, list] = {}
+    for feature in feature_registry.FEATURES:
+        groups.setdefault(str(feature.group), []).append({
+            "feature": feature, "used_by": usage[feature.key],
+            "plans": [(value, label, defaults.get(value, {}).get(feature.key, False))
+                      for value, label in plans]})
+    return render(request, "console/features.html", {
+        "groups": groups, "plans": plans, "clients": len(live), "section": "features"})
+
+
+@staff_required
+@require_POST
+def plan_feature(request):
+    from apps.platform.tenants.models import PlanFeature
+
+    key, plan = request.POST.get("key", ""), request.POST.get("plan", "")
+    plan_row = Plan.objects.filter(code=plan).first()
+    if key not in feature_registry.BY_KEY or plan_row is None:
+        raise Http404
+    enabled = request.POST.get("enabled") == "1"
+    PlanFeature.objects.update_or_create(plan=plan_row, key=key,
+                                         defaults={"enabled": enabled})
+    feature_registry.forget()
+    record(request, "feature.plan", None, plan=plan, feature=key, enabled=enabled)
+    feature = feature_registry.BY_KEY[key]
+    messages.success(request, (_("%(feature)s is now included in %(plan)s.") if enabled else
+                               _("%(feature)s is no longer included in %(plan)s."))
+                     % {"feature": feature.label, "plan": plan_row.label})
+    return _back(request, reverse("console-features"), f"#f-{key}")
+
+
+@staff_required
+@require_POST
+def tenant_feature(request, pk):
+    from apps.platform.tenants.models import TenantFeature
+
+    tenant = _tenant(pk)
+    key, state = request.POST.get("key", ""), request.POST.get("state", "")
+    if key not in feature_registry.BY_KEY or state not in ("on", "off", "default"):
+        raise Http404
+    if state == "default":
+        TenantFeature.objects.filter(tenant=tenant, key=key).delete()
+    else:
+        TenantFeature.objects.update_or_create(tenant=tenant, key=key,
+                                               defaults={"enabled": state == "on"})
+    feature_registry.forget(tenant.pk)
+    record(request, "feature.client", tenant, feature=key, state=state)
+    feature = feature_registry.BY_KEY[key]
+    messages.success(request, {
+        "on": _("%(feature)s is on for %(name)s."),
+        "off": _("%(feature)s is off for %(name)s."),
+        "default": _("%(feature)s follows the plan again for %(name)s."),
+    }[state] % {"feature": feature.label, "name": tenant.name})
+    return _back(request, reverse("console-tenant", args=[pk]), f"#f-{key}")
+
+
+# ---- Plans ----
+
+@staff_required
+def plans(request):
+    from django.db.models import Count, Q
+
+    rows = Plan.objects.annotate(
+        clients=Count("tenants", distinct=True),
+        live=Count("tenants", filter=Q(tenants__status=TenantStatus.ACTIVE), distinct=True))
+    defaults = feature_registry.plan_defaults()
+    total = len(feature_registry.FEATURES)
+    return render(request, "console/plans.html", {
+        "plans": [{"plan": p, "features_on": sum(defaults.get(p.code, {}).values()),
+                   "features_total": total} for p in rows],
+        "section": "plans"})
+
+
+def _plan_form(request, plan: Plan | None):
+    form = PlanForm(request.POST or None, instance=plan)
+    if request.method == "POST" and form.is_valid():
+        changed = [name for name in form.changed_data if not name.startswith("feature_")]
+        saved = form.save()
+        form.save_features(saved)
+        feature_registry.forget()
+        record(request, "plan.updated" if plan else "plan.created", None, plan=saved.code,
+               **{name: form.cleaned_data[name] for name in changed if name != "code"})
+        messages.success(request, _("Saved."))
+        return redirect("console-plans")
+    return render(request, "console/plan_form.html", {
+        "form": form, "plan": plan, "section": "plans"})
+
+
+@staff_required
+def plan_new(request):
+    return _plan_form(request, None)
+
+
+@staff_required
+def plan_edit(request, pk):
+    plan = Plan.objects.filter(pk=pk).first()
+    if plan is None:
+        raise Http404
+    return _plan_form(request, plan)
+
+
+@staff_required
+def plan_delete(request, pk):
+    """Delete a plan. Its clients (if any) move to another plan first, in the same step."""
+    from django.db import transaction
+
+    plan = Plan.objects.filter(pk=pk).first()
+    if plan is None:
+        raise Http404
+    clients = list(plan.tenants.order_by("name"))
+    others = Plan.objects.exclude(pk=plan.pk)
+    if not others.exists():
+        messages.error(request, _("The last plan cannot be deleted."))
+        return redirect("console-plans")
+    form = PlanDeleteForm(request.POST or None, plan=plan, initial={
+        "move_to": (others.filter(is_default=True).first() or others.first()).code})
+    if request.method == "POST" and form.is_valid():
+        target = Plan.objects.get(code=form.cleaned_data["move_to"])
+        with transaction.atomic():
+            for tenant in clients:
+                tenant.plan = target
+                tenant.save(update_fields=["plan", "updated_at"])
+                record(request, "tenant.updated", tenant, plan=target.code)
+            if plan.is_default:
+                target.is_default, target.is_active = True, True
+                target.save()
+            code = plan.code
+            plan.delete()
+        feature_registry.forget()
+        record(request, "plan.deleted", None, plan=code, moved_to=target.code,
+               clients=len(clients))
+        messages.success(request, _("Plan deleted."))
+        return redirect("console-plans")
+    return render(request, "console/plan_delete.html", {
+        "plan": plan, "clients": clients, "form": form, "section": "plans"})

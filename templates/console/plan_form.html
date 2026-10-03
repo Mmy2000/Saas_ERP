@@ -1,0 +1,72 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% if plan %}{{ plan.label }}{% else %}{% translate "New plan" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-plans' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Plans" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if plan %}{{ plan.label }}{% else %}{% translate "New plan" %}{% endif %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 xl:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6 xl:col-span-2">
+    {% if form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Plan" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=form.name %}
+        {% include "console/_field.html" with field=form.name_ar %}
+        {% include "console/_field.html" with field=form.code %}
+        {% include "console/_field.html" with field=form.position %}
+        {% include "console/_field.html" with field=form.description span="sm:col-span-2" %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Price" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        {% include "console/_field.html" with field=form.price %}
+        {% include "console/_field.html" with field=form.currency %}
+        {% include "console/_field.html" with field=form.billing_period %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Limits" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=form.max_branches %}
+        {% include "console/_field.html" with field=form.max_users %}
+        {% include "console/_field.html" with field=form.requests_per_minute %}
+        {% include "console/_field.html" with field=form.trial_days %}
+      </div>
+    </section>
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Features" %}</h2><span class="text-xs text-slate-500">{% translate "A client can still be given or denied one on its own page." %}</span></div>
+      <ul class="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-y-0">
+        {% for feature, field in form.feature_rows %}
+        <li class="sm:border-b sm:border-slate-100">
+          <label class="flex cursor-pointer items-start gap-3 px-5 py-3 hover:bg-slate-50/70">
+            <span class="mt-0.5">{{ field }}</span>
+            <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">{% icon feature.icon "size-4" %}</span>
+            <span class="min-w-0"><span class="block text-sm font-medium text-slate-900">{{ feature.label }}</span><span class="block text-xs text-slate-500">{{ feature.description }}</span></span>
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Availability" %}</h2></div>
+      <div class="card-body space-y-4">
+        <label class="flex items-start gap-3">{{ form.is_active }}<span><span class="block text-sm text-slate-900">{{ form.is_active.label }}</span><span class="block text-xs text-slate-500">{% translate "Hidden plans keep their clients but are not offered for new ones." %}</span></span></label>
+        {% for error in form.is_active.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        <label class="flex items-start gap-3">{{ form.is_default }}<span><span class="block text-sm text-slate-900">{{ form.is_default.label }}</span><span class="block text-xs text-slate-500">{% translate "Preselected when you create a client." %}</span></span></label>
+      </div>
+    </section>
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'console-plans' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

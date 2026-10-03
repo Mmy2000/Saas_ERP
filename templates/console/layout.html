@@ -15,12 +15,14 @@
       <button type="button" class="ms-auto rounded-md p-1 text-zinc-500 hover:text-white lg:hidden" data-sidebar-close aria-label="{% translate 'Close menu' %}">{% icon "x" "size-5" %}</button>
     </div>
     <nav class="flex-1 space-y-0.5 overflow-x-hidden overflow-y-auto px-3 py-4" aria-label="{% translate 'Main' %}">
-      {% url 'home' as url_home %}{% url 'console-tenants' as url_tenants %}{% url 'console-tenant-new' as url_new %}{% url 'console-events' as url_events %}{% url 'console-traffic' as url_traffic %}{% url 'console-settings' as url_settings %}
+      {% url 'home' as url_home %}{% url 'console-tenants' as url_tenants %}{% url 'console-tenant-new' as url_new %}{% url 'console-events' as url_events %}{% url 'console-traffic' as url_traffic %}{% url 'console-settings' as url_settings %}{% url 'console-features' as url_features %}{% url 'console-plans' as url_plans %}
       <a href="{{ url_home }}" class="console-link"{% if section == "home" %} aria-current="page"{% endif %}>{% icon "layout-dashboard" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Overview" %}</span></a>
       <a href="{{ url_tenants }}" class="console-link"{% if section == "tenants" %} aria-current="page"{% endif %}>{% icon "building-2" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Clients" %}</span></a>
       <a href="{{ url_new }}" class="console-link"{% if section == "new" %} aria-current="page"{% endif %}>{% icon "plus" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "New client" %}</span></a>
       <a href="{{ url_traffic }}" class="console-link"{% if section == "traffic" %} aria-current="page"{% endif %}>{% icon "chart-column" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Traffic" %}</span></a>
       <a href="{{ url_events }}" class="console-link"{% if section == "events" %} aria-current="page"{% endif %}>{% icon "history" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Activity" %}</span></a>
+      <a href="{{ url_plans }}" class="console-link"{% if section == "plans" %} aria-current="page"{% endif %}>{% icon "credit-card" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Plans" %}</span></a>
+      <a href="{{ url_features }}" class="console-link"{% if section == "features" %} aria-current="page"{% endif %}>{% icon "layers" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Features" %}</span></a>
       <a href="{{ url_settings }}" class="console-link"{% if section == "settings" %} aria-current="page"{% endif %}>{% icon "settings" "size-[17px]" %}<span class="truncate" data-sidebar-label>{% translate "Settings" %}</span></a>
     </nav>
     <div class="border-t border-white/10 p-3">

@@ -13,6 +13,7 @@ from functools import wraps
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.shortcuts import render
 from django.utils.translation import gettext as _
 
 from apps.core.errors import PermissionDenied
@@ -34,6 +35,9 @@ class Actor:
     membership: object
     grants: dict[str, frozenset[int] | None] = field(default_factory=dict)
     limit_values: dict[str, Decimal] = field(default_factory=dict)
+    # Permissions owned by features switched off for this client (console → Features): not
+    # granted to anyone, Owners included. See apps.platform.tenants.features.
+    disabled: frozenset[str] = frozenset()
 
     def _scopes(self, code: str):
         for key in (code, WILDCARD):
@@ -43,13 +47,21 @@ class Actor:
     def can(self, code: str, branch=None) -> bool:
         if code == AUTHENTICATED:
             return True
+        if code in self.disabled:
+            return False
         branch_id = getattr(branch, "pk", branch)
         for scope in self._scopes(code):
             if scope is ALL_BRANCHES or branch_id is None or branch_id in scope:
                 return True
         return False
 
+    def feature_off(self, code: str) -> bool:
+        return code in self.disabled
+
     def require(self, code: str, branch=None) -> None:
+        if self.feature_off(code):
+            raise PermissionDenied(_("This feature is not available in your plan."),
+                                   code="FEATURE_DISABLED")
         if not self.can(code, branch):
             raise PermissionDenied(_("You do not have permission to do this."),
                                    code="PERMISSION_DENIED")
@@ -88,8 +100,11 @@ def build_actor(membership) -> Actor:
                                         if grant.permission in grants else scope)
 
     limit_values = {lim.key: lim.value for lim in membership.limits.all()}
+    from apps.platform.tenants.features import disabled_permissions
+
     return Actor(user=membership.user, membership=membership, grants=grants,
-                 limit_values=limit_values)
+                 limit_values=limit_values,
+                 disabled=disabled_permissions(membership.tenant_id))
 
 
 def permission_required(code: str):
@@ -100,6 +115,8 @@ def permission_required(code: str):
         @login_required
         def wrapped(request, *args, **kwargs):
             actor = getattr(request, "actor", None)
+            if actor is not None and actor.feature_off(code):
+                return render(request, "feature_off.html", status=403)
             if actor is None or not actor.can(code):
                 raise DjangoPermissionDenied
             return view(request, *args, **kwargs)

@@ -7,11 +7,11 @@ from apps.core.appearance import ACCENT_CHOICES
 from apps.core.media import ImageUploadInput, validate_image
 from apps.platform.tenants.models import (
     RESERVED_SLUGS,
+    Plan,
     PlatformLink,
     PlatformSettings,
     Tenant,
     TenantDomain,
-    TenantPlan,
     slug_validator,
 )
 
@@ -59,7 +59,17 @@ class StaffLoginForm(Styled, AuthenticationForm):
 
 
 class _Limits(Styled, forms.Form):
-    plan = forms.ChoiceField(label=_("Plan"), choices=TenantPlan.choices)
+    plan = forms.ChoiceField(label=_("Plan"))
+    only_active_plans = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        plans = Plan.objects.all()
+        if self.only_active_plans:
+            plans = plans.filter(is_active=True)
+        current = (self.initial or {}).get("plan")
+        self.fields["plan"].choices = [(p.code, p.label) for p in plans] + [
+            (code, code) for code in [current] if code and not plans.filter(code=code).exists()]
     trial_ends_on = forms.DateField(label=_("Trial ends on"), required=False,
                                     widget=forms.DateInput(attrs={"type": "date"}))
     max_branches = forms.IntegerField(label=_("Most branches"), min_value=1, required=False)
@@ -72,6 +82,7 @@ class _Limits(Styled, forms.Form):
 
 
 class TenantCreateForm(_Limits):
+    only_active_plans = True
     name = forms.CharField(label=_("Company name"), max_length=200)
     slug = forms.CharField(label=_("Address"), max_length=63, validators=[slug_validator],
                            help_text=_("Lowercase letters, digits and hyphens."),
@@ -206,3 +217,77 @@ class PlatformLinkForm(Styled, forms.ModelForm):
 
 PlatformLinkFormSet = forms.modelformset_factory(
     PlatformLink, form=PlatformLinkForm, extra=2, can_delete=True)
+
+
+class PlanForm(Styled, forms.ModelForm):
+    """A plan, with its features as checkboxes (saved as PlanFeature rows)."""
+
+    class Meta:
+        model = Plan
+        fields = ["code", "name", "name_ar", "description", "price", "currency",
+                  "billing_period", "max_branches", "max_users", "requests_per_minute",
+                  "trial_days", "position", "is_active", "is_default"]
+        labels = {
+            "code": _("Code"), "name": _("Name (English)"), "name_ar": _("Name (Arabic)"),
+            "description": _("Description"), "price": _("Price"), "currency": _("Currency"),
+            "billing_period": _("Billed"), "max_branches": _("Most branches"),
+            "max_users": _("Most users"), "requests_per_minute": _("Requests per minute"),
+            "trial_days": _("Trial days"), "position": _("Order"),
+            "is_active": _("Offered for new clients"), "is_default": _("Default for new clients"),
+        }
+        help_texts = {
+            "code": _("Lowercase letters, digits and hyphens. Cannot change later."),
+            "max_branches": _("Empty: no limit. A client's own limit wins."),
+            "max_users": _("Empty: no limit. A client's own limit wins."),
+            "requests_per_minute": _("Empty: the platform default. 0: no limit."),
+            "trial_days": _("New clients on this plan get a trial ending this many days later."),
+        }
+        widgets = {"description": forms.Textarea(attrs={"rows": 2})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.platform.tenants import features as registry
+
+        self.fields["currency"] = forms.ChoiceField(label=_("Currency"), choices=CURRENCIES,
+                                                    initial="EGP")
+        if self.instance.pk:
+            self.fields["code"].disabled = True
+        saved = ({row.key: row.enabled for row in self.instance.feature_rows.all()}
+                 if self.instance.pk else {})
+        self.feature_fields = []
+        for feature in registry.FEATURES:
+            name = f"feature_{feature.key}"
+            self.fields[name] = forms.BooleanField(
+                label=feature.label, help_text=feature.description, required=False,
+                initial=saved.get(feature.key, True))
+            self.feature_fields.append((feature, name))
+        for field in self.fields.values():
+            if isinstance(field, forms.BooleanField):
+                field.widget.attrs["class"] = "size-4 rounded border-slate-300 accent-brand-600"
+            elif isinstance(field, forms.DecimalField):
+                field.widget.attrs["class"] = "form-input num w-full text-start"
+
+    def clean(self):
+        data = super().clean()
+        if data.get("is_default") and not data.get("is_active"):
+            self.add_error("is_active", _("The default plan must be offered for new clients."))
+        return data
+
+    def feature_rows(self):
+        return [(feature, self[name]) for feature, name in self.feature_fields]
+
+    def save_features(self, plan) -> None:
+        from apps.platform.tenants.models import PlanFeature
+
+        for feature, name in self.feature_fields:
+            PlanFeature.objects.update_or_create(
+                plan=plan, key=feature.key, defaults={"enabled": self.cleaned_data[name]})
+
+
+class PlanDeleteForm(Styled, forms.Form):
+    move_to = forms.ChoiceField(label=_("Move its clients to"))
+
+    def __init__(self, *args, plan, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["move_to"].choices = [(p.code, p.label)
+                                          for p in Plan.objects.exclude(pk=plan.pk)]

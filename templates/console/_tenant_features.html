@@ -1,0 +1,31 @@
+{% load i18n ui %}{# Client page: each feature, on or off, and whether it follows the plan. #}
+<section class="card overflow-hidden" id="features">
+  <div class="card-header">
+    <h2 class="card-title">{% translate "Features" %}</h2>
+    <a href="{% url 'console-features' %}" class="text-xs text-slate-500 hover:text-brand-700">{% blocktranslate trimmed with plan=tenant.plan.label %}Plan: {{ plan }}{% endblocktranslate %}</a>
+  </div>
+  <ul class="divide-y divide-slate-100">
+    {% for state in feature_states %}
+    <li id="f-{{ state.feature.key }}" class="flex scroll-mt-24 items-center gap-3 px-5 py-3">
+      <span class="grid size-8 shrink-0 place-items-center rounded-lg {% if state.enabled %}bg-brand-50 text-brand-600 ring-1 ring-brand-200/70{% else %}bg-slate-100 text-slate-400{% endif %}">{% icon state.feature.icon "size-4" %}</span>
+      <div class="min-w-0 flex-1">
+        <p class="flex flex-wrap items-center gap-2 text-sm font-medium {% if state.enabled %}text-slate-900{% else %}text-slate-500{% endif %}">
+          {{ state.feature.label }}
+          {% if state.custom %}<span class="badge badge-warning">{% translate "Custom" %}</span>{% else %}<span class="badge badge-neutral">{% translate "From the plan" %}</span>{% endif %}
+        </p>
+        <p class="truncate text-xs text-slate-500">{{ state.feature.description }}</p>
+      </div>
+      {% if state.custom %}
+      <form method="post" action="{% url 'console-tenant-feature' tenant.pk %}">{% csrf_token %}
+        <input type="hidden" name="key" value="{{ state.feature.key }}"><input type="hidden" name="state" value="default">
+        <button type="submit" class="btn btn-ghost text-xs" title="{% if state.plan_default %}{% translate 'The plan includes it' %}{% else %}{% translate 'The plan does not include it' %}{% endif %}">{% translate "Use the plan" %}</button>
+      </form>
+      {% endif %}
+      <form method="post" action="{% url 'console-tenant-feature' tenant.pk %}" class="inline-flex">{% csrf_token %}
+        <input type="hidden" name="key" value="{{ state.feature.key }}"><input type="hidden" name="state" value="{{ state.enabled|yesno:'off,on' }}">
+        {% include "console/_switch_button.html" with on=state.enabled label=state.feature.label %}
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

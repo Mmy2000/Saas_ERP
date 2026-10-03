@@ -68,6 +68,24 @@ msgstr "%(ct)s قيراط"
 msgid "%(customers)s customers · %(pieces)s pieces in stock"
 msgstr "%(customers)s عميل · %(pieces)s قطعة بالمخزون"
 
+msgid "%(feature)s follows the plan again for %(name)s."
+msgstr "%(feature)s يتبع الباقة مرة أخرى لدى %(name)s."
+
+msgid "%(feature)s in %(plan)s"
+msgstr "%(feature)s في %(plan)s"
+
+msgid "%(feature)s is no longer included in %(plan)s."
+msgstr "لم تعد %(feature)s ضمن باقة %(plan)s."
+
+msgid "%(feature)s is now included in %(plan)s."
+msgstr "أصبحت %(feature)s ضمن باقة %(plan)s."
+
+msgid "%(feature)s is off for %(name)s."
+msgstr "تم إيقاف %(feature)s لدى %(name)s."
+
+msgid "%(feature)s is on for %(name)s."
+msgstr "تم تفعيل %(feature)s لدى %(name)s."
+
 msgid "%(karat)s has no price on this board."
 msgstr "لا يوجد سعر لـ %(karat)s في هذه النشرة."
 
@@ -88,6 +106,24 @@ msgstr "%(ms)s مللي ثانية في المتوسط"
 
 msgid "%(ms)s ms or longer"
 msgstr "%(ms)s مللي ثانية أو أكثر"
+
+msgid "%(n)s client"
+msgid_plural "%(n)s clients"
+msgstr[0] "لا عملاء"
+msgstr[1] "عميل واحد"
+msgstr[2] "عميلان"
+msgstr[3] "%(n)s عملاء"
+msgstr[4] "%(n)s عميلاً"
+msgstr[5] "%(n)s عميل"
+
+msgid "%(n)s client is on this plan. It moves to the plan you choose, with that plan's features and limits (its own settings stay)."
+msgid_plural "%(n)s clients are on this plan. They move to the plan you choose, with that plan's features and limits (their own settings stay)."
+msgstr[0] "لا عملاء على هذه الباقة."
+msgstr[1] "عميل واحد على هذه الباقة. سينتقل إلى الباقة التي تختارها بخصائصها وحدودها (إعداداته الخاصة تبقى)."
+msgstr[2] "عميلان على هذه الباقة. سينتقلان إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهما الخاصة تبقى)."
+msgstr[3] "%(n)s عملاء على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهم الخاصة تبقى)."
+msgstr[4] "%(n)s عميلاً على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهم الخاصة تبقى)."
+msgstr[5] "%(n)s عميل على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهم الخاصة تبقى)."
 
 msgid "%(n)s new in the last 30 days"
 msgstr "%(n)s جديد في آخر 30 يومًا"
@@ -148,6 +184,9 @@ msgstr "يوجد بند بهذا الاسم بالفعل."
 
 msgid "A change applies from the client's next request and is kept in the activity log."
 msgstr "يسري التغيير من الطلب التالي للعميل ويُسجَّل في سجل النشاط."
+
+msgid "A client can still be given or denied one on its own page."
+msgstr "يمكن منح العميل خاصية أو منعها عنه من صفحته."
 
 msgid "A karat appears twice."
 msgstr "تكرر أحد العيارات."
@@ -371,6 +410,9 @@ msgstr "موجود بالفعل."
 msgid "Already used by another customer."
 msgstr "مستخدم لعميل آخر."
 
+msgid "Always included"
+msgstr "متاح دائماً"
+
 msgid "Amount"
 msgstr "المبلغ"
 
@@ -436,6 +478,9 @@ msgstr "لدى الورشة"
 
 msgid "Automatic"
 msgstr "تلقائي"
+
+msgid "Availability"
+msgstr "الإتاحة"
 
 msgid "Average"
 msgstr "المتوسط"
@@ -521,6 +566,9 @@ msgstr "الباركود (الخطوط)"
 msgid "Barcode height (mm)"
 msgstr "ارتفاع الباركود (مم)"
 
+msgid "Barcode labels"
+msgstr "ملصقات الباركود"
+
 msgid "Barcode number"
 msgstr "رقم الباركود"
 
@@ -539,6 +587,9 @@ msgstr "قيد الإعداد"
 msgid "Between %(low)s and %(high)s."
 msgstr "بين %(low)s و%(high)s."
 
+msgid "Billed"
+msgstr "الفوترة"
+
 msgid "Birth date"
 msgstr "تاريخ الميلاد"
 
@@ -554,6 +605,9 @@ msgstr "تسجيل على فرع"
 msgid "Bought"
 msgstr "المشترى"
 
+msgid "Boxes, bank accounts, card terminals, transfers and currency exchange."
+msgstr "الخزائن والحسابات البنكية وأجهزة البطاقات والتحويلات وتبديل العملات."
+
 msgid "Bracelet size"
 msgstr "مقاس الأسورة"
 
@@ -562,6 +616,9 @@ msgstr "الفرع"
 
 msgid "Branch clearing"
 msgstr "حساب جاري الفروع"
+
+msgid "Branch transfers"
+msgstr "التحويل بين الفروع"
 
 msgid "Branches"
 msgstr "الفروع"
@@ -619,6 +676,9 @@ msgstr "شراء منه"
 
 msgid "Buy scrap"
 msgstr "شراء كسر"
+
+msgid "Buy scrap from walk-ins and customers, sell it to dealers."
+msgstr "شراء الكسر من الأفراد والعملاء وبيعه للتجار."
 
 msgid "Buy scrap gold"
 msgstr "شراء ذهب كسر"
@@ -808,6 +868,9 @@ msgstr "الخزينة"
 
 msgid "Cash boxes"
 msgstr "الخزائن"
+
+msgid "Cash boxes and banks"
+msgstr "الخزائن والبنوك"
 
 msgid "Cash boxes, bank accounts and card terminals, with what each one holds now."
 msgstr "الخزائن والحسابات البنكية وماكينات الدفع، ورصيد كل منها الآن."
@@ -1007,6 +1070,9 @@ msgstr "العملاء"
 msgid "Clients by server load"
 msgstr "العملاء حسب الحمل على الخادم"
 
+msgid "Clients using it"
+msgstr "العملاء المستخدمون"
+
 msgid "Close accounting periods"
 msgstr "إقفال الفترات المحاسبية"
 
@@ -1055,6 +1121,9 @@ msgstr "إعدادات الشركة"
 msgid "Company settings changed"
 msgstr "تعديل إعدادات الشركة"
 
+msgid "Compare features"
+msgstr "مقارنة الخصائص"
+
 msgid "Compared with yesterday"
 msgstr "مقارنة بالأمس"
 
@@ -1084,6 +1153,9 @@ msgstr "نشاط لوحة المنصة"
 
 msgid "Contact"
 msgstr "التواصل"
+
+msgid "Contact %(name)s to add it to your workspace."
+msgstr "تواصل مع %(name)s لإضافتها إلى مساحة عملك."
 
 msgid "Contact email"
 msgstr "بريد التواصل"
@@ -1120,6 +1192,9 @@ msgstr "جرد قطع الفرع والذهب بالوزن، ثم تسجيل ا�
 
 msgid "Count pieces and weigh bulk stock in a stocktake"
 msgstr "عدّ القطع ووزن الذهب في الجرد"
+
+msgid "Count pieces and weigh bulk stock, then post the differences."
+msgstr "عدّ القطع ووزن البضاعة بالجرام ثم ترحيل الفروقات."
 
 msgid "Count started."
 msgstr "بدأ الجرد."
@@ -1169,6 +1244,9 @@ msgstr "الأسعار الحالية"
 msgid "Current rates"
 msgstr "الأسعار الحالية"
 
+msgid "Custom"
+msgstr "مخصص"
+
 msgid "Custom order"
 msgstr "طلب تصنيع"
 
@@ -1208,11 +1286,17 @@ msgstr "قطع العملاء المستلمة وأكياسها ومكانها �
 msgid "Daily summary"
 msgstr "ملخص اليوم"
 
+msgid "Daily summary, gold balances, sales analysis and expenses, with export."
+msgstr "ملخص اليوم وأرصدة الذهب وتحليل المبيعات والمصروفات، مع التصدير."
+
 msgid "Dark"
 msgstr "داكن"
 
 msgid "Dashboard"
 msgstr "لوحة التحكم"
+
+msgid "Dashboard, retail sales and returns, gold prices, stock, purchases, customers and suppliers, receipts and payments, branches, users and roles, company settings."
+msgstr "لوحة التحكم، البيع والمرتجعات، أسعار الذهب، المخزون، المشتريات، العملاء والموردون، المقبوضات والمدفوعات، الفروع، المستخدمون والأدوار، إعدادات الشركة."
 
 msgid "Date"
 msgstr "التاريخ"
@@ -1280,6 +1364,9 @@ msgstr "الفرع الافتراضي"
 msgid "Default cash box"
 msgstr "الخزينة الافتراضية"
 
+msgid "Default for new clients"
+msgstr "الافتراضية للعملاء الجدد"
+
 msgid "Default karat"
 msgstr "العيار الافتراضي"
 
@@ -1297,6 +1384,12 @@ msgstr "قيم افتراضية للجرام، ويمكن للقطع والعر�
 
 msgid "Delete"
 msgstr "حذف"
+
+msgid "Delete %(name)s?"
+msgstr "حذف %(name)s؟"
+
+msgid "Delete plan"
+msgstr "حذف الباقة"
 
 msgid "Delete template"
 msgstr "حذف القالب"
@@ -1550,8 +1643,14 @@ msgstr "فارغ = الآن"
 msgid "Empty uses the platform default. 0 means no limit."
 msgstr "اتركه فارغًا لاستخدام الحد الافتراضي للمنصة. 0 يعني بلا حد."
 
+msgid "Empty: no limit. A client's own limit wins."
+msgstr "فارغ: بلا حد. حد العميل نفسه له الأولوية."
+
 msgid "Empty: shown as “21K” in each user's language."
 msgstr "فارغ: يظهر «عيار 21» بلغة كل مستخدم."
+
+msgid "Empty: the platform default. 0: no limit."
+msgstr "فارغ: الافتراضي للمنصة. 0: بلا حد."
 
 msgid "Enable this client"
 msgstr "تفعيل هذا العميل"
@@ -1600,9 +1699,6 @@ msgstr "أدخل الوزن."
 
 msgid "Entered"
 msgstr "مُدخل"
-
-msgid "Enterprise"
-msgstr "مؤسسات"
 
 msgid "Entries appear here as documents are posted, or when you add one by hand."
 msgstr "تظهر القيود هنا عند ترحيل المستندات أو عند إضافتها يدويًا."
@@ -1685,6 +1781,9 @@ msgstr "حساب المصروف"
 msgid "Expense categories"
 msgstr "بنود المصروفات"
 
+msgid "Expense categories and vouchers paid from a box or bank."
+msgstr "بنود المصروفات وسنداتها المدفوعة من خزينة أو بنك."
+
 msgid "Expense category"
 msgstr "بند المصروف"
 
@@ -1696,6 +1795,15 @@ msgstr "المصروفات حسب البند"
 
 msgid "Family"
 msgstr "النوع"
+
+msgid "Feature"
+msgstr "الخاصية"
+
+msgid "Feature changed for a client"
+msgstr "تم تغيير خاصية لعميل"
+
+msgid "Features"
+msgstr "الخصائص"
 
 msgid "Fee"
 msgstr "العمولة"
@@ -1768,6 +1876,9 @@ msgstr "لفريق %(name)s: كل العملاء في مكان واحد."
 
 msgid "From"
 msgstr "من"
+
+msgid "From the plan"
+msgstr "من الباقة"
 
 msgid "Full access"
 msgstr "صلاحيات كاملة"
@@ -1934,8 +2045,17 @@ msgstr "الفرع الرئيسي"
 msgid "Heaviest screens"
 msgstr "أثقل الشاشات"
 
+msgid "Hidden"
+msgstr "مخفية"
+
+msgid "Hidden plans keep their clients but are not offered for new ones."
+msgstr "الباقات المخفية تحتفظ بعملائها لكنها لا تُعرض للعملاء الجدد."
+
 msgid "History"
 msgstr "السجل"
+
+msgid "Hold pieces for customers, with deposits and a price lock."
+msgstr "حجز القطع للعملاء بعربون وتثبيت السعر."
 
 msgid "Hold until"
 msgstr "محجوز حتى"
@@ -2030,6 +2150,9 @@ msgstr "اليومية"
 msgid "Journal entry"
 msgstr "قيد اليومية"
 
+msgid "Journal, trial balance and the chart of accounts."
+msgstr "اليومية وميزان المراجعة ودليل الحسابات."
+
 msgid "Karat"
 msgstr "العيار"
 
@@ -2062,6 +2185,9 @@ msgstr "قالب الملصق"
 
 msgid "Label templates"
 msgstr "قوالب الملصقات"
+
+msgid "Label templates and printing, including Zebra printers."
+msgstr "قوالب الملصقات وطباعتها، بما فيها طابعات Zebra."
 
 msgid "Label width (mm)"
 msgstr "عرض الملصق (مم)"
@@ -2141,8 +2267,11 @@ msgstr "فاتح"
 msgid "Limit"
 msgstr "الحد"
 
-msgid "Limits are checked when the client adds branches or users. Empty means no limit."
-msgstr "تُطبَّق الحدود عند إضافة العميل لفروع أو مستخدمين. الفارغ يعني بلا حد."
+msgid "Limits"
+msgstr "الحدود"
+
+msgid "Limits are checked when the client adds branches or users. Empty: the plan’s limit."
+msgstr "تُطبق الحدود عندما يضيف العميل فروعاً أو مستخدمين. فارغ: حد الباقة."
 
 msgid "Line under each client's name"
 msgstr "السطر تحت اسم كل عميل"
@@ -2191,6 +2320,9 @@ msgstr "يجب أن يكون الهالك أقل من الوزن."
 
 msgid "Lowercase letters, digits and hyphens."
 msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
+
+msgid "Lowercase letters, digits and hyphens. Cannot change later."
+msgstr "حروف إنجليزية صغيرة وأرقام وشرطات. لا يمكن تغييره لاحقاً."
 
 msgid "Made a mistake? Cancel the receipt to record it again. This only works while the goods received are still in stock."
 msgstr "هل حدث خطأ؟ ألغِ الاستلام لتسجيله من جديد. يتاح هذا طالما البضاعة المستلمة ما زالت بالمخزون."
@@ -2357,6 +2489,9 @@ msgstr "صرف نقدية"
 msgid "Money received"
 msgstr "قبض نقدية"
 
+msgid "Monthly"
+msgstr "شهرياً"
+
 msgid "More gold came back than was sent. Confirm the gain to continue."
 msgstr "عاد ذهب أكثر مما أُرسل. أكّد الزيادة للمتابعة."
 
@@ -2372,8 +2507,14 @@ msgstr "أقصى عدد فروع"
 msgid "Most users"
 msgstr "أقصى عدد مستخدمين"
 
+msgid "Move goods between branches, in transit until received."
+msgstr "نقل البضاعة بين الفروع، وتبقى في الطريق حتى الاستلام."
+
 msgid "Move its balance out before deactivating it."
 msgstr "انقل رصيده قبل إيقافه."
+
+msgid "Move its clients to"
+msgstr "نقل عملائها إلى"
 
 msgid "Move money between cash boxes and bank accounts"
 msgstr "نقل الأموال بين الخزائن والحسابات البنكية"
@@ -2392,6 +2533,12 @@ msgstr "لا يمكن أن يكون سالبًا."
 
 msgid "Name"
 msgstr "الاسم"
+
+msgid "Name (Arabic)"
+msgstr "الاسم (عربي)"
+
+msgid "Name (English)"
+msgstr "الاسم (إنجليزي)"
 
 msgid "Name on screens and receipts"
 msgstr "الاسم على الشاشات والإيصالات"
@@ -2444,6 +2591,9 @@ msgstr "بند جديد"
 msgid "New client"
 msgstr "عميل جديد"
 
+msgid "New clients on this plan get a trial ending this many days later."
+msgstr "العملاء الجدد على هذه الباقة يحصلون على فترة تجربة تنتهي بعد هذا العدد من الأيام."
+
 msgid "New customer"
 msgstr "عميل جديد"
 
@@ -2467,6 +2617,9 @@ msgstr "كلمة المرور الجديدة"
 
 msgid "New pieces"
 msgstr "قطع جديدة"
+
+msgid "New plan"
+msgstr "باقة جديدة"
 
 msgid "New purchase"
 msgstr "شراء جديد"
@@ -2530,6 +2683,9 @@ msgstr "لا توجد خزائن بعد"
 
 msgid "No categories yet"
 msgstr "لا توجد بنود بعد"
+
+msgid "No client is on this plan."
+msgstr "لا يوجد عملاء على هذه الباقة."
 
 msgid "No clients match"
 msgstr "لا يوجد عملاء مطابقون"
@@ -2596,6 +2752,9 @@ msgstr "لا توجد قطع مطابقة"
 
 msgid "No pieces yet"
 msgstr "لا توجد قطع بعد"
+
+msgid "No price set"
+msgstr "بدون سعر"
 
 msgid "No purchases yet"
 msgstr "لا توجد مشتريات بعد"
@@ -2675,6 +2834,9 @@ msgstr "غير متوقعة هنا"
 msgid "Not found."
 msgstr "غير موجود."
 
+msgid "Not in your plan"
+msgstr "غير متاحة في باقتك"
+
 msgid "Not open to users yet."
 msgstr "غير متاح للمستخدمين بعد."
 
@@ -2734,6 +2896,12 @@ msgstr "الرقم أو اسم التاجر"
 
 msgid "of the limit"
 msgstr "من الحد"
+
+msgid "Offered"
+msgstr "معروضة"
+
+msgid "Offered for new clients"
+msgstr "معروضة للعملاء الجدد"
 
 msgid "Oman"
 msgstr "عُمان"
@@ -3107,8 +3275,29 @@ msgstr "تعديل الباقة والبيانات"
 msgid "Plan and limits"
 msgstr "الباقة والحدود"
 
+msgid "Plan changed"
+msgstr "تم تعديل باقة"
+
+msgid "Plan created"
+msgstr "تم إنشاء باقة"
+
+msgid "Plan deleted"
+msgstr "تم حذف باقة"
+
+msgid "Plan deleted."
+msgstr "تم حذف الباقة."
+
+msgid "Plan features changed"
+msgstr "تم تغيير خصائص الباقة"
+
 msgid "Plan, limits and contact"
 msgstr "الباقة والحدود والتواصل"
+
+msgid "Plan: %(plan)s"
+msgstr "الباقة: %(plan)s"
+
+msgid "Plans"
+msgstr "الباقات"
 
 msgid "Platform"
 msgstr "المنصة"
@@ -3194,6 +3383,9 @@ msgstr "الترحيل يعطي كل قطعة باركود، ويضيف البض
 msgid "Preferences"
 msgstr "التفضيلات"
 
+msgid "Preselected when you create a client."
+msgstr "تُختار تلقائياً عند إنشاء عميل."
+
 msgid "Preview"
 msgstr "معاينة"
 
@@ -3272,9 +3464,6 @@ msgstr "الطباعة"
 msgid "Produced"
 msgstr "إنتاج"
 
-msgid "Professional"
-msgstr "احترافية"
-
 msgid "Promised"
 msgstr "الموعد"
 
@@ -3286,6 +3475,9 @@ msgstr "نشر سعر صرف"
 
 msgid "Publish exchange rates"
 msgstr "نشر أسعار الصرف"
+
+msgid "Publish exchange rates for selling and paying in other currencies."
+msgstr "نشر أسعار الصرف للبيع والدفع بعملات أخرى."
 
 msgid "Publish gold prices"
 msgstr "نشر أسعار الذهب"
@@ -3854,6 +4046,9 @@ msgstr "بيع"
 msgid "Sell (create and post sales invoices)"
 msgstr "البيع (إنشاء وترحيل فواتير البيع)"
 
+msgid "Sell and buy by weight with traders; one balance in gold and money."
+msgstr "البيع والشراء بالوزن مع التجار، برصيد واحد ذهباً ونقداً."
+
 msgid "Sell scrap"
 msgstr "بيع كسر"
 
@@ -3896,11 +4091,17 @@ msgstr "أرسل ذهبًا لورشة لبدء أمر تشغيل."
 msgid "Send gold to workshops"
 msgstr "إرسال الذهب للورش"
 
+msgid "Send gold to workshops, receive new pieces, loss and labour."
+msgstr "إرسال الذهب للورش واستلام القطع الجديدة، مع الهالك والمصنعية."
+
 msgid "Send goods"
 msgstr "إرسال بضاعة"
 
 msgid "Send goods to another branch"
 msgstr "إرسال بضاعة إلى فرع آخر"
+
+msgid "Send pieces and bulk weight back to suppliers."
+msgstr "إرجاع القطع والأوزان إلى الموردين."
 
 msgid "Send repairs to workshops and mark them ready"
 msgstr "إرسال التصليحات للورش وتجهيزها"
@@ -4037,9 +4238,6 @@ msgstr "رُفضت بعض الطلبات"
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
 
-msgid "Standard"
-msgstr "قياسية"
-
 msgid "Start"
 msgstr "بدء"
 
@@ -4151,6 +4349,9 @@ msgstr "استلام"
 msgid "Take in a repair"
 msgstr "استلام تصليح"
 
+msgid "Take in customers' pieces, bag numbers, deposits and delivery."
+msgstr "استلام قطع العملاء وأرقام الأكياس والعربون والتسليم."
+
 msgid "Take in repairs and custom orders, and their deposits"
 msgstr "استلام التصليحات وطلبات التصنيع وعرابينها"
 
@@ -4195,6 +4396,9 @@ msgstr "هذا التاريخ مضى."
 
 msgid "The deduction must be between zero and the returned value."
 msgstr "يجب أن يكون الخصم بين صفر وقيمة المرتجع."
+
+msgid "The default plan must be offered for new clients."
+msgstr "الباقة الافتراضية يجب أن تكون معروضة للعملاء الجدد."
 
 msgid "The deposit"
 msgstr "العربون"
@@ -4241,6 +4445,9 @@ msgstr "الملصقات لا تتسع في الصفحة."
 msgid "The largest discount you may give is %(max)s%%."
 msgstr "أقصى خصم مسموح لك هو %(max)s%%."
 
+msgid "The last plan cannot be deleted."
+msgstr "لا يمكن حذف آخر باقة."
+
 msgid "The logo appears in the sidebar, on the sign-in page and in the browser tab. Only your company can see your files."
 msgstr "يظهر الشعار في القائمة الجانبية وصفحة تسجيل الدخول وتبويب المتصفح. ملفاتك لا يراها إلا شركتك."
 
@@ -4267,6 +4474,15 @@ msgstr "تعود القطع إلى المخزون."
 
 msgid "The pieces in stock now become the list to count. Sales and transfers can go on while you count."
 msgstr "القطع الموجودة في المخزون الآن تصبح قائمة الجرد. يمكن الاستمرار في البيع والتحويل أثناء الجرد."
+
+msgid "The plan and its feature choices are removed. This cannot be undone."
+msgstr "ستُحذف الباقة واختيارات خصائصها. لا يمكن التراجع."
+
+msgid "The plan does not include it"
+msgstr "الباقة لا تتضمنها"
+
+msgid "The plan includes it"
+msgstr "الباقة تتضمنها"
 
 msgid "The price on the day of completion"
 msgstr "سعر يوم الإتمام"
@@ -4339,6 +4555,12 @@ msgstr "هذا البريد الإلكتروني مسجل لحساب آخر."
 
 msgid "This entry was already reversed."
 msgstr "تم عكس هذا القيد من قبل."
+
+msgid "This feature is not available in your plan."
+msgstr "هذه الخاصية غير متاحة في باقتك."
+
+msgid "This feature is not in your plan"
+msgstr "هذه الخاصية غير متاحة في باقتك"
 
 msgid "This field is required."
 msgstr "هذا الحقل مطلوب."
@@ -4433,6 +4655,9 @@ msgstr "طلبات كثيرة جدًا الآن"
 msgid "Too many requests. Please wait a minute and try again."
 msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مرة أخرى."
 
+msgid "Tools"
+msgstr "أدوات"
+
 msgid "Top margin (mm)"
 msgstr "الهامش العلوي (مم)"
 
@@ -4490,11 +4715,11 @@ msgstr "الخزينة"
 msgid "Treasury movements"
 msgstr "حركات الخزينة"
 
-msgid "Trial"
-msgstr "تجريبية"
-
 msgid "Trial balance"
 msgstr "ميزان المراجعة"
+
+msgid "Trial days"
+msgstr "أيام التجربة"
 
 msgid "Trial ends on"
 msgstr "نهاية الفترة التجريبية"
@@ -4603,6 +4828,9 @@ msgstr "استخدم تحويل العملة لتغيير المبلغ إلى ع
 
 msgid "Use by default"
 msgstr "القالب الافتراضي"
+
+msgid "Use the plan"
+msgstr "اتبع الباقة"
 
 msgid "Use the workspace colour (%(name)s)"
 msgstr "استخدام لون مساحة العمل (%(name)s)"
@@ -4754,6 +4982,9 @@ msgstr "البيان"
 msgid "What came back"
 msgstr "ما تم استلامه"
 
+msgid "What each plan includes. A client gets its plan's features unless you switch one on or off on the client's own page. A feature that is off disappears from the client's menus, pages and API."
+msgstr "ما تتضمنه كل باقة. يحصل العميل على خصائص باقته إلا إذا فعّلت أو أوقفت خاصية من صفحته. الخاصية الموقوفة تختفي من قوائم العميل وصفحاته والـ API."
+
 msgid "What happened"
 msgstr "الحركة"
 
@@ -4772,6 +5003,9 @@ msgstr "ما يُطبع"
 msgid "What was spent in a period, per expense category."
 msgstr "ما صُرف في فترة، حسب بند المصروف."
 
+msgid "What you sell: each plan's price, limits and features. Clients get their plan's unless you set their own."
+msgstr "ما تبيعه: سعر كل باقة وحدودها وخصائصها. يحصل العملاء على ما في باقتهم ما لم تحدد لهم غير ذلك."
+
 msgid "When the count is finished: pieces not counted become missing, missing pieces found here come back into stock, and bulk gold is set to the weight entered."
 msgstr "عند انتهاء الجرد: القطع التي لم تُعدّ تُسجَّل عجزًا، والقطع المفقودة التي وُجدت هنا تعود للمخزون، ويُضبط الذهب بالوزن على الوزن المُدخل."
 
@@ -4786,6 +5020,9 @@ msgstr "بيع الجملة"
 
 msgid "Wholesale %(number)s"
 msgstr "بيع جملة %(number)s"
+
+msgid "Wholesale and trade accounts"
+msgstr "الجملة وحسابات التجار"
 
 msgid "Wholesale return"
 msgstr "مرتجع جملة"
@@ -4831,6 +5068,9 @@ msgstr "الحساب"
 
 msgid "Write down who is selling."
 msgstr "اكتب اسم البائع."
+
+msgid "Yearly"
+msgstr "سنوياً"
 
 msgid "you"
 msgstr "أنت"
