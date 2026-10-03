@@ -1,12 +1,19 @@
 {% load i18n static %}<!doctype html>
-<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full"
+      data-theme="{% block theme %}{% if ui.theme == 'dark' %}dark{% else %}light{% endif %}{% endblock %}"
+      data-theme-pref="{% block theme_pref %}{{ ui.theme|default:'system' }}{% endblock %}"
+      data-accent="{{ ui.accent|default:'gold' }}" data-accent-default="{{ ui.default_accent|default:'gold' }}"
+      data-sidebar="{% if ui.sidebar_collapsed %}collapsed{% else %}expanded{% endif %}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  {# "system": follow the OS before the first paint, so a dark-mode user never sees a white flash. #}
+  <script>(function (d) { if (d.dataset.themePref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) d.dataset.theme = "dark"; })(document.documentElement);</script>
   <title>{% block title %}{% endblock %}{% if tenant_profile %} · {{ tenant_profile.display_name }}{% endif %}</title>
   <link rel="preload" href="{% static 'core/fonts/inter-latin-wght.woff2' %}" as="font" type="font/woff2" crossorigin>
   {% if LANGUAGE_BIDI %}<link rel="preload" href="{% static 'core/fonts/plex-arabic-400.woff2' %}" as="font" type="font/woff2" crossorigin>{% endif %}
+  {% if brand.favicon %}<link rel="icon" href="{{ brand.favicon }}">{% endif %}
   <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
   <script defer src="{% static 'vendor/tom-select/tom-select.complete.min.js' %}"></script>
   <script type="module" src="{% static 'core/js/app.js' %}"></script>

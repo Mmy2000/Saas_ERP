@@ -15,3 +15,14 @@ def test_no_byte_order_marks():
         if path.suffix in SUFFIXES and b"\xef\xbb\xbf" in path.read_bytes()
     ]
     assert offenders == []
+
+
+def test_template_comments_are_closed_on_their_line():
+    """{# … #} only works on one line; an unclosed one prints the rest as page text."""
+    root = Path(__file__).resolve().parents[1]
+    offenders = []
+    for path in [*root.glob("templates/**/*.html"), *root.glob("apps/**/templates/**/*.html")]:
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if "{#" in line and "#}" not in line[line.index("{#"):]:
+                offenders.append(f"{path.relative_to(root)}:{number}")
+    assert offenders == [], "Use {% comment %} for comments over several lines."

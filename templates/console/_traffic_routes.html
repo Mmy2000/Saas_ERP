@@ -1,0 +1,12 @@
+{% load i18n ui %}{% for route in routes %}
+<tr>
+  <td><span class="badge badge-neutral num">{{ route.method }}</span> <span class="num text-slate-900" dir="ltr">{{ route.path }}</span></td>
+  <td class="text-end"><span class="num">{{ route.requests|num:0 }}</span></td>
+  <td class="text-end"><span class="num">{{ route.avg_ms }}</span> <span class="text-xs text-slate-400">ms</span></td>
+  <td class="text-end"><span class="num">{{ route.max_ms }}</span> <span class="text-xs text-slate-400">ms</span></td>
+  <td class="text-end"><span class="num{% if route.slow %} text-amber-700{% endif %}">{{ route.slow }}</span></td>
+  <td class="text-end"><span class="num{% if route.errors %} text-red-700{% endif %}">{{ route.errors }}</span></td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="py-10 text-center text-slate-500">{% translate "No requests in this period" %}</td></tr>
+{% endfor %}

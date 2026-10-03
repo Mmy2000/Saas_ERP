@@ -82,10 +82,12 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Chart of accounts"), "accounts", "list-tree", "ledger.view"),
     ]),
     (_("Catalog"), [
-        NavItem(_("Item categories"), "categories", "layers", "catalog.view"),
-        NavItem(_("Karats"), "karats", "gem", "catalog.view"),
+        NavItem(_("Item categories"), "categories", "layers", "catalog.view",
+                ("category-new", "category-edit")),
+        NavItem(_("Karats"), "karats", "gem", "catalog.view", ("karat-new", "karat-edit")),
     ]),
     (_("Settings"), [
+        NavItem(_("Company"), "company", "settings", "org.settings.manage"),
         NavItem(_("Branches"), "branches", "store", "org.branch.view",
                 ("branch-new", "branch-edit")),
         NavItem(_("Users"), "users", "users", "admin.users.view", ("user-new", "user-edit")),

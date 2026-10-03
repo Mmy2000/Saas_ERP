@@ -1,0 +1,8 @@
+{% load i18n ui %}<div class="card-header"><h2 class="card-title">{% translate "Access" %}</h2>{% include "console/_access_switch.html" with next=page_url %}</div>
+<div class="card-body space-y-3 text-sm text-slate-600">
+  {% if client.enabled %}<p><span class="font-medium text-emerald-700">{% translate "Enabled." %}</span> {% translate "Everyone can sign in and work." %}</p>
+  {% elif client.switchable %}<p><span class="font-medium text-slate-900">{% translate "Disabled." %}</span> {% translate "Nobody can sign in. The data is kept." %}</p>
+  {% else %}<p>{{ tenant.get_status_display }}</p>{% endif %}
+  <p class="text-xs text-slate-500">{% translate "A change applies from the client's next request and is kept in the activity log." %}</p>
+  <a href="{% url 'console-tenant' tenant.pk %}" class="btn btn-secondary w-full">{% translate "Client page" %}</a>
+</div>

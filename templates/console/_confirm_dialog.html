@@ -1,0 +1,15 @@
+{% load i18n ui %}<dialog data-confirm-dialog class="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-slate-200 bg-surface p-0 text-slate-800 shadow-pop backdrop:bg-black/40 backdrop:backdrop-blur-[2px]">
+  <form method="dialog" class="p-6">
+    <div class="flex items-start gap-4">
+      <span class="grid size-10 shrink-0 place-items-center rounded-full bg-red-50 text-red-600">{% icon "circle-alert" "size-5" %}</span>
+      <div class="min-w-0">
+        <h2 class="text-base font-semibold text-slate-900" data-confirm-title></h2>
+        <p class="mt-1.5 text-sm text-slate-500">{% translate "Nobody at this client can sign in or work until you enable it again. The data is kept." %}</p>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end gap-2">
+      <button value="cancel" class="btn btn-secondary">{% translate "Cancel" %}</button>
+      <button value="confirm" class="btn btn-danger">{% translate "Disable" %}</button>
+    </div>
+  </form>
+</dialog>

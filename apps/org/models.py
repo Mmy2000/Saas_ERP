@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
+from apps.core.media import TenantUploadPath, validate_image
 from apps.core.models import TenantScopedModel
 
 
@@ -28,12 +29,15 @@ class TenantProfile(TenantScopedModel):
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     whatsapp_number = models.CharField(max_length=30, blank=True)
-    logo = models.FileField(upload_to="tenant-logos/", blank=True)
+    logo = models.FileField(upload_to=TenantUploadPath("branding"), blank=True,
+                            validators=[validate_image])
     functional_currency = models.CharField(max_length=3, default="EGP")
     timezone = models.CharField(max_length=64, default="Africa/Cairo",
                                 validators=[validate_timezone])
     locale = models.CharField(max_length=8, default="ar", choices=settings.LANGUAGES)
     country = models.CharField(max_length=2, default="EG")  # ISO 3166; phone number region
+    # Accent colour of the workspace (apps.core.appearance.ACCENTS); users may pick their own.
+    accent = models.CharField(max_length=16, default="gold")
 
     class Meta:
         constraints = [

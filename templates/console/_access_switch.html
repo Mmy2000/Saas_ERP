@@ -1,0 +1,11 @@
+{% load i18n %}{# Enable/disable switch for one client. `client` is a ClientTraffic; `next` the page to return to without JavaScript. #}
+{% if client.switchable %}<form method="post" action="{% url 'console-tenant-access' client.tenant.pk %}" data-access-form
+      data-name="{{ client.tenant.name }}" data-enabled="{{ client.enabled|yesno:'1,0' }}" class="inline-flex">
+  {% csrf_token %}<input type="hidden" name="enabled" value="{{ client.enabled|yesno:'0,1' }}"><input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" role="switch" aria-checked="{{ client.enabled|yesno:'true,false' }}"
+          title="{% if client.enabled %}{% translate 'Disable this client' %}{% else %}{% translate 'Enable this client' %}{% endif %}"
+          class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-wait disabled:opacity-60 {% if client.enabled %}bg-emerald-500{% else %}bg-slate-300{% endif %}">
+    <span class="sr-only">{% if client.enabled %}{% translate "Disable this client" %}{% else %}{% translate "Enable this client" %}{% endif %}</span>
+    <span class="inline-block size-4 rounded-full bg-white shadow-xs transition-transform {% if client.enabled %}translate-x-4.5 rtl:-translate-x-4.5{% else %}translate-x-0.5 rtl:-translate-x-0.5{% endif %}"></span>
+  </button>
+</form>{% else %}<span class="text-xs text-slate-400">—</span>{% endif %}

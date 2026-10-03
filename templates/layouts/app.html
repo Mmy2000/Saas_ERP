@@ -3,24 +3,23 @@
 {% block body %}
 <div class="min-h-full">
   {# Sidebar: off-canvas below lg, fixed at lg and up. Logical "start" = right in Arabic. #}
-  <div class="fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-[2px] lg:hidden" data-sidebar-backdrop hidden></div>
+  <div class="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden" data-sidebar-backdrop hidden></div>
   <aside id="sidebar" data-open="false"
-         class="fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e border-slate-200/80 bg-slate-50 transition-transform duration-200
+         class="fixed inset-y-0 start-0 z-40 flex w-64 flex-col overflow-hidden border-e border-slate-200/80 bg-slate-50 transition-[transform,width] duration-200
                 max-lg:-translate-x-full max-lg:shadow-pop max-lg:rtl:translate-x-full data-[open=true]:translate-x-0">
-    <div class="flex h-14 shrink-0 items-center gap-2.5 px-4">
-      <span class="grid size-8 shrink-0 grid-cols-1 place-items-center rounded-lg bg-gradient-to-br from-brand-300 to-brand-600 text-white shadow-xs ring-1 ring-brand-700/10">
-        {% icon "gem" "size-[18px]" %}
-      </span>
-      <div class="min-w-0">
+    <div class="flex h-14 shrink-0 items-center gap-2.5 px-4" data-sidebar-row>
+      {% include "components/workspace_mark.html" with name=tenant_profile.display_name %}
+      <div class="min-w-0" data-sidebar-label>
         <p class="truncate text-sm font-semibold text-slate-900">{{ tenant_profile.display_name }}</p>
-        <p class="truncate text-xs text-slate-500">Gweb</p>
+        <p class="truncate text-xs text-slate-500">{{ brand.tagline }}</p>
       </div>
       <button type="button" class="ms-auto rounded-md p-1 text-slate-400 hover:bg-slate-200/60 hover:text-slate-900 lg:hidden" data-sidebar-close
               aria-label="{% translate 'Close menu' %}">{% icon "x" "size-5" %}</button>
     </div>
     <div class="px-3 pt-1 pb-1">
-      <button type="button" class="flex h-9 w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-400 shadow-xs transition hover:border-slate-300 hover:text-slate-600" data-cmdk-open>
-        {% icon "search" "size-4" %}<span class="flex-1 text-start">{% translate "Search…" %}</span><span class="kbd max-lg:hidden" dir="ltr">Ctrl K</span>
+      <button type="button" class="flex h-9 w-full items-center gap-2 rounded-lg border border-slate-200 bg-surface px-2.5 text-sm text-slate-400 shadow-xs transition hover:border-slate-300 hover:text-slate-600" data-cmdk-open data-sidebar-search
+              aria-label="{% translate 'Search…' %}">
+        {% icon "search" "size-4" %}<span class="flex-1 text-start" data-sidebar-label>{% translate "Search…" %}</span><span class="kbd max-lg:hidden" dir="ltr" data-sidebar-label>Ctrl K</span>
       </button>
     </div>
     <nav class="flex-1 overflow-y-auto px-3 pb-6 [mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)]" aria-label="{% translate 'Main' %}">
@@ -29,17 +28,17 @@
         <ul class="space-y-0.5">
           {% for item in section.items %}
             <li><a href="{{ item.url }}" class="nav-link"{% if item.active %} aria-current="page"{% endif %}>
-              {% icon item.icon "size-[17px]" %}<span class="truncate">{{ item.label }}</span></a></li>
+              {% icon item.icon "size-[17px]" %}<span class="truncate" data-sidebar-label>{{ item.label }}</span></a></li>
           {% endfor %}
         </ul>
       {% endfor %}
     </nav>
     <div class="border-t border-slate-200/80 p-3">
-      <div class="flex items-center gap-2.5 rounded-lg p-1.5">
-        <span class="grid size-8 shrink-0 grid-cols-1 place-items-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-xs font-semibold text-white">
+      <div class="flex items-center gap-2.5 rounded-lg p-1.5" data-sidebar-row>
+        <span class="grid size-8 shrink-0 grid-cols-1 place-items-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">
           {{ request.membership.username|slice:":1"|upper }}
         </span>
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1" data-sidebar-label>
           <p class="truncate text-sm font-medium text-slate-900">{{ request.user.display_name }}</p>
           <p class="truncate text-xs text-slate-500">@{{ request.membership.username }}</p>
         </div>
@@ -52,26 +51,30 @@
     </div>
   </aside>
 
-  <div class="lg:ps-64">
-    <header data-no-print class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-slate-200/70 bg-white/75 px-4 backdrop-blur-md backdrop-saturate-150 sm:px-6 lg:px-8">
+  <div class="shell-main flex min-h-screen flex-col">
+    <header data-no-print class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-slate-200/70 bg-surface/75 px-4 backdrop-blur-md backdrop-saturate-150 sm:px-6 lg:px-8">
       <button type="button" class="-ms-1 rounded-md p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden" data-sidebar-open
               aria-label="{% translate 'Open menu' %}">{% icon "menu" "size-5" %}</button>
+      {% include "components/sidebar_toggle.html" %}
       <div class="flex min-w-0 items-center gap-2 rounded-lg px-2 py-1 text-sm text-slate-600">
         {% icon "building-2" "size-4 text-slate-400" %}
         <span class="truncate font-medium">{{ request.membership.default_branch.name|default:_("All branches") }}</span>
       </div>
       <div class="ms-auto flex items-center gap-2">
         <button type="button" class="btn btn-ghost h-8 px-2 lg:hidden" data-cmdk-open aria-label="{% translate 'Search…' %}">{% icon "search" "size-[18px]" %}</button>
+        {% include "components/appearance.html" %}
         {% include "components/lang_switch.html" %}
       </div>
     </header>
 
-    <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl motion-safe:animate-enter">
         {% block page_header %}{% endblock %}
         {% block content %}{% endblock %}
       </div>
     </main>
+    {% include "components/page_footer.html" %}
+    {% include "components/scroll_buttons.html" %}
   </div>
 </div>
 
@@ -91,7 +94,7 @@
         {% for item in section.items %}
           <a href="{{ item.url }}" class="cmdk-item" role="option" aria-selected="false" data-cmdk-item
              data-label="{{ item.label }}" data-text="{{ item.label }} {{ section.title }}">
-            <span class="grid size-7 place-items-center rounded-md border border-slate-200 bg-white text-slate-500">{% icon item.icon "size-4" %}</span>
+            <span class="grid size-7 place-items-center rounded-md border border-slate-200 bg-surface text-slate-500">{% icon item.icon "size-4" %}</span>
             <span class="flex-1 truncate">{{ item.label }}</span>
           </a>
         {% endfor %}

@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if karat %}{{ karat.label }}{% else %}{% translate "New karat" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'karats' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Karats" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if karat %}{{ karat.label }}{% else %}{% translate "New karat" %}{% endif %}</h1>
+    {% if karat.is_reference %}<span class="badge badge-brand">{% translate "Reference" %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 lg:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <section class="card lg:col-span-2">
+    {% if form.non_field_errors %}
+    <div class="m-5 mb-0 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div></div>
+    {% endif %}
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+      {% if form.metal %}
+        {% include "console/_field.html" with field=form.metal %}
+        {% include "console/_field.html" with field=form.code %}
+      {% else %}
+        <div><p class="form-label">{% translate "Metal" %}</p><p class="text-sm text-slate-900">{{ karat.metal.get_code_display }}</p></div>
+        <div><p class="form-label">{% translate "Karat" %}</p><p class="num text-sm text-slate-900">{{ karat.code }}</p></div>
+      {% endif %}
+      {% include "console/_field.html" with field=form.fineness %}
+      {% include "console/_field.html" with field=form.display_name %}
+      <label class="flex items-center gap-3 sm:col-span-2">{{ form.is_active }}<span class="text-sm text-slate-700">{{ form.is_active.label }}</span>{% if karat.is_reference %}<span class="text-xs text-slate-500">— {% translate "The reference karat is always active." %}</span>{% endif %}</label>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+      <a href="{% url 'karats' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </section>
+  <aside class="card card-body h-fit space-y-2 text-sm text-slate-600">
+    <p class="flex items-start gap-2">{% icon "info" "size-4 mt-0.5 text-slate-400" %}<span>{% translate "Changing a fineness applies to new documents. Posted documents keep the weights they were posted with." %}</span></p>
+  </aside>
+</form>
+{% endblock %}

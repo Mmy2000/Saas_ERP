@@ -83,11 +83,38 @@ msgstr "%(metal)s %(code)s"
 msgid "%(metal)s (fine g)"
 msgstr "%(metal)s (جرام صافٍ)"
 
+msgid "%(ms)s ms on average"
+msgstr "%(ms)s مللي ثانية في المتوسط"
+
+msgid "%(ms)s ms or longer"
+msgstr "%(ms)s مللي ثانية أو أكثر"
+
 msgid "%(n)s new in the last 30 days"
 msgstr "%(n)s جديد في آخر 30 يومًا"
 
+msgid "%(n)s refused"
+msgstr "%(n)s مرفوض"
+
+msgid "%(n)s requests"
+msgstr "%(n)s طلب"
+
+msgid "%(n)s s of server time"
+msgstr "%(n)s ثانية من وقت الخادم"
+
+msgid "%(n)s server errors"
+msgstr "%(n)s خطأ في الخادم"
+
 msgid "%(n)s suspended"
 msgstr "%(n)s موقوف"
+
+msgid "%(name)s added."
+msgstr "تمت إضافة %(name)s."
+
+msgid "%(name)s is disabled."
+msgstr "تم إيقاف %(name)s."
+
+msgid "%(name)s is enabled."
+msgstr "تم تفعيل %(name)s."
 
 msgid "%(name)s is now %(status)s."
 msgstr "أصبحت حالة %(name)s: %(status)s."
@@ -113,8 +140,14 @@ msgstr "تُفتح الخزينة الرئيسية للفرع تلقائيًا �
 msgid "A cash sale must be fully paid."
 msgstr "يجب سداد فاتورة النقدي بالكامل."
 
+msgid "A category cannot be placed under itself."
+msgstr "لا يمكن وضع المجموعة تحت نفسها."
+
 msgid "A category with this name already exists."
 msgstr "يوجد بند بهذا الاسم بالفعل."
+
+msgid "A change applies from the client's next request and is kept in the activity log."
+msgstr "يسري التغيير من الطلب التالي للعميل ويُسجَّل في سجل النشاط."
 
 msgid "A karat appears twice."
 msgstr "تكرر أحد العيارات."
@@ -160,6 +193,12 @@ msgstr "ورقة A4، 3 × 8 ملصقات"
 
 msgid "Abandon the count"
 msgstr "إلغاء الجرد"
+
+msgid "Accent colour"
+msgstr "اللون المميز"
+
+msgid "Access"
+msgstr "الدخول"
 
 msgid "Access denied"
 msgstr "غير مسموح بالدخول"
@@ -226,6 +265,9 @@ msgstr "أضف سطرًا."
 
 msgid "Add a piece"
 msgstr "إضافة قطعة"
+
+msgid "Add a sub-category"
+msgstr "إضافة مجموعة فرعية"
 
 msgid "Add an expense category first."
 msgstr "أضف بند مصروفات أولًا."
@@ -308,6 +350,9 @@ msgstr "كل البنود"
 msgid "All clear"
 msgstr "كل شيء على ما يرام"
 
+msgid "All clients"
+msgstr "كل العملاء"
+
 msgid "All clients are busy"
 msgstr "كل العملاء يعملون"
 
@@ -319,6 +364,9 @@ msgstr "كل فروعك في دفاتر واحدة"
 
 msgid "Already counted"
 msgstr "تم عدّها من قبل"
+
+msgid "Already exists."
+msgstr "موجود بالفعل."
 
 msgid "Already used by another customer."
 msgstr "مستخدم لعميل آخر."
@@ -344,8 +392,14 @@ msgstr "فرع آخر: تبقى النقدية في الطريق حتى يستل
 msgid "Another customer already has this phone number."
 msgstr "رقم الهاتف مسجل لعميل آخر."
 
+msgid "Answered with “too many requests”"
+msgstr "رُدّ عليها بـ «طلبات كثيرة جدًا»"
+
 msgid "Any branch"
 msgstr "أي فرع"
+
+msgid "Appearance"
+msgstr "المظهر"
 
 msgid "Archive"
 msgstr "أرشفة"
@@ -383,6 +437,12 @@ msgstr "لدى الورشة"
 msgid "Automatic"
 msgstr "تلقائي"
 
+msgid "Average"
+msgstr "المتوسط"
+
+msgid "Average response"
+msgstr "متوسط الاستجابة"
+
 msgid "Back"
 msgstr "رجوع"
 
@@ -394,6 +454,9 @@ msgstr "عادت للمخزون"
 
 msgid "Back to the dashboard"
 msgstr "العودة إلى لوحة التحكم"
+
+msgid "Back to top"
+msgstr "اطلع لأعلى الصفحة"
 
 msgid "Bag"
 msgstr "كيس"
@@ -467,6 +530,9 @@ msgstr "بادئة الباركود"
 msgid "Beads"
 msgstr "خرز"
 
+msgid "Being limited"
+msgstr "يتم تقييده"
+
 msgid "Being set up"
 msgstr "قيد الإعداد"
 
@@ -475,6 +541,9 @@ msgstr "بين %(low)s و%(high)s."
 
 msgid "Birth date"
 msgstr "تاريخ الميلاد"
+
+msgid "Blue"
+msgstr "أزرق"
 
 msgid "board"
 msgstr "النشرة"
@@ -499,6 +568,9 @@ msgstr "الفروع"
 
 msgid "Branches that use it"
 msgstr "الفروع التي تستخدمه"
+
+msgid "Brand"
+msgstr "العلامة التجارية"
 
 msgid "Built-in"
 msgstr "أساسي"
@@ -533,6 +605,9 @@ msgstr "سبائك وعملات"
 msgid "Bundles of permissions you give to users."
 msgstr "مجموعات صلاحيات تمنحها للمستخدمين."
 
+msgid "Busiest minute: %(n)s"
+msgstr "أعلى دقيقة: %(n)s"
+
 msgid "Busy this week"
 msgstr "نشط هذا الأسبوع"
 
@@ -556,6 +631,9 @@ msgstr "سعر الشراء"
 
 msgid "By karat"
 msgstr "حسب العيار"
+
+msgid "By server time"
+msgstr "حسب وقت الخادم"
 
 msgid "By weight"
 msgstr "بالوزن"
@@ -785,6 +863,9 @@ msgstr "الباقي للعميل"
 msgid "Changed"
 msgstr "معدّل"
 
+msgid "Changing a fineness applies to new documents. Posted documents keep the weights they were posted with."
+msgstr "تغيير النقاوة يسري على المستندات الجديدة. المستندات المرحّلة تحتفظ بأوزانها كما رُحّلت."
+
 msgid "Charge"
 msgstr "المطلوب"
 
@@ -817,6 +898,9 @@ msgstr "اختر حساب المصروف."
 
 msgid "Choose another branch."
 msgstr "اختر فرعًا آخر."
+
+msgid "Choose another category."
+msgstr "اختر مجموعة أخرى."
 
 msgid "Choose at least one branch."
 msgstr "اختر فرعًا واحدًا على الأقل."
@@ -908,11 +992,20 @@ msgstr "العميل"
 msgid "Client created"
 msgstr "إنشاء عميل"
 
+msgid "Client name"
+msgstr "اسم العميل"
+
+msgid "Client page"
+msgstr "صفحة العميل"
+
 msgid "Client since %(date)s"
 msgstr "عميل منذ %(date)s"
 
 msgid "Clients"
 msgstr "العملاء"
+
+msgid "Clients by server load"
+msgstr "العملاء حسب الحمل على الخادم"
 
 msgid "Close accounting periods"
 msgstr "إقفال الفترات المحاسبية"
@@ -937,6 +1030,9 @@ msgstr "الكود"
 
 msgid "Coin"
 msgstr "عملة ذهبية"
+
+msgid "Collapse or expand the menu"
+msgstr "طي القائمة الجانبية أو توسيعها"
 
 msgid "Columns"
 msgstr "الأعمدة"
@@ -1003,6 +1099,9 @@ msgstr "عدد النسخ لكل قطعة"
 
 msgid "Cost"
 msgstr "التكلفة"
+
+msgid "Cost making charge / g"
+msgstr "تكلفة المصنعية / جم"
 
 msgid "Cost of diamonds sold"
 msgstr "تكلفة الألماس المباع"
@@ -1109,6 +1208,9 @@ msgstr "قطع العملاء المستلمة وأكياسها ومكانها �
 msgid "Daily summary"
 msgstr "ملخص اليوم"
 
+msgid "Dark"
+msgstr "داكن"
+
 msgid "Dashboard"
 msgstr "لوحة التحكم"
 
@@ -1166,6 +1268,9 @@ msgstr "الخصومات المحتجزة"
 msgid "Default"
 msgstr "افتراضية"
 
+msgid "default"
+msgstr "افتراضي"
+
 msgid "Default box of the branch for this currency (used when a sale does not name one)"
 msgstr "الخزينة الافتراضية للفرع بهذه العملة (تُستخدم إذا لم تُحدَّد خزينة)"
 
@@ -1180,6 +1285,15 @@ msgstr "العيار الافتراضي"
 
 msgid "Default language"
 msgstr "اللغة الافتراضية"
+
+msgid "Default limit: %(n)s requests per minute"
+msgstr "الحد الافتراضي: %(n)s طلب في الدقيقة"
+
+msgid "Defaults"
+msgstr "القيم الافتراضية"
+
+msgid "Defaults per gram; pieces and offers can override them."
+msgstr "قيم افتراضية للجرام، ويمكن للقطع والعروض تغييرها."
 
 msgid "Delete"
 msgstr "حذف"
@@ -1283,6 +1397,21 @@ msgstr "الألماس والأحجار"
 msgid "Difference"
 msgstr "الفرق"
 
+msgid "Disable"
+msgstr "إيقاف"
+
+msgid "Disable %(name)s?"
+msgstr "إيقاف %(name)s؟"
+
+msgid "Disable this client"
+msgstr "إيقاف هذا العميل"
+
+msgid "Disabled"
+msgstr "موقوف"
+
+msgid "Disabled."
+msgstr "موقوف."
+
 msgid "Discount"
 msgstr "الخصم"
 
@@ -1331,11 +1460,17 @@ msgstr "تم حفظ المسودة."
 msgid "Duplicate karat."
 msgstr "عيار مكرر."
 
+msgid "e.g. 18, 21 or 24 for gold, 925 for silver."
+msgstr "مثال: 18 أو 21 أو 24 للذهب، و925 للفضة."
+
 msgid "e.g. erp.example.com, pointed at this server"
 msgstr "مثل erp.example.com موجّه إلى هذا الخادم"
 
 msgid "e.g. Rent"
 msgstr "مثال: الإيجار"
+
+msgid "e.g. © 2026 Your Company. All rights reserved."
+msgstr "مثال: © 2026 شركتك. جميع الحقوق محفوظة."
 
 msgid "Each category posts to an expense account in the chart of accounts."
 msgstr "كل بند يُرحَّل إلى حساب مصروف في دليل الحسابات."
@@ -1403,11 +1538,29 @@ msgstr "جنيه مصري"
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
+msgid "Emerald"
+msgstr "زمردي"
+
 msgid "Employee advances"
 msgstr "سلف الموظفين"
 
 msgid "empty = now"
 msgstr "فارغ = الآن"
+
+msgid "Empty uses the platform default. 0 means no limit."
+msgstr "اتركه فارغًا لاستخدام الحد الافتراضي للمنصة. 0 يعني بلا حد."
+
+msgid "Empty: shown as “21K” in each user's language."
+msgstr "فارغ: يظهر «عيار 21» بلغة كل مستخدم."
+
+msgid "Enable this client"
+msgstr "تفعيل هذا العميل"
+
+msgid "Enabled"
+msgstr "مفعّل"
+
+msgid "Enabled."
+msgstr "مفعّل."
 
 msgid "Enter %(karat)s prices per gram. Other gold karats are calculated from their fineness."
 msgstr "أدخل أسعار %(karat)s للجرام، وتُحسب باقي العيارات تلقائيًا حسب نسبة النقاء."
@@ -1465,6 +1618,9 @@ msgstr "حقوق الملكية"
 
 msgid "Equivalent to 21K"
 msgstr "المعادل لعيار 21"
+
+msgid "Errors"
+msgstr "الأخطاء"
 
 msgid "Euro"
 msgstr "يورو"
@@ -1583,20 +1739,32 @@ msgstr "الوزن الصافي"
 msgid "Fineness (‰)"
 msgstr "النقاء (‰)"
 
+msgid "Fineness is between 0 and 1000 (‰)."
+msgstr "النقاوة بين 0 و1000 (في الألف)."
+
 msgid "First 5 of the last 15 digits"
 msgstr "أول 5 من آخر 15 رقمًا"
 
 msgid "First wing"
 msgstr "الجناح الأول"
 
+msgid "Fixed: the category has stock."
+msgstr "ثابت: على المجموعة بضاعة."
+
 msgid "Fold between the wings (mm)"
 msgstr "الذيل بين الجناحين (مم)"
+
+msgid "Footer links"
+msgstr "روابط التذييل"
+
+msgid "Footer text"
+msgstr "نص التذييل"
 
 msgid "For opening balances and adjustments. Daily documents post their own entries."
 msgstr "للأرصدة الافتتاحية والتسويات. المستندات اليومية ترحّل قيودها تلقائيًا."
 
-msgid "For the Gweb team: every client, in one place."
-msgstr "لفريق Gweb: كل العملاء في مكان واحد."
+msgid "For the %(name)s team: every client, in one place."
+msgstr "لفريق %(name)s: كل العملاء في مكان واحد."
 
 msgid "From"
 msgstr "من"
@@ -1636,6 +1804,9 @@ msgstr "أدخل القيمة بعملة الشركة لسطور %(commodity)s."
 
 msgid "Go to a screen…"
 msgstr "انتقل إلى شاشة…"
+
+msgid "Go to the bottom"
+msgstr "انزل لأسفل الصفحة"
 
 msgid "Gold"
 msgstr "ذهب"
@@ -1742,6 +1913,9 @@ msgstr "بضاعة مبيعة للتجار بالوزن، تُسدَّد ذهب�
 msgid "gram"
 msgstr "جرام"
 
+msgid "Graphite"
+msgstr "جرافيت"
+
 msgid "Gross weight"
 msgstr "الوزن القائم"
 
@@ -1757,6 +1931,9 @@ msgstr "توقيع المُسلِّم"
 msgid "Head office"
 msgstr "الفرع الرئيسي"
 
+msgid "Heaviest screens"
+msgstr "أثقل الشاشات"
+
 msgid "History"
 msgstr "السجل"
 
@@ -1768,6 +1945,9 @@ msgstr "الفرع التابع له"
 
 msgid "How"
 msgstr "الطريقة"
+
+msgid "How a client's sidebar and page footer look with these settings."
+msgstr "شكل القائمة الجانبية وتذييل الصفحة عند العميل بهذه الإعدادات."
 
 msgid "How many %(home)s one unit of each currency is worth."
 msgstr "قيمة الوحدة من كل عملة بالـ %(home)s."
@@ -1796,6 +1976,9 @@ msgstr "جارٍ"
 msgid "In stock"
 msgstr "في المخزون"
 
+msgid "In the footer of every workspace page"
+msgstr "في تذييل كل صفحة في مساحات العمل"
+
 msgid "In the shop"
 msgstr "في المحل"
 
@@ -1810,6 +1993,9 @@ msgstr "تبقى السجلات الموقوفة في السجل التاريخ�
 
 msgid "Income"
 msgstr "إيرادات"
+
+msgid "Indigo"
+msgstr "نيلي"
 
 msgid "Initial password"
 msgstr "كلمة المرور الأولى"
@@ -1859,6 +2045,9 @@ msgstr "إبقاؤه في حساب العميل"
 msgid "Kuwait"
 msgstr "الكويت"
 
+msgid "Label"
+msgstr "النص"
+
 msgid "Label height (mm)"
 msgstr "ارتفاع الملصق (مم)"
 
@@ -1892,14 +2081,23 @@ msgstr "اللغة"
 msgid "Last"
 msgstr "آخر نشاط"
 
+msgid "Last 24 hours"
+msgstr "آخر 24 ساعة"
+
 msgid "Last 30 days"
 msgstr "آخر 30 يومًا"
 
 msgid "Last 5 digits"
 msgstr "آخر 5 أرقام"
 
+msgid "Last 7 days"
+msgstr "آخر 7 أيام"
+
 msgid "Last activity"
 msgstr "آخر نشاط"
+
+msgid "Last hour"
+msgstr "آخر ساعة"
 
 msgid "Last scans"
 msgstr "آخر ما تم مسحه"
@@ -1937,11 +2135,29 @@ msgstr "الخصوم"
 msgid "Liability"
 msgstr "خصوم"
 
+msgid "Light"
+msgstr "فاتح"
+
+msgid "Limit"
+msgstr "الحد"
+
 msgid "Limits are checked when the client adds branches or users. Empty means no limit."
 msgstr "تُطبَّق الحدود عند إضافة العميل لفروع أو مستخدمين. الفارغ يعني بلا حد."
 
+msgid "Line under each client's name"
+msgstr "السطر تحت اسم كل عميل"
+
 msgid "Lines"
 msgstr "السطور"
+
+msgid "Link"
+msgstr "الرابط"
+
+msgid "Live"
+msgstr "مباشر"
+
+msgid "Live · updated %(time)s"
+msgstr "مباشر · آخر تحديث %(time)s"
 
 msgid "Lock today's gold price"
 msgstr "تثبيت سعر الذهب اليوم"
@@ -1954,6 +2170,15 @@ msgstr "مثبّت على سعر يوم الحجز"
 
 msgid "Log out"
 msgstr "تسجيل الخروج"
+
+msgid "Logo"
+msgstr "الشعار"
+
+msgid "Logo for dark backgrounds"
+msgstr "شعار للخلفيات الداكنة"
+
+msgid "Logos"
+msgstr "الشعارات"
 
 msgid "Loss"
 msgstr "هالك"
@@ -2180,6 +2405,9 @@ msgstr "الاسم أو الهاتف أو الكود أو الرقم القوم�
 msgid "National ID"
 msgstr "الرقم القومي"
 
+msgid "Near the limit"
+msgstr "قريب من الحد"
+
 msgid "Needs a look"
 msgstr "يحتاج متابعة"
 
@@ -2225,8 +2453,14 @@ msgstr "قيد جديد"
 msgid "New expense"
 msgstr "مصروف جديد"
 
+msgid "New item category"
+msgstr "مجموعة جديدة"
+
 msgid "New journal entry"
 msgstr "قيد يومية جديد"
+
+msgid "New karat"
+msgstr "عيار جديد"
 
 msgid "New password"
 msgstr "كلمة المرور الجديدة"
@@ -2336,6 +2570,12 @@ msgstr "لا توجد مجموعات أصناف بعد"
 msgid "No ledger commodity for %(metal)s."
 msgstr "لا توجد وحدة محاسبية لـ %(metal)s."
 
+msgid "No limit"
+msgstr "بلا حد"
+
+msgid "No logo"
+msgstr "لا يوجد شعار"
+
 msgid "No matches"
 msgstr "لا توجد نتائج"
 
@@ -2362,6 +2602,9 @@ msgstr "لا توجد مشتريات بعد"
 
 msgid "No repairs here"
 msgstr "لا توجد تصليحات هنا"
+
+msgid "No requests in this period"
+msgstr "لا توجد طلبات في هذه الفترة"
 
 msgid "No reservations here"
 msgstr "لا توجد حجوزات هنا"
@@ -2399,11 +2642,17 @@ msgstr "لا توجد أوامر تشغيل هنا"
 msgid "No workshops yet"
 msgstr "لا توجد ورش بعد"
 
+msgid "Nobody at this client can sign in or work until you enable it again. The data is kept."
+msgstr "لن يتمكن أحد لدى هذا العميل من الدخول أو العمل حتى تفعّله مرة أخرى. البيانات تبقى محفوظة."
+
 msgid "Nobody can sign in. The data is kept."
 msgstr "لا يمكن لأحد الدخول. البيانات محفوظة."
 
 msgid "None"
 msgstr "لا يوجد"
+
+msgid "Normal"
+msgstr "طبيعي"
 
 msgid "Not available at this branch in this currency."
 msgstr "غير متاح في هذا الفرع بهذه العملة."
@@ -2474,11 +2723,17 @@ msgstr "لا توجد قطع غير متوقعة."
 msgid "Nothing yet"
 msgstr "لا شيء بعد"
 
+msgid "Now"
+msgstr "الآن"
+
 msgid "Number"
 msgstr "الرقم"
 
 msgid "Number or trade account"
 msgstr "الرقم أو اسم التاجر"
+
+msgid "of the limit"
+msgstr "من الحد"
 
 msgid "Oman"
 msgstr "عُمان"
@@ -2606,6 +2861,9 @@ msgstr "أو اسم"
 msgid "Or mark it ready below if the work is done in the shop."
 msgstr "أو جهّزه للتسليم بالأسفل إن تم العمل في المحل."
 
+msgid "Order"
+msgstr "الترتيب"
+
 msgid "Organisation"
 msgstr "المؤسسة"
 
@@ -2627,11 +2885,17 @@ msgstr "خارج النطاق المسموح."
 msgid "Out of the branch's scrap stock, at the price agreed per gram."
 msgstr "من مخزون كسر الفرع، بالسعر المتفق عليه للجرام."
 
+msgid "Over the limit, the workspace answers “too many requests” until the next minute starts. Normal work stays far below it; a script or a stuck screen does not."
+msgstr "بعد تجاوز الحد، ترد مساحة العمل بـ «طلبات كثيرة جدًا» حتى تبدأ الدقيقة التالية. الاستخدام العادي يظل أقل منه بكثير، أما سكربت أو شاشة عالقة فلا."
+
 msgid "Overview"
 msgstr "نظرة عامة"
 
 msgid "Owed in money"
 msgstr "المستحق نقدًا"
+
+msgid "Own name"
+msgstr "اسم خاص"
 
 msgid "Owner"
 msgstr "المالك"
@@ -2693,6 +2957,9 @@ msgstr "العملاء والموردون"
 msgid "Partners' capital"
 msgstr "رأس مال الشركاء"
 
+msgid "Parts of pure metal per thousand, e.g. 875 for 21K."
+msgstr "أجزاء المعدن الصافي في الألف، مثلاً 875 لعيار 21."
+
 msgid "Party"
 msgstr "عميل/مورد"
 
@@ -2707,6 +2974,12 @@ msgstr "تجاوز موعده"
 
 msgid "Past their date"
 msgstr "تجاوزت موعدها"
+
+msgid "Pause"
+msgstr "إيقاف مؤقت"
+
+msgid "Paused"
+msgstr "متوقف مؤقتًا"
 
 msgid "Pay back by bank transfer"
 msgstr "رده بتحويل بنكي"
@@ -2750,11 +3023,20 @@ msgstr "الأشخاص الذين يمكنهم الدخول إلى هذا الح
 msgid "per customer/supplier"
 msgstr "لكل عميل/مورد"
 
+msgid "Per minute: now / busiest"
+msgstr "في الدقيقة: الآن / الأعلى"
+
 msgid "Per piece"
 msgstr "بالقطعة"
 
+msgid "Per piece: each piece has its own barcode. By weight: counted in grams (chains, bullion)."
+msgstr "بالقطعة: لكل قطعة باركود خاص. بالوزن: تُحسب بالجرام (سلاسل، سبائك)."
+
 msgid "Per-gram prices by karat. Documents keep the price that was in force when they were made."
 msgstr "أسعار الجرام لكل عيار. يحتفظ كل مستند بالسعر الذي كان ساريًا وقت إنشائه."
+
+msgid "Period"
+msgstr "الفترة"
 
 msgid "Person"
 msgstr "فرد"
@@ -2804,6 +3086,9 @@ msgstr "القطع (جم)"
 msgid "Pieces and bulk gold sent between branches."
 msgstr "القطع والذهب بالوزن المُرسل بين الفروع."
 
+msgid "Pieces get barcodes starting with it."
+msgstr "باركود القطع يبدأ به."
+
 msgid "Pieces held for customers against a deposit."
 msgstr "قطع محجوزة للعملاء مقابل عربون."
 
@@ -2831,14 +3116,29 @@ msgstr "المنصة"
 msgid "Platform console"
 msgstr "لوحة المنصة"
 
+msgid "Platform default: %(n)s per minute."
+msgstr "الافتراضي للمنصة: %(n)s في الدقيقة."
+
+msgid "Platform name"
+msgstr "اسم المنصة"
+
 msgid "Platform overview"
 msgstr "نظرة عامة على المنصة"
+
+msgid "Platform settings"
+msgstr "إعدادات المنصة"
+
+msgid "Platform settings changed"
+msgstr "تم تغيير إعدادات المنصة"
 
 msgid "Platinum"
 msgstr "بلاتين"
 
 msgid "Please correct the highlighted fields."
 msgstr "يرجى تصحيح الحقول المحددة."
+
+msgid "PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a transparent background works best."
+msgstr "PNG أو JPEG أو WEBP أو GIF أو ICO، حتى 2 ميجابايت. الأفضل صورة مربعة أو عريضة بخلفية شفافة."
 
 msgid "Positive: the customer owes you."
 msgstr "الموجب: مستحق لك على العميل."
@@ -2959,6 +3259,9 @@ msgstr "طُبع"
 
 msgid "Printed in the order chosen. Zebra (ZPL) labels leave out Arabic text: the printer's fonts cannot join Arabic letters."
 msgstr "تُطبع بالترتيب المختار. ملصقات زيبرا (ZPL) لا تتضمن النص العربي لأن خطوط الطابعة لا تصل الحروف العربية."
+
+msgid "Printed on labels when the name is long."
+msgstr "يُطبع على الملصقات عندما يكون الاسم طويلاً."
 
 msgid "Printer"
 msgstr "الطابعة"
@@ -3119,6 +3422,9 @@ msgstr "تم الاستلام."
 msgid "Recent console activity"
 msgstr "أحدث نشاط في اللوحة"
 
+msgid "Reconnecting…"
+msgstr "جارٍ إعادة الاتصال…"
+
 msgid "Record"
 msgstr "تسجيل"
 
@@ -3161,6 +3467,12 @@ msgstr "المبلغ المردود"
 msgid "Refunded"
 msgstr "المردود"
 
+msgid "Refused"
+msgstr "المرفوضة"
+
+msgid "Refused (over the limit)"
+msgstr "مرفوضة (فوق الحد)"
+
 msgid "Remaining"
 msgstr "المتبقي"
 
@@ -3170,8 +3482,14 @@ msgstr "حذف"
 msgid "Remove line"
 msgstr "حذف السطر"
 
+msgid "Remove the current logo"
+msgstr "حذف الشعار الحالي"
+
 msgid "Remove this role from its members first."
 msgstr "أزل هذا الدور من المستخدمين أولًا."
+
+msgid "removed"
+msgstr "تم الحذف"
 
 msgid "Rent, utilities and other running costs paid from a cash box or a bank account."
 msgstr "الإيجار والمرافق وغيرها من المصروفات الجارية المدفوعة من خزينة أو حساب بنكي."
@@ -3205,6 +3523,24 @@ msgstr "تصليحات جاهزة للاستلام"
 
 msgid "Reports"
 msgstr "التقارير"
+
+msgid "Request limit"
+msgstr "حد الطلبات"
+
+msgid "Request limit changed"
+msgstr "تم تغيير حد الطلبات"
+
+msgid "Requests"
+msgstr "الطلبات"
+
+msgid "Requests from every client, how much server time they take, and who is being limited."
+msgstr "طلبات كل عميل، وكم تستهلك من وقت الخادم، ومن يتم تقييده."
+
+msgid "Requests over time"
+msgstr "الطلبات عبر الوقت"
+
+msgid "Requests per minute"
+msgstr "الطلبات في الدقيقة"
 
 msgid "required"
 msgstr "مطلوب"
@@ -3247,6 +3583,9 @@ msgstr "استعادة"
 
 msgid "Restore access"
 msgstr "استعادة الدخول"
+
+msgid "Resume"
+msgstr "استئناف"
 
 msgid "Retail sales"
 msgstr "مبيعات التجزئة"
@@ -3320,6 +3659,9 @@ msgstr "الأدوار"
 msgid "Roll (one label at a time)"
 msgstr "رول (ملصق واحد في كل مرة)"
 
+msgid "Rose"
+msgstr "وردي"
+
 msgid "Rounding"
 msgstr "تقريب"
 
@@ -3362,6 +3704,9 @@ msgstr "المبيعات (30 يومًا)"
 msgid "Sales analysis"
 msgstr "تحليل المبيعات"
 
+msgid "Sales commission (%)"
+msgstr "عمولة البيع (%)"
+
 msgid "Sales invoice"
 msgstr "فاتورة بيع"
 
@@ -3391,6 +3736,9 @@ msgstr "حفظ كمسودة"
 
 msgid "Save settings"
 msgstr "حفظ الإعدادات"
+
+msgid "Save to get more empty rows."
+msgstr "احفظ لتظهر صفوف فارغة أخرى."
 
 msgid "Saved as a draft. Nothing enters stock until you post it."
 msgstr "تُحفظ كمسودة، ولا يدخل شيء المخزون حتى الترحيل."
@@ -3521,6 +3869,9 @@ msgstr "البيع بالجملة للتجار"
 msgid "Seller"
 msgstr "البائع"
 
+msgid "Selling making charge / g"
+msgstr "مصنعية البيع / جم"
+
 msgid "Selling price"
 msgstr "سعر البيع"
 
@@ -3599,6 +3950,9 @@ msgstr "الحساب مسدد، لا مستحقات على أي طرف."
 msgid "Settlements"
 msgstr "التسويات"
 
+msgid "Share of server time"
+msgstr "نصيبه من وقت الخادم"
+
 msgid "Sheet"
 msgstr "الورقة"
 
@@ -3611,11 +3965,17 @@ msgstr "اسم المحل"
 msgid "Shops and traders you sell to wholesale, by weight."
 msgstr "المحلات والتجار الذين تبيع لهم جملة بالوزن."
 
+msgid "Short name"
+msgstr "اسم مختصر"
+
 msgid "Show"
 msgstr "عرض"
 
 msgid "Showing %(start)s–%(end)s of %(total)s"
 msgstr "عرض %(start)s–%(end)s من %(total)s"
+
+msgid "Shown in every workspace sidebar. Empty: the platform name."
+msgstr "يظهر في القائمة الجانبية لكل مساحة عمل. فارغ: اسم المنصة."
 
 msgid "Side margin (mm)"
 msgstr "الهامش الجانبي (مم)"
@@ -3641,6 +4001,24 @@ msgstr "المقاس"
 msgid "Skip used labels"
 msgstr "تخطي الملصقات المستخدمة"
 
+msgid "Slow"
+msgstr "بطيئة"
+
+msgid "Slow / errors"
+msgstr "بطيئة / أخطاء"
+
+msgid "Slow requests"
+msgstr "طلبات بطيئة"
+
+msgid "Slow responses"
+msgstr "استجابات بطيئة"
+
+msgid "Slowest"
+msgstr "الأبطأ"
+
+msgid "Slowest: %(n)s ms"
+msgstr "الأبطأ: %(n)s مللي ثانية"
+
 msgid "Sold"
 msgstr "مباع"
 
@@ -3652,6 +4030,9 @@ msgstr "تم البيع."
 
 msgid "Some of these pieces were already returned."
 msgstr "بعض هذه القطع مرتجعة من قبل."
+
+msgid "Some requests refused"
+msgstr "رُفضت بعض الطلبات"
 
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
@@ -3667,6 +4048,9 @@ msgstr "بدء جرد"
 
 msgid "Start and cancel stocktakes"
 msgstr "بدء الجرد وإلغاؤه"
+
+msgid "State"
+msgstr "الحالة"
 
 msgid "Statement"
 msgstr "كشف الحساب"
@@ -3746,6 +4130,9 @@ msgstr "إيقاف الدخول"
 msgid "Suspended"
 msgstr "موقوف"
 
+msgid "System"
+msgstr "حسب الجهاز"
+
 msgid "Tail tag 70 × 12 mm"
 msgstr "ملصق بذيل 70 × 12 مم"
 
@@ -3781,6 +4168,9 @@ msgstr "الرقم الضريبي"
 
 msgid "Taxes"
 msgstr "الضرائب"
+
+msgid "Teal"
+msgstr "أزرق مخضر"
 
 msgid "Text size (pt)"
 msgstr "حجم الخط (نقطة)"
@@ -3839,6 +4229,9 @@ msgstr "تبقى البضاعة في الطريق حتى يستلمها الفر
 msgid "The head office cannot be deactivated."
 msgstr "لا يمكن إيقاف الفرع الرئيسي."
 
+msgid "The image must be 2 MB or smaller."
+msgstr "يجب ألا يزيد حجم الصورة عن 2 ميجابايت."
+
 msgid "The karat this supplier's gold balance is shown in."
 msgstr "العيار الذي يُعرض به رصيد الذهب لهذا المورد."
 
@@ -3847,6 +4240,9 @@ msgstr "الملصقات لا تتسع في الصفحة."
 
 msgid "The largest discount you may give is %(max)s%%."
 msgstr "أقصى خصم مسموح لك هو %(max)s%%."
+
+msgid "The logo appears in the sidebar, on the sign-in page and in the browser tab. Only your company can see your files."
+msgstr "يظهر الشعار في القائمة الجانبية وصفحة تسجيل الدخول وتبويب المتصفح. ملفاتك لا يراها إلا شركتك."
 
 msgid "The main address cannot be removed."
 msgstr "لا يمكن حذف العنوان الرئيسي."
@@ -3878,6 +4274,12 @@ msgstr "سعر يوم الإتمام"
 msgid "The receiving cash box is inactive."
 msgstr "الخزينة المستلِمة موقوفة."
 
+msgid "The reference karat cannot be deactivated."
+msgstr "لا يمكن إيقاف العيار المرجعي."
+
+msgid "The reference karat is always active."
+msgstr "العيار المرجعي نشط دائماً."
+
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
 
@@ -3908,6 +4310,9 @@ msgstr "رقم فاتورتهم"
 msgid "their no."
 msgstr "رقمهم"
 
+msgid "Theme"
+msgstr "السمة"
+
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
 
@@ -3922,6 +4327,9 @@ msgstr "هذا العنوان مستخدم."
 
 msgid "This board has no %(side)s price for %(karat)s."
 msgstr "لا يوجد سعر %(side)s لـ %(karat)s في هذه النشرة."
+
+msgid "This category already has stock, so its family and tracking cannot change."
+msgstr "على هذه المجموعة بضاعة، لذلك لا يمكن تغيير نوعها أو طريقة تتبعها."
 
 msgid "This domain is already in use."
 msgstr "هذا النطاق مستخدم بالفعل."
@@ -3944,8 +4352,17 @@ msgstr "هذه الفاتورة مرحّلة بالفعل."
 msgid "This is the company currency."
 msgstr "هذه عملة الشركة."
 
+msgid "This is the reference karat."
+msgstr "هذا هو العيار المرجعي."
+
+msgid "This karat already exists."
+msgstr "هذا العيار موجود بالفعل."
+
 msgid "This karat does not match the category."
 msgstr "هذا العيار لا يناسب المجموعة."
+
+msgid "This minute"
+msgstr "هذه الدقيقة"
 
 msgid "This order has no receipt to cancel."
 msgstr "لا يوجد استلام لهذا الأمر لإلغائه."
@@ -4007,6 +4424,15 @@ msgstr "مبيعات اليوم"
 msgid "Too deep."
 msgstr "مستوى أعمق من المسموح."
 
+msgid "Too many requests"
+msgstr "طلبات كثيرة جدًا"
+
+msgid "Too many requests right now"
+msgstr "طلبات كثيرة جدًا الآن"
+
+msgid "Too many requests. Please wait a minute and try again."
+msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مرة أخرى."
+
 msgid "Top margin (mm)"
 msgstr "الهامش العلوي (مم)"
 
@@ -4036,6 +4462,12 @@ msgstr "حساب تاجر"
 
 msgid "Trade accounts"
 msgstr "حسابات التجار"
+
+msgid "Traffic"
+msgstr "حركة الطلبات"
+
+msgid "Traffic and limits"
+msgstr "حركة الطلبات والحدود"
 
 msgid "Transfer"
 msgstr "تحويل"
@@ -4082,6 +4514,9 @@ msgstr "اكتب للبحث…"
 msgid "UAE dirham"
 msgstr "درهم إماراتي"
 
+msgid "Under"
+msgstr "تحت"
+
 msgid "Undo"
 msgstr "تراجع"
 
@@ -4118,6 +4553,9 @@ msgstr "بيان غير معروف."
 msgid "Unknown karat."
 msgstr "عيار غير معروف."
 
+msgid "Unknown metal."
+msgstr "معدن غير معروف."
+
 msgid "Unknown or inactive karat."
 msgstr "عيار غير معروف أو موقوف."
 
@@ -4148,6 +4586,9 @@ msgstr "حتى"
 msgid "Update"
 msgstr "تحديث"
 
+msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
+msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
+
 msgid "US dollar"
 msgstr "دولار أمريكي"
 
@@ -4163,11 +4604,17 @@ msgstr "استخدم تحويل العملة لتغيير المبلغ إلى ع
 msgid "Use by default"
 msgstr "القالب الافتراضي"
 
+msgid "Use the workspace colour (%(name)s)"
+msgstr "استخدام لون مساحة العمل (%(name)s)"
+
 msgid "Used in another piece"
 msgstr "مستخدمة في قطعة أخرى"
 
 msgid "Used in production"
 msgstr "مستخدم في الإنتاج"
+
+msgid "Used on the dark sidebar, the sign-in panel and in dark mode. Empty: the logo above."
+msgstr "يُستخدم في القائمة الداكنة ولوحة تسجيل الدخول والوضع الداكن. فارغ: الشعار أعلاه."
 
 msgid "User"
 msgstr "المستخدم"
@@ -4180,6 +4627,9 @@ msgstr "اسم المستخدم أو البريد الإلكتروني"
 
 msgid "Users"
 msgstr "المستخدمون"
+
+msgid "Users can still pick their own in the appearance menu."
+msgstr "يمكن لكل مستخدم اختيار لونه من قائمة المظهر."
 
 msgid "Value"
 msgstr "القيمة"
@@ -4255,6 +4705,9 @@ msgstr "عرض الورش"
 
 msgid "Viewer"
 msgstr "مُطّلع"
+
+msgid "Violet"
+msgstr "بنفسجي"
 
 msgid "Walk-in"
 msgstr "زبون"
@@ -4406,6 +4859,12 @@ msgstr "بياناتك خاصة بشركتك وحدها"
 msgid "Your discount limit: %(max)s%% of the making charge."
 msgstr "حد الخصم المسموح لك: %(max)s%% من المصنعية."
 
+msgid "Your name, logo and colour on every screen."
+msgstr "اسمك وشعارك ولونك على كل الشاشات."
+
+msgid "Your name, logos and links, as every client sees them."
+msgstr "اسمك وشعاراتك وروابطك كما يراها كل عميل."
+
 msgid "Your plan allows %(limit)s branches. Contact us to add more."
 msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإضافة المزيد."
 
@@ -4415,5 +4874,11 @@ msgstr "باقتك تسمح بـ %(limit)s مستخدمين. تواصل معنا
 msgid "Your shops and offices."
 msgstr "محلاتك ومكاتبك."
 
+msgid "Your workspace has reached its request limit for this minute. Try again in %(seconds)s seconds."
+msgstr "وصلت مساحة العمل إلى حد الطلبات لهذه الدقيقة. حاول مرة أخرى بعد %(seconds)s ثانية."
+
 msgid "Zebra (ZPL)"
 msgstr "زيبرا (ZPL)"
+
+msgid "— Top level —"
+msgstr "— المستوى الأعلى —"

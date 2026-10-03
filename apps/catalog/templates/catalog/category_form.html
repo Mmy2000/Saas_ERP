@@ -1,0 +1,61 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if category %}{{ category.name }}{% else %}{% translate "New item category" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'categories' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Item categories" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if category %}{{ category.name }}{% else %}{% translate "New item category" %}{% endif %}</h1>
+    {% if category and not category.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 lg:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6 lg:col-span-2">
+    {% if form.non_field_errors %}
+    <div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div></div>
+    {% endif %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Details" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
+        {% include "console/_field.html" with field=form.code %}
+        {% include "console/_field.html" with field=form.name span="sm:col-span-3" %}
+        {% include "console/_field.html" with field=form.short_name span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=form.parent span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=form.product_family span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=form.tracking span="sm:col-span-2" %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Making charges" %}</h2><span class="text-xs text-slate-500">{% translate "Defaults per gram; pieces and offers can override them." %}</span></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% for code, list_field, cost_field in form.charge_rows %}
+          {% include "console/_field.html" with field=list_field %}
+          {% include "console/_field.html" with field=cost_field %}
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Defaults" %}</h2></div>
+      <div class="card-body space-y-5">
+        {% include "console/_field.html" with field=form.default_karat %}
+        {% include "console/_field.html" with field=form.barcode_prefix %}
+        {% include "console/_field.html" with field=form.commission_percent %}
+        {% if form.is_active %}
+        <label class="flex items-center gap-3">{{ form.is_active }}<span class="text-sm text-slate-700">{{ form.is_active.label }}</span></label>
+        {% endif %}
+      </div>
+    </section>
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'categories' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

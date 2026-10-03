@@ -1,18 +1,18 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load i18n ui authz %}
 {% block title %}{% translate "Karats" %}{% endblock %}
 {% block page_header %}
   {% translate "Karats" as title %}{% translate "Purity of each karat. Every weight conversion in the system uses these values." as subtitle %}
-  {% include "components/page_header.html" %}
+  {% include "components/page_header.html" with actions_template="catalog/_karat_actions.html" %}
 {% endblock %}
-{% block content %}
+{% block content %}{% can "catalog.karat.manage" as can_manage %}
 <section class="card overflow-hidden">
   <div class="overflow-x-auto">
     <table class="table">
       <thead><tr>
         <th>{% translate "Karat" %}</th><th>{% translate "Metal" %}</th>
         <th class="text-end">{% translate "Fineness (‰)" %}</th><th class="text-end">{% translate "Equivalent to 21K" %}</th>
-        <th>{% translate "Status" %}</th>
+        <th>{% translate "Status" %}</th>{% if can_manage %}<th></th>{% endif %}
       </tr></thead>
       <tbody>
       {% for row in rows %}
@@ -23,6 +23,7 @@
           <td class="text-end"><span class="num">{{ row.karat.fineness|num:3 }}</span></td>
           <td class="text-end">{% if row.ratio %}<span class="num">× {{ row.ratio|num:4 }}</span>{% else %}—{% endif %}</td>
           <td>{% if row.karat.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          {% if can_manage %}<td class="text-end"><a href="{% url 'karat-edit' row.karat.pk %}" class="btn btn-ghost text-xs">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</a></td>{% endif %}
         </tr>
       {% endfor %}
       </tbody>

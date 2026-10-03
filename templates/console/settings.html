@@ -1,0 +1,81 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Settings" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Platform settings" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "Your name, logos and links, as every client sees them." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="grid grid-cols-1 gap-6 xl:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Brand" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=form.brand_name %}
+        {% include "console/_field.html" with field=form.tagline %}
+        {% include "console/_field.html" with field=form.footer_text span="sm:col-span-2" %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Logos" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div class="flex items-start gap-4">
+          {% if settings_row.logo %}{% include "components/logo_preview.html" with url=brand.logo name=brand.name %}{% else %}{% include "components/logo_preview.html" with url="" %}{% endif %}
+          <div class="min-w-0 flex-1">{% include "console/_field.html" with field=form.logo %}</div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-ink-950">
+            {% if settings_row.logo_dark %}<img src="{{ brand.logo_dark }}" alt="" class="size-full object-contain p-1.5">{% else %}<span class="px-1 text-center text-[11px] leading-tight text-zinc-500">{% translate "No logo" %}</span>{% endif %}
+          </div>
+          <div class="min-w-0 flex-1">{% include "console/_field.html" with field=form.logo_dark %}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">{% translate "Footer links" %}</h2>
+        <span class="text-xs text-slate-500">{% translate "In the footer of every workspace page" %}</span>
+      </div>
+      {{ links.management_form }}
+      {% if links.non_form_errors %}<p class="form-error px-5 pt-4">{{ links.non_form_errors|join:" " }}</p>{% endif %}
+      <div class="divide-y divide-slate-100">
+        {% for link in links %}
+        <div class="grid grid-cols-1 gap-4 px-5 py-4 sm:grid-cols-[1fr_2fr_6rem_auto] sm:items-end">
+          {% for hidden in link.hidden_fields %}{{ hidden }}{% endfor %}
+          {% include "console/_field.html" with field=link.label %}
+          {% include "console/_field.html" with field=link.url %}
+          {% include "console/_field.html" with field=link.position %}
+          {% if link.instance.pk %}
+          <label class="flex h-9 items-center gap-2 text-sm text-slate-600">{{ link.DELETE }}<span>{% translate "Remove" %}</span></label>
+          {% else %}<span class="hidden sm:block"></span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{% translate "Save to get more empty rows." %}</p>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Preview" %}</h2></div>
+      <div class="bg-slate-50 p-4">
+        <div class="flex items-center gap-2.5">
+          {% translate "Client name" as sample %}<span class="grid size-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 font-semibold text-on-brand" aria-hidden="true">{{ sample|slice:":1" }}</span>
+          <div class="min-w-0"><p class="truncate text-sm font-semibold text-slate-900">{{ sample }}</p><p class="truncate text-xs text-slate-500">{{ brand.tagline }}</p></div>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 pt-3">
+          <div class="flex min-w-0 items-center gap-2">{% include "components/platform_mark.html" with size="size-6" %}<div class="min-w-0 leading-tight"><p class="truncate text-xs font-medium text-slate-700">{{ brand.name }}</p>{% if brand.footer_text and brand.footer_text != brand.name %}<p class="truncate text-[11px] text-slate-500">{{ brand.footer_text }}</p>{% endif %}</div></div>
+          {% if brand.links %}<div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">{% for link in brand.links %}<span>{{ link.label }}</span>{% endfor %}</div>{% endif %}
+        </div>
+      </div>
+      <p class="px-4 py-3 text-xs text-slate-500">{% translate "How a client's sidebar and page footer look with these settings." %}</p>
+    </section>
+    <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+  </aside>
+</form>
+{% endblock %}

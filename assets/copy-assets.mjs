@@ -4,8 +4,9 @@
 //  - the Lucide icons the UI uses, bundled into apps/core/ui_icons.json for {% icon %}
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const root = fileURLToPath(new URL("..", import.meta.url)); // decodes %20 (paths with spaces)
 const nm = join(root, "node_modules");
 
 function copy(pairs, outDir) {
@@ -35,7 +36,7 @@ const icons = [
   "key-round", "book-open", "list-tree", "pencil", "lock", "landmark", "calculator",
   "package", "receipt", "scan-barcode", "printer", "shopping-bag", "list", "credit-card",
   "repeat", "inbox", "wallet", "receipt-text", "send", "clipboard-check", "undo-2", "bookmark", "chart-column",
-  "trash-2", "wrench",
+  "trash-2", "wrench", "sun", "moon", "monitor", "palette", "panel-left-close", "panel-left-open", "arrow-up", "arrow-down",
 ];
 const bundle = {};
 for (const name of icons) {

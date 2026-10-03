@@ -1,0 +1,42 @@
+{% extends "console/layout.html" %}
+{% load i18n ui static %}
+{% block title %}{% translate "Traffic" %}{% endblock %}
+{% block head %}{{ live_strings|json_script:"live-strings" }}<script type="module" src="{% static 'core/js/console-live.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Traffic" %}</h1>
+    <p class="mt-1.5 text-sm text-slate-500">{% translate "Requests from every client, how much server time they take, and who is being limited." %}</p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">{% include "console/_live_status.html" %}{% include "console/_window_switch.html" %}</div>
+</div>
+{% endblock %}
+{% block content %}
+<div data-live data-live-url="{% url 'console-traffic-live' %}" data-window="{{ report.key }}">
+  <div data-live-part="tiles">{% include "console/_traffic_tiles.html" %}</div>
+
+  <section class="card mt-6" data-live-part="chart">{% include "console/_traffic_chart.html" %}</section>
+
+  <section class="card mt-6 overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "Clients by server load" %}</h2><span class="text-xs text-slate-500">{% blocktranslate trimmed with n=default_limit %}Default limit: {{ n }} requests per minute{% endblocktranslate %}</span></div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>
+          <th>{% translate "Client" %}</th>
+          <th>{% translate "Share of server time" %}</th>
+          <th class="text-end">{% translate "Requests" %}</th>
+          <th class="text-end">{% translate "Average" %}</th>
+          <th class="text-end">{% translate "Slow / errors" %}</th>
+          <th class="text-end">{% translate "Refused" %}</th>
+          <th class="text-end">{% translate "Per minute: now / busiest" %}</th>
+          <th class="text-end">{% translate "Limit" %}</th>
+          <th>{% translate "State" %}</th>
+          <th class="text-end">{% translate "Enabled" %}</th>
+        </tr></thead>
+        <tbody data-live-part="clients">{% include "console/_traffic_rows.html" %}</tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% include "console/_confirm_dialog.html" %}
+{% endblock %}

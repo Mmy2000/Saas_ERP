@@ -1,0 +1,8 @@
+{% load i18n %}<div class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs text-slate-600 shadow-xs" data-live-status>
+  <span class="relative flex size-2">
+    <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" data-live-ping></span>
+    <span class="relative inline-flex size-2 rounded-full bg-emerald-500" data-live-dot></span>
+  </span>
+  <span class="num" data-live-text>{% translate "Live" %}</span>
+  <button type="button" class="rounded-md px-1.5 py-0.5 font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900" data-live-toggle>{% translate "Pause" %}</button>
+</div>

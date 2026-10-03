@@ -1,0 +1,50 @@
+{% extends "console/layout.html" %}
+{% load i18n ui static %}
+{% block title %}{% translate "Traffic" %} · {{ tenant.name }}{% endblock %}
+{% block head %}{{ live_strings|json_script:"live-strings" }}<script type="module" src="{% static 'core/js/console-live.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-tenant' tenant.pk %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ tenant.name }}</a>
+  <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div data-live-part="summary">{% include "console/_traffic_summary.html" %}</div>
+    <div class="flex flex-wrap items-center gap-2">{% include "console/_live_status.html" %}{% include "console/_window_switch.html" %}</div>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div data-live data-live-url="{% url 'console-tenant-traffic-live' tenant.pk %}" data-window="{{ report.key }}">
+  <div data-live-part="tiles">{% include "console/_traffic_tiles.html" %}</div>
+
+  <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="space-y-6 xl:col-span-2">
+      <section class="card" data-live-part="chart">{% include "console/_traffic_chart.html" %}</section>
+
+      <section class="card overflow-hidden">
+        <div class="card-header"><h2 class="card-title">{% translate "Heaviest screens" %}</h2><span class="text-xs text-slate-500">{% translate "By server time" %}</span></div>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>{% translate "Address" %}</th><th class="text-end">{% translate "Requests" %}</th><th class="text-end">{% translate "Average" %}</th><th class="text-end">{% translate "Slowest" %}</th><th class="text-end">{% translate "Slow" %}</th><th class="text-end">{% translate "Errors" %}</th></tr></thead>
+            <tbody data-live-part="routes">{% include "console/_traffic_routes.html" %}</tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <aside class="space-y-6">
+      <section class="card" data-live-part="access">{% include "console/_access_card.html" %}</section>
+
+      <form method="post" action="?window={{ report.key }}" class="card" novalidate data-limit-form>
+        {% csrf_token %}
+        <div class="card-header"><h2 class="card-title">{% translate "Request limit" %}</h2></div>
+        <div class="card-body space-y-4">
+          <p class="text-sm text-slate-600">{% translate "Over the limit, the workspace answers “too many requests” until the next minute starts. Normal work stays far below it; a script or a stuck screen does not." %}</p>
+          {% include "console/_field.html" with field=form.requests_per_minute %}
+          <p class="text-xs text-slate-500">{% blocktranslate trimmed with n=default_limit %}Platform default: {{ n }} per minute.{% endblocktranslate %}</p>
+        </div>
+        <div class="flex justify-end border-t border-slate-100 px-5 py-4"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button></div>
+      </form>
+    </aside>
+  </div>
+</div>
+{% include "console/_confirm_dialog.html" %}
+{% endblock %}

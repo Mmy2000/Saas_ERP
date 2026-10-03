@@ -1,11 +1,11 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load i18n ui authz %}
 {% block title %}{% translate "Item categories" %}{% endblock %}
 {% block page_header %}
   {% translate "Item categories" as title %}{% translate "Groups of items with their default karat and making charges." as subtitle %}
-  {% include "components/page_header.html" %}
+  {% include "components/page_header.html" with actions_template="catalog/_category_actions.html" %}
 {% endblock %}
-{% block content %}
+{% block content %}{% can "catalog.category.manage" as can_manage %}
 <section class="card overflow-hidden">
   {% if categories %}
   <div class="overflow-x-auto">
@@ -13,7 +13,7 @@
       <thead><tr>
         <th>{% translate "Category" %}</th><th>{% translate "Family" %}</th><th>{% translate "Tracking" %}</th>
         <th>{% translate "Default karat" %}</th><th class="text-end">{% translate "Making charge / g" %}</th>
-        <th>{% translate "Barcode prefix" %}</th>
+        <th>{% translate "Barcode prefix" %}</th>{% if can_manage %}<th></th>{% endif %}
       </tr></thead>
       <tbody>
       {% for category in categories %}
@@ -34,6 +34,9 @@
             {% empty %}—{% endfor %}
           </td>
           <td><span class="num">{{ category.barcode_prefix|default:"—" }}</span></td>
+          {% if can_manage %}<td class="text-end whitespace-nowrap">
+            {% if category.depth < 3 %}<a href="{% url 'category-new' %}?parent={{ category.pk }}" class="btn btn-ghost text-xs" title="{% translate 'Add a sub-category' %}" aria-label="{% translate 'Add a sub-category' %}">{% icon "plus" "size-4" %}</a>{% endif %}
+            <a href="{% url 'category-edit' category.pk %}" class="btn btn-ghost text-xs">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</a></td>{% endif %}
         </tr>
       {% endfor %}
       </tbody>

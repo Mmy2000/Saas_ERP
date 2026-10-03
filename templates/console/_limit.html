@@ -1,0 +1,1 @@
+{% load i18n %}{% if client.limit %}<span class="num">{{ client.limit }}</span>{% if client.tenant.requests_per_minute is None %} <span class="text-xs text-slate-400">{% translate "default" %}</span>{% endif %}{% else %}<span class="text-slate-400">{% translate "No limit" %}</span>{% endif %}

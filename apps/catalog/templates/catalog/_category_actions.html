@@ -1,0 +1,1 @@
+{% load i18n ui authz %}{% can "catalog.category.manage" as allowed %}{% if allowed %}<a href="{% url 'category-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New item category" %}</a>{% endif %}

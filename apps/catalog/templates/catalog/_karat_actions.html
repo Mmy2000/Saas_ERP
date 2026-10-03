@@ -1,0 +1,1 @@
+{% load i18n ui authz %}{% can "catalog.karat.manage" as allowed %}{% if allowed %}<a href="{% url 'karat-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New karat" %}</a>{% endif %}

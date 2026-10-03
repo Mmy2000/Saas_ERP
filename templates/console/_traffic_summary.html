@@ -1,0 +1,5 @@
+{% load i18n %}<div class="flex flex-wrap items-center gap-3">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Traffic" %}</h1>
+  {% include "console/_traffic_state.html" with state=client.state %}
+</div>
+<p class="mt-1.5 text-sm text-slate-500"><span class="num">{{ tenant.slug }}</span> · {% translate "This minute" %}: <span class="num">{{ client.this_minute }}</span> · {% translate "Limit" %}: {% include "console/_limit.html" %}</p>

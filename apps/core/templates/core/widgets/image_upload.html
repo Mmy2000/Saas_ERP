@@ -1,0 +1,2 @@
+{% load i18n %}<input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %} accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon">
+{% if widget.is_initial and not widget.required %}<label class="mt-2 inline-flex cursor-pointer items-center gap-2 text-xs text-slate-600"><input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" class="size-4 rounded border-slate-300 accent-brand-600"{% if widget.attrs.disabled %} disabled{% endif %}>{% translate "Remove the current logo" %}</label>{% endif %}

@@ -1,0 +1,6 @@
+{% extends "error_page.html" %}
+{% load i18n %}
+{% block title %}{% translate "Too many requests" %}{% endblock %}
+{% block code %}429{% endblock %}
+{% block heading %}{% translate "Too many requests right now" %}{% endblock %}
+{% block text %}{% blocktranslate trimmed with seconds=retry_after %}Your workspace has reached its request limit for this minute. Try again in {{ seconds }} seconds.{% endblocktranslate %}{% endblock %}

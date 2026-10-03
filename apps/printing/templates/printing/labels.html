@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n ui authz %}
+{% block theme %}light{% endblock %}{% block theme_pref %}light{% endblock %}
 {% block title %}{% translate "Print labels" %}{% endblock %}
 {% block head %}{% include "printing/_label_style.html" %}{% endblock %}
 {% block body %}

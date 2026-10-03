@@ -113,3 +113,114 @@ def test_command_palette_opens_a_screen(signed_in, language):
     page.keyboard.press("Enter")
     page.wait_for_url(f"{base}/suppliers/")
     assert errors == []
+
+
+def test_console_traffic_is_live_and_switches_access(live_server, make_tenant, browser):
+    """The Traffic page updates without a reload, changes period in place, and disables /
+    enables a client through the confirmation dialog."""
+    from apps.iam.models import User
+    from apps.platform.tenants.models import Tenant, TenantStatus
+
+    tenant = make_tenant("live")
+    User.objects.create_user(email="ops@gweb.test", password=PASSWORD, display_name="Ops",
+                             is_platform_staff=True)
+    console = live_server.url.replace("://localhost", "://admin.localhost")
+    workspace = live_server.url.replace("://localhost", "://live.localhost")
+    context = browser.new_context(viewport={"width": 1440, "height": 900})
+    context.add_cookies([{"name": "django_language", "value": "en", "url": console}])
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+    page.goto(f"{console}/login/")
+    page.fill("input[name=username]", "ops@gweb.test")
+    page.fill("input[name=password]", PASSWORD)
+    page.press("input[name=password]", "Enter")
+    page.wait_for_url(f"{console}/")
+    page.goto(f"{console}/traffic/?window=1h")
+    row = page.locator("[data-live-part=clients] tr", has_text="Live")
+    assert row.locator("td").nth(2).inner_text().strip() == "0"
+
+    # Traffic arrives: the row updates on the next poll, no reload.
+    other = browser.new_page()
+    other.goto(f"{workspace}/login/")
+    page.wait_for_function(
+        "() => [...document.querySelectorAll('[data-live-part=clients] tr')]"
+        ".some(r => r.innerText.includes('Live') && r.cells[2].innerText.trim() !== '0')",
+        timeout=12000)
+    assert "updated" in page.inner_text("[data-live-text]")
+
+    # Period switch in place.
+    page.click(".segmented a[href='?window=7d']")
+    page.wait_for_url("**/traffic/?window=7d")
+    page.wait_for_function("() => document.querySelector('[data-live]').dataset.window === '7d'")
+
+    # Disable, after confirming; then enable again.
+    row.locator("[role=switch]").click()
+    page.locator("[data-confirm-dialog] button[value=confirm]").click()
+    row.locator("text=Disabled").wait_for(timeout=8000)
+    assert Tenant.objects.get(pk=tenant.pk).status == TenantStatus.SUSPENDED
+    row.locator("[role=switch]").click()  # enabling needs no confirmation
+    row.locator("text=Normal").wait_for(timeout=8000)
+    assert Tenant.objects.get(pk=tenant.pk).status == TenantStatus.ACTIVE
+    assert errors == []
+    other.close()
+    context.close()
+
+
+def test_appearance_menu_switches_theme_and_accent(signed_in):
+    page, base, errors = signed_in("en")
+    html = page.locator("html")
+    page.click("[data-appearance-toggle]")
+    page.click("[data-theme-choice=dark]")
+    page.click("[data-accent-choice=emerald]")
+    assert html.get_attribute("data-theme") == "dark"
+    assert html.get_attribute("data-accent") == "emerald"
+    page.keyboard.press("Escape")
+    assert page.locator("[data-appearance-panel]").is_hidden()
+    page.reload()  # kept in cookies: the server renders it straight away
+    assert (html.get_attribute("data-theme"), html.get_attribute("data-accent")) == (
+        "dark", "emerald")
+    page.click("[data-appearance-toggle]")
+    page.click("[data-theme-choice=light]")
+    assert html.get_attribute("data-theme") == "light"
+    assert errors == []
+
+
+def test_sidebar_collapses_to_an_icon_rail(signed_in):
+    page, base, errors = signed_in("ar")
+    sidebar = page.locator("#sidebar")
+    assert sidebar.bounding_box()["width"] == 256
+    page.click("[data-sidebar-collapse]")
+    page.wait_for_function("() => document.getElementById('sidebar').offsetWidth === 68")
+    link = page.locator("#sidebar .nav-link[aria-current=page]")
+    assert link.get_attribute("title")  # the name shows on hover
+    assert page.locator("#sidebar [data-sidebar-label]").first.is_hidden()
+    page.reload()
+    assert sidebar.bounding_box()["width"] == 68
+    page.click("[data-sidebar-collapse]")
+    page.wait_for_function("() => document.getElementById('sidebar').offsetWidth === 256")
+    assert link.get_attribute("title") is None
+    assert errors == []
+
+
+def test_scroll_buttons(signed_in):
+    page, base, errors = signed_in("ar", viewport=(1280, 420))
+    up = page.locator("[data-scroll-to=top]")
+    down = page.locator("[data-scroll-to=bottom]")
+
+    def wait_shown(which, shown):
+        page.wait_for_function(
+            f"() => document.querySelector('[data-scroll-to={which}]').dataset.visible"
+            f" === '{str(shown).lower()}'")
+
+    wait_shown("bottom", True)
+    assert up.get_attribute("data-visible") == "false" and up.get_attribute("tabindex") == "-1"
+    down.click()
+    page.wait_for_function(
+        "() => scrollY + innerHeight >= document.documentElement.scrollHeight - 2")
+    wait_shown("top", True)
+    assert down.get_attribute("data-visible") == "false"
+    up.click()
+    page.wait_for_function("() => window.scrollY === 0")
+    wait_shown("top", False)
+    assert errors == []

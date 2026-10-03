@@ -39,7 +39,7 @@
       <tbody>
       {% for order in page.object_list %}
         <tr>
-          <td><span class="num inline-flex min-w-9 justify-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-semibold text-white">{{ order.bag_number }}</span></td>
+          <td><span class="num inline-flex min-w-9 justify-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-semibold text-surface">{{ order.bag_number }}</span></td>
           <td><span class="num font-medium text-slate-900">{{ order.number }}</span>{% if order.kind == "custom" %} <span class="badge badge-neutral">{{ order.get_kind_display }}</span>{% endif %}</td>
           <td>{{ order.who }}{% if order.customer_phone %}<div class="num text-xs text-slate-400">{{ order.customer_phone }}</div>{% endif %}</td>
           <td><span class="num">{{ order.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>

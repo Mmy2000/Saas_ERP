@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.media import PlatformUploadPath, validate_image
 from apps.core.models import TimeStampedModel
 
 RESERVED_SLUGS = frozenset({"admin", "api", "www", "static", "media", "platform", "support"})
@@ -47,6 +48,9 @@ class Tenant(TimeStampedModel):
     trial_ends_on = models.DateField(null=True, blank=True)
     max_branches = models.PositiveIntegerField(null=True, blank=True)  # None = no limit
     max_users = models.PositiveIntegerField(null=True, blank=True)
+    # Requests per minute before the workspace answers 429. None = the platform default
+    # (TENANT_REQUESTS_PER_MINUTE), 0 = no limit. See apps.platform.tenants.traffic.
+    requests_per_minute = models.PositiveIntegerField(null=True, blank=True)
     contact_name = models.CharField(max_length=200, blank=True)
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(max_length=30, blank=True)
@@ -107,6 +111,8 @@ EVENT_LABELS = {
     "profile.updated": _("Company settings changed"),
     "domain.added": _("Domain added"),
     "domain.removed": _("Domain removed"),
+    "traffic.limit": _("Request limit changed"),
+    "platform.settings": _("Platform settings changed"),
 }
 
 
@@ -131,3 +137,115 @@ class PlatformEvent(models.Model):
     @property
     def label(self) -> str:
         return str(EVENT_LABELS.get(self.action, self.action))
+
+
+class TenantTraffic(models.Model):
+    """Requests to one client's workspace in one minute (UTC), written by TrafficMiddleware.
+    `requests` counts everything that arrived, `throttled` the part refused with 429; the
+    timings cover only the requests that were served."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="+")
+    minute = models.DateTimeField()
+    requests = models.PositiveIntegerField(default=0)
+    throttled = models.PositiveIntegerField(default=0)
+    errors = models.PositiveIntegerField(default=0)  # 5xx
+    slow = models.PositiveIntegerField(default=0)  # >= TRAFFIC_SLOW_MS
+    total_ms = models.BigIntegerField(default=0)
+    max_ms = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant", "minute"],
+                                               name="tenants_traffic_minute_uniq")]
+        indexes = [models.Index(fields=["minute"], name="tenants_traffic_minute_idx")]
+
+    def __str__(self):
+        return f"{self.tenant_id} {self.minute:%Y-%m-%d %H:%M}"
+
+
+class TenantRouteTraffic(models.Model):
+    """Served requests per client, day and URL pattern ("GET /sales/<int:pk>/"): which
+    screens cost the server the most time."""
+
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="+")
+    day = models.DateField()
+    route = models.CharField(max_length=200)
+    requests = models.PositiveIntegerField(default=0)
+    errors = models.PositiveIntegerField(default=0)
+    slow = models.PositiveIntegerField(default=0)
+    total_ms = models.BigIntegerField(default=0)
+    max_ms = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant", "day", "route"],
+                                               name="tenants_route_traffic_uniq")]
+        indexes = [models.Index(fields=["day"], name="tenants_route_traffic_day_idx")]
+
+    def __str__(self):
+        return f"{self.tenant_id} {self.day} {self.route}"
+
+
+class PlatformSettings(models.Model):
+    """The platform's own branding, edited in the console (Settings). One row (pk=1)."""
+
+    brand_name = models.CharField(max_length=100, default="Gweb")
+    # Shown under each client's name in its workspace sidebar; empty = the brand name.
+    tagline = models.CharField(max_length=120, blank=True)
+    logo = models.FileField(upload_to=PlatformUploadPath("branding"), blank=True,
+                            validators=[validate_image])
+    # For dark backgrounds (console sidebar, login panel, dark theme); empty = the logo.
+    logo_dark = models.FileField(upload_to=PlatformUploadPath("branding"), blank=True,
+                                 validators=[validate_image])
+    footer_text = models.CharField(max_length=200, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    CACHE_KEY = "platform:settings"
+
+    class Meta:
+        verbose_name = "platform settings"
+
+    def __str__(self):
+        return self.brand_name
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+        from django.core.cache import cache
+
+        cache.delete(self.CACHE_KEY)
+
+    @classmethod
+    def load(cls) -> PlatformSettings:
+        from django.core.cache import cache
+
+        settings_row = cache.get(cls.CACHE_KEY)
+        if settings_row is None:
+            settings_row = cls.objects.filter(pk=1).first() or cls(pk=1)
+            settings_row.cached_links = list(PlatformLink.objects.order_by("position", "id"))
+            cache.set(cls.CACHE_KEY, settings_row, 300)
+        return settings_row
+
+
+class PlatformLink(models.Model):
+    """A link in the footer of every workspace sidebar (support, website, WhatsApp…)."""
+
+    label = models.CharField(max_length=60)
+    url = models.URLField(max_length=500)
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return self.label
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        from django.core.cache import cache
+
+        cache.delete(PlatformSettings.CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        from django.core.cache import cache
+
+        cache.delete(PlatformSettings.CACHE_KEY)
+        return super().delete(*args, **kwargs)

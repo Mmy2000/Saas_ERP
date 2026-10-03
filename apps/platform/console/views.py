@@ -4,20 +4,27 @@ from __future__ import annotations
 
 from functools import wraps
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.core.errors import ValidationError
+from apps.core.media import replace_file
 from apps.core.tenancy import tenant_context
 from apps.platform.tenants.models import (
     PlatformEvent,
+    PlatformLink,
+    PlatformSettings,
     Tenant,
     TenantDomain,
     TenantPlan,
@@ -26,17 +33,23 @@ from apps.platform.tenants.models import (
 from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
 
 from . import metrics
+from . import traffic as traffic_report
 from .forms import (
     DomainForm,
+    PlatformLinkFormSet,
+    PlatformSettingsForm,
     ProfileForm,
     StaffLoginForm,
     TenantCreateForm,
     TenantSettingsForm,
+    TrafficLimitForm,
     domain_for,
 )
 
 LIMIT_FIELDS = ("plan", "trial_ends_on", "max_branches", "max_users", "contact_name",
                 "contact_email", "contact_phone", "notes")
+# The traffic pages' enable/disable switch moves a client between these two only.
+ACCESS_STATUSES = (TenantStatus.ACTIVE, TenantStatus.SUSPENDED)
 # Which statuses can be set from the console, and from which.
 TRANSITIONS = {
     TenantStatus.ACTIVE: (TenantStatus.SUSPENDED, TenantStatus.ARCHIVED,
@@ -166,12 +179,14 @@ def tenant(request, pk):
         "name": tenant.name, **{name: getattr(tenant, name) for name in LIMIT_FIELDS}})
     profile_form = ProfileForm(initial={
         "display_name": profile.display_name, "locale": profile.locale,
-        "country": profile.country, "timezone": profile.timezone} if profile else None)
+        "country": profile.country, "timezone": profile.timezone,
+        "accent": profile.accent, "logo": profile.logo or None} if profile else None)
     return render(request, "console/tenant.html", {
         "tenant": tenant, "usage": usage, "profile": profile,
         "domains": tenant.domains.order_by("-is_primary", "domain"),
         "primary": _primary_domain(tenant),
         "owners": _owners(tenant) if profile else [],
+        "profile_logo_url": profile.logo.url if profile and profile.logo else "",
         "events": tenant.events.select_related("actor")[:12],
         "settings_form": settings_form, "profile_form": profile_form, "domain_form": DomainForm(),
         "transitions": [(s, TenantStatus(s).label) for s in TRANSITIONS
@@ -212,16 +227,21 @@ def tenant_profile(request, pk):
     from apps.org.models import TenantProfile
 
     tenant = _tenant(pk)
-    form = ProfileForm(request.POST)
+    form = ProfileForm(request.POST, request.FILES)
     if not form.is_valid():
         _invalid(request, form)
         return redirect("console-tenant", pk)
+    data = dict(form.cleaned_data)
+    logo = data.pop("logo")
     with tenant_context(tenant.id):
         profile = TenantProfile.objects.first()
-        for name, value in form.cleaned_data.items():
+        for name, value in data.items():
             setattr(profile, name, value)
+        replace_file(profile, "logo", logo)
         profile.save()
-    record(request, "profile.updated", tenant, **form.cleaned_data)
+    if logo is not None:
+        data["logo"] = _("removed") if logo is False else logo.name
+    record(request, "profile.updated", tenant, **data)
     messages.success(request, _("Saved."))
     return redirect("console-tenant", pk)
 
@@ -282,3 +302,146 @@ def events(request):
     page = Paginator(queryset, 50).get_page(request.GET.get("page"))
     return render(request, "console/events.html", {"page": page, "section": "events"})
 
+
+
+# Traffic pages are live: the browser re-fetches these parts every few seconds (…/live/) and
+# swaps them in. Each part is rendered by the same template the full page includes.
+OVERVIEW_PARTS = {"tiles": "console/_traffic_tiles.html", "chart": "console/_traffic_chart.html",
+                  "clients": "console/_traffic_rows.html"}
+CLIENT_PARTS = {"tiles": "console/_traffic_tiles.html", "chart": "console/_traffic_chart.html",
+                "routes": "console/_traffic_routes.html",
+                "summary": "console/_traffic_summary.html", "access": "console/_access_card.html"}
+
+
+def _live_strings() -> dict[str, str]:
+    return {
+        "updated": _("Live · updated %(time)s"), "paused": _("Paused"),
+        "offline": _("Reconnecting…"), "pause": _("Pause"), "resume": _("Resume"),
+        "disable_title": _("Disable %(name)s?"),
+        "failed": _("Could not reach the server. Check your connection and try again."),
+    }
+
+
+def _traffic_context(request, tenant: Tenant | None = None) -> dict:
+    report = traffic_report.report(request.GET.get("window", ""), tenant)
+    context = {
+        "report": report, "totals": report.totals, "windows": traffic_report.WINDOWS,
+        "default_limit": settings.TENANT_REQUESTS_PER_MINUTE,
+        "slow_ms": settings.TRAFFIC_SLOW_MS, "section": "traffic", "live_strings": _live_strings(),
+    }
+    if tenant is None:
+        context["page_url"] = f"{reverse('console-traffic')}?window={report.key}"
+    else:
+        context.update({
+            "tenant": tenant, "client": report.clients[0],
+            "routes": traffic_report.routes(tenant, report.start),
+            "page_url": f"{reverse('console-tenant-traffic', args=[tenant.pk])}"
+                        f"?window={report.key}"})
+    return context
+
+
+def _live(request, parts: dict[str, str], context: dict) -> JsonResponse:
+    return JsonResponse({
+        "window": context["report"].key,
+        "parts": {name: render_to_string(template, context, request=request)
+                  for name, template in parts.items()},
+    })
+
+
+@staff_required
+def traffic(request):
+    return render(request, "console/traffic.html", _traffic_context(request))
+
+
+@staff_required
+def traffic_live(request):
+    return _live(request, OVERVIEW_PARTS, _traffic_context(request))
+
+
+@staff_required
+def tenant_traffic(request, pk):
+    tenant = _tenant(pk)
+    form = TrafficLimitForm(request.POST or None,
+                            initial={"requests_per_minute": tenant.requests_per_minute})
+    if request.method == "POST":
+        if not form.is_valid():
+            _invalid(request, form)
+            return redirect("console-tenant-traffic", pk)
+        before = tenant.requests_per_minute
+        tenant.requests_per_minute = form.cleaned_data["requests_per_minute"]
+        tenant.save(update_fields=["requests_per_minute", "updated_at"])
+        if tenant.requests_per_minute != before:
+            record(request, "traffic.limit", tenant,
+                   before="" if before is None else before,
+                   after="" if tenant.requests_per_minute is None
+                   else tenant.requests_per_minute)
+        messages.success(request, _("Saved."))
+        window = traffic_report.window(request.GET.get("window", ""))
+        return redirect(f"{request.path}?window={window}")
+    return render(request, "console/tenant_traffic.html",
+                  {**_traffic_context(request, tenant), "form": form})
+
+
+@staff_required
+def tenant_traffic_live(request, pk):
+    return _live(request, CLIENT_PARTS, _traffic_context(request, _tenant(pk)))
+
+
+@staff_required
+@require_POST
+def tenant_access(request, pk):
+    """Enable (active) or disable (suspended) a client. Disabling stops every sign-in and
+    request at once; the data is kept. JSON for the live pages, a redirect otherwise."""
+    tenant = _tenant(pk)
+    wants_json = "application/json" in request.headers.get("Accept", "")
+    target = TenantStatus.ACTIVE if request.POST.get("enabled") == "1" else TenantStatus.SUSPENDED
+    if tenant.status not in ACCESS_STATUSES:
+        message = _("That change is not allowed.")
+        if wants_json:
+            return JsonResponse({"error": {"message": message}}, status=409)
+        messages.error(request, message)
+    else:
+        if tenant.status != target:
+            previous = tenant.status
+            tenant.status = target
+            tenant.save(update_fields=["status", "updated_at"])
+            record(request, "tenant.status", tenant, before=previous, after=target)
+        message = (_("%(name)s is enabled.") if target == TenantStatus.ACTIVE
+                   else _("%(name)s is disabled.")) % {"name": tenant.name}
+        if wants_json:
+            return JsonResponse({"status": tenant.status, "message": message})
+        messages.success(request, message)
+    next_url = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+        next_url = reverse("console-tenant-traffic", args=[pk])
+    return redirect(next_url)
+
+
+@staff_required
+def platform_settings(request):
+    """The platform's name, logos and the links in every workspace's sidebar footer."""
+    from django.core.files.storage import default_storage
+
+    row = PlatformSettings.objects.filter(pk=1).first() or PlatformSettings(pk=1)
+    before = {name: getattr(row, name).name for name in ("logo", "logo_dark")}
+    form = PlatformSettingsForm(request.POST or None, request.FILES or None, instance=row)
+    links = PlatformLinkFormSet(request.POST or None, prefix="links",
+                                queryset=PlatformLink.objects.all())
+    if request.method == "POST":
+        if form.is_valid() and links.is_valid():
+            form.save()
+            links.save()
+            PlatformSettings.objects.get(pk=1).save()  # drops the cached copy everywhere
+            for name, old in before.items():
+                if old and old != getattr(row, name).name:
+                    default_storage.delete(old)
+            record(request, "platform.settings", None, **{
+                name: form.cleaned_data[name] for name in form.changed_data
+                if name not in ("logo", "logo_dark")},
+                **({"logos": ", ".join(n for n in form.changed_data if n.startswith("logo"))}
+                   if any(n.startswith("logo") for n in form.changed_data) else {}))
+            messages.success(request, _("Saved."))
+            return redirect("console-settings")
+        messages.error(request, _("Please correct the highlighted fields."))
+    return render(request, "console/settings.html", {
+        "form": form, "links": links, "settings_row": row, "section": "settings"})

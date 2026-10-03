@@ -18,6 +18,7 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 | PII encryption (Fernet) + blind indexes | `apps/core/crypto.py` | §24 |
 | Tenant registry, domains, provisioning | `apps/platform/tenants/` | §5.7 |
 | Platform console (platform hosts, platform staff only): overview of every client (status, users, documents and sales in the last 30 days, a 14-day activity chart, health: busy / quiet / idle / not started), client list and search, create a client in one form (company, owner, plan), per-client page with usage, plan, trial end, branch and user limits (enforced in the workspace), contact and notes, company settings, extra domains, suspend / archive / activate, and an activity log of every console change. Figures are read inside each client's own tenant context. The raw Django admin moved to `/django-admin/` | `apps/platform/console/`, `templates/console/` | §5.4, §5.7 |
+| Client traffic: every request to a workspace counted per client and minute (requests, server time, slow requests, 5xx, refusals) and per client, day and URL pattern; a requests-per-minute limit per client (platform default `TENANT_REQUESTS_PER_MINUTE`, 0 = none) answered with 429 + `Retry-After`; console Traffic page (clients ranked by share of server time, near-limit / limited / slow) and a per-client page with a chart, heaviest screens and the limit. `prune_traffic` deletes old counters | `apps/platform/tenants/traffic.py`, `apps/platform/tenants/middleware.py`, `apps/platform/console/traffic.py` | §5.7 |
 | Global User + per-tenant Membership, login backends, session binding | `apps/iam/` | §7.2, §14.1, ADR-004 |
 | RBAC: permission catalog, roles, branch-scoped assignments, limits, `Actor` | `apps/iam/` | §14.2–14.3 |
 | TenantProfile, Branch | `apps/org/` | §7.1 |
@@ -95,13 +96,37 @@ and password of a user with `is_platform_staff`. New clients get `<slug>.<TENANT
 (`localhost` by default); a custom domain added in the console must also point at the server
 and be allowed by `DJANGO_ALLOWED_HOSTS`.
 
+### Branding and uploaded files
+
+Console → **Settings**: the platform's name, logo (and one for dark backgrounds), the line shown
+under each client's name, and the footer text and links shown in the footer of every workspace
+page and on the client sign-in page. A client's own logo, name on screens and accent colour are set in its workspace
+(**Settings → Company**, permission `org.settings.manage`) or from the console's client page.
+
+Uploads are kept per client under `MEDIA_ROOT/tenants/<tenant id>/` (platform files under
+`platform/`) and are served only by `apps.core.media.serve`, which checks the host and the
+user: a client's logo is public on its own hosts, its other files only to its members, nothing
+crosses to another client, and platform staff can open any. Images are checked by content
+(PNG, JPEG, WEBP, GIF, ICO; no SVG), 2 MB at most, and stored under random names. Static files
+(CSS, JS, fonts) are the application's own and the same for everyone. In production, back up
+`MEDIA_ROOT` with the database, and never let the web server serve it directly.
+
+### Traffic and request limits
+
+Console → **Traffic** shows every client's requests, server time and refusals for the last hour,
+24 hours or 7 days, live (refreshed every 5 s while the tab is visible, `static/core/js/console-live.js`),
+with a switch per client to disable (suspend) or enable it; open a client for its heaviest screens and to change its limit (requests per
+minute; empty = `TENANT_REQUESTS_PER_MINUTE`, default 600; 0 = no limit). Over the limit the
+workspace answers 429 until the next minute. Run `manage.py prune_traffic` daily to keep 30 days
+of per-minute counters and 90 days of per-route ones.
+
 ## Frontend assets
 
 Tailwind CSS v4 through its CLI (Node is needed only to rebuild; the built CSS is committed):
 
 ```powershell
 npm install
-npm run build        # copy fonts, icons and Tom Select, then build static/core/css/app.css
+npm install       # copy fonts, icons and Tom Select, then build static/core/css/app.css
 npm run watch:css    # while editing templates
 ```
 
@@ -111,8 +136,18 @@ npm run watch:css    # while editing templates
   (`<span class="badge-dot">` for a status dot), `.table`, `.segmented` + `.segment` (radio
   toggles), `.tab` + `.tab-active` (list filters), `.kbd`, `.num`. The look is neutral zinc greys
   (the `slate-*` scale is redefined to zinc there) with gold (`brand-*`) as the accent; primary
-  buttons are near-black. Use logical utilities (`ms-`, `pe-`, `start-`, `text-start`) so one
+  buttons use the accent's solid colour. Use logical utilities (`ms-`, `pe-`, `start-`, `text-start`) so one
   template serves RTL and LTR.
+- Themes: light, dark or system, and an accent colour (gold, emerald, teal, blue, indigo, violet,
+  rose, graphite), picked per user in the top bar's appearance menu (cookies `gweb_theme`,
+  `gweb_accent`); a workspace's default accent is set in the console (Company settings). It all
+  works through tokens: the `slate-*`, `brand-*` and red/amber/emerald scales are redefined for
+  `[data-theme=dark]`, so templates need no `dark:` classes. Use `bg-surface` (not `bg-white`) for
+  cards and panels, `text-on-brand` on `bg-brand-600`, and `zinc-*` for panels that stay dark
+  in both themes (login side panel, console sidebar). Palettes live in `assets/css/app.css` and
+  `apps/core/appearance.py`.
+- The sidebar collapses to an icon rail on desktop (top-bar button, cookie `gweb_sidebar`). Mark
+  text that hides in the rail with `data-sidebar-label`; the current screen's link uses the accent.
 - Ctrl/⌘+K opens the command palette (`static/core/js/cmdk.js`): every screen in the sidebar the
   user may open, searchable in Arabic or English.
 - Icons: `{% load ui %}{% icon "coins" "size-5" %}` (Lucide, bundled into `apps/core/ui_icons.json`

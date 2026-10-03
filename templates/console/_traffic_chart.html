@@ -1,0 +1,10 @@
+{% load i18n %}<div class="card-header"><h2 class="card-title">{% translate "Requests" %} · {{ report.label }}</h2><span class="text-xs text-slate-500">{% if tenant %}{{ tenant.name }}{% else %}{% translate "All clients" %}{% endif %}</span></div>
+<div class="flex h-56 items-end gap-px px-5 pt-6 pb-2" role="img" aria-label="{% translate 'Requests over time' %}">
+  {% for bar in report.chart %}
+  <div class="group relative flex h-full flex-1 flex-col items-center justify-end" title="{{ bar.at|date:'SHORT_DATETIME_FORMAT' }} · {% blocktranslate trimmed with n=bar.requests %}{{ n }} requests{% endblocktranslate %}{% if bar.throttled %} · {% blocktranslate trimmed with n=bar.throttled %}{{ n }} refused{% endblocktranslate %}{% endif %}{% if bar.avg_ms %} · {% blocktranslate trimmed with ms=bar.avg_ms %}{{ ms }} ms on average{% endblocktranslate %}{% endif %}">
+    <div class="w-full max-w-6 rounded-t-sm {% if bar.throttled %}bg-red-400{% elif bar.last %}bg-brand-600{% else %}bg-brand-200 group-hover:bg-brand-400{% endif %}" style="height: {{ bar.height }}%; min-height: 2px"></div>
+  </div>
+  {% endfor %}
+</div>
+<div class="flex gap-px px-5 pb-4">{% for bar in report.chart %}<span class="num flex-1 overflow-visible text-center text-[10px] whitespace-nowrap text-slate-400">{{ bar.label }}</span>{% endfor %}</div>
+<p class="flex items-center gap-4 border-t border-slate-100 px-5 py-3 text-xs text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-brand-200"></span>{% translate "Requests" %}</span><span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-brand-600"></span>{% translate "Now" %}</span><span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-red-400"></span>{% translate "Some requests refused" %}</span></p>

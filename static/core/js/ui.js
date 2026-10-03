@@ -64,10 +64,33 @@ function setSidebar(open) {
   if (backdrop) backdrop.hidden = !open;
 }
 
+// Desktop: collapse the sidebar to an icon rail (<html data-sidebar>), remembered in a cookie so
+// the server renders the next page the same way. Collapsed links show their name on hover.
+function syncRailTitles() {
+  const collapsed = document.documentElement.dataset.sidebar === "collapsed";
+  for (const link of document.querySelectorAll("#sidebar .nav-link, #sidebar .console-link")) {
+    if (collapsed) link.title = link.textContent.trim();
+    else link.removeAttribute("title");
+  }
+  for (const toggle of document.querySelectorAll("[data-sidebar-collapse]")) {
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+  }
+}
+
+function toggleRail() {
+  const root = document.documentElement;
+  const collapsed = root.dataset.sidebar !== "collapsed";
+  root.dataset.sidebar = collapsed ? "collapsed" : "expanded";
+  document.cookie = `gweb_sidebar=${collapsed ? "collapsed" : "expanded"}; path=/; max-age=31536000; SameSite=Lax`;
+  syncRailTitles();
+}
+
 export function initShell() {
+  syncRailTitles();
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-sidebar-open]")) setSidebar(true);
     else if (event.target.closest("[data-sidebar-close], [data-sidebar-backdrop]")) setSidebar(false);
+    else if (event.target.closest("[data-sidebar-collapse]")) toggleRail();
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setSidebar(false);

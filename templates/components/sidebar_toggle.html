@@ -1,0 +1,7 @@
+{% load i18n ui %}{# Collapse / expand the sidebar to an icon rail (desktop only; phones use the menu button). #}
+<button type="button" class="btn btn-ghost -ms-1 h-8 px-2 max-lg:hidden" data-sidebar-collapse
+        aria-controls="sidebar" aria-expanded="{% if ui.sidebar_collapsed %}false{% else %}true{% endif %}"
+        aria-label="{% translate 'Collapse or expand the menu' %}" title="{% translate 'Collapse or expand the menu' %}">
+  <span data-when-expanded>{% icon "panel-left-close" "size-[18px] rtl:-scale-x-100" %}</span>
+  <span data-when-collapsed>{% icon "panel-left-open" "size-[18px] rtl:-scale-x-100" %}</span>
+</button>

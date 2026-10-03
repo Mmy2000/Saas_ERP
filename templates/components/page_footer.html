@@ -1,0 +1,15 @@
+{% load i18n %}{# The platform's footer under every workspace page: logo, text and links (console → Settings). #}
+<footer data-no-print class="border-t border-slate-200/70 bg-surface/60 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+  <div class="mx-auto flex max-w-7xl flex-col gap-2 py-3 sm:min-h-12 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:py-2">
+    <div class="flex min-w-0 items-center gap-2">
+      {% include "components/platform_mark.html" with size="size-5 text-[10px]" radius="rounded-md" %}
+      <p class="truncate text-xs text-slate-500" dir="auto">{% if brand.footer_text %}{{ brand.footer_text }}{% else %}© {% now "Y" %} <span class="font-medium text-slate-700">{{ brand.name }}</span>{% endif %}</p>
+    </div>
+    {% if brand.links %}
+    <nav class="-mx-2.5 flex flex-wrap items-center gap-y-1 text-xs sm:mx-0" aria-label="{{ brand.name }}">
+      {% for link in brand.links %}{% if not forloop.first %}<span class="h-3 w-px bg-slate-200" aria-hidden="true"></span>{% endif %}<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
+         class="rounded px-2.5 py-1 font-medium text-slate-500 transition-colors hover:text-brand-700 focus-visible:text-brand-700">{{ link.label }}</a>{% endfor %}
+    </nav>
+    {% endif %}
+  </div>
+</footer>

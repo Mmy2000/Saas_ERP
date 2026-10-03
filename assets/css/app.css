@@ -27,28 +27,38 @@
 @font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 700; font-display: swap;
   src: url("../fonts/plex-arabic-700.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
 
+/* Dark mode: <html data-theme="dark">. data-theme-pref holds the choice (light / dark / system);
+   base.html resolves "system" before first paint. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: "Inter", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand: a restrained gold, used for accents and primary actions only. */
-  --color-brand-50: #fbf8ef;
-  --color-brand-100: #f5edd4;
-  --color-brand-200: #ead8a6;
-  --color-brand-300: #ddbd6f;
-  --color-brand-400: #d2a547;
-  --color-brand-500: #c28a30;
-  --color-brand-600: #a86c27;
-  --color-brand-700: #8a5123;
-  --color-brand-800: #724223;
-  --color-brand-900: #5f3720;
+  /* Accent ("brand"): one of the palettes below, chosen per workspace and per user
+     (<html data-accent>). Links, focus rings, charts, highlights and primary buttons use it. */
+  --color-brand-50: var(--accent-50);
+  --color-brand-100: var(--accent-100);
+  --color-brand-200: var(--accent-200);
+  --color-brand-300: var(--accent-300);
+  --color-brand-400: var(--accent-400);
+  --color-brand-500: var(--accent-500);
+  --color-brand-600: var(--accent-600);
+  --color-brand-700: var(--accent-700);
+  --color-brand-800: var(--accent-800);
+  --color-brand-900: var(--accent-900);
+  --color-on-brand: var(--accent-on); /* text on brand-600 */
 
-  /* Dark ink (login panel). */
+  /* Raised surfaces: cards, inputs, menus, the top bar. White in light mode. Use bg-surface
+     (not bg-white) for anything that should turn dark in dark mode. */
+  --color-surface: #ffffff;
+
+  /* Dark ink (login panel, console sidebar): the same in both modes. */
   --color-ink-800: #1c1c1f;
   --color-ink-900: #131316;
   --color-ink-950: #0a0a0c;
 
   /* Neutral greys (zinc). Templates use slate-* throughout; redefining the scale here gives
-     the whole UI the neutral look in one place. */
+     the whole UI the neutral look in one place, and dark mode flips it in one place too. */
   --color-slate-50: #fafafa;
   --color-slate-100: #f4f4f5;
   --color-slate-200: #e4e4e7;
@@ -61,13 +71,119 @@
   --color-slate-900: #18181b;
   --color-slate-950: #09090b;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.03), 0 1px 3px 0 rgb(0 0 0 / 0.02);
-  --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.14), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.03);
+  --shadow-pop: 0 16px 40px -12px rgb(0 0 0 / 0.18), 0 4px 10px -4px rgb(0 0 0 / 0.08);
 
   --animate-enter: enter 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-toast: toast-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-pop: pop 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Accent palettes. 600 is the solid colour (primary buttons) and keeps white text at 4.5:1 or
+   better. To add one: a block here and an entry in apps/core/appearance.py ACCENTS. */
+@layer base {
+  :root, [data-accent="gold"] {
+    --accent-50: #fbf8ef; --accent-100: #f5edd4; --accent-200: #ead8a6; --accent-300: #ddbd6f;
+    --accent-400: #d2a547; --accent-500: #c28a30; --accent-600: #9a6122; --accent-700: #7e4b1f;
+    --accent-800: #693d1f; --accent-900: #57331d; --accent-on: #ffffff;
+  }
+  [data-accent="emerald"] {
+    --accent-50: #ecfdf5; --accent-100: #d1fae5; --accent-200: #a7f3d0; --accent-300: #6ee7b7;
+    --accent-400: #34d399; --accent-500: #10b981; --accent-600: #047857; --accent-700: #065f46;
+    --accent-800: #064e3b; --accent-900: #053d2f; --accent-on: #ffffff;
+  }
+  [data-accent="teal"] {
+    --accent-50: #f0fdfa; --accent-100: #ccfbf1; --accent-200: #99f6e4; --accent-300: #5eead4;
+    --accent-400: #2dd4bf; --accent-500: #14b8a6; --accent-600: #0f766e; --accent-700: #115e59;
+    --accent-800: #134e4a; --accent-900: #0f3d3a; --accent-on: #ffffff;
+  }
+  [data-accent="blue"] {
+    --accent-50: #eff6ff; --accent-100: #dbeafe; --accent-200: #bfdbfe; --accent-300: #93c5fd;
+    --accent-400: #60a5fa; --accent-500: #3b82f6; --accent-600: #2563eb; --accent-700: #1d4ed8;
+    --accent-800: #1e40af; --accent-900: #1e3a8a; --accent-on: #ffffff;
+  }
+  [data-accent="indigo"] {
+    --accent-50: #eef2ff; --accent-100: #e0e7ff; --accent-200: #c7d2fe; --accent-300: #a5b4fc;
+    --accent-400: #818cf8; --accent-500: #6366f1; --accent-600: #4f46e5; --accent-700: #4338ca;
+    --accent-800: #3730a3; --accent-900: #312e81; --accent-on: #ffffff;
+  }
+  [data-accent="violet"] {
+    --accent-50: #f5f3ff; --accent-100: #ede9fe; --accent-200: #ddd6fe; --accent-300: #c4b5fd;
+    --accent-400: #a78bfa; --accent-500: #8b5cf6; --accent-600: #7c3aed; --accent-700: #6d28d9;
+    --accent-800: #5b21b6; --accent-900: #4c1d95; --accent-on: #ffffff;
+  }
+  [data-accent="rose"] {
+    --accent-50: #fff1f2; --accent-100: #ffe4e6; --accent-200: #fecdd3; --accent-300: #fda4af;
+    --accent-400: #fb7185; --accent-500: #f43f5e; --accent-600: #e11d48; --accent-700: #be123c;
+    --accent-800: #9f1239; --accent-900: #881337; --accent-on: #ffffff;
+  }
+  [data-accent="graphite"] {
+    --accent-50: #fafafa; --accent-100: #f4f4f5; --accent-200: #e4e4e7; --accent-300: #d4d4d8;
+    --accent-400: #a1a1aa; --accent-500: #71717a; --accent-600: #27272a; --accent-700: #18181b;
+    --accent-800: #09090b; --accent-900: #000000; --accent-on: #ffffff;
+  }
+
+  /* Dark mode (screen only: printed receipts stay black on white). Neutrals flip, surfaces
+     go dark, and the light tints of the accent and status colours become dark tints while
+     their text shades become light, so every slate-*, brand-*, red/amber/emerald-* class in
+     the templates keeps its meaning without a dark: variant. */
+  @media screen {
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --color-surface: #18181b;
+      --color-slate-50: #0e0e10;
+      --color-slate-100: #232327;
+      --color-slate-200: #2e2e33;
+      --color-slate-300: #3f3f46;
+      --color-slate-400: #6c6c75;
+      --color-slate-500: #9f9fa9;
+      --color-slate-600: #b8b8c0;
+      --color-slate-700: #d0d0d6;
+      --color-slate-800: #e3e3e7;
+      --color-slate-900: #f2f2f4;
+      --color-slate-950: #fafafa;
+
+      --color-brand-50: color-mix(in oklab, var(--accent-500) 12%, #18181b);
+      --color-brand-100: color-mix(in oklab, var(--accent-500) 20%, #18181b);
+      --color-brand-200: color-mix(in oklab, var(--accent-500) 34%, #18181b);
+      --color-brand-700: var(--accent-300);
+      --color-brand-800: var(--accent-200);
+      --color-brand-900: var(--accent-100);
+
+      --color-red-50: color-mix(in oklab, #ef4444 12%, #18181b);
+      --color-red-100: color-mix(in oklab, #ef4444 20%, #18181b);
+      --color-red-200: color-mix(in oklab, #ef4444 34%, #18181b);
+      --color-red-600: #f87171;
+      --color-red-700: #fca5a5;
+      --color-red-800: #fecaca;
+      --color-red-900: #fee2e2;
+      --color-emerald-50: color-mix(in oklab, #10b981 12%, #18181b);
+      --color-emerald-100: color-mix(in oklab, #10b981 20%, #18181b);
+      --color-emerald-200: color-mix(in oklab, #10b981 34%, #18181b);
+      --color-emerald-600: #34d399;
+      --color-emerald-700: #6ee7b7;
+      --color-emerald-800: #a7f3d0;
+      --color-emerald-900: #d1fae5;
+      --color-amber-50: color-mix(in oklab, #f59e0b 12%, #18181b);
+      --color-amber-100: color-mix(in oklab, #f59e0b 20%, #18181b);
+      --color-amber-200: color-mix(in oklab, #f59e0b 34%, #18181b);
+      --color-amber-600: #fbbf24;
+      --color-amber-700: #fcd34d;
+      --color-amber-800: #fde68a;
+      --color-amber-900: #fef3c7;
+
+      --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+      --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+      --shadow-pop: 0 20px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+    }
+    /* Graphite's solid colour is near-black: in dark mode it becomes near-white instead. */
+    [data-theme="dark"][data-accent="graphite"] {
+      --color-brand-500: #a1a1aa;
+      --color-brand-600: #e4e4e7;
+      --color-on-brand: #18181b;
+    }
+  }
 }
 
 @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -81,6 +197,8 @@
   :focus-visible { @apply outline-2 outline-offset-2 outline-brand-500/70; }
   h1, h2, h3 { @apply tracking-tight; }
   * { scrollbar-width: thin; scrollbar-color: var(--color-slate-300) transparent; }
+  /* Switching theme or accent recolours everything at once; a short fade makes it calm. */
+  html.theme-switching, html.theme-switching * { transition: background-color 180ms, border-color 180ms, color 180ms !important; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
   }
@@ -89,29 +207,37 @@
 @layer components {
   /* Numbers: tabular, and always left-to-right even inside Arabic text. */
   .num { font-variant-numeric: tabular-nums; unicode-bidi: isolate; direction: ltr; display: inline-block; white-space: nowrap; }
+  /* …but a <div class="num"> / <p class="num"> is still its own line (slug under a name). */
+  :where(div, p).num { display: block; }
 
-  .card { @apply rounded-xl border border-slate-200/80 bg-white shadow-card; }
+  .card { @apply rounded-xl border border-slate-200/80 bg-surface shadow-card; }
   .card-header { @apply flex min-h-14 items-center justify-between gap-4 border-b border-slate-100 px-5 py-3; }
   .card-title { @apply text-sm font-semibold tracking-tight text-slate-900; }
   .card-body { @apply p-5; }
 
   .btn { @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap
-                 transition-[color,background-color,border-color,box-shadow,transform] duration-150
+                 transition-[color,background-color,border-color,box-shadow,transform,filter] duration-150
                  select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50; }
   .btn.text-xs { @apply h-8 gap-1.5 rounded-md px-2.5; }
-  .btn-primary { @apply bg-slate-900 text-white shadow-xs hover:bg-slate-800 focus-visible:outline-slate-900/40; }
-  .btn-secondary { @apply border border-slate-200 bg-white text-slate-800 shadow-xs hover:border-slate-300
+  /* Primary = the accent's solid colour, with a hairline highlight on top. */
+  .btn-primary, .btn-brand { @apply bg-brand-600 text-on-brand hover:brightness-110 focus-visible:outline-brand-500/60;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 1px 2px 0 rgb(0 0 0 / 0.12); }
+  .btn-secondary { @apply border border-slate-200 bg-surface text-slate-800 shadow-xs hover:border-slate-300
                            hover:bg-slate-50 hover:text-slate-900; }
   .btn-ghost { @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
-  .btn-brand { @apply bg-brand-500 text-white shadow-xs hover:bg-brand-600; }
+  /* Destructive confirmation: the same red in both modes. */
+  .btn-danger { background-color: #dc2626; @apply text-white shadow-xs hover:brightness-110; }
 
   .form-label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
-  .form-input { @apply block w-full rounded-lg border border-slate-200 bg-white px-3 py-[7px] text-sm text-slate-900
+  .form-input { @apply block w-full rounded-lg border border-slate-200 bg-surface px-3 py-[7px] text-sm text-slate-900
                        shadow-xs transition-[border-color,box-shadow] duration-150 placeholder:text-slate-400
                        hover:border-slate-300 focus:border-brand-400 focus:ring-[3px] focus:ring-brand-500/15
                        focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400; }
   .form-input[aria-invalid="true"] { @apply border-red-400 focus:ring-red-500/15; }
   .form-error { @apply mt-1.5 text-sm text-red-600 empty:hidden; }
+  .form-file { @apply block w-full text-sm text-slate-600 file:me-3 file:h-9 file:cursor-pointer file:rounded-lg
+                      file:border file:border-slate-200 file:bg-surface file:px-3 file:text-sm file:font-medium
+                      file:text-slate-800 file:shadow-xs hover:file:bg-slate-50; }
 
   .badge { @apply inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap
                   ring-1 ring-inset; }
@@ -131,25 +257,38 @@
   .table tbody tr:hover td { @apply bg-slate-50/70; }
 
   /* Sidebar */
-  .nav-link { @apply flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-600
+  .nav-link { @apply relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-600
                      transition-colors hover:bg-slate-200/50 hover:text-slate-900; }
   .nav-link svg { @apply text-slate-400 transition-colors; }
   .nav-link:hover svg { @apply text-slate-600; }
-  .nav-link[aria-current="page"] { @apply bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/80; }
-  .nav-link[aria-current="page"] svg { @apply text-brand-600; }
-  .nav-section { @apply mt-5 mb-1 px-2.5 text-xs font-medium text-slate-400; }
+  .nav-link[aria-current="page"] { @apply bg-brand-50 text-brand-800 ring-1 ring-brand-200/70 hover:bg-brand-100/70; }
+  .nav-link[aria-current="page"] svg { @apply text-brand-600 dark:text-brand-400; }
+  /* Accent bar at the sidebar edge for the current screen. */
+  .nav-link[aria-current="page"]::before { content: ""; position: absolute; inset-inline-start: -0.75rem; top: 0.5rem;
+    bottom: 0.5rem; width: 3px; border-start-end-radius: 3px; border-end-end-radius: 3px; @apply bg-brand-500; }
+  .nav-section { @apply mt-5 mb-1 px-2.5 text-[11px] font-semibold tracking-wide text-slate-400 uppercase; }
+  :lang(ar) .nav-section { @apply text-xs tracking-normal normal-case; }
 
-  /* Platform console sidebar (dark). */
-  .console-link { @apply flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-400
+  /* Platform console sidebar (always dark). */
+  .console-link { @apply relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-zinc-400
                          transition-colors hover:bg-white/5 hover:text-white; }
-  .console-link[aria-current="page"] { @apply bg-white/10 text-white; }
-  .console-link[aria-current="page"] svg { @apply text-brand-300; }
+  .console-link[aria-current="page"] { color: var(--accent-200);
+    background-color: color-mix(in oklab, var(--accent-500) 20%, transparent); }
+  .console-link[aria-current="page"] svg { color: var(--accent-300); }
+  .console-link[aria-current="page"]::before { content: ""; position: absolute; inset-inline-start: -0.75rem; top: 0.5rem;
+    bottom: 0.5rem; width: 3px; border-start-end-radius: 3px; border-end-end-radius: 3px; background: var(--accent-400); }
+
+  /* Collapsible sidebar. <html data-sidebar="collapsed"> turns it into an icon rail from lg up
+     (phones keep the slide-in menu). Mark what hides with data-sidebar-label, and rows that
+     stack in the rail with data-sidebar-row. Toggle: [data-sidebar-collapse] (static/core/js/ui.js). */
+  .shell-main { @apply transition-[padding] duration-200 lg:ps-64; }
+  [data-when-collapsed] { display: none; }
 
   /* Segmented control: <div class="segmented"><label><input class="peer sr-only"><span class="segment">. */
   .segmented { @apply inline-flex max-w-full flex-wrap items-center gap-0.5 rounded-lg bg-slate-100 p-1 text-sm font-medium; }
   .segment { @apply block cursor-pointer rounded-md px-3.5 py-1 text-slate-500 transition-all duration-150
                     hover:text-slate-900; }
-  .peer:checked ~ .segment, .segment-active { @apply bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/60; }
+  .peer:checked ~ .segment, .segment-active { @apply bg-surface text-slate-900 shadow-xs ring-1 ring-slate-200/60; }
   .peer:focus-visible ~ .segment { @apply outline-2 outline-offset-1 outline-brand-500/70; }
 
   /* Filter tabs above a list: <a class="tab tab-active">. */
@@ -158,17 +297,37 @@
   .tab-active { @apply bg-slate-100 text-slate-900; }
 
   /* Keyboard hint, e.g. Ctrl K. */
-  .kbd { @apply inline-flex h-5 items-center rounded border border-slate-200 bg-white px-1.5 font-sans text-[11px]
+  .kbd { @apply inline-flex h-5 items-center rounded border border-slate-200 bg-surface px-1.5 font-sans text-[11px]
                 font-medium text-slate-500; }
+
+  /* Pop-over menu (appearance menu). */
+  .menu-panel { @apply absolute end-0 top-full z-50 mt-2 animate-pop rounded-xl border border-slate-200 bg-surface p-4
+                       text-slate-800 shadow-pop; }
+  .menu-label { @apply text-xs font-medium text-slate-500; }
+  .swatch { @apply flex flex-col items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-slate-600
+                   transition-colors hover:bg-slate-100 hover:text-slate-900; }
+  .swatch-dot { @apply grid size-7 place-items-center rounded-full text-white ring-2 ring-transparent ring-offset-2
+                       ring-offset-surface transition-shadow; }
+  .swatch[aria-pressed="true"] { @apply text-slate-900; }
+  .swatch[aria-pressed="true"] .swatch-dot { @apply ring-slate-900; }
+  .swatch-dot svg { @apply hidden; }
+  .swatch[aria-pressed="true"] .swatch-dot svg { @apply block; }
+
+  /* Floating scroll buttons (components/scroll_buttons.html). */
+  .scroll-btn { @apply pointer-events-none relative grid size-10 translate-y-2 scale-95 cursor-pointer place-items-center
+                       rounded-full border border-slate-200 bg-surface/90 text-slate-600 opacity-0 shadow-pop
+                       backdrop-blur-md transition-[opacity,transform,color,border-color] duration-200
+                       hover:border-brand-300 hover:text-brand-700 active:scale-90; }
+  .scroll-btn[data-visible="true"] { @apply pointer-events-auto translate-y-0 scale-100 opacity-100; }
 
   /* Notifications */
   .toast { @apply pointer-events-auto flex w-full max-w-sm animate-toast items-start gap-3 rounded-xl border border-slate-200
-                  bg-white px-4 py-3 text-sm text-slate-800 shadow-pop; }
+                  bg-surface px-4 py-3 text-sm text-slate-800 shadow-pop; }
   .toast-error { @apply border-red-200 text-red-800; }
 
   /* Command palette (native <dialog>). */
   .cmdk { @apply m-auto mt-[12vh] w-[min(36rem,calc(100vw-2rem))] animate-pop overflow-hidden rounded-2xl border border-slate-200
-                 bg-white p-0 text-slate-800 shadow-pop backdrop:bg-slate-900/30 backdrop:backdrop-blur-[2px]; }
+                 bg-surface p-0 text-slate-800 shadow-pop backdrop:bg-black/40 backdrop:backdrop-blur-[2px]; }
   .cmdk-item { @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700; }
   .cmdk-item[aria-selected="true"] { @apply bg-slate-100 text-slate-900; }
 }
@@ -176,8 +335,8 @@
 @layer components {
   .login-glow {
     background:
-      radial-gradient(60% 50% at 20% 15%, rgb(194 138 48 / 0.35), transparent 70%),
-      radial-gradient(50% 40% at 85% 90%, rgb(210 165 71 / 0.22), transparent 70%);
+      radial-gradient(60% 50% at 20% 15%, color-mix(in oklab, var(--accent-500) 35%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 85% 90%, color-mix(in oklab, var(--accent-400) 22%, transparent), transparent 70%);
   }
   .login-grid {
     background-image:
@@ -188,13 +347,28 @@
   }
 }
 
+/* The collapsed rail sits outside the layers so it beats the w-64 / px-* utilities on the same
+   elements (layered rules lose to utilities regardless of specificity). */
+@media (width >= 64rem) {
+  [data-sidebar="collapsed"] {
+    #sidebar { width: 4.25rem; }
+    .shell-main { padding-inline-start: 4.25rem; }
+    [data-sidebar-label], [data-when-expanded] { display: none; }
+    [data-when-collapsed] { display: inline; }
+    [data-sidebar-row] { flex-direction: column; justify-content: center; gap: 0.5rem; padding-inline: 0; }
+    [data-sidebar-search] { justify-content: center; padding-inline: 0; }
+    .nav-link, .console-link { justify-content: center; padding-inline: 0; }
+    .nav-section { height: 1px; margin: 0.75rem 0.375rem; font-size: 0; background-color: var(--color-slate-200); }
+  }
+}
+
 /* Searchable selects (Tom Select), styled like .form-input. Logical properties keep the caret
    and clear button on the correct side in RTL. */
 @layer components {
   .ts-wrapper.form-input { @apply border-0 bg-transparent p-0 shadow-none ring-0; }
   .ts-wrapper { --ts-pr-min: 0.75rem; --ts-pr-caret: 2rem; }
   .ts-wrapper .ts-control {
-    @apply flex min-h-9 cursor-pointer items-center rounded-lg border border-slate-200 bg-white py-[7px]
+    @apply flex min-h-9 cursor-pointer items-center rounded-lg border border-slate-200 bg-surface py-[7px]
            text-sm text-slate-900 shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-slate-300;
     padding-inline-start: 0.75rem;
   }
@@ -227,7 +401,7 @@
   }
 
   .ts-dropdown {
-    @apply z-[60] mt-1.5 animate-pop overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-sm text-slate-700 shadow-pop;
+    @apply z-[60] mt-1.5 animate-pop overflow-hidden rounded-xl border border-slate-200 bg-surface p-1 text-sm text-slate-700 shadow-pop;
   }
   .ts-dropdown .ts-dropdown-content { @apply max-h-64 py-1; }
   .ts-dropdown .option { @apply cursor-pointer rounded-md px-2.5 py-1.5; }
@@ -236,7 +410,7 @@
   .ts-dropdown .no-results, .ts-dropdown .loading { @apply px-3 py-2 text-slate-500; }
   .ts-dropdown .highlight { @apply rounded-sm bg-brand-100 text-inherit; }
   .plugin-dropdown_input .dropdown-input {
-    @apply -mx-1 -mt-1 mb-1 border-b border-slate-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none
+    @apply -mx-1 -mt-1 mb-1 border-b border-slate-100 bg-surface px-3 py-2.5 text-sm text-slate-900 outline-none
            placeholder:text-slate-400;
   }
 }
@@ -244,7 +418,7 @@
 /* Printing (receipts): only the document itself. */
 @media print {
   #sidebar, [data-no-print], [data-sidebar-backdrop], #toasts { display: none !important; }
-  .lg\:ps-64 { padding-inline-start: 0 !important; }
+  .shell-main { padding-inline-start: 0 !important; }
   main { padding: 0 !important; }
   body { background: #fff; }
   .card { border: 0; box-shadow: none; }

@@ -117,11 +117,13 @@ def test_suspend_domains_and_settings(console, tenant_a):
     assert tenant_a.domains.filter(pk=primary.pk).exists()
 
     console.post(url + "profile/", {"display_name": "Alpha Jewellers", "locale": "en",
-                                    "country": "EG", "timezone": "Africa/Cairo"})
+                                    "country": "EG", "timezone": "Africa/Cairo",
+                                    "accent": "emerald"})
     with tenant_context(tenant_a.id):
         from apps.org.models import TenantProfile
 
         profile = TenantProfile.objects.get()
-        assert (profile.display_name, profile.locale) == ("Alpha Jewellers", "en")
+        assert (profile.display_name, profile.locale, profile.accent) == (
+            "Alpha Jewellers", "en", "emerald")
     actions = list(PlatformEvent.objects.filter(tenant=tenant_a).values_list("action", flat=True))
     assert {"tenant.status", "domain.added", "domain.removed", "profile.updated"} <= set(actions)

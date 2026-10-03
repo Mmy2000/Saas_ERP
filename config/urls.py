@@ -3,12 +3,15 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
+from apps.catalog.web import manage as catalog_manage
 from apps.catalog.web import views as catalog
+from apps.core import media
 from apps.expenses import views as expenses
 from apps.iam.web import views as iam
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
+from apps.org.web import company
 from apps.org.web import views as org
 from apps.parties.web import views as parties
 from apps.pricing.web import views as pricing
@@ -28,7 +31,9 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(redirect_authenticated_user=True), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("media/<path:path>", media.serve, name="media"),
 
+    path("settings/company/", company.company, name="company"),
     path("branches/", org.branches, name="branches"),
     path("branches/new/", org.branch_new, name="branch-new"),
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
@@ -39,7 +44,11 @@ urlpatterns = [
     path("settings/roles/new/", iam.role_new, name="role-new"),
     path("settings/roles/<int:pk>/", iam.role_edit, name="role-edit"),
     path("catalog/karats/", catalog.karats, name="karats"),
+    path("catalog/karats/new/", catalog_manage.karat_new, name="karat-new"),
+    path("catalog/karats/<int:pk>/", catalog_manage.karat_edit, name="karat-edit"),
     path("catalog/categories/", catalog.categories, name="categories"),
+    path("catalog/categories/new/", catalog_manage.category_new, name="category-new"),
+    path("catalog/categories/<int:pk>/", catalog_manage.category_edit, name="category-edit"),
     path("pricing/gold/", pricing.gold_prices, name="gold-prices"),
     path("pricing/fx/", pricing.fx_rates, name="fx-rates"),
     path("customers/", parties.customers, name="customers"),

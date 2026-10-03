@@ -3,14 +3,20 @@ from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.appearance import ACCENT_CHOICES
+from apps.core.media import ImageUploadInput, validate_image
 from apps.platform.tenants.models import (
     RESERVED_SLUGS,
+    PlatformLink,
+    PlatformSettings,
     Tenant,
     TenantDomain,
     TenantPlan,
     slug_validator,
 )
 
+LOGO_HELP = _("PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a "
+              "transparent background works best.")
 CURRENCIES = [(c, c) for c in ("EGP", "SAR", "AED", "KWD", "QAR", "BHD", "OMR", "JOD", "USD",
                                "EUR", "GBP")]
 COUNTRIES = [("EG", _("Egypt")), ("SA", _("Saudi Arabia")), ("AE", _("United Arab Emirates")),
@@ -29,7 +35,9 @@ class Styled:
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             css = "form-input"
-            if isinstance(field, (forms.IntegerField, forms.DateField)):
+            if isinstance(field, forms.FileField):
+                css = "form-file"
+            elif isinstance(field, (forms.IntegerField, forms.DateField)):
                 css += " num w-full text-start"
             field.widget.attrs.setdefault("class", css)
 
@@ -133,6 +141,11 @@ class ProfileForm(Styled, forms.Form):
     locale = forms.ChoiceField(label=_("Default language"), choices=settings.LANGUAGES)
     country = forms.ChoiceField(label=_("Country"), choices=COUNTRIES)
     timezone = forms.ChoiceField(label=_("Time zone"), choices=TIMEZONES)
+    accent = forms.ChoiceField(
+        label=_("Accent colour"), choices=ACCENT_CHOICES,
+        help_text=_("Users can still pick their own in the appearance menu."))
+    logo = forms.FileField(label=_("Logo"), required=False, validators=[validate_image],
+                           help_text=LOGO_HELP, widget=ImageUploadInput)
 
 
 class DomainForm(Styled, forms.Form):
@@ -152,3 +165,44 @@ class DomainForm(Styled, forms.Form):
 
 def domain_for(slug: str) -> str:
     return f"{slug}.{settings.TENANT_BASE_DOMAIN}"
+
+
+class TrafficLimitForm(Styled, forms.Form):
+    requests_per_minute = forms.IntegerField(
+        label=_("Requests per minute"), min_value=0, required=False,
+        help_text=_("Empty uses the platform default. 0 means no limit."))
+
+
+class PlatformSettingsForm(Styled, forms.ModelForm):
+    class Meta:
+        model = PlatformSettings
+        fields = ["brand_name", "tagline", "footer_text", "logo", "logo_dark"]
+        labels = {
+            "brand_name": _("Platform name"),
+            "tagline": _("Line under each client's name"),
+            "footer_text": _("Footer text"),
+            "logo": _("Logo"),
+            "logo_dark": _("Logo for dark backgrounds"),
+        }
+        help_texts = {
+            "tagline": _("Shown in every workspace sidebar. Empty: the platform name."),
+            "footer_text": _("e.g. © 2026 Your Company. All rights reserved."),
+            "logo": LOGO_HELP,
+            "logo_dark": _("Used on the dark sidebar, the sign-in panel and in dark mode. "
+                           "Empty: the logo above."),
+        }
+        widgets = {"logo": ImageUploadInput, "logo_dark": ImageUploadInput}
+
+
+class PlatformLinkForm(Styled, forms.ModelForm):
+    url = forms.URLField(label=_("Link"), max_length=500, assume_scheme="https",
+                         widget=forms.URLInput(attrs={"dir": "ltr", "placeholder": "https://"}))
+
+    class Meta:
+        model = PlatformLink
+        fields = ["label", "url", "position"]
+        labels = {"label": _("Label"), "url": _("Link"), "position": _("Order")}
+
+
+PlatformLinkFormSet = forms.modelformset_factory(
+    PlatformLink, form=PlatformLinkForm, extra=2, can_delete=True)

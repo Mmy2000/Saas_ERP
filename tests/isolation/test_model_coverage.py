@@ -12,6 +12,10 @@ NOT_TENANT_SCOPED = {
     "tenants.Tenant",  # platform registry
     "tenants.TenantDomain",  # platform registry, read by host resolution
     "tenants.PlatformEvent",  # platform console audit log (platform staff only)
+    "tenants.TenantTraffic",  # request counters per client, written before tenant resolution
+    "tenants.TenantRouteTraffic",
+    "tenants.PlatformSettings",  # the platform's own branding (console settings)
+    "tenants.PlatformLink",
     "iam.User",  # global identity (ADR-004)
     "iam.User_groups",  # Django admin permissions for platform staff
     "iam.User_user_permissions",

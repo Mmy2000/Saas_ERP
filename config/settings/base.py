@@ -55,6 +55,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "apps.core.middleware.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # Counts requests per client and answers 429 over the limit, outside the tenant transaction.
+    "apps.platform.tenants.middleware.TrafficMiddleware",
     # Opens the request transaction and runs SET LOCAL app.tenant_id; everything below runs in it.
     "apps.core.tenancy.middleware.TenantResolutionMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -77,6 +79,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.template.context_processors.i18n",
                 "apps.core.context_processors.shell",
+                "apps.core.appearance.appearance",
+                "apps.core.branding.branding",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -146,7 +150,15 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "var" / "static"
-MEDIA_ROOT = BASE_DIR / "var" / "media"
+# Uploads, one folder per client (tenants/<id>/) plus platform/. Served only through
+# apps.core.media.serve, which checks host and user: never point a web server straight at it.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = env.path("MEDIA_ROOT", default=BASE_DIR / "var" / "media")
+
+# Client traffic (platform console → Traffic). Each client's limit can be changed there; this
+# is the default for clients without one. 0 = no limit.
+TENANT_REQUESTS_PER_MINUTE = env.int("TENANT_REQUESTS_PER_MINUTE", default=600)
+TRAFFIC_SLOW_MS = env.int("TRAFFIC_SLOW_MS", default=1000)  # a request this slow counts as slow
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 

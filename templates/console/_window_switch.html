@@ -1,0 +1,1 @@
+{% load i18n %}<nav class="segmented text-xs" aria-label="{% translate 'Period' %}">{% for key, spec in windows.items %}<a href="?window={{ key }}" class="segment{% if key == report.key %} segment-active{% endif %}"{% if key == report.key %} aria-current="page"{% endif %}>{{ spec.0 }}</a>{% endfor %}</nav>

@@ -1,0 +1,16 @@
+{% load i18n ui %}{% for client in report.clients %}
+<tr class="{% if not client.enabled %}opacity-60{% endif %}">
+  <td class="whitespace-nowrap"><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant-traffic' client.tenant.pk %}?window={{ report.key }}">{{ client.tenant.name }}</a><div class="text-xs text-slate-400"><span class="num">{{ client.tenant.slug }}</span></div></td>
+  <td class="min-w-40"><div class="flex items-center gap-2"><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-brand-500" style="width: {{ client.share }}%"></div></div><span class="num w-9 text-end text-xs text-slate-500">{{ client.share }}%</span></div></td>
+  <td class="text-end"><span class="num">{{ client.requests|num:0 }}</span></td>
+  <td class="text-end"><span class="num">{{ client.avg_ms }}</span> <span class="text-xs text-slate-400">ms</span></td>
+  <td class="text-end whitespace-nowrap"><span class="num{% if client.slow %} text-amber-700{% endif %}">{{ client.slow }}</span> <span class="text-slate-300">/</span> <span class="num{% if client.errors %} text-red-700{% endif %}">{{ client.errors }}</span></td>
+  <td class="text-end"><span class="num{% if client.throttled %} text-red-700{% endif %}">{{ client.throttled }}</span></td>
+  <td class="text-end whitespace-nowrap"><span class="num font-medium text-slate-900">{{ client.this_minute }}</span> <span class="text-slate-300">/</span> <span class="num">{{ client.peak }}</span>{% if client.peak_pct is not None %}<div class="text-xs text-slate-400"><span class="num">{{ client.peak_pct }}%</span> {% translate "of the limit" %}</div>{% endif %}</td>
+  <td class="text-end whitespace-nowrap">{% include "console/_limit.html" %}</td>
+  <td>{% include "console/_traffic_state.html" with state=client.state %}</td>
+  <td class="text-end">{% include "console/_access_switch.html" with next=page_url %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="10" class="py-10 text-center text-slate-500">{% translate "No clients yet" %}</td></tr>
+{% endfor %}

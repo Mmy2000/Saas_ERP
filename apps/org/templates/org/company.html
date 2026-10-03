@@ -1,0 +1,25 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Company" %}{% endblock %}
+{% block page_header %}{% translate "Company" as title %}{% translate "Your name, logo and colour on every screen." as subtitle %}{% include "components/page_header.html" %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="grid grid-cols-1 gap-6 lg:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <section class="card lg:col-span-2">
+    <div class="card-body grid grid-cols-1 gap-6 sm:grid-cols-2">
+      {% include "console/_field.html" with field=form.display_name span="sm:col-span-2" %}
+      <div class="flex items-start gap-4 sm:col-span-2">
+        {% include "components/logo_preview.html" with url=logo_url name=profile.display_name %}
+        <div class="min-w-0 flex-1">{% include "console/_field.html" with field=form.logo %}</div>
+      </div>
+      {% include "console/_field.html" with field=form.accent %}
+    </div>
+    <div class="flex justify-end border-t border-slate-100 px-5 py-4">
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </section>
+  <aside class="card card-body h-fit text-sm text-slate-600">
+    <p>{% translate "The logo appears in the sidebar, on the sign-in page and in the browser tab. Only your company can see your files." %}</p>
+  </aside>
+</form>
+{% endblock %}

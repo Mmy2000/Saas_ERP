@@ -1,0 +1,4 @@
+{% load i18n %}{# Current logo next to an upload field. with url=… name=… #}
+<div class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
+  {% if url %}<img src="{{ url }}" alt="{{ name }}" class="size-12 rounded-lg object-contain">{% else %}<span class="px-1 text-center text-[11px] leading-tight text-slate-400">{% translate "No logo" %}</span>{% endif %}
+</div>

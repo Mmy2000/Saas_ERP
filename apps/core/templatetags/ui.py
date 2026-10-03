@@ -17,9 +17,15 @@ register = template.Library()
 _ICONS_FILE = Path(__file__).resolve().parent.parent / "ui_icons.json"
 
 
-@lru_cache(maxsize=1)
-def _icons() -> dict[str, str]:
+@lru_cache(maxsize=4)
+def _load_icons(mtime_ns: int) -> dict[str, str]:
     return json.loads(_ICONS_FILE.read_text(encoding="utf-8"))
+
+
+def _icons() -> dict[str, str]:
+    # Keyed by the file's modification time: `npm run assets` adding icons takes effect without
+    # restarting a running server (the autoreloader only watches .py files).
+    return _load_icons(_ICONS_FILE.stat().st_mtime_ns)
 
 
 @register.simple_tag
