@@ -35,7 +35,7 @@ const icons = [
   "key-round", "book-open", "list-tree", "pencil", "lock", "landmark", "calculator",
   "package", "receipt", "scan-barcode", "printer", "shopping-bag", "list", "credit-card",
   "repeat", "inbox", "wallet", "receipt-text", "send", "clipboard-check", "undo-2", "bookmark", "chart-column",
-  "trash-2",
+  "trash-2", "wrench",
 ];
 const bundle = {};
 for (const name of icons) {

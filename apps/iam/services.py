@@ -252,6 +252,9 @@ def _apply_roles(membership: Membership, data: MemberInput, clean: dict, actor) 
 def create_member(data: MemberInput, password: str, *, actor=None) -> Membership:
     if actor is not None:
         actor.require("admin.users.manage")
+    from apps.platform.tenants.limits import check_user_limit
+
+    check_user_limit()
     clean = _validate_member(data, None)
     try:
         validate_password(password)

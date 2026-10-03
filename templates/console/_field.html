@@ -1,0 +1,7 @@
+{# One form field: label, input, help and errors. `field` is a bound field; `span` adds grid classes. #}
+<div class="{{ span|default:'' }}">
+  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if field.help_text %}<p class="mt-1.5 text-xs text-slate-500">{{ field.help_text }}</p>{% endif %}
+  {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+</div>

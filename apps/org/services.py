@@ -49,6 +49,9 @@ def _save(branch: Branch, data: BranchInput, actor) -> Branch:
 def create_branch(data: BranchInput, *, actor=None) -> Branch:
     if actor is not None:
         actor.require("org.branch.manage")
+    from apps.platform.tenants.limits import check_branch_limit
+
+    check_branch_limit()
     return _save(Branch(created_by=getattr(actor, "user", None)), data, actor)
 
 

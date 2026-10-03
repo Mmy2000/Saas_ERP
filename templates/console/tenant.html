@@ -1,0 +1,129 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{{ tenant.name }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-tenants' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Clients" %}</a>
+  <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{{ tenant.name }}</h1>
+        {% include "console/_status.html" with status=tenant.status label=tenant.get_status_display %}
+        <span class="badge badge-neutral">{{ tenant.get_plan_display }}</span>
+      </div>
+      <p class="mt-1.5 text-sm text-slate-500"><span class="num">{{ tenant.slug }}</span> · {% blocktranslate trimmed with date=tenant.created_at|date:"DATE_FORMAT" %}Client since {{ date }}{% endblocktranslate %}{% if usage %} · {% include "console/_health.html" with health=usage.health %}{% endif %}</p>
+    </div>
+    {% if primary and tenant.status == "active" %}<a href="//{{ primary }}{% if request.get_port != '80' and request.get_port != '443' %}:{{ request.get_port }}{% endif %}/login/" target="_blank" rel="noopener" class="btn btn-secondary">{% icon "send" "size-4" %}{% translate "Open the workspace" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if usage %}
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Users" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ usage.users }}</span>{% if tenant.max_users %}<span class="num text-base font-normal text-slate-400"> / {{ tenant.max_users }}</span>{% endif %}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Branches" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ usage.branches }}</span>{% if tenant.max_branches %}<span class="num text-base font-normal text-slate-400"> / {{ tenant.max_branches }}</span>{% endif %}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Sales (30 days)" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ usage.sales_30d }}</span></p><p class="mt-0.5 text-xs text-slate-500"><span class="num">{{ usage.sales_amount_30d|num:2 }}</span> {{ usage.currency }}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Documents (30 days)" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ usage.documents_30d }}</span></p><p class="mt-0.5 text-xs text-slate-500">{% if usage.last_activity %}{% translate "Last" %} <span class="num">{{ usage.last_activity|date:"SHORT_DATETIME_FORMAT" }}</span>{% else %}{% translate "Nothing posted yet" %}{% endif %}</p></div>
+</div>
+<p class="mt-3 text-xs text-slate-500">{% blocktranslate trimmed with customers=usage.customers pieces=usage.pieces_in_stock %}{{ customers }} customers · {{ pieces }} pieces in stock{% endblocktranslate %}</p>
+{% endif %}
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <form method="post" action="{% url 'console-tenant-settings' tenant.pk %}" class="card" novalidate>
+      {% csrf_token %}
+      <div class="card-header"><h2 class="card-title">{% translate "Plan, limits and contact" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=settings_form.name span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=settings_form.plan %}
+        {% include "console/_field.html" with field=settings_form.trial_ends_on %}
+        {% include "console/_field.html" with field=settings_form.max_branches %}
+        {% include "console/_field.html" with field=settings_form.max_users %}
+        {% include "console/_field.html" with field=settings_form.contact_name %}
+        {% include "console/_field.html" with field=settings_form.contact_phone %}
+        {% include "console/_field.html" with field=settings_form.contact_email span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=settings_form.notes span="sm:col-span-2" %}
+      </div>
+      <div class="flex items-center justify-between gap-4 border-t border-slate-100 px-5 py-4">
+        <p class="text-xs text-slate-500">{% translate "Limits are checked when the client adds branches or users. Empty means no limit." %}</p>
+        <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      </div>
+    </form>
+
+    {% if profile_form %}
+    <form method="post" action="{% url 'console-tenant-profile' tenant.pk %}" class="card" novalidate>
+      {% csrf_token %}
+      <div class="card-header"><h2 class="card-title">{% translate "Company settings" %}</h2><span class="text-xs text-slate-500">{% translate "Currency" %}: <span class="num">{{ profile.functional_currency }}</span></span></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=profile_form.display_name span="sm:col-span-2" %}
+        {% include "console/_field.html" with field=profile_form.locale %}
+        {% include "console/_field.html" with field=profile_form.country %}
+        {% include "console/_field.html" with field=profile_form.timezone %}
+      </div>
+      <div class="flex justify-end border-t border-slate-100 px-5 py-4"><button type="submit" class="btn btn-secondary">{% translate "Save settings" %}</button></div>
+    </form>
+    {% endif %}
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Activity" %}</h2><a href="{% url 'console-events' %}?tenant={{ tenant.pk }}" class="btn btn-ghost text-xs">{% translate "See all" %}</a></div>
+      {% include "console/_events.html" with hide_tenant=True %}
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Status" %}</h2></div>
+      <div class="card-body space-y-3">
+        <p class="text-sm text-slate-600">{% if tenant.status == "active" %}{% translate "Everyone can sign in and work." %}{% elif tenant.status == "suspended" %}{% translate "Nobody can sign in. The data is kept." %}{% elif tenant.status == "archived" %}{% translate "Closed. The address no longer opens." %}{% else %}{% translate "Not open to users yet." %}{% endif %}</p>
+        {% for value, label in transitions %}
+        <form method="post" action="{% url 'console-tenant-status' tenant.pk %}">{% csrf_token %}
+          <input type="hidden" name="status" value="{{ value }}">
+          <button type="submit" class="btn {% if value == 'active' %}btn-primary{% else %}btn-secondary{% endif %} w-full">
+            {% if value == "active" %}{% translate "Activate" %}{% elif value == "suspended" %}{% translate "Suspend" %}{% else %}{% translate "Archive" %}{% endif %}</button>
+        </form>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Addresses" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for domain in domains %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3">
+          <span class="num truncate text-slate-900">{{ domain.domain }}</span>
+          {% if domain.is_primary %}<span class="badge badge-brand">{% translate "Main" %}</span>{% else %}
+          <form method="post" action="{% url 'console-domain-remove' tenant.pk domain.pk %}">{% csrf_token %}
+            <button type="submit" class="btn btn-ghost text-xs text-slate-400" aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></form>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <form method="post" action="{% url 'console-domain-add' tenant.pk %}" class="space-y-2 border-t border-slate-100 p-5" novalidate>
+        {% csrf_token %}
+        {% include "console/_field.html" with field=domain_form.domain %}
+        <button type="submit" class="btn btn-secondary w-full text-xs">{% icon "plus" "size-4" %}{% translate "Add a domain" %}</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Owners" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for owner in owners %}
+        <li class="px-5 py-3"><p class="font-medium text-slate-900">{{ owner.user.display_name }}</p>
+          <p class="text-xs text-slate-500"><span class="num">@{{ owner.username }}</span>{% if owner.user.email %} · {{ owner.user.email }}{% endif %}</p></li>
+        {% empty %}<li class="px-5 py-3 text-slate-500">—</li>{% endfor %}
+      </ul>
+    </section>
+
+    {% if tenant.contact_name or tenant.contact_phone or tenant.contact_email %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Contact" %}</h2></div>
+      <dl class="divide-y divide-slate-100 text-sm">
+        {% if tenant.contact_name %}<div class="px-5 py-3">{{ tenant.contact_name }}</div>{% endif %}
+        {% if tenant.contact_phone %}<div class="px-5 py-3"><a class="num text-brand-700 hover:underline" href="tel:{{ tenant.contact_phone }}">{{ tenant.contact_phone }}</a></div>{% endif %}
+        {% if tenant.contact_email %}<div class="px-5 py-3"><a class="text-brand-700 hover:underline" href="mailto:{{ tenant.contact_email }}" dir="ltr">{{ tenant.contact_email }}</a></div>{% endif %}
+      </dl>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

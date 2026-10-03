@@ -11,6 +11,7 @@ from apps.core.tenancy.rls import POLICY_NAME
 NOT_TENANT_SCOPED = {
     "tenants.Tenant",  # platform registry
     "tenants.TenantDomain",  # platform registry, read by host resolution
+    "tenants.PlatformEvent",  # platform console audit log (platform staff only)
     "iam.User",  # global identity (ADR-004)
     "iam.User_groups",  # Django admin permissions for platform staff
     "iam.User_user_permissions",

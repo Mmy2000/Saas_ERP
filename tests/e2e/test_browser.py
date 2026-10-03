@@ -18,7 +18,9 @@ PAGES = ["/", "/branches/", "/catalog/karats/", "/catalog/categories/", "/pricin
          "/settings/roles/new/", "/accounting/accounts/", "/accounting/journal/",
          "/accounting/journal/new/", "/accounting/trial-balance/", "/stock/", "/purchasing/",
          "/purchasing/new/", "/sales/", "/sales/new/", "/settlements/",
-         "/settlements/new/"]
+         "/settlements/new/", "/sales/wholesale/new/", "/trade-accounts/", "/workshops/",
+         "/manufacturing/", "/manufacturing/new/", "/purchasing/returns/new/", "/repairs/",
+         "/repairs/new/"]
 
 
 @pytest.fixture(scope="module")

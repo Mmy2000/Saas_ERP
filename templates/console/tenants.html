@@ -1,0 +1,64 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Clients" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Clients" %}</h1>
+    <p class="mt-1.5 text-sm text-slate-500">{% translate "Each client is a separate workspace with its own data, users and address." %}</p>
+  </div>
+  <a href="{% url 'console-tenant-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New client" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <label class="relative flex-1">
+      <span class="sr-only">{% translate "Search" %}</span>
+      <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" name="q" value="{{ term }}" class="form-input ps-9" placeholder="{% translate 'Name, address, domain or contact' %}">
+    </label>
+    <select name="status" class="form-input sm:w-48" aria-label="{% translate 'Status' %}">
+      <option value="">{% translate "All" %}</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
+  </form>
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Client" %}</th><th>{% translate "Address" %}</th><th>{% translate "Plan" %}</th><th class="text-end">{% translate "Users" %}</th><th class="text-end">{% translate "Branches" %}</th>
+        <th class="text-end">{% translate "Sales (30 days)" %}</th><th>{% translate "Last activity" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant' row.tenant.pk %}">{{ row.tenant.name }}</a>
+            {% if row.tenant.contact_name %}<div class="text-xs text-slate-400">{{ row.tenant.contact_name }}</div>{% endif %}</td>
+          <td><span class="num text-xs text-slate-500">{{ row.domain|default:"—" }}</span></td>
+          <td><span class="badge badge-neutral">{{ row.tenant.get_plan_display }}</span>{% if row.tenant.plan == "trial" and row.tenant.trial_ends_on %}<div class="num mt-0.5 text-xs text-slate-400">{{ row.tenant.trial_ends_on|date:"SHORT_DATE_FORMAT" }}</div>{% endif %}</td>
+          <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.users }}{% if row.tenant.max_users %}<span class="text-slate-400">/{{ row.tenant.max_users }}</span>{% endif %}</span>{% else %}—{% endif %}</td>
+          <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.branches }}{% if row.tenant.max_branches %}<span class="text-slate-400">/{{ row.tenant.max_branches }}</span>{% endif %}</span>{% else %}—{% endif %}</td>
+          <td class="text-end">{% if row.usage %}<span class="num">{{ row.usage.sales_30d }}</span>{% else %}—{% endif %}</td>
+          <td>{% if row.usage %}{% if row.usage.last_activity %}<span class="num text-xs">{{ row.usage.last_activity|date:"SHORT_DATE_FORMAT" }}</span>{% endif %}<div>{% include "console/_health.html" with health=row.usage.health %}</div>{% else %}—{% endif %}</td>
+          <td>{% include "console/_status.html" with status=row.tenant.status label=row.tenant.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'console-tenant' row.tenant.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No clients match" as empty_title %}
+    {% include "components/empty_state.html" with icon="building-2" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -139,8 +139,14 @@
   .nav-link[aria-current="page"] svg { @apply text-brand-600; }
   .nav-section { @apply mt-5 mb-1 px-2.5 text-xs font-medium text-slate-400; }
 
+  /* Platform console sidebar (dark). */
+  .console-link { @apply flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-400
+                         transition-colors hover:bg-white/5 hover:text-white; }
+  .console-link[aria-current="page"] { @apply bg-white/10 text-white; }
+  .console-link[aria-current="page"] svg { @apply text-brand-300; }
+
   /* Segmented control: <div class="segmented"><label><input class="peer sr-only"><span class="segment">. */
-  .segmented { @apply inline-flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 text-sm font-medium; }
+  .segmented { @apply inline-flex max-w-full flex-wrap items-center gap-0.5 rounded-lg bg-slate-100 p-1 text-sm font-medium; }
   .segment { @apply block cursor-pointer rounded-md px-3.5 py-1 text-slate-500 transition-all duration-150
                     hover:text-slate-900; }
   .peer:checked ~ .segment, .segment-active { @apply bg-white text-slate-900 shadow-xs ring-1 ring-slate-200/60; }

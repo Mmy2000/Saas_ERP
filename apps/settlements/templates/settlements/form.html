@@ -38,6 +38,8 @@
               <span class="segment">{% translate "Supplier" %}</span></label>
             <label><input type="radio" name="side" value="trade_account" class="peer sr-only" data-side {% if side == "trade_account" %}checked{% endif %}>
               <span class="segment">{% translate "Trade account" %}</span></label>
+            <label><input type="radio" name="side" value="workshop" class="peer sr-only" data-side {% if side == "workshop" %}checked{% endif %}>
+              <span class="segment">{% translate "Workshop" %}</span></label>
           </div>
         </div>
         <div class="sm:col-span-2 {% if side != 'customer' %}hidden{% endif %}" data-party-for="customer">
@@ -53,6 +55,11 @@
         <div class="sm:col-span-2 {% if side != 'trade_account' %}hidden{% endif %}" data-party-for="trade_account">
           <select class="form-input" data-party data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}">
             {% if party and side == "trade_account" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+          </select>
+        </div>
+        <div class="sm:col-span-2 {% if side != 'workshop' %}hidden{% endif %}" data-party-for="workshop">
+          <select class="form-input" data-party data-remote="{% url 'workshop-list' %}" data-label-field="name" aria-label="{% translate 'Workshop' %}">
+            {% if party and side == "workshop" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
           </select>
         </div>
         <p class="form-error sm:col-span-2" data-error-for="party"></p>

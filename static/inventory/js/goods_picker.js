@@ -14,6 +14,7 @@ export function goodsPicker(root, branch, { onChange = () => {} } = {}) {
 
   const render = () => {
     const body = $("[data-pieces]");
+    if (!body) return onChange(); // the picker shows only gold by weight
     body.replaceChildren();
     let weight = "0";
     pieces.forEach((piece, index) => {
@@ -37,7 +38,7 @@ export function goodsPicker(root, branch, { onChange = () => {} } = {}) {
     onChange();
   };
 
-  $("[data-scan]").addEventListener("submit", async (event) => {
+  $("[data-scan]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = event.currentTarget.querySelector("input");
     const barcode = input.value.trim();

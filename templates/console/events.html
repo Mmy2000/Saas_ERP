@@ -1,0 +1,20 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Activity" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Console activity" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "Every change made from the platform console, and by whom." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% include "console/_events.html" with events=page.object_list %}
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-3 text-sm">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-secondary" href="?page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,4 +1,5 @@
-{% load i18n ui %}{# Pieces by barcode + bulk gold by weight, driven by static/inventory/js/goods_picker.js. Needs `lots`. #}
+{% load i18n ui %}{# Pieces by barcode + bulk gold by weight, driven by static/inventory/js/goods_picker.js. Needs `lots`; `bulk_only` hides the pieces. #}
+{% if not bulk_only %}
 <section class="card overflow-hidden">
   <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2><span class="text-sm text-slate-500"><span class="num" data-piece-count>0</span></span></div>
   <form class="flex gap-3 border-b border-slate-100 p-4" data-scan>
@@ -13,9 +14,10 @@
   </div>
   <p class="px-5 py-8 text-center text-sm text-slate-400" data-pieces-empty>{% translate "No pieces yet" %}</p>
 </section>
+{% endif %}
 
 <section class="card overflow-hidden">
-  <div class="card-header"><h2 class="card-title">{% translate "Bulk gold by weight" %}</h2>
+  <div class="card-header"><h2 class="card-title">{% if bulk_only %}{% translate "Gold sent" %}{% else %}{% translate "Bulk gold by weight" %}{% endif %}</h2>
     <button type="button" class="btn btn-ghost text-xs" data-add-bulk>{% icon "plus" "size-4" %}{% translate "Add a line" %}</button></div>
   <div class="divide-y divide-slate-100" data-bulk></div>
   <template id="bulk-row">

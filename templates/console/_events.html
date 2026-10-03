@@ -1,0 +1,21 @@
+{% load i18n %}
+{% if events %}
+<ul class="divide-y divide-slate-100 text-sm">
+  {% for event in events %}
+  <li class="px-5 py-3">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-slate-900">{{ event.label }}{% if event.tenant and not hide_tenant %} · <a class="text-brand-700 hover:underline" href="{% url 'console-tenant' event.tenant_id %}">{{ event.tenant.name }}</a>{% endif %}</p>
+        {% if event.detail %}<p class="mt-0.5 truncate text-xs text-slate-500" dir="auto">{% for key, value in event.detail.items %}{{ key }}: <span class="num">{{ value }}</span>{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+      </div>
+      <div class="shrink-0 text-end text-xs text-slate-400">
+        <p class="num">{{ event.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <p>{{ event.actor.display_name|default:event.actor.email|default:"—" }}</p>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="px-5 py-10 text-center text-sm text-slate-500">{% translate "Nothing yet" %}</p>
+{% endif %}

@@ -17,7 +17,7 @@
   {% block body %}{% endblock %}
   <div id="toasts" class="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:end-4 sm:items-end" aria-live="polite">
     {% for message in messages %}
-      <div class="toast" data-toast role="status">{{ message }}</div>
+      <div class="toast{% if message.tags == 'error' %} toast-error{% endif %}" data-toast role="status">{{ message }}</div>
     {% endfor %}
   </div>
 </body>

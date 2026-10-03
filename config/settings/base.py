@@ -19,6 +19,8 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[".localhost"])
 PLATFORM_HOSTS = env.list("PLATFORM_HOSTS", default=["admin.localhost"])
 ROOT_URLCONF = "config.urls"
 PLATFORM_URLCONF = "config.platform_urls"
+# New clients get `<slug>.<TENANT_BASE_DOMAIN>` (custom domains can be added in the console).
+TENANT_BASE_DOMAIN = env("TENANT_BASE_DOMAIN", default="localhost")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -45,6 +47,8 @@ INSTALLED_APPS = [
     "apps.treasury",
     "apps.expenses",
     "apps.printing",
+    "apps.manufacturing",
+    "apps.repairs",
     "apps.reports",
 ]
 

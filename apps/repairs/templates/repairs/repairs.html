@@ -1,0 +1,70 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Repairs" %}{% endblock %}
+{% block page_header %}
+{% can "repairs.order.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Repairs and custom orders" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Customers' pieces taken in, their bags, where they are and what is owed." %}</p>
+  </div>
+  {% if can_create %}<a href="{% url 'repair-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Take in" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <input type="hidden" name="state" value="{{ state }}">
+    <label class="relative flex-1">
+      <span class="sr-only">{% translate "Search" %}</span>
+      <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" name="q" value="{{ term }}" class="form-input ps-9" placeholder="{% translate 'Bag number, name, phone or piece' %}">
+    </label>
+    <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
+  </form>
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-2.5">
+    <a href="?state=open{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'open' %} tab-active{% endif %}">{% translate "In progress" %}</a>
+    <a href="?state=ready{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'ready' %} tab-active{% endif %}">{% translate "Ready for pickup" %}</a>
+    <a href="?state=overdue{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'overdue' %} tab-active{% endif %}">{% translate "Late" %}</a>
+    <a href="?state=delivered{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'delivered' %} tab-active{% endif %}">{% translate "Delivered" %}</a>
+    <a href="?state=cancelled{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'cancelled' %} tab-active{% endif %}">{% translate "Cancelled" %}</a>
+    <a href="?state=all{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
+    {% if customer %}<a href="?state={{ state }}" class="badge badge-brand ms-auto self-center">{% translate "One customer" %} {% icon "x" "size-3" %}</a>{% endif %}
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Bag" %}</th><th>{% translate "Number" %}</th><th>{% translate "Customer" %}</th><th>{% translate "Taken in" %}</th><th>{% translate "Promised" %}</th>
+        <th class="text-end">{% translate "Charge" %} ({{ home_currency }})</th><th class="text-end">{% translate "Deposit" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for order in page.object_list %}
+        <tr>
+          <td><span class="num inline-flex min-w-9 justify-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-semibold text-white">{{ order.bag_number }}</span></td>
+          <td><span class="num font-medium text-slate-900">{{ order.number }}</span>{% if order.kind == "custom" %} <span class="badge badge-neutral">{{ order.get_kind_display }}</span>{% endif %}</td>
+          <td>{{ order.who }}{% if order.customer_phone %}<div class="num text-xs text-slate-400">{{ order.customer_phone }}</div>{% endif %}</td>
+          <td><span class="num">{{ order.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td><span class="num {% if order.is_overdue %}font-medium text-red-600{% endif %}">{{ order.promised_on|date:"SHORT_DATE_FORMAT"|default:"—" }}</span></td>
+          <td class="text-end"><span class="num">{{ order.charge_amount|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ order.deposit_amount|num:2 }}</span></td>
+          <td>{% include "repairs/_state.html" %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'repair' order.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No repairs here" as empty_title %}
+    {% include "components/empty_state.html" with icon="wrench" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

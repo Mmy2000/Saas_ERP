@@ -169,30 +169,43 @@ class SupplierViewSet(_PartyViewSet):
         return self._respond(party)
 
 
-class TradeAccountViewSet(_PartyViewSet):
-    role = PartyRoleType.TRADE_ACCOUNT
+class _PlainPartyViewSet(_PartyViewSet):
+    """A role with no profile of its own: trade accounts, workshops."""
+
     read_serializer = PartyReadSerializer
     write_serializer = PartyWriteSerializer
-    required_permissions = {
-        "list": "parties.trade_account.view",
-        "retrieve": "parties.trade_account.view",
-        "create": "parties.trade_account.create",
-        "partial_update": "parties.trade_account.edit",
-        "deactivate": "parties.trade_account.deactivate",
-        "activate": "parties.trade_account.deactivate",
-    }
+    create_service: str
+    update_service: str
 
     def create(self, request):
         data = self._validated()
         base = _party_data(data)
         if "kind" not in data:
             base = services.PartyData(**{**base.__dict__, "kind": PartyKind.ORGANIZATION})
-        party = services.create_trade_account(base, actor=request.actor)
+        party = getattr(services, self.create_service)(base, actor=request.actor)
         return self._respond(party, status.HTTP_201_CREATED)
 
     def partial_update(self, request, pk=None):
         instance = self.get_object()
         data = self._validated(partial=True)
-        party = services.update_trade_account(instance.pk, _party_data(data, instance),
-                                              actor=request.actor)
+        party = getattr(services, self.update_service)(
+            instance.pk, _party_data(data, instance), actor=request.actor)
         return self._respond(party)
+
+
+def _permissions(role: str) -> dict:
+    return {"list": f"parties.{role}.view", "retrieve": f"parties.{role}.view",
+            "create": f"parties.{role}.create", "partial_update": f"parties.{role}.edit",
+            "deactivate": f"parties.{role}.deactivate", "activate": f"parties.{role}.deactivate"}
+
+
+class TradeAccountViewSet(_PlainPartyViewSet):
+    role = PartyRoleType.TRADE_ACCOUNT
+    create_service, update_service = "create_trade_account", "update_trade_account"
+    required_permissions = _permissions("trade_account")
+
+
+class WorkshopViewSet(_PlainPartyViewSet):
+    role = PartyRoleType.WORKSHOP
+    create_service, update_service = "create_workshop", "update_workshop"
+    required_permissions = _permissions("workshop")

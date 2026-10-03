@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Send gold" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'manufacturing/js/issue.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'work-orders' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Work orders" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Send gold to a workshop" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "The gold leaves your stock and the workshop holds it until the goods come back." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="work-order" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
+     data-post-url="{% url 'work-order-api-list' %}" data-detail-url="{% url 'work-orders' %}{id}/" data-saved="{% translate 'Sent.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-workshop">{% translate "Workshop" %}</label>
+          <select id="f-workshop" class="form-input" data-workshop data-remote="{% url 'workshop-list' %}" data-label-field="name">{% if workshop %}<option value="{{ workshop.pk }}" selected>{{ workshop.name }}</option>{% endif %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-span-full">
+          <span class="form-label">{% translate "Work" %}</span>
+          <div class="segmented">
+            {% for value, label in kinds %}
+            <label><input type="radio" name="kind" value="{{ value }}" class="peer sr-only" data-kind {% if forloop.first %}checked{% endif %}>
+              <span class="segment">{{ label }}</span></label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+    {% include "inventory/_goods_picker.html" %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="p-5">
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" class="form-input" data-note placeholder="{% translate 'What should be made' %}">
+      </div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "send" "size-4" %}{% translate "Send gold" %}</button>
+        <p class="mt-2 text-xs text-slate-500">{% translate "When the goods come back, open the order and record what you received. The difference is booked as loss or gain." %}</p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

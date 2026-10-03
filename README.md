@@ -17,6 +17,7 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 | Error types + API error envelope, pagination | `apps/core/errors.py`, `apps/core/api/` | §9.5, §11 |
 | PII encryption (Fernet) + blind indexes | `apps/core/crypto.py` | §24 |
 | Tenant registry, domains, provisioning | `apps/platform/tenants/` | §5.7 |
+| Platform console (platform hosts, platform staff only): overview of every client (status, users, documents and sales in the last 30 days, a 14-day activity chart, health: busy / quiet / idle / not started), client list and search, create a client in one form (company, owner, plan), per-client page with usage, plan, trial end, branch and user limits (enforced in the workspace), contact and notes, company settings, extra domains, suspend / archive / activate, and an activity log of every console change. Figures are read inside each client's own tenant context. The raw Django admin moved to `/django-admin/` | `apps/platform/console/`, `templates/console/` | §5.4, §5.7 |
 | Global User + per-tenant Membership, login backends, session binding | `apps/iam/` | §7.2, §14.1, ADR-004 |
 | RBAC: permission catalog, roles, branch-scoped assignments, limits, `Actor` | `apps/iam/` | §14.2–14.3 |
 | TenantProfile, Branch | `apps/org/` | §7.1 |
@@ -39,6 +40,8 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 | Bulk gold by weight on the sales screen (chain by the gram, bullion): priced like a piece with the category's making rate and the lot's making cost as the floor; returns and cancellations put the weight back in the lot | `apps/sales/services.py`, `apps/pricing/engine.py` | §7.7, §8.4 |
 | Wholesale to trade accounts by weight: pieces and bulk gold priced as gold at the board's sell price plus a making charge per gram (per category, list rate by default, live server quote); settled in gold (the trader owes the fine grams, and the making in money) or in money (the whole value); returns of whole lines at the sale's values; cancellable. Receipts and gold settlements work with trade accounts too | `apps/sales/trade.py` | §7.7 |
 | Buying from trade accounts: a purchase invoice or return can be from a supplier or a trade account (`seller_role`); a trader's side posts to the trade accounts ledger, so wholesale sales, purchases and returns share one balance and one statement. The trader page links to "Sell wholesale" and "Buy from them" | `apps/purchasing/` | §7.7, §7.8 |
+| Workshops and work orders: workshops as a party (statement, pay labour, give or take gold); send gold or scrap by weight to a workshop (its gold balance goes up), receive new pieces (barcoded, costed), bulk gold and scrap back; loss (هالك) or gain worked out per metal and booked explicitly (a gain must be confirmed); labour and the making cost carried in the gold sent become the cost of the new goods; cancel an order while out, or undo a receipt while its goods are untouched | `apps/manufacturing/` | §7.11, §8.5 |
+| Repairs and custom orders: take in a customer's pieces (registered customer or walk-in name/phone) with descriptions, weights and prices; a bag number per branch; promised date; deposits held for the customer; send to a workshop or do it in the shop; mark ready with weights out (difference shown), final prices and the workshop's labour (a repair cost owed to the workshop); deliver with deposits applied, cash/card/transfer or on account, change in cash; cancel with the deposit paid back or credited. Only money is booked: the pieces are the customer's | `apps/repairs/` | §7.12 |
 | Customer deposits: the customer page and statement show reservation deposits held (their own statement part, from the deposits account), with a link to that customer's reservations; the dashboard shows the total held | `apps/parties/web/views.py` | §7.7 |
 | Customer and supplier statements per currency and metal: opening balance, running balance, links to documents (also for cash boxes, bank accounts, terminals) | `apps/ledger/statements.py` | §7.4, §19 |
 | Reports: a registry of report classes (filters, permission per report, tables) with one screen, print and CSV for Excel: daily summary, gold balances, sales analysis with margin, expenses by category | `apps/reports/` | §7.12, §3.1 |
@@ -84,6 +87,13 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
    - Platform admin: <http://admin.localhost:8000/>.
 
    `*.localhost` resolves to 127.0.0.1 in modern browsers, so no hosts-file edits are needed.
+
+## Platform console
+
+Open `http://admin.localhost:8000/` (any host in `PLATFORM_HOSTS`) and sign in with the email
+and password of a user with `is_platform_staff`. New clients get `<slug>.<TENANT_BASE_DOMAIN>`
+(`localhost` by default); a custom domain added in the console must also point at the server
+and be allowed by `DJANGO_ALLOWED_HOSTS`.
 
 ## Frontend assets
 
@@ -176,7 +186,9 @@ These are Phase 2 spikes or later phases in the plan:
   stones/diamond detail on pieces,
   reservations of bullion/coins not yet in stock, expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
-  RFID bulk counting, partial-weight wholesale returns.
+  RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
+  (repairs), receiving in several batches, labour paid in gold, stones issued to setters;
+  repairs: photos of the pieces, paying in scrap gold, gold added by the workshop.
 - Treasury: bank reconciliation, cheques, cash counts / drawer close, FX revaluation of foreign
   cash (exchanges and transfers use average carrying value; receipts and payments in a foreign
   currency still use the rate in force), choosing among several cash boxes on the sales screen.

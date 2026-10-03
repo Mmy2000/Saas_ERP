@@ -1,0 +1,177 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block head %}{% if order.at_workshop %}<script type="module" src="{% static 'manufacturing/js/receipt.js' %}"></script>{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'work-orders' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Work orders" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "manufacturing.order.receive" order.branch as can_receive %}
+{% can "manufacturing.order.cancel" order.branch as can_cancel %}
+{% can "inventory.item.view_cost" as can_cost %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <article class="card receipt">
+      <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+        <div>
+          <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+          <p class="text-sm text-slate-500">{{ order.branch.name }}</p>
+        </div>
+        <div class="text-end">
+          <p class="text-sm text-slate-500">{% translate "Work order" %} · {{ order.get_kind_display }}</p>
+          <p class="num text-xl font-semibold text-slate-900">{{ order.number }}</p>
+          <p class="num text-sm text-slate-500">{{ order.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+          <div class="mt-1">{% include "manufacturing/_state.html" %}</div>
+        </div>
+      </header>
+      <dl class="border-b border-slate-100 px-6 py-4 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Workshop" %}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{% url 'workshop-edit' order.workshop_id %}">{{ order.workshop.name }}</a></dd></div>
+      </dl>
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Gold sent" %}</h2>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th></tr></thead>
+          <tbody>
+          {% for line in issue_lines %}
+            <tr><td><bdi>{{ line.category.name }}</bdi></td><td>{{ line.karat.label }}</td>
+              <td class="text-end"><span class="num">{{ line.qty }}</span></td>
+              <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.fine_weight_g|num:4 }}</span></td></tr>
+          {% endfor %}
+          </tbody>
+          <tfoot><tr class="border-t-2 border-slate-200 font-semibold">
+            <td class="px-5 py-3" colspan="3">{% translate "Total" %}</td>
+            <td class="px-5 py-3 text-end"><span class="num">{{ order.issued_gross_weight_g|num:3 }}</span></td>
+            <td class="px-5 py-3 text-end"><span class="num">{{ order.issued_fine_weight_g|num:4 }}</span></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      {% if order.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ order.note }}</p>{% endif %}
+
+      {% if order.received_at %}
+      <h2 class="border-t-4 border-slate-100 px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Received back" %} <span class="num font-normal text-slate-500">{{ order.received_on|date:"SHORT_DATE_FORMAT" }}</span></h2>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th>
+            <th class="text-end">{% translate "Labour" %}</th>{% if can_cost %}<th class="text-end">{% translate "Cost" %}</th>{% endif %}</tr></thead>
+          <tbody>
+          {% for line in receipt_lines %}
+            <tr>
+              <td><bdi>{{ line.category.name }}</bdi> <span class="badge badge-neutral">{{ line.get_line_type_display }}</span>
+                {% if line.pieces.all %}<div class="mt-1 flex flex-wrap gap-1.5 text-xs">{% for piece in line.pieces.all %}<a class="num text-brand-700 hover:underline" href="{% url 'stock-item' piece.item_id %}">{{ piece.item.barcode }}</a>{% endfor %}</div>{% endif %}</td>
+              <td>{{ line.karat.label }}</td>
+              <td class="text-end"><span class="num">{{ line.qty }}</span></td>
+              <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.fine_weight_g|num:4 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.labour_amount|num:2 }}</span></td>
+              {% if can_cost %}<td class="text-end"><span class="num">{{ line.cost_amount|num:2 }}</span></td>{% endif %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <dl class="ms-auto max-w-sm divide-y divide-slate-100 border-t border-slate-100 text-sm">
+        <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Fine gold sent" %}</dt><dd class="num">{{ order.issued_fine_weight_g|num:4 }}</dd></div>
+        <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Fine gold received" %}</dt><dd class="num">{{ order.received_fine_weight_g|num:4 }}</dd></div>
+        {% if order.gain_fine_weight_g %}
+        <div class="flex justify-between px-6 py-2.5"><dt class="font-medium text-slate-700">{% translate "Gain" %}</dt><dd class="num font-semibold text-emerald-600">{{ order.gain_fine_weight_g|num:4 }}</dd></div>
+        {% else %}
+        <div class="flex justify-between px-6 py-2.5"><dt class="font-medium text-slate-700">{% translate "Loss" %}</dt><dd class="num font-semibold {% if order.loss_fine_weight_g %}text-red-600{% endif %}">{{ order.loss_fine_weight_g|num:4 }}</dd></div>
+        {% endif %}
+        <div class="flex justify-between bg-slate-50 px-6 py-3"><dt class="font-medium text-slate-700">{% translate "Labour owed" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-base font-semibold">{{ order.labour_amount|num:2 }}</dd></div>
+      </dl>
+      {% if order.receipt_note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ order.receipt_note }}</p>{% endif %}
+      {% endif %}
+      {% if order.status == "voided" and order.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ order.void_reason }}</p>{% endif %}
+    </article>
+
+    {% if order.at_workshop and can_receive %}
+    <section class="card" id="receipt" data-no-print data-preview-url="{{ endpoint }}preview/" data-receive-url="{{ endpoint }}receive/"
+             data-saved="{% translate 'Received.' %}" data-scrap="{{ scrap_id }}">
+      <div class="card-header">
+        <h2 class="card-title">{% translate "Record what came back" %}</h2>
+        <button type="button" class="btn btn-secondary text-xs" data-add-line>{% icon "plus" "size-4" %}{% translate "Add line" %}</button>
+      </div>
+      <div class="divide-y divide-slate-100" data-lines></div>
+      <div class="grid grid-cols-2 gap-4 border-t border-slate-100 bg-slate-50/70 px-5 py-4 text-sm sm:grid-cols-4">
+        <div><p class="text-xs text-slate-500">{% translate "Fine gold sent" %}</p><p class="num mt-0.5 font-semibold text-slate-900">{{ order.issued_fine_weight_g|num:4 }}</p></div>
+        <div><p class="text-xs text-slate-500">{% translate "Fine gold received" %}</p><p class="num mt-0.5 font-semibold text-slate-900" data-p="received_fine_g">0.0000</p></div>
+        <div><p class="text-xs text-slate-500" data-diff-label data-loss="{% translate 'Loss' %}" data-gain="{% translate 'Gain' %}">{% translate "Loss" %}</p><p class="num mt-0.5 font-semibold text-red-600" data-p="difference">{{ order.issued_fine_weight_g|num:4 }}</p></div>
+        <div><p class="text-xs text-slate-500">{% translate "Labour" %} <span class="text-slate-400">{{ home_currency }}</span></p><p class="num mt-0.5 font-semibold text-slate-900" data-p="labour">0.00</p></div>
+      </div>
+      <div class="space-y-3 border-t border-slate-100 p-5">
+        <label class="hidden items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50/70 px-3.5 py-3 text-sm text-amber-900" data-gain-box>
+          <input type="checkbox" class="mt-0.5 size-4 accent-brand-600" data-accept-gain>
+          <span>{% translate "More gold came back than was sent. Tick to book the extra as a gain." %}</span>
+        </label>
+        <input class="form-input" data-note placeholder="{% translate 'Note' %}" maxlength="300">
+        <p class="form-error" data-error></p>
+        <button type="button" class="btn btn-primary" data-save>{% icon "check" "size-4" %}{% translate "Receive goods" %}</button>
+      </div>
+      <template id="receipt-line">
+        <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-line>
+          <div class="lg:col-span-3">
+            <label class="form-label">{% translate "What came back" %}</label>
+            <select class="form-input" data-field="category">
+              {% for category in categories %}<option value="{{ category.pk }}" data-kind="{% if category.pk == scrap_id %}scrap{% elif category.tracking == 'serialized' %}pieces{% else %}bulk{% endif %}" data-karat="{{ category.default_karat_id|default:'' }}">{% if category.pk != scrap_id %}{{ category.code }} · {% endif %}{{ category.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="lg:col-span-2">
+            <label class="form-label">{% translate "Karat" %}</label>
+            <select class="form-input" data-field="karat">
+              <option value="">—</option>
+              {% for karat in karats %}<option value="{{ karat.pk }}">{{ karat.label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="lg:col-span-3" data-for="pieces">
+            <label class="form-label">{% translate "Weight of each piece (g)" %}</label>
+            <input class="form-input num w-full text-start" data-field="piece_weights" placeholder="5.25 6.10 4.80" autocomplete="off">
+          </div>
+          <div class="grid grid-cols-2 gap-3 lg:col-span-3 hidden" data-for="bulk scrap">
+            <label><span class="form-label">{% translate "Total weight (g)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="gross_weight_g"></label>
+            <label data-for="bulk"><span class="form-label">{% translate "Count" %}</span><input class="form-input num w-full text-start" inputmode="numeric" data-field="qty"></label>
+          </div>
+          <div class="grid grid-cols-2 gap-3 lg:col-span-3" data-for="pieces bulk">
+            <label><span class="form-label">{% translate "Labour / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="labour_rate"></label>
+            <label data-for="pieces"><span class="form-label">{% translate "Sale making / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="list_making_rate"></label>
+          </div>
+          <div class="flex items-end lg:col-span-1 lg:col-start-12 lg:row-start-1 lg:justify-end lg:pt-7">
+            <button type="button" class="btn btn-ghost text-slate-400" data-remove-line aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+          </div>
+          <p class="form-error col-span-full" data-line-error></p>
+        </div>
+      </template>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-6" data-no-print>
+    {% if order.at_workshop and can_cancel %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling brings the gold back into stock, as if it was never sent." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel order" %}</button>
+    </form>
+    {% endif %}
+    {% if order.state == "received" and can_cancel %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}cancel-receipt/" data-success="{% translate 'Receipt cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Made a mistake? Cancel the receipt to record it again. This only works while the goods received are still in stock." %}</p>
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel receipt" %}</button>
+    </form>
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        {% if order.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ order.journal_entry.number }}</dd></div>{% endif %}
+        {% if order.receive_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Receipt entry" %}</dt><dd class="num">{{ order.receive_entry.number }}</dd></div>{% endif %}
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Statement" %}</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'workshop-statement' order.workshop_id %}">{{ order.workshop.name }}</a></dd></div>
+        {% if order.state == "received" and order.labour_amount %}<div class="px-5 py-3"><a class="btn btn-secondary w-full text-xs" href="{% url 'settlement-new' %}?side=workshop&party={{ order.workshop_id }}&kind=payment">{% icon "arrow-left-right" "size-4" %}{% translate "Pay workshop" %}</a></div>{% endif %}
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

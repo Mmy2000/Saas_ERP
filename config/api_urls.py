@@ -23,4 +23,6 @@ urlpatterns = [
     path("treasury/", include("apps.treasury.api")),
     path("expenses/", include("apps.expenses.api")),
     path("printing/", include("apps.printing.api")),
+    path("manufacturing/", include("apps.manufacturing.api")),
+    path("repairs/", include("apps.repairs.api")),
 ]

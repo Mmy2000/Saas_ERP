@@ -134,6 +134,7 @@ BALANCE_GROUPS = (
     ("parties.customer.view", "customers", "customers"),
     ("parties.trade_account.view", "trade_accounts", "trade-accounts"),
     ("parties.supplier.view", "suppliers", "suppliers"),
+    ("parties.workshop.view", "workshops", "workshops"),
 )
 
 
@@ -143,6 +144,7 @@ def balances(actor) -> list[Balances] | None:
         "customers": (_("Customers"), _("Positive: they owe you.")),
         "trade_accounts": (_("Trade accounts"), _("Positive: they owe you.")),
         "suppliers": (_("Suppliers"), _("Negative: you owe them.")),
+        "workshops": (_("Workshops"), _("Gold they hold for you; labour you owe.")),
     }
     groups = []
     for permission, role, url_name in BALANCE_GROUPS:
@@ -195,6 +197,28 @@ def needs_attention(actor) -> list[Attention]:
         if overdue:
             items.append(Attention(_("Reservations past their date"), overdue,
                                    reverse("reservations"), "bookmark"))
+    if actor.can("repairs.order.view"):
+        from apps.repairs.models import RepairOrder
+
+        open_repairs = _scoped(RepairOrder.objects.filter(
+            status=DocStatus.POSTED, delivered_at__isnull=True),
+            actor.branch_ids("repairs.order.view"))
+        ready = open_repairs.filter(ready_on__isnull=False).count()
+        if ready:
+            items.append(Attention(_("Repairs ready for pickup"), ready,
+                                   reverse("repairs") + "?state=ready", "wrench"))
+        late = open_repairs.filter(promised_on__lt=today).count()
+        if late:
+            items.append(Attention(_("Repairs past their promised date"), late,
+                                   reverse("repairs") + "?state=overdue", "clock"))
+    if actor.can("manufacturing.order.view"):
+        from apps.manufacturing.models import WorkOrder
+
+        out = _scoped(WorkOrder.objects.filter(status=DocStatus.POSTED, received_at__isnull=True),
+                      actor.branch_ids("manufacturing.order.view")).count()
+        if out:
+            items.append(Attention(_("Work orders at workshops"), out,
+                                   reverse("work-orders"), "send"))
     if actor.can("purchasing.invoice.view"):
         from apps.purchasing.models import SupplierInvoice
 

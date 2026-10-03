@@ -1,0 +1,96 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Overview" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Platform overview" %}</h1>
+    <p class="mt-1.5 text-sm text-slate-500">{% translate "Every client workspace, how much it is used, and what needs a look." %}</p>
+  </div>
+  <a href="{% url 'console-tenant-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New client" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <a href="{% url 'console-tenants' %}?status=active" class="card card-body block transition hover:border-slate-300">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span>{% translate "Active clients" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "building-2" "size-4" %}</span></div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ data.by_status.active|default:0 }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% blocktranslate trimmed with n=data.new_30d %}{{ n }} new in the last 30 days{% endblocktranslate %}{% if data.by_status.suspended %} · <span class="text-amber-700">{% blocktranslate trimmed with n=data.by_status.suspended %}{{ n }} suspended{% endblocktranslate %}</span>{% endif %}</p>
+  </a>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span>{% translate "Active users" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "users" "size-4" %}</span></div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ data.users }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% translate "Across every client" %}</p>
+  </div>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span>{% translate "Documents posted" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "receipt-text" "size-4" %}</span></div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ data.documents_30d }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% translate "Last 30 days" %}</p>
+  </div>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span>{% translate "Retail sales" %}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "shopping-bag" "size-4" %}</span></div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ data.sales_30d }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% for currency, amount in data.sales_by_currency.items %}<span class="num">{{ amount|num:0 }}</span> {{ currency }}{% if not forloop.last %} · {% endif %}{% empty %}{% translate "Last 30 days" %}{% endfor %}</p>
+  </div>
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card xl:col-span-2">
+    <div class="card-header"><h2 class="card-title">{% translate "Activity, last 14 days" %}</h2><span class="text-xs text-slate-500">{% translate "Documents posted by all clients" %}</span></div>
+    <div class="flex h-56 items-end gap-1.5 px-5 pt-6 pb-4">
+      {% for day in data.daily %}
+      <div class="flex h-full flex-1 flex-col items-center justify-end gap-1.5" title="{{ day.day|date:'SHORT_DATE_FORMAT' }}: {{ day.postings }}">
+        <span class="num text-[10px] text-slate-500">{% if day.postings %}{{ day.postings }}{% endif %}</span>
+        <div class="w-full max-w-8 rounded-t-md {% if day.today %}bg-brand-600{% else %}bg-brand-200{% endif %}" style="height: {{ day.height }}%; min-height: 2px"></div>
+        <span class="num text-[11px] {% if day.today %}font-semibold text-slate-900{% else %}text-slate-400{% endif %}">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Needs a look" %}</h2></div>
+    {% if attention %}
+    <ul class="divide-y divide-slate-100 text-sm">
+      {% for usage in attention %}
+      <li><a href="{% url 'console-tenant' usage.tenant.pk %}" class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-slate-50">
+        <span class="min-w-0"><span class="block truncate font-medium text-slate-900">{{ usage.tenant.name }}</span>
+          <span class="num text-xs text-slate-400">{{ usage.tenant.slug }}</span></span>
+        {% if usage.tenant.status == "suspended" %}{% include "console/_status.html" with status=usage.tenant.status label=usage.tenant.get_status_display %}{% else %}{% include "console/_health.html" with health=usage.health %}{% endif %}
+      </a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="flex flex-col items-center gap-2 px-5 py-10 text-center text-sm text-slate-500">{% icon "circle-check" "size-8 text-emerald-500" %}<p class="font-medium text-slate-700">{% translate "All clients are busy" %}</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header"><h2 class="card-title">{% translate "Clients" %}</h2><a href="{% url 'console-tenants' %}" class="btn btn-ghost text-xs">{% translate "See all" %}</a></div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Client" %}</th><th>{% translate "Plan" %}</th><th class="text-end">{% translate "Users" %}</th><th class="text-end">{% translate "Branches" %}</th><th class="text-end">{% translate "Documents (30 days)" %}</th><th>{% translate "Use" %}</th></tr></thead>
+        <tbody>
+        {% for usage in data.tenants %}
+          <tr>
+            <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant' usage.tenant.pk %}">{{ usage.tenant.name }}</a><div class="num text-xs text-slate-400">{{ usage.tenant.slug }}</div></td>
+            <td><span class="badge badge-neutral">{{ usage.tenant.get_plan_display }}</span></td>
+            <td class="text-end"><span class="num">{{ usage.users }}{% if usage.tenant.max_users %}<span class="text-slate-400">/{{ usage.tenant.max_users }}</span>{% endif %}</span></td>
+            <td class="text-end"><span class="num">{{ usage.branches }}{% if usage.tenant.max_branches %}<span class="text-slate-400">/{{ usage.tenant.max_branches }}</span>{% endif %}</span></td>
+            <td class="text-end"><span class="num">{{ usage.documents_30d }}</span></td>
+            <td>{% include "console/_health.html" with health=usage.health %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="py-10 text-center text-slate-500">{% translate "No clients yet" %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Recent console activity" %}</h2><a href="{% url 'console-events' %}" class="btn btn-ghost text-xs">{% translate "See all" %}</a></div>
+    {% include "console/_events.html" with events=recent %}
+  </section>
+</div>
+{% endblock %}

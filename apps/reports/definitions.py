@@ -224,7 +224,7 @@ class GoldBalances(Report):
                 .values("party__name", "account__role").annotate(q=Sum("quantity"))
                 .order_by("q"))
         names = {"customers": _("Customer"), "suppliers": _("Supplier"),
-                 "trade_accounts": _("Trade account")}
+                 "trade_accounts": _("Trade account"), "workshops": _("Workshop")}
         for row in rows:
             if row["q"]:
                 table.rows.append({"party": row["party__name"],

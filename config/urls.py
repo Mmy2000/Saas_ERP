@@ -8,6 +8,7 @@ from apps.expenses import views as expenses
 from apps.iam.web import views as iam
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
+from apps.manufacturing import views as manufacturing
 from apps.org.web import views as org
 from apps.parties.web import views as parties
 from apps.pricing.web import views as pricing
@@ -15,6 +16,7 @@ from apps.printing import views as printing
 from apps.purchasing.web import return_views as supplier_returns
 from apps.purchasing.web import scrap_views as scrap
 from apps.purchasing.web import views as purchasing
+from apps.repairs import views as repairs
 from apps.reports import views as reports
 from apps.sales.web import trade_views as trade
 from apps.sales.web import views as sales
@@ -53,6 +55,17 @@ urlpatterns = [
     path("trade-accounts/<int:pk>/", parties.trade_account_edit, name="trade-account-edit"),
     path("trade-accounts/<int:pk>/statement/", parties.trade_account_statement,
          name="trade-account-statement"),
+    path("repairs/", repairs.repairs, name="repairs"),
+    path("repairs/new/", repairs.repair_new, name="repair-new"),
+    path("repairs/<int:pk>/", repairs.repair, name="repair"),
+    path("manufacturing/", manufacturing.work_orders, name="work-orders"),
+    path("manufacturing/new/", manufacturing.work_order_new, name="work-order-new"),
+    path("manufacturing/<int:pk>/", manufacturing.work_order, name="work-order"),
+    path("workshops/", parties.workshops, name="workshops"),
+    path("workshops/new/", parties.workshop_new, name="workshop-new"),
+    path("workshops/<int:pk>/", parties.workshop_edit, name="workshop-edit"),
+    path("workshops/<int:pk>/statement/", parties.workshop_statement,
+         name="workshop-statement"),
 
     path("sales/", sales.invoices, name="sales"),
     path("sales/new/", sales.new_sale, name="sale-new"),

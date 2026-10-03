@@ -1,0 +1,98 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Take in a repair" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'repairs/js/repairs.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'repairs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Repairs" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Take in a repair" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Describe and weigh each piece in front of the customer. The bag gets a number to tag it." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="repair-new" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
+     data-post-url="{% url 'repair-api-list' %}" data-detail-url="{% url 'repairs' %}{id}/" data-saved="{% translate 'Taken in.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="col-span-full">
+          <div class="segmented">
+            {% for value, label in kinds %}
+            <label><input type="radio" name="kind" value="{{ value }}" class="peer sr-only" data-kind {% if forloop.first %}checked{% endif %}>
+              <span class="segment">{{ label }}</span></label>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="f-customer">{% translate "Customer" %}</label>
+          <select id="f-customer" class="form-input" data-customer data-remote="{% url 'customer-list' %}" data-label-field="name">{% if customer %}<option value="{{ customer.pk }}" selected>{{ customer.name }}</option>{% endif %}</select>
+          <p class="form-error" data-error-for="customer"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3" data-walk-in>
+          <label><span class="form-label">{% translate "Or a name" %}</span><input class="form-input" data-name maxlength="200"></label>
+          <label><span class="form-label">{% translate "Phone" %}</span><input class="form-input num w-full text-start" data-phone inputmode="tel" maxlength="30"></label>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        <div>
+          <label class="form-label" for="f-promised">{% translate "Promised for" %}</label>
+          <input id="f-promised" type="date" class="form-input" data-promised min="{{ today|date:'Y-m-d' }}">
+          <p class="form-error" data-error-for="promised_on"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">{% translate "Pieces" %}</h2>
+        <button type="button" class="btn btn-secondary text-xs" data-add-line>{% icon "plus" "size-4" %}{% translate "Add a piece" %}</button>
+      </div>
+      <div class="divide-y divide-slate-100" data-lines></div>
+      <p class="form-error px-5 pb-3" data-error-for="lines"></p>
+      <template id="repair-line">
+        <div class="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-12 sm:items-start" data-line>
+          <label class="sm:col-span-5"><span class="form-label">{% translate "Piece and work" %}</span>
+            <input class="form-input" data-field="description" maxlength="300" placeholder="{% translate 'Ring: resize to 17' %}"></label>
+          <label class="sm:col-span-2"><span class="form-label">{% translate "Karat" %}</span>
+            <select class="form-input" data-field="karat"><option value="">—</option>{% for karat in karats %}<option value="{{ karat.pk }}">{{ karat.label }}</option>{% endfor %}</select></label>
+          <label class="sm:col-span-2"><span class="form-label">{% translate "Weight (g)" %}</span>
+            <input class="form-input num w-full text-start" inputmode="decimal" data-field="weight_in_g"></label>
+          <label class="sm:col-span-2"><span class="form-label">{% translate "Price" %}</span>
+            <input class="form-input num w-full text-start" inputmode="decimal" data-field="charge" placeholder="0.00"></label>
+          <div class="flex items-end sm:col-span-1 sm:justify-end sm:pt-7">
+            <button type="button" class="btn btn-ghost text-slate-400" data-remove-line aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+          </div>
+          <p class="form-error col-span-full" data-line-error></p>
+        </div>
+      </template>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card" data-payment>
+      <div class="card-header"><h2 class="card-title">{% translate "Deposit" %}</h2><span class="text-xs text-slate-500">{% translate "optional" %}</span></div>
+      <div class="card-body grid grid-cols-1 gap-4">
+        <p class="text-xs text-slate-500" data-deposit-hint>{% translate "Deposits are kept for a registered customer." %}</p>
+        <div><label class="form-label" for="d-method">{% translate "How" %}</label>
+          <select id="d-method" class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="card">{% translate "Card" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option></select></div>
+        <div><label class="form-label" for="d-currency">{% translate "Currency" %}</label>
+          <select id="d-currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="d-amount">{% translate "Amount" %}</label>
+          <input id="d-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount placeholder="0.00"><p class="form-error" data-error-for="amount"></p></div>
+        {% include "treasury/holder_selects.html" with prefix="d-" %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="p-5">
+        <label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <textarea id="f-note" rows="2" class="form-input" data-note></textarea>
+      </div>
+      <div class="border-t border-slate-100 p-5">
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "check" "size-4" %}{% translate "Take in" %}</button>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

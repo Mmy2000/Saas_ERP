@@ -57,7 +57,7 @@ PREFIXES = {SettlementKind.RECEIPT: "RC", SettlementKind.PAYMENT: "PY",
             SettlementKind.METAL_IN: "GI", SettlementKind.METAL_OUT: "GO",
             SettlementKind.CONVERSION: "GC"}
 PARTY_ACCOUNT = {PartySide.CUSTOMER: "customers", PartySide.SUPPLIER: "suppliers",
-                 PartySide.TRADE_ACCOUNT: "trade_accounts"}
+                 PartySide.TRADE_ACCOUNT: "trade_accounts", PartySide.WORKSHOP: "workshops"}
 
 
 @dataclass(frozen=True)

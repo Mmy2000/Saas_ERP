@@ -35,7 +35,7 @@ def settlements(request):
 
 
 PARTY_PAGES = {PartySide.CUSTOMER: "customer-edit", PartySide.SUPPLIER: "supplier-edit",
-               PartySide.TRADE_ACCOUNT: "trade-account-edit"}
+               PartySide.TRADE_ACCOUNT: "trade-account-edit", PartySide.WORKSHOP: "workshop-edit"}
 
 
 @permission_required("settlements.view")

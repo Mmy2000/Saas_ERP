@@ -3,9 +3,11 @@ plus the host lookup in TenantResolutionMiddleware."""
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TimeStampedModel
 
@@ -18,12 +20,19 @@ slug_validator = RegexValidator(
 
 
 class TenantStatus(models.TextChoices):
-    PROVISIONING = "provisioning"
-    MIGRATING = "migrating"
-    ACTIVE = "active"
-    SUSPENDED = "suspended"
-    ARCHIVED = "archived"
-    PURGED = "purged"
+    PROVISIONING = "provisioning", _("Being set up")
+    MIGRATING = "migrating", _("Migrating")
+    ACTIVE = "active", _("Active")
+    SUSPENDED = "suspended", _("Suspended")
+    ARCHIVED = "archived", _("Archived")
+    PURGED = "purged", _("Purged")
+
+
+class TenantPlan(models.TextChoices):
+    TRIAL = "trial", _("Trial")
+    STANDARD = "standard", _("Standard")
+    PROFESSIONAL = "professional", _("Professional")
+    ENTERPRISE = "enterprise", _("Enterprise")
 
 
 class Tenant(TimeStampedModel):
@@ -32,6 +41,16 @@ class Tenant(TimeStampedModel):
     status = models.CharField(
         max_length=16, choices=TenantStatus.choices, default=TenantStatus.PROVISIONING
     )
+    # Commercial settings, managed from the platform console.
+    plan = models.CharField(max_length=16, choices=TenantPlan.choices,
+                            default=TenantPlan.STANDARD)
+    trial_ends_on = models.DateField(null=True, blank=True)
+    max_branches = models.PositiveIntegerField(null=True, blank=True)  # None = no limit
+    max_users = models.PositiveIntegerField(null=True, blank=True)
+    contact_name = models.CharField(max_length=200, blank=True)
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=30, blank=True)
+    notes = models.TextField(blank=True)
 
     class Meta:
         ordering = ["slug"]
@@ -79,3 +98,36 @@ class TenantDomain(TimeStampedModel):
 
         forget_hosts([self.domain])
         return super().delete(*args, **kwargs)
+
+
+EVENT_LABELS = {
+    "tenant.created": _("Client created"),
+    "tenant.updated": _("Plan and details changed"),
+    "tenant.status": _("Status changed"),
+    "profile.updated": _("Company settings changed"),
+    "domain.added": _("Domain added"),
+    "domain.removed": _("Domain removed"),
+}
+
+
+class PlatformEvent(models.Model):
+    """What platform staff did in the console (append-only by convention)."""
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                              on_delete=models.SET_NULL, related_name="+")
+    tenant = models.ForeignKey(Tenant, null=True, blank=True, on_delete=models.SET_NULL,
+                               related_name="events")
+    action = models.CharField(max_length=40)
+    detail = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        indexes = [models.Index(fields=["tenant", "-created_at"], name="platform_event_tenant_idx")]
+
+    def __str__(self):
+        return f"{self.action} {self.tenant_id or ''}"
+
+    @property
+    def label(self) -> str:
+        return str(EVENT_LABELS.get(self.action, self.action))

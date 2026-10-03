@@ -1,0 +1,71 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "New client" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-tenants' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Clients" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "New client" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "Creates the workspace with its head office, karats, chart of accounts, roles and owner, ready to sign in." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 xl:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6 xl:col-span-2">
+    {% if form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Company" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=form.name span="sm:col-span-2" %}
+        <div class="sm:col-span-2">
+          <label class="form-label" for="{{ form.slug.id_for_label }}">{{ form.slug.label }}</label>
+          <div class="flex items-stretch overflow-hidden rounded-lg" dir="ltr">
+            {{ form.slug }}
+            <span class="flex items-center rounded-e-lg border border-s-0 border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">{{ base_domain }}</span>
+          </div>
+          <p class="mt-1.5 text-xs text-slate-500">{{ form.slug.help_text }}</p>
+          {% for error in form.slug.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        {% include "console/_field.html" with field=form.locale %}
+        {% include "console/_field.html" with field=form.country %}
+        {% include "console/_field.html" with field=form.functional_currency %}
+        {% include "console/_field.html" with field=form.timezone %}
+        {% include "console/_field.html" with field=form.fineness_24k %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Owner" %}</h2><span class="text-xs text-slate-500">{% translate "The first person to sign in; can add everyone else." %}</span></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "console/_field.html" with field=form.owner_display_name %}
+        {% include "console/_field.html" with field=form.owner_username %}
+        {% include "console/_field.html" with field=form.owner_email %}
+        {% include "console/_field.html" with field=form.owner_password %}
+      </div>
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Plan and limits" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5">
+        {% include "console/_field.html" with field=form.plan %}
+        {% include "console/_field.html" with field=form.trial_ends_on %}
+        <div class="grid grid-cols-2 gap-3">
+          {% include "console/_field.html" with field=form.max_branches %}
+          {% include "console/_field.html" with field=form.max_users %}
+        </div>
+        <p class="-mt-2 text-xs text-slate-500">{% translate "Leave empty for no limit." %}</p>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Contact" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5">
+        {% include "console/_field.html" with field=form.contact_name %}
+        {% include "console/_field.html" with field=form.contact_email %}
+        {% include "console/_field.html" with field=form.contact_phone %}
+        {% include "console/_field.html" with field=form.notes %}
+      </div>
+    </section>
+    <button type="submit" class="btn btn-primary h-10 w-full">{% icon "check" "size-4" %}{% translate "Create the client" %}</button>
+  </aside>
+</form>
+{% endblock %}

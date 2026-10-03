@@ -4,50 +4,11 @@ import { api, ApiError, uuid } from "../../core/js/api.js";
 import { registerShaper } from "../../core/js/forms.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
-import { narrowHolders } from "../../treasury/js/holders.js";
+import { initPaymentBlocks, payment } from "../../treasury/js/payment_block.js";
 
 const fail = (error) => toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
 
-function branchOf(scope) {
-  const select = document.querySelector("select[data-branch]");
-  return select ? select.value : document.querySelector("[data-branch][data-value]")?.dataset.value;
-}
-
-// --- payment blocks: which box / bank account / terminal ---------------------------------------
-
-function syncPayment(block) {
-  const method = block.querySelector("[data-method]")?.value || "cash";
-  block.querySelectorAll("[data-holder]").forEach((node) => node.classList.toggle("hidden", node.dataset.holder !== method));
-  narrowHolders({ branch: branchOf(block), currency: block.querySelector("[data-currency]")?.value,
-                  box: block.querySelector("[data-box]"), bank: block.querySelector("[data-bank]"),
-                  terminal: block.querySelector("[data-terminal]") });
-  const onAccount = block.querySelector("[data-on-account]");
-  if (onAccount) block.querySelector("[data-pay-now]")?.classList.toggle("hidden", onAccount.checked);
-}
-
-function payment(block) {
-  const method = block.querySelector("[data-method]").value;
-  const pick = (selector) => {
-    const value = block.querySelector(selector)?.value;
-    return value ? Number(value) : null;
-  };
-  return {
-    kind: method, currency: block.querySelector("[data-currency]").value,
-    amount: block.querySelector("[data-amount]")?.value.trim() || "",
-    cash_box: method === "cash" ? pick("[data-box]") : null,
-    bank_account: method === "bank_transfer" ? pick("[data-bank]") : null,
-    terminal: method === "card" ? pick("[data-terminal]") : null,
-  };
-}
-
-document.querySelectorAll("[data-payment]").forEach((block) => {
-  block.addEventListener("change", (event) => {
-    if (event.target.matches("[data-method], [data-currency], [data-on-account]")) syncPayment(block);
-  });
-  syncPayment(block);
-});
-document.querySelector("select[data-branch]")?.addEventListener("change", () =>
-  document.querySelectorAll("[data-payment]").forEach(syncPayment));
+initPaymentBlocks();
 
 registerShaper("reservation-deposit", (_values, form) => payment(form.querySelector("[data-payment]")));
 registerShaper("reservation-complete", (_values, form) => {

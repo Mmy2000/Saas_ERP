@@ -1,8 +1,12 @@
-"""URLs served on platform hosts (PLATFORM_HOSTS). No tenant context exists here."""
+"""URLs served on platform hosts (PLATFORM_HOSTS). No tenant context exists here: the console
+reads a client's data only inside that client's tenant_context."""
 
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.http import JsonResponse
 from django.urls import include, path
+
+from apps.platform.console import views as console
 
 
 def healthz(request):
@@ -12,5 +16,19 @@ def healthz(request):
 urlpatterns = [
     path("healthz/", healthz),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("", admin.site.urls),
+    path("login/", console.LoginView.as_view(), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
+    path("", console.home, name="home"),
+    path("clients/", console.tenants, name="console-tenants"),
+    path("clients/new/", console.tenant_new, name="console-tenant-new"),
+    path("clients/<int:pk>/", console.tenant, name="console-tenant"),
+    path("clients/<int:pk>/settings/", console.tenant_settings, name="console-tenant-settings"),
+    path("clients/<int:pk>/profile/", console.tenant_profile, name="console-tenant-profile"),
+    path("clients/<int:pk>/status/", console.tenant_status, name="console-tenant-status"),
+    path("clients/<int:pk>/domains/", console.domain_add, name="console-domain-add"),
+    path("clients/<int:pk>/domains/<int:domain_id>/remove/", console.domain_remove,
+         name="console-domain-remove"),
+    path("activity/", console.events, name="console-events"),
+    # The raw Django admin, for emergencies.
+    path("django-admin/", admin.site.urls),
 ]

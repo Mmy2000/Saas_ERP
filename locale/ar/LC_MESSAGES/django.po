@@ -8,6 +8,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 
+msgid "%(amount)s is still to pay."
+msgstr "ما زال مطلوبًا %(amount)s."
+
 msgid "%(amount)s of the deposits is more than the price and stays on the customer's account."
 msgstr "%(amount)s من العربون تزيد على السعر وتبقى رصيدًا في حساب العميل."
 
@@ -62,6 +65,9 @@ msgstr[5] "%(counter)s مستخدم"
 msgid "%(ct)s ct"
 msgstr "%(ct)s قيراط"
 
+msgid "%(customers)s customers · %(pieces)s pieces in stock"
+msgstr "%(customers)s عميل · %(pieces)s قطعة بالمخزون"
+
 msgid "%(karat)s has no price on this board."
 msgstr "لا يوجد سعر لـ %(karat)s في هذه النشرة."
 
@@ -77,6 +83,18 @@ msgstr "%(metal)s %(code)s"
 msgid "%(metal)s (fine g)"
 msgstr "%(metal)s (جرام صافٍ)"
 
+msgid "%(n)s new in the last 30 days"
+msgstr "%(n)s جديد في آخر 30 يومًا"
+
+msgid "%(n)s suspended"
+msgstr "%(n)s موقوف"
+
+msgid "%(name)s is now %(status)s."
+msgstr "أصبحت حالة %(name)s: %(status)s."
+
+msgid "%(name)s is ready."
+msgstr "%(name)s جاهز للعمل."
+
 msgid "%(weight)s g"
 msgstr "%(weight)s جم"
 
@@ -85,6 +103,9 @@ msgstr "الاسم «%(slug)s» محجوز."
 
 msgid "21K equivalent (g)"
 msgstr "المعادل عيار 21 (جم)"
+
+msgid "24K fineness"
+msgstr "نقاء عيار 24"
 
 msgid "A branch's main cash box opens by itself with its first cash sale."
 msgstr "تُفتح الخزينة الرئيسية للفرع تلقائيًا مع أول بيع نقدي."
@@ -103,6 +124,9 @@ msgstr "لا يمكن أن يكون السطر صفرًا."
 
 msgid "A line in the company currency has no separate value."
 msgstr "سطر عملة الشركة لا يحتاج قيمة منفصلة."
+
+msgid "A new owner needs a password."
+msgstr "المالك الجديد يحتاج كلمة مرور."
 
 msgid "A piece must weigh more than zero."
 msgstr "يجب أن يكون وزن القطعة أكبر من صفر."
@@ -161,11 +185,29 @@ msgstr "رقم الحساب"
 msgid "Accounting"
 msgstr "الحسابات"
 
+msgid "Across every client"
+msgstr "على مستوى كل العملاء"
+
+msgid "Activate"
+msgstr "تفعيل"
+
 msgid "Active"
 msgstr "نشط"
 
+msgid "Active clients"
+msgstr "العملاء النشطون"
+
 msgid "Active karats"
 msgstr "العيارات النشطة"
+
+msgid "Active users"
+msgstr "المستخدمون النشطون"
+
+msgid "Activity"
+msgstr "النشاط"
+
+msgid "Activity, last 14 days"
+msgstr "النشاط، آخر 14 يومًا"
 
 msgid "Add"
 msgstr "إضافة"
@@ -173,11 +215,17 @@ msgstr "إضافة"
 msgid "Add a deposit"
 msgstr "إضافة عربون"
 
+msgid "Add a domain"
+msgstr "إضافة نطاق"
+
 msgid "Add a line"
 msgstr "إضافة سطر"
 
 msgid "Add a line."
 msgstr "أضف سطرًا."
+
+msgid "Add a piece"
+msgstr "إضافة قطعة"
 
 msgid "Add an expense category first."
 msgstr "أضف بند مصروفات أولًا."
@@ -218,11 +266,23 @@ msgstr "إضافة كسر"
 msgid "Add suppliers"
 msgstr "إضافة موردين"
 
+msgid "Add the gold you are sending."
+msgstr "أضف الذهب الذي ترسله."
+
 msgid "Add trade accounts"
 msgstr "إضافة حسابات التجار"
 
+msgid "Add what came back."
+msgstr "أضف ما تم استلامه."
+
+msgid "Add workshops"
+msgstr "إضافة ورش"
+
 msgid "Address"
 msgstr "العنوان"
+
+msgid "Addresses"
+msgstr "العناوين"
 
 msgid "Adjusted (g)"
 msgstr "التسوية (جم)"
@@ -247,6 +307,9 @@ msgstr "كل البنود"
 
 msgid "All clear"
 msgstr "كل شيء على ما يرام"
+
+msgid "All clients are busy"
+msgstr "كل العملاء يعملون"
 
 msgid "All karats"
 msgstr "كل الأعيرة"
@@ -284,6 +347,12 @@ msgstr "رقم الهاتف مسجل لعميل آخر."
 msgid "Any branch"
 msgstr "أي فرع"
 
+msgid "Archive"
+msgstr "أرشفة"
+
+msgid "Archived"
+msgstr "مؤرشف"
+
 msgid "As of"
 msgstr "حتى تاريخ"
 
@@ -305,6 +374,9 @@ msgstr "10 أحرف على الأقل. أرسلها للمستخدم بشكل خ
 msgid "At most 6 decimal places."
 msgstr "6 أرقام عشرية كحد أقصى."
 
+msgid "At the workshop"
+msgstr "لدى الورشة"
+
 msgid "At workshop"
 msgstr "لدى الورشة"
 
@@ -322,6 +394,15 @@ msgstr "عادت للمخزون"
 
 msgid "Back to the dashboard"
 msgstr "العودة إلى لوحة التحكم"
+
+msgid "Bag"
+msgstr "كيس"
+
+msgid "Bag number, name, phone or piece"
+msgstr "رقم الكيس أو الاسم أو الهاتف أو القطعة"
+
+msgid "Bahrain"
+msgstr "البحرين"
 
 msgid "Balance"
 msgstr "الرصيد"
@@ -386,6 +467,9 @@ msgstr "بادئة الباركود"
 msgid "Beads"
 msgstr "خرز"
 
+msgid "Being set up"
+msgstr "قيد الإعداد"
+
 msgid "Between %(low)s and %(high)s."
 msgstr "بين %(low)s و%(high)s."
 
@@ -449,6 +533,9 @@ msgstr "سبائك وعملات"
 msgid "Bundles of permissions you give to users."
 msgstr "مجموعات صلاحيات تمنحها للمستخدمين."
 
+msgid "Busy this week"
+msgstr "نشط هذا الأسبوع"
+
 msgid "Buy"
 msgstr "شراء"
 
@@ -488,14 +575,23 @@ msgstr "إلغاء مرتجعات العملاء"
 msgid "Cancel expenses"
 msgstr "إلغاء المصروفات"
 
+msgid "Cancel order"
+msgstr "إلغاء الأمر"
+
 msgid "Cancel posted supplier invoices"
 msgstr "إلغاء فواتير الموردين المرحّلة"
 
 msgid "Cancel purchase"
 msgstr "إلغاء الشراء"
 
+msgid "Cancel receipt"
+msgstr "إلغاء الاستلام"
+
 msgid "Cancel receipts, payments and settlements"
 msgstr "إلغاء القبض والصرف والتسويات"
+
+msgid "Cancel repairs and refund deposits"
+msgstr "إلغاء التصليحات ورد العرابين"
 
 msgid "Cancel reservations and refund deposits"
 msgstr "إلغاء الحجوزات ورد العربون"
@@ -514,6 +610,9 @@ msgstr "إلغاء مبيعات الأيام السابقة"
 
 msgid "Cancel scrap purchases and sales"
 msgstr "إلغاء شراء وبيع الكسر"
+
+msgid "Cancel the repair"
+msgstr "إلغاء التصليح"
 
 msgid "Cancel the reservation"
 msgstr "إلغاء الحجز"
@@ -536,11 +635,17 @@ msgstr "إلغاء مستندات الخزينة"
 msgid "Cancel wholesale sales"
 msgstr "إلغاء مبيعات الجملة"
 
+msgid "Cancel work orders and their receipts"
+msgstr "إلغاء أوامر التشغيل واستلاماتها"
+
 msgid "Cancelled"
 msgstr "ملغاة"
 
 msgid "Cancelled %(number)s"
 msgstr "إلغاء %(number)s"
+
+msgid "Cancelled receipt of %(number)s"
+msgstr "إلغاء استلام %(number)s"
 
 msgid "Cancelled return %(number)s"
 msgstr "إلغاء المرتجع %(number)s"
@@ -553,6 +658,9 @@ msgstr "إلغاء فاتورة المورد %(number)s"
 
 msgid "Cancelled."
 msgstr "تم الإلغاء."
+
+msgid "Cancelling brings the gold back into stock, as if it was never sent."
+msgstr "الإلغاء يعيد الذهب للمخزون كأنه لم يُرسل."
 
 msgid "Cancelling brings the goods back into stock and restores what you owe the supplier."
 msgstr "الإلغاء يعيد البضاعة للمخزون ويعيد المستحق للمورد كما كان."
@@ -638,6 +746,9 @@ msgstr "نقدية في الطريق إليك"
 msgid "Cash transfer"
 msgstr "تحويل نقدي"
 
+msgid "Casting"
+msgstr "سبك"
+
 msgid "Catalog"
 msgstr "الأصناف"
 
@@ -656,6 +767,9 @@ msgstr "المجموعة"
 msgid "Change given"
 msgstr "الباقي المردود"
 
+msgid "Change is given in cash: pay the exact amount by card or transfer."
+msgstr "الباقي يُرد نقدًا: ادفع المبلغ المضبوط بالبطاقة أو التحويل."
+
 msgid "Change password"
 msgstr "تغيير كلمة المرور"
 
@@ -670,6 +784,9 @@ msgstr "الباقي للعميل"
 
 msgid "Changed"
 msgstr "معدّل"
+
+msgid "Charge"
+msgstr "المطلوب"
 
 msgid "Chart of accounts"
 msgstr "دليل الحسابات"
@@ -725,6 +842,9 @@ msgstr "اختر طريقة سداد التاجر."
 msgid "Choose how to refund."
 msgstr "اختر طريقة الرد."
 
+msgid "Choose repair or custom order."
+msgstr "اختر تصليح أو طلب تصنيع."
+
 msgid "Choose the bank account it pays into."
 msgstr "اختر الحساب البنكي الذي تُحوِّل إليه."
 
@@ -737,8 +857,14 @@ msgstr "اختر الفرع المستلِم."
 msgid "Choose the card terminal."
 msgstr "اختر ماكينة الدفع."
 
+msgid "Choose the customer or type their name."
+msgstr "اختر العميل أو اكتب اسمه."
+
 msgid "Choose the karat."
 msgstr "اختر العيار."
+
+msgid "Choose the kind of work."
+msgstr "اختر نوع العمل."
 
 msgid "Choose the pieces being returned."
 msgstr "اختر القطع المرتجعة."
@@ -748,6 +874,9 @@ msgstr "اختر المورد."
 
 msgid "Choose the trade account."
 msgstr "اختر حساب التاجر."
+
+msgid "Choose the workshop."
+msgstr "اختر الورشة."
 
 msgid "Choose what is being recorded."
 msgstr "اختر نوع العملية."
@@ -773,6 +902,18 @@ msgstr "اختر الطرف الذي تتم معه التسوية."
 msgid "Clear"
 msgstr "مسح"
 
+msgid "Client"
+msgstr "العميل"
+
+msgid "Client created"
+msgstr "إنشاء عميل"
+
+msgid "Client since %(date)s"
+msgstr "عميل منذ %(date)s"
+
+msgid "Clients"
+msgstr "العملاء"
+
 msgid "Close accounting periods"
 msgstr "إقفال الفترات المحاسبية"
 
@@ -781,6 +922,9 @@ msgstr "إغلاق القائمة"
 
 msgid "Closed"
 msgstr "مقفلة"
+
+msgid "Closed. The address no longer opens."
+msgstr "مغلق. العنوان لم يعد يعمل."
 
 msgid "Closing"
 msgstr "الختامي"
@@ -806,6 +950,15 @@ msgstr "العملة/المعدن"
 msgid "Company"
 msgstr "شركة"
 
+msgid "Company name"
+msgstr "اسم الشركة"
+
+msgid "Company settings"
+msgstr "إعدادات الشركة"
+
+msgid "Company settings changed"
+msgstr "تعديل إعدادات الشركة"
+
 msgid "Compared with yesterday"
 msgstr "مقارنة بالأمس"
 
@@ -830,8 +983,26 @@ msgstr "أكِّد وصول كل ما في هذه القائمة إلى %(branch
 msgid "Confirm the cash arrived in %(box)s at %(branch)s."
 msgstr "أكِّد وصول النقدية إلى %(box)s في %(branch)s."
 
+msgid "Console activity"
+msgstr "نشاط لوحة المنصة"
+
+msgid "Contact"
+msgstr "التواصل"
+
+msgid "Contact email"
+msgstr "بريد التواصل"
+
+msgid "Contact person"
+msgstr "مسؤول التواصل"
+
+msgid "Contact phone"
+msgstr "هاتف التواصل"
+
 msgid "Copies of each"
 msgstr "عدد النسخ لكل قطعة"
+
+msgid "Cost"
+msgstr "التكلفة"
 
 msgid "Cost of diamonds sold"
 msgstr "تكلفة الألماس المباع"
@@ -863,8 +1034,17 @@ msgstr "الوزن الفعلي (جم)"
 msgid "Counting"
 msgstr "جارٍ الجرد"
 
+msgid "Country"
+msgstr "الدولة"
+
 msgid "Create and edit draft supplier invoices"
 msgstr "إنشاء وتعديل مسودات فواتير الموردين"
+
+msgid "Create the client"
+msgstr "إنشاء العميل"
+
+msgid "Creates the workspace with its head office, karats, chart of accounts, roles and owner, ready to sign in."
+msgstr "يُنشئ مساحة العمل بالفرع الرئيسي والعيارات ودليل الحسابات والأدوار والمالك، جاهزة لتسجيل الدخول."
 
 msgid "Credit"
 msgstr "دائن"
@@ -890,6 +1070,9 @@ msgstr "الأسعار الحالية"
 msgid "Current rates"
 msgstr "الأسعار الحالية"
 
+msgid "Custom order"
+msgstr "طلب تصنيع"
+
 msgid "Customer"
 msgstr "عميل"
 
@@ -911,11 +1094,17 @@ msgstr "مرتجعات العملاء في الفترة"
 msgid "Customer's account"
 msgstr "حساب العميل"
 
+msgid "Customer's signature"
+msgstr "توقيع العميل"
+
 msgid "Customer/supplier"
 msgstr "العميل/المورد"
 
 msgid "Customers"
 msgstr "العملاء"
+
+msgid "Customers' pieces taken in, their bags, where they are and what is owed."
+msgstr "قطع العملاء المستلمة وأكياسها ومكانها والمستحق عليها."
 
 msgid "Daily summary"
 msgstr "ملخص اليوم"
@@ -946,6 +1135,9 @@ msgstr "أوقف ماكينات الدفع المرتبطة به أولًا."
 
 msgid "Deactivate trade accounts"
 msgstr "إيقاف حسابات التجار"
+
+msgid "Deactivate workshops"
+msgstr "إيقاف الورش"
 
 msgid "Debit"
 msgstr "مدين"
@@ -986,6 +1178,9 @@ msgstr "الخزينة الافتراضية"
 msgid "Default karat"
 msgstr "العيار الافتراضي"
 
+msgid "Default language"
+msgstr "اللغة الافتراضية"
+
 msgid "Delete"
 msgstr "حذف"
 
@@ -998,11 +1193,29 @@ msgstr "حذف هذا الدور"
 msgid "Deleted."
 msgstr "تم الحذف."
 
+msgid "Deliver"
+msgstr "تسليم"
+
+msgid "Deliver and take payment"
+msgstr "التسليم وتحصيل المبلغ"
+
+msgid "Deliver repairs and take payment"
+msgstr "تسليم التصليحات وتحصيل المبالغ"
+
+msgid "Delivered"
+msgstr "تم التسليم"
+
+msgid "Delivered."
+msgstr "تم التسليم."
+
 msgid "Deposit"
 msgstr "العربون"
 
 msgid "Deposit %(number)s"
 msgstr "عربون %(number)s"
+
+msgid "Deposit held"
+msgstr "العربون المحتفظ به"
 
 msgid "Deposit left over from %(number)s"
 msgstr "باقي عربون %(number)s"
@@ -1013,11 +1226,20 @@ msgstr "عربون الحجز الملغى %(number)s"
 msgid "Deposit recorded."
 msgstr "تم تسجيل العربون."
 
+msgid "Deposit returned"
+msgstr "عربون مردود"
+
 msgid "Deposit returned %(number)s"
 msgstr "رد عربون %(number)s"
 
 msgid "Deposits"
 msgstr "العربون"
+
+msgid "Deposits are kept for a registered customer."
+msgstr "العربون يُحفظ لعميل مسجّل."
+
+msgid "Deposits are kept for a registered customer. Choose or add the customer first."
+msgstr "العربون يُحفظ لعميل مسجّل. اختر العميل أو أضفه أولًا."
 
 msgid "Deposits are used only by completing their reservation."
 msgstr "لا يُستخدم العربون إلا بإتمام حجزه."
@@ -1027,6 +1249,15 @@ msgstr "العربون المحتفظ به"
 
 msgid "Deposits held for reservations"
 msgstr "العربون المحتفظ به للحجوزات"
+
+msgid "Describe and weigh each piece in front of the customer. The bag gets a number to tag it."
+msgstr "صِف كل قطعة وزِنها أمام العميل، ويأخذ الكيس رقمًا للتعليم عليه."
+
+msgid "Describe at least one piece."
+msgstr "صِف قطعة واحدة على الأقل."
+
+msgid "Describe the piece and the work."
+msgstr "صِف القطعة والعمل المطلوب."
 
 msgid "Description"
 msgstr "الوصف"
@@ -1049,6 +1280,9 @@ msgstr "ألماس"
 msgid "Diamonds and stones"
 msgstr "الألماس والأحجار"
 
+msgid "Difference"
+msgstr "الفرق"
+
 msgid "Discount"
 msgstr "الخصم"
 
@@ -1057,6 +1291,30 @@ msgstr "الخصم %%"
 
 msgid "Document"
 msgstr "المستند"
+
+msgid "Documents (30 days)"
+msgstr "المستندات (30 يومًا)"
+
+msgid "Documents posted"
+msgstr "المستندات المرحّلة"
+
+msgid "Documents posted by all clients"
+msgstr "المستندات التي رحّلها كل العملاء"
+
+msgid "Domain"
+msgstr "النطاق"
+
+msgid "Domain added"
+msgstr "إضافة نطاق"
+
+msgid "Domain added."
+msgstr "تمت إضافة النطاق."
+
+msgid "Domain removed"
+msgstr "حذف نطاق"
+
+msgid "Domain removed."
+msgstr "تم حذف النطاق."
 
 msgid "Draft"
 msgstr "مسودة"
@@ -1073,11 +1331,17 @@ msgstr "تم حفظ المسودة."
 msgid "Duplicate karat."
 msgstr "عيار مكرر."
 
+msgid "e.g. erp.example.com, pointed at this server"
+msgstr "مثل erp.example.com موجّه إلى هذا الخادم"
+
 msgid "e.g. Rent"
 msgstr "مثال: الإيجار"
 
 msgid "Each category posts to an expense account in the chart of accounts."
 msgstr "كل بند يُرحَّل إلى حساب مصروف في دليل الحسابات."
+
+msgid "Each client is a separate workspace with its own data, users and address."
+msgstr "كل عميل مساحة عمل مستقلة ببياناتها ومستخدميها وعنوانها."
 
 msgid "Edit"
 msgstr "تعديل"
@@ -1115,6 +1379,12 @@ msgstr "تعديل حسابات التجار"
 msgid "Edit user"
 msgstr "تعديل مستخدم"
 
+msgid "Edit workshop"
+msgstr "تعديل الورشة"
+
+msgid "Edit workshops"
+msgstr "تعديل الورش"
+
 msgid "Effective"
 msgstr "ساري من"
 
@@ -1123,6 +1393,9 @@ msgstr "ساري من %(when)s"
 
 msgid "Effective from"
 msgstr "ساري من"
+
+msgid "Egypt"
+msgstr "مصر"
 
 msgid "Egyptian pound"
 msgstr "جنيه مصري"
@@ -1139,6 +1412,9 @@ msgstr "فارغ = الآن"
 msgid "Enter %(karat)s prices per gram. Other gold karats are calculated from their fineness."
 msgstr "أدخل أسعار %(karat)s للجرام، وتُحسب باقي العيارات تلقائيًا حسب نسبة النقاء."
 
+msgid "Enter a domain like erp.example.com."
+msgstr "أدخل نطاقًا مثل erp.example.com."
+
 msgid "Enter a number."
 msgstr "أدخل رقمًا."
 
@@ -1147,6 +1423,12 @@ msgstr "أدخل بريدًا إلكترونيًا صحيحًا."
 
 msgid "Enter a valid phone number."
 msgstr "أدخل رقم هاتف صحيحًا."
+
+msgid "Enter a weight of zero or more."
+msgstr "أدخل وزنًا صفرًا أو أكثر."
+
+msgid "Enter an amount of zero or more."
+msgstr "أدخل مبلغًا صفرًا أو أكثر."
 
 msgid "Enter either a debit or a credit."
 msgstr "أدخل مدينًا أو دائنًا فقط."
@@ -1157,11 +1439,17 @@ msgstr "أدخل الوزن الإجمالي."
 msgid "Enter the weight of each piece."
 msgstr "أدخل وزن كل قطعة."
 
+msgid "Enter the weight of every piece."
+msgstr "أدخل وزن كل قطعة."
+
 msgid "Enter the weight."
 msgstr "أدخل الوزن."
 
 msgid "Entered"
 msgstr "مُدخل"
+
+msgid "Enterprise"
+msgstr "مؤسسات"
 
 msgid "Entries appear here as documents are posted, or when you add one by hand."
 msgstr "تظهر القيود هنا عند ترحيل المستندات أو عند إضافتها يدويًا."
@@ -1184,11 +1472,20 @@ msgstr "يورو"
 msgid "Every balance in the system is the sum of the entries on these accounts."
 msgstr "كل رصيد في النظام هو مجموع القيود على هذه الحسابات."
 
+msgid "Every change made from the platform console, and by whom."
+msgstr "كل تغيير تم من لوحة المنصة، ومن قام به."
+
+msgid "Every client workspace, how much it is used, and what needs a look."
+msgstr "كل مساحات عمل العملاء، ومدى استخدامها، وما يحتاج متابعة."
+
 msgid "Every posted entry. Entries are never edited: mistakes are corrected with a reversal."
 msgstr "كل القيود المرحّلة. لا تُعدَّل القيود أبدًا؛ تُصحَّح الأخطاء بقيد عكسي."
 
 msgid "Every sale, newest first."
 msgstr "كل المبيعات، الأحدث أولًا."
+
+msgid "Everyone can sign in and work."
+msgstr "يمكن للجميع الدخول والعمل."
 
 msgid "Everything"
 msgstr "الكل"
@@ -1274,6 +1571,12 @@ msgstr "الذهب الصافي المخصوم (جم)"
 msgid "Fine gold owed (g)"
 msgstr "الذهب الصافي المستحق (جم)"
 
+msgid "Fine gold received"
+msgstr "الذهب الصافي المستلم"
+
+msgid "Fine gold sent"
+msgstr "الذهب الصافي المرسل"
+
 msgid "Fine weight"
 msgstr "الوزن الصافي"
 
@@ -1291,6 +1594,9 @@ msgstr "الذيل بين الجناحين (مم)"
 
 msgid "For opening balances and adjustments. Daily documents post their own entries."
 msgstr "للأرصدة الافتتاحية والتسويات. المستندات اليومية ترحّل قيودها تلقائيًا."
+
+msgid "For the Gweb team: every client, in one place."
+msgstr "لفريق Gweb: كل العملاء في مكان واحد."
 
 msgid "From"
 msgstr "من"
@@ -1322,6 +1628,9 @@ msgstr "النوع"
 msgid "Give the member at least one role."
 msgstr "امنح المستخدم دورًا واحدًا على الأقل."
 
+msgid "Give the pieces back to the customer first."
+msgstr "سلّم القطع للعميل أولًا."
+
 msgid "Give the value in the company currency for %(commodity)s lines."
 msgstr "أدخل القيمة بعملة الشركة لسطور %(commodity)s."
 
@@ -1345,6 +1654,9 @@ msgstr "تسوية رصيد الذهب نقدًا"
 
 msgid "Gold balances"
 msgstr "أرصدة الذهب"
+
+msgid "Gold by weight"
+msgstr "ذهب بالوزن"
 
 msgid "Gold given"
 msgstr "ذهب مسلَّم"
@@ -1391,8 +1703,23 @@ msgstr "ذهب مستلَم"
 msgid "Gold sales"
 msgstr "مبيعات الذهب"
 
+msgid "Gold sent"
+msgstr "الذهب المرسل"
+
+msgid "Gold sent to workshop %(number)s"
+msgstr "ذهب مرسل للورشة %(number)s"
+
+msgid "Gold sent to workshops, and what came back: new goods, scrap, loss and labour."
+msgstr "الذهب المرسل للورش وما عاد منها: بضاعة جديدة وكسر وهالك ومصنعية."
+
+msgid "Gold they hold for you; labour you owe."
+msgstr "ذهبك لديهم، ومصنعية مستحقة لهم."
+
 msgid "Gold value"
 msgstr "قيمة الذهب"
+
+msgid "Gold: positive is your gold held by the workshop. Money: negative is labour you owe them."
+msgstr "الذهب: الموجب هو ذهبك لدى الورشة. النقدية: السالب هو مصنعية مستحقة لهم."
 
 msgid "Goods"
 msgstr "البضاعة"
@@ -1448,6 +1775,9 @@ msgstr "قيمة الوحدة من كل عملة بالـ %(home)s."
 msgid "IBAN"
 msgstr "رقم الآيبان"
 
+msgid "Idle a month"
+msgstr "متوقف منذ شهر"
+
 msgid "In"
 msgstr "وارد"
 
@@ -1465,6 +1795,9 @@ msgstr "جارٍ"
 
 msgid "In stock"
 msgstr "في المخزون"
+
+msgid "In the shop"
+msgstr "في المحل"
 
 msgid "In transit"
 msgstr "في الطريق"
@@ -1502,6 +1835,9 @@ msgstr "مجموعات الأصناف"
 msgid "Item lookup URL"
 msgstr "رابط الاستعلام عن الأصناف"
 
+msgid "Jordan"
+msgstr "الأردن"
+
 msgid "Journal"
 msgstr "اليومية"
 
@@ -1519,6 +1855,9 @@ msgstr "يجب الإبقاء على قالب ملصق واحد على الأق�
 
 msgid "Keep on the customer's account"
 msgstr "إبقاؤه في حساب العميل"
+
+msgid "Kuwait"
+msgstr "الكويت"
 
 msgid "Label height (mm)"
 msgstr "ارتفاع الملصق (مم)"
@@ -1538,8 +1877,29 @@ msgstr "قوالب الملصقات"
 msgid "Label width (mm)"
 msgstr "عرض الملصق (مم)"
 
+msgid "Labour"
+msgstr "المصنعية"
+
+msgid "Labour / g"
+msgstr "المصنعية / جم"
+
+msgid "Labour owed"
+msgstr "المصنعية المستحقة"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Last"
+msgstr "آخر نشاط"
+
+msgid "Last 30 days"
+msgstr "آخر 30 يومًا"
+
 msgid "Last 5 digits"
 msgstr "آخر 5 أرقام"
+
+msgid "Last activity"
+msgstr "آخر نشاط"
 
 msgid "Last scans"
 msgstr "آخر ما تم مسحه"
@@ -1547,8 +1907,17 @@ msgstr "آخر ما تم مسحه"
 msgid "Last sign-in"
 msgstr "آخر دخول"
 
+msgid "Late"
+msgstr "متأخر"
+
 msgid "Layout"
 msgstr "التخطيط"
+
+msgid "Leave empty for no limit."
+msgstr "اتركه فارغًا لعدم التقييد."
+
+msgid "Leave empty when the owner already has an account (same email)."
+msgstr "اتركها فارغة إن كان للمالك حساب بالفعل (نفس البريد)."
 
 msgid "Leave the rest on the customer's account"
 msgstr "ترك الباقي على حساب العميل"
@@ -1567,6 +1936,9 @@ msgstr "الخصوم"
 
 msgid "Liability"
 msgstr "خصوم"
+
+msgid "Limits are checked when the client adds branches or users. Empty means no limit."
+msgstr "تُطبَّق الحدود عند إضافة العميل لفروع أو مستخدمين. الفارغ يعني بلا حد."
 
 msgid "Lines"
 msgstr "السطور"
@@ -1591,6 +1963,12 @@ msgstr "الهالك (جم)"
 
 msgid "Loss must be less than the weight."
 msgstr "يجب أن يكون الهالك أقل من الوزن."
+
+msgid "Lowercase letters, digits and hyphens."
+msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
+
+msgid "Made a mistake? Cancel the receipt to record it again. This only works while the goods received are still in stock."
+msgstr "هل حدث خطأ؟ ألغِ الاستلام لتسجيله من جديد. يتاح هذا طالما البضاعة المستلمة ما زالت بالمخزون."
 
 msgid "Main"
 msgstr "الرئيسية"
@@ -1630,6 +2008,9 @@ msgstr "تكلفة المصنعية"
 
 msgid "Making cost / g"
 msgstr "تكلفة المصنعية / جم"
+
+msgid "Making pieces"
+msgstr "تصنيع قطع"
 
 msgid "Making/g"
 msgstr "المصنعية/جم"
@@ -1682,6 +2063,12 @@ msgstr "هامش الربح %"
 msgid "Margin = sales total − gold value (at the board of the sale) − making cost paid to the supplier. Cancelled sales are left out; returns are shown separately."
 msgstr "هامش الربح = إجمالي البيع − قيمة الذهب (بنشرة يوم البيع) − المصنعية المدفوعة للمورد. المبيعات الملغاة غير محسوبة، والمرتجعات معروضة منفصلة."
 
+msgid "Mark ready"
+msgstr "تجهيز للتسليم"
+
+msgid "Mark the repair ready before delivering it."
+msgstr "جهّز التصليح للتسليم قبل تسليمه."
+
 msgid "Maximum making-charge discount (gold)"
 msgstr "أقصى خصم على المصنعية (ذهب)"
 
@@ -1708,6 +2095,9 @@ msgstr "مركز تداول المعادن"
 
 msgid "Metal weight"
 msgstr "وزن المعدن"
+
+msgid "Migrating"
+msgstr "قيد الترحيل"
 
 msgid "Missing"
 msgstr "مفقود"
@@ -1742,8 +2132,20 @@ msgstr "صرف نقدية"
 msgid "Money received"
 msgstr "قبض نقدية"
 
+msgid "More gold came back than was sent. Confirm the gain to continue."
+msgstr "عاد ذهب أكثر مما أُرسل. أكّد الزيادة للمتابعة."
+
+msgid "More gold came back than was sent. Tick to book the extra as a gain."
+msgstr "عاد ذهب أكثر مما أُرسل. علّم هنا لتسجيل الفرق كزيادة."
+
 msgid "More than the terminal's unsettled %(amount)s."
 msgstr "أكبر من غير المُسوّى على الماكينة (%(amount)s)."
+
+msgid "Most branches"
+msgstr "أقصى عدد فروع"
+
+msgid "Most users"
+msgstr "أقصى عدد مستخدمين"
 
 msgid "Move its balance out before deactivating it."
 msgstr "انقل رصيده قبل إيقافه."
@@ -1766,11 +2168,20 @@ msgstr "لا يمكن أن يكون سالبًا."
 msgid "Name"
 msgstr "الاسم"
 
+msgid "Name on screens and receipts"
+msgstr "الاسم على الشاشات والإيصالات"
+
+msgid "Name, address, domain or contact"
+msgstr "الاسم أو العنوان أو النطاق أو التواصل"
+
 msgid "Name, phone, code or national ID"
 msgstr "الاسم أو الهاتف أو الكود أو الرقم القومي"
 
 msgid "National ID"
 msgstr "الرقم القومي"
+
+msgid "Needs a look"
+msgstr "يحتاج متابعة"
 
 msgid "Needs attention"
 msgstr "يحتاج متابعة"
@@ -1802,6 +2213,9 @@ msgstr "خزينة جديدة"
 msgid "New category"
 msgstr "بند جديد"
 
+msgid "New client"
+msgstr "عميل جديد"
+
 msgid "New customer"
 msgstr "عميل جديد"
 
@@ -1816,6 +2230,9 @@ msgstr "قيد يومية جديد"
 
 msgid "New password"
 msgstr "كلمة المرور الجديدة"
+
+msgid "New pieces"
+msgstr "قطع جديدة"
 
 msgid "New purchase"
 msgstr "شراء جديد"
@@ -1850,6 +2267,9 @@ msgstr "مستخدم جديد"
 msgid "New wholesale"
 msgstr "بيع جملة جديد"
 
+msgid "New workshop"
+msgstr "ورشة جديدة"
+
 msgid "Next"
 msgstr "التالي"
 
@@ -1876,6 +2296,12 @@ msgstr "لا توجد خزائن بعد"
 
 msgid "No categories yet"
 msgstr "لا توجد بنود بعد"
+
+msgid "No clients match"
+msgstr "لا يوجد عملاء مطابقون"
+
+msgid "No clients yet"
+msgstr "لا يوجد عملاء بعد"
 
 msgid "No customers yet"
 msgstr "لا يوجد عملاء بعد"
@@ -1934,6 +2360,9 @@ msgstr "لا توجد قطع بعد"
 msgid "No purchases yet"
 msgstr "لا توجد مشتريات بعد"
 
+msgid "No repairs here"
+msgstr "لا توجد تصليحات هنا"
+
 msgid "No reservations here"
 msgstr "لا توجد حجوزات هنا"
 
@@ -1964,6 +2393,15 @@ msgstr "الباركود لا يحتوي على الوزن"
 msgid "No wholesale yet"
 msgstr "لا توجد مبيعات جملة بعد"
 
+msgid "No work orders here"
+msgstr "لا توجد أوامر تشغيل هنا"
+
+msgid "No workshops yet"
+msgstr "لا توجد ورش بعد"
+
+msgid "Nobody can sign in. The data is kept."
+msgstr "لا يمكن لأحد الدخول. البيانات محفوظة."
+
 msgid "None"
 msgstr "لا يوجد"
 
@@ -1988,8 +2426,14 @@ msgstr "غير متوقعة هنا"
 msgid "Not found."
 msgstr "غير موجود."
 
+msgid "Not open to users yet."
+msgstr "غير متاح للمستخدمين بعد."
+
 msgid "Not published yet"
 msgstr "لم يُنشر بعد"
+
+msgid "Not started"
+msgstr "لم يبدأ"
 
 msgid "Note"
 msgstr "ملاحظة"
@@ -2027,11 +2471,17 @@ msgstr "لا يوجد ما يُعرض."
 msgid "Nothing unexpected."
 msgstr "لا توجد قطع غير متوقعة."
 
+msgid "Nothing yet"
+msgstr "لا شيء بعد"
+
 msgid "Number"
 msgstr "الرقم"
 
 msgid "Number or trade account"
 msgstr "الرقم أو اسم التاجر"
+
+msgid "Oman"
+msgstr "عُمان"
 
 msgid "On account"
 msgstr "آجل"
@@ -2063,6 +2513,9 @@ msgstr "عميل واحد"
 msgid "One day at a branch: sales, scrap received, money in and out of every cash box and bank account."
 msgstr "يوم واحد في فرع: المبيعات، والكسر المستلم، والوارد والمنصرف من كل خزينة وحساب بنكي."
 
+msgid "One workshop"
+msgstr "ورشة واحدة"
+
 msgid "Only %(amount)s %(currency)s in %(box)s."
 msgstr "المتاح في %(box)s هو %(amount)s %(currency)s فقط."
 
@@ -2081,8 +2534,14 @@ msgstr "المتاح من هذا الكسر في الفرع %(weight)s جم فق
 msgid "Only a customer or supplier can be paid on account."
 msgstr "التسجيل على الحساب يكون لعميل أو مورد فقط."
 
+msgid "Only a registered customer can pay later."
+msgstr "التأجيل متاح للعميل المسجّل فقط."
+
 msgid "Only drafts can be edited."
 msgstr "يمكن تعديل المسودات فقط."
+
+msgid "Only orders still at the workshop can be cancelled."
+msgstr "لا يمكن إلغاء إلا الأوامر التي ما زالت لدى الورشة."
 
 msgid "Only posted documents can be cancelled."
 msgstr "يمكن إلغاء المستندات المرحّلة فقط."
@@ -2099,11 +2558,17 @@ msgstr "يمكن إلغاء المبيعات المرحّلة فقط."
 msgid "Only posted sales can take returns."
 msgstr "المرتجع يكون على مبيعات مرحّلة فقط."
 
+msgid "Only repairs still in the shop can be sent."
+msgstr "لا يُرسل إلا التصليح الموجود في المحل."
+
 msgid "Only some"
 msgstr "فروع محددة"
 
 msgid "Only the company currency is active"
 msgstr "عملة الشركة هي العملة الوحيدة المفعلة"
+
+msgid "Only work done by a workshop has a labour charge."
+msgstr "المصنعية تُحسب فقط للعمل الذي تنفذه ورشة."
 
 msgid "Open"
 msgstr "فتح"
@@ -2113,6 +2578,9 @@ msgstr "مفتوحة للترحيل"
 
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open the workspace"
+msgstr "فتح مساحة العمل"
 
 msgid "Opening"
 msgstr "الافتتاحي"
@@ -2131,6 +2599,12 @@ msgstr "مصروفات تشغيلية"
 
 msgid "optional"
 msgstr "اختياري"
+
+msgid "Or a name"
+msgstr "أو اسم"
+
+msgid "Or mark it ready below if the work is done in the shop."
+msgstr "أو جهّزه للتسليم بالأسفل إن تم العمل في المحل."
 
 msgid "Organisation"
 msgstr "المؤسسة"
@@ -2162,6 +2636,21 @@ msgstr "المستحق نقدًا"
 msgid "Owner"
 msgstr "المالك"
 
+msgid "Owner's email"
+msgstr "بريد المالك"
+
+msgid "Owner's name"
+msgstr "اسم المالك"
+
+msgid "Owner's password"
+msgstr "كلمة مرور المالك"
+
+msgid "Owner's username"
+msgstr "اسم مستخدم المالك"
+
+msgid "Owners"
+msgstr "الملاك"
+
 msgid "Page height (mm)"
 msgstr "ارتفاع الصفحة (مم)"
 
@@ -2188,6 +2677,9 @@ msgstr "مدفوع من"
 
 msgid "Paid into the bank"
 msgstr "المُودَع في البنك"
+
+msgid "Paid on delivery"
+msgstr "المدفوع عند التسليم"
 
 msgid "Paid to"
 msgstr "مدفوع إلى"
@@ -2225,11 +2717,20 @@ msgstr "رده نقدًا"
 msgid "Pay supplier"
 msgstr "صرف للمورد"
 
+msgid "Pay workshop"
+msgstr "دفع للورشة"
+
 msgid "Payables"
 msgstr "الدائنون"
 
 msgid "Payment"
 msgstr "الدفع"
+
+msgid "Payment on delivery"
+msgstr "دفعة عند التسليم"
+
+msgid "Payments"
+msgstr "المدفوعات"
 
 msgid "Payments are more than the amount due."
 msgstr "المدفوع أكبر من المستحق."
@@ -2288,6 +2789,9 @@ msgstr "القطعة %(barcode)s غير متاحة هنا (%(status)s، %(branch
 msgid "Piece %(barcode)s is not in stock at %(branch)s."
 msgstr "القطعة %(barcode)s ليست في مخزون %(branch)s."
 
+msgid "Piece and work"
+msgstr "القطعة والعمل"
+
 msgid "Pieces"
 msgstr "القطع"
 
@@ -2308,6 +2812,27 @@ msgstr "القطع تشمل المحجوزة. القيمة بسعر شراء ا�
 
 msgid "Pieces weight (g)"
 msgstr "وزن القطع (جم)"
+
+msgid "Plan"
+msgstr "الباقة"
+
+msgid "Plan and details changed"
+msgstr "تعديل الباقة والبيانات"
+
+msgid "Plan and limits"
+msgstr "الباقة والحدود"
+
+msgid "Plan, limits and contact"
+msgstr "الباقة والحدود والتواصل"
+
+msgid "Platform"
+msgstr "المنصة"
+
+msgid "Platform console"
+msgstr "لوحة المنصة"
+
+msgid "Platform overview"
+msgstr "نظرة عامة على المنصة"
 
 msgid "Platinum"
 msgstr "بلاتين"
@@ -2375,6 +2900,9 @@ msgstr "معاينة"
 msgid "Previous"
 msgstr "السابق"
 
+msgid "Price"
+msgstr "السعر"
+
 msgid "Price (locked)"
 msgstr "السعر (مثبّت)"
 
@@ -2423,6 +2951,9 @@ msgstr "طباعة الملصقات"
 msgid "Print piece labels"
 msgstr "طباعة ملصقات القطع"
 
+msgid "Print receipt"
+msgstr "طباعة الإيصال"
+
 msgid "Printed"
 msgstr "طُبع"
 
@@ -2437,6 +2968,15 @@ msgstr "الطباعة"
 
 msgid "Produced"
 msgstr "إنتاج"
+
+msgid "Professional"
+msgstr "احترافية"
+
+msgid "Promised"
+msgstr "الموعد"
+
+msgid "Promised for"
+msgstr "موعد التسليم"
 
 msgid "Publish a rate"
 msgstr "نشر سعر صرف"
@@ -2483,8 +3023,17 @@ msgstr "مشتريات لم تُرحَّل بعد"
 msgid "Purchasing"
 msgstr "المشتريات"
 
+msgid "Purged"
+msgstr "محذوف نهائيًا"
+
 msgid "Purity of each karat. Every weight conversion in the system uses these values."
 msgstr "نسبة نقاء كل عيار. تعتمد عليها كل تحويلات الأوزان في النظام."
+
+msgid "Qatar"
+msgstr "قطر"
+
+msgid "Quiet"
+msgstr "هادئ"
 
 msgid "Rate"
 msgstr "السعر"
@@ -2504,8 +3053,20 @@ msgstr "إعادة التفعيل"
 msgid "Read-only access."
 msgstr "صلاحية اطلاع فقط."
 
+msgid "Ready for pickup"
+msgstr "جاهز للاستلام"
+
+msgid "Ready for pickup."
+msgstr "جاهز للاستلام."
+
+msgid "Ready since"
+msgstr "جاهز منذ"
+
 msgid "Reason"
 msgstr "السبب"
+
+msgid "Receipt cancelled."
+msgstr "تم إلغاء الاستلام."
 
 msgid "Receipt entry"
 msgstr "قيد الاستلام"
@@ -2522,6 +3083,12 @@ msgstr "استلام"
 msgid "Receive cash sent from another branch"
 msgstr "استلام النقدية المرسلة من فرع آخر"
 
+msgid "Receive goods"
+msgstr "استلام البضاعة"
+
+msgid "Receive goods back from workshops"
+msgstr "استلام البضاعة من الورش"
+
 msgid "Receive goods from another branch"
 msgstr "استلام بضاعة من فرع آخر"
 
@@ -2534,14 +3101,23 @@ msgstr "تم الاستلام"
 msgid "Received %(number)s"
 msgstr "استلام %(number)s"
 
+msgid "Received back"
+msgstr "المستلم من الورشة"
+
 msgid "Received by"
 msgstr "توقيع المستلم"
 
 msgid "Received from branch"
 msgstr "استلام من فرع"
 
+msgid "Received from workshop %(number)s"
+msgstr "استلام من الورشة %(number)s"
+
 msgid "Received."
 msgstr "تم الاستلام."
+
+msgid "Recent console activity"
+msgstr "أحدث نشاط في اللوحة"
 
 msgid "Record"
 msgstr "تسجيل"
@@ -2570,6 +3146,9 @@ msgstr "تسجيل المرتجع"
 msgid "Record sale"
 msgstr "تسجيل البيع"
 
+msgid "Record what came back"
+msgstr "سجّل ما تم استلامه"
+
 msgid "Recorded."
 msgstr "تم التسجيل."
 
@@ -2596,6 +3175,33 @@ msgstr "أزل هذا الدور من المستخدمين أولًا."
 
 msgid "Rent, utilities and other running costs paid from a cash box or a bank account."
 msgstr "الإيجار والمرافق وغيرها من المصروفات الجارية المدفوعة من خزينة أو حساب بنكي."
+
+msgid "Repair"
+msgstr "تصليح"
+
+msgid "Repair %(number)s delivered"
+msgstr "تسليم التصليح %(number)s"
+
+msgid "Repair and polishing"
+msgstr "تصليح وتلميع"
+
+msgid "Repair charges"
+msgstr "إيرادات التصليح"
+
+msgid "Repair costs"
+msgstr "تكاليف التصليح"
+
+msgid "Repairs"
+msgstr "التصليحات"
+
+msgid "Repairs and custom orders"
+msgstr "التصليحات وطلبات التصنيع"
+
+msgid "Repairs past their promised date"
+msgstr "تصليحات تجاوزت موعدها"
+
+msgid "Repairs ready for pickup"
+msgstr "تصليحات جاهزة للاستلام"
 
 msgid "Reports"
 msgstr "التقارير"
@@ -2641,6 +3247,9 @@ msgstr "استعادة"
 
 msgid "Restore access"
 msgstr "استعادة الدخول"
+
+msgid "Retail sales"
+msgstr "مبيعات التجزئة"
 
 msgid "Retained earnings"
 msgstr "الأرباح المحتجزة"
@@ -2699,6 +3308,9 @@ msgstr "معكوس"
 msgid "Ring size"
 msgstr "مقاس الخاتم"
 
+msgid "Ring: resize to 17"
+msgstr "خاتم: تعديل المقاس إلى 17"
+
 msgid "Role deleted."
 msgstr "تم حذف الدور."
 
@@ -2744,6 +3356,9 @@ msgstr "تم تسجيل البيع."
 msgid "Sales"
 msgstr "المبيعات"
 
+msgid "Sales (30 days)"
+msgstr "المبيعات (30 يومًا)"
+
 msgid "Sales analysis"
 msgstr "تحليل المبيعات"
 
@@ -2762,6 +3377,9 @@ msgstr "المبيعات، آخر 7 أيام"
 msgid "Salesperson"
 msgstr "البائع"
 
+msgid "Saudi Arabia"
+msgstr "السعودية"
+
 msgid "Saudi riyal"
 msgstr "ريال سعودي"
 
@@ -2770,6 +3388,9 @@ msgstr "حفظ"
 
 msgid "Save draft"
 msgstr "حفظ كمسودة"
+
+msgid "Save settings"
+msgstr "حفظ الإعدادات"
 
 msgid "Saved as a draft. Nothing enters stock until you post it."
 msgstr "تُحفظ كمسودة، ولا يدخل شيء المخزون حتى الترحيل."
@@ -2803,6 +3424,9 @@ msgstr "النطاق"
 
 msgid "Scrap (g)"
 msgstr "كسر (جم)"
+
+msgid "Scrap back"
+msgstr "كسر مرتجع"
 
 msgid "Scrap bought from walk-in sellers and customers, and sold to dealers."
 msgstr "الكسر المشترى من الزبائن والعملاء، والمبيع للتجار."
@@ -2861,6 +3485,9 @@ msgstr "بحث…"
 msgid "Second wing"
 msgstr "الجناح الثاني"
 
+msgid "See all"
+msgstr "عرض الكل"
+
 msgid "See customers' national IDs"
 msgstr "الاطلاع على الأرقام القومية للعملاء"
 
@@ -2906,14 +3533,35 @@ msgstr "إرسال"
 msgid "Send an Idempotency-Key header with this request."
 msgstr "أرسل ترويسة Idempotency-Key مع هذا الطلب."
 
+msgid "Send gold"
+msgstr "إرسال ذهب"
+
+msgid "Send gold to a workshop"
+msgstr "إرسال ذهب لورشة"
+
+msgid "Send gold to a workshop to start one."
+msgstr "أرسل ذهبًا لورشة لبدء أمر تشغيل."
+
+msgid "Send gold to workshops"
+msgstr "إرسال الذهب للورش"
+
 msgid "Send goods"
 msgstr "إرسال بضاعة"
 
 msgid "Send goods to another branch"
 msgstr "إرسال بضاعة إلى فرع آخر"
 
+msgid "Send repairs to workshops and mark them ready"
+msgstr "إرسال التصليحات للورش وتجهيزها"
+
+msgid "Send to a workshop"
+msgstr "إرسال لورشة"
+
 msgid "Sent to branch"
 msgstr "تحويل لفرع"
+
+msgid "Sent to the workshop."
+msgstr "تم الإرسال للورشة."
 
 msgid "Sent to workshop"
 msgstr "إرسال للورشة"
@@ -3008,6 +3656,9 @@ msgstr "بعض هذه القطع مرتجعة من قبل."
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
 
+msgid "Standard"
+msgstr "قياسية"
+
 msgid "Start"
 msgstr "بدء"
 
@@ -3025,6 +3676,9 @@ msgstr "كشف حساب"
 
 msgid "Status"
 msgstr "الحالة"
+
+msgid "Status changed"
+msgstr "تغيير الحالة"
 
 msgid "Still to pay"
 msgstr "المتبقي للدفع"
@@ -3104,6 +3758,21 @@ msgstr "استلام مرتجعات الجملة وإلغاؤها"
 msgid "Take customer returns"
 msgstr "استلام مرتجعات العملاء"
 
+msgid "Take in"
+msgstr "استلام"
+
+msgid "Take in a repair"
+msgstr "استلام تصليح"
+
+msgid "Take in repairs and custom orders, and their deposits"
+msgstr "استلام التصليحات وطلبات التصنيع وعرابينها"
+
+msgid "Taken in"
+msgstr "تاريخ الاستلام"
+
+msgid "Taken in."
+msgstr "تم الاستلام."
+
 msgid "Takes"
 msgstr "يقبل"
 
@@ -3118,6 +3787,9 @@ msgstr "حجم الخط (نقطة)"
 
 msgid "Thank you for your visit."
 msgstr "شكرًا لزيارتكم."
+
+msgid "That change is not allowed."
+msgstr "هذا التغيير غير مسموح."
 
 msgid "The bank account must stay in the same currency."
 msgstr "يجب أن يبقى الحساب البنكي بنفس العملة."
@@ -3134,6 +3806,12 @@ msgstr "هذا التاريخ مضى."
 msgid "The deduction must be between zero and the returned value."
 msgstr "يجب أن يكون الخصم بين صفر وقيمة المرتجع."
 
+msgid "The deposit"
+msgstr "العربون"
+
+msgid "The deposit is more than the charge: give back %(amount)s in cash."
+msgstr "العربون أكبر من المطلوب: رُدّ %(amount)s نقدًا."
+
 msgid "The deposits"
 msgstr "العربون"
 
@@ -3143,8 +3821,14 @@ msgstr "يجب أن يكون الخصم بين 0 و100%."
 msgid "The fee must be less than the amount."
 msgstr "يجب أن تكون العمولة أقل من المبلغ."
 
+msgid "The first person to sign in; can add everyone else."
+msgstr "أول من يسجل الدخول، ويمكنه إضافة الباقين."
+
 msgid "The fold is wider than the label."
 msgstr "الذيل أعرض من الملصق."
+
+msgid "The gold leaves your stock and the workshop holds it until the goods come back."
+msgstr "يخرج الذهب من مخزونك ويبقى لدى الورشة حتى تعود البضاعة."
 
 msgid "The goods come back into stock and the trader's balance goes down by what they were charged for them."
 msgstr "تعود البضاعة للمخزون ويقل رصيد التاجر بقدر ما حُسب عليه منها."
@@ -3163,6 +3847,9 @@ msgstr "الملصقات لا تتسع في الصفحة."
 
 msgid "The largest discount you may give is %(max)s%%."
 msgstr "أقصى خصم مسموح لك هو %(max)s%%."
+
+msgid "The main address cannot be removed."
+msgstr "لا يمكن حذف العنوان الرئيسي."
 
 msgid "The making charge cannot be negative."
 msgstr "لا يمكن أن تكون المصنعية سالبة."
@@ -3224,8 +3911,20 @@ msgstr "رقمهم"
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
 
+msgid "This account cannot use the platform console."
+msgstr "هذا الحساب لا يملك صلاحية لوحة المنصة."
+
+msgid "This address is reserved."
+msgstr "هذا العنوان محجوز."
+
+msgid "This address is taken."
+msgstr "هذا العنوان مستخدم."
+
 msgid "This board has no %(side)s price for %(karat)s."
 msgstr "لا يوجد سعر %(side)s لـ %(karat)s في هذه النشرة."
+
+msgid "This domain is already in use."
+msgstr "هذا النطاق مستخدم بالفعل."
 
 msgid "This email already belongs to another account."
 msgstr "هذا البريد الإلكتروني مسجل لحساب آخر."
@@ -3247,6 +3946,18 @@ msgstr "هذه عملة الشركة."
 
 msgid "This karat does not match the category."
 msgstr "هذا العيار لا يناسب المجموعة."
+
+msgid "This order has no receipt to cancel."
+msgstr "لا يوجد استلام لهذا الأمر لإلغائه."
+
+msgid "This order is not at the workshop."
+msgstr "هذا الأمر ليس لدى الورشة."
+
+msgid "This repair is already ready."
+msgstr "هذا التصليح جاهز بالفعل."
+
+msgid "This repair is closed."
+msgstr "هذا التصليح مغلق."
 
 msgid "This reservation is not open."
 msgstr "هذا الحجز غير مفتوح."
@@ -3347,8 +4058,14 @@ msgstr "الخزينة"
 msgid "Treasury movements"
 msgstr "حركات الخزينة"
 
+msgid "Trial"
+msgstr "تجريبية"
+
 msgid "Trial balance"
 msgstr "ميزان المراجعة"
+
+msgid "Trial ends on"
+msgstr "نهاية الفترة التجريبية"
 
 msgid "Try part of the name, the phone number or the code."
 msgstr "جرّب جزءًا من الاسم أو رقم الهاتف أو الكود."
@@ -3367,6 +4084,15 @@ msgstr "درهم إماراتي"
 
 msgid "Undo"
 msgstr "تراجع"
+
+msgid "United Arab Emirates"
+msgstr "الإمارات"
+
+msgid "United Kingdom"
+msgstr "المملكة المتحدة"
+
+msgid "United States"
+msgstr "الولايات المتحدة"
 
 msgid "Unknown barcode"
 msgstr "باركود غير معروف"
@@ -3428,6 +4154,9 @@ msgstr "دولار أمريكي"
 msgid "US dollar rate"
 msgstr "سعر الدولار"
 
+msgid "Use"
+msgstr "الاستخدام"
+
 msgid "Use a currency exchange to change money into another currency."
 msgstr "استخدم تحويل العملة لتغيير المبلغ إلى عملة أخرى."
 
@@ -3488,6 +4217,9 @@ msgstr "عرض العيارات والعملات والمجموعات"
 msgid "View receipts, payments and gold settlements"
 msgstr "عرض القبض والصرف وتسويات الذهب"
 
+msgid "View repairs and custom orders"
+msgstr "عرض التصليحات وطلبات التصنيع"
+
 msgid "View reservations"
 msgstr "عرض الحجوزات"
 
@@ -3515,6 +4247,12 @@ msgstr "عرض المستخدمين"
 msgid "View wholesale sales and returns"
 msgstr "عرض مبيعات الجملة ومرتجعاتها"
 
+msgid "View work orders"
+msgstr "عرض أوامر التشغيل"
+
+msgid "View workshops"
+msgstr "عرض الورش"
+
 msgid "Viewer"
 msgstr "مُطّلع"
 
@@ -3536,6 +4274,9 @@ msgstr "الوزن"
 msgid "Weight (g)"
 msgstr "الوزن (جم)"
 
+msgid "Weight in (g)"
+msgstr "الوزن عند الاستلام (جم)"
+
 msgid "Weight in supplier barcode"
 msgstr "الوزن في باركود المورد"
 
@@ -3544,6 +4285,9 @@ msgstr "وزن كل قطعة (جم)"
 
 msgid "Weight of pieces (g)"
 msgstr "وزن القطع (جم)"
+
+msgid "Weight out (g)"
+msgstr "الوزن عند التسليم (جم)"
 
 msgid "Weights and karats handled precisely"
 msgstr "أوزان وعيارات بدقة تامة"
@@ -3554,11 +4298,17 @@ msgstr "مرحبًا بعودتك، %(name)s"
 msgid "What"
 msgstr "البيان"
 
+msgid "What came back"
+msgstr "ما تم استلامه"
+
 msgid "What happened"
 msgstr "الحركة"
 
 msgid "What is in your branches now: pieces by barcode and bulk gold by weight."
 msgstr "ما في فروعك الآن: القطع بالباركود والذهب بالوزن."
+
+msgid "What should be made"
+msgstr "المطلوب تصنيعه"
 
 msgid "What the scrap cost"
 msgstr "تكلفة الكسر"
@@ -3571,6 +4321,9 @@ msgstr "ما صُرف في فترة، حسب بند المصروف."
 
 msgid "When the count is finished: pieces not counted become missing, missing pieces found here come back into stock, and bulk gold is set to the weight entered."
 msgstr "عند انتهاء الجرد: القطع التي لم تُعدّ تُسجَّل عجزًا، والقطع المفقودة التي وُجدت هنا تعود للمخزون، ويُضبط الذهب بالوزن على الوزن المُدخل."
+
+msgid "When the goods come back, open the order and record what you received. The difference is booked as loss or gain."
+msgstr "عند عودة البضاعة افتح الأمر وسجّل ما استلمته، ويُسجَّل الفرق هالكًا أو زيادة."
 
 msgid "Which way"
 msgstr "الاتجاه"
@@ -3590,11 +4343,35 @@ msgstr "الجملة اليوم"
 msgid "With"
 msgstr "مع"
 
+msgid "Work"
+msgstr "العمل"
+
+msgid "Work order"
+msgstr "أمر تشغيل"
+
+msgid "Work orders"
+msgstr "أوامر التشغيل"
+
+msgid "Work orders at workshops"
+msgstr "أوامر تشغيل لدى الورش"
+
 msgid "Workshop"
 msgstr "ورشة"
 
+msgid "Workshop labour for %(number)s"
+msgstr "مصنعية الورشة للتصليح %(number)s"
+
+msgid "Workshop's labour"
+msgstr "مصنعية الورشة"
+
 msgid "Workshops"
 msgstr "الورش"
+
+msgid "Workshops and work orders"
+msgstr "الورش وأوامر التشغيل"
+
+msgid "Workshops that make or repair goods from your gold."
+msgstr "الورش التي تصنع أو تصلح البضاعة من ذهبك."
 
 msgid "Workspace"
 msgstr "الحساب"
@@ -3628,6 +4405,12 @@ msgstr "بياناتك خاصة بشركتك وحدها"
 
 msgid "Your discount limit: %(max)s%% of the making charge."
 msgstr "حد الخصم المسموح لك: %(max)s%% من المصنعية."
+
+msgid "Your plan allows %(limit)s branches. Contact us to add more."
+msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإضافة المزيد."
+
+msgid "Your plan allows %(limit)s users. Contact us to add more."
+msgstr "باقتك تسمح بـ %(limit)s مستخدمين. تواصل معنا لإضافة المزيد."
 
 msgid "Your shops and offices."
 msgstr "محلاتك ومكاتبك."

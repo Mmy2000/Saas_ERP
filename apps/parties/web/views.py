@@ -25,6 +25,8 @@ ROLES = {
         "label": _("Customer"), "statement_url": "customer-statement",
         "sign_hint": _("Positive: the customer owes you."),
         "settle_kind": "receipt", "settle_label": _("Receive payment"),
+        "actions": [("repair-new", "customer", _("Take in a repair"), "wrench",
+                     "repairs.order.create")],
         # Other accounts that hold money for this party, shown beside the main balance.
         "extra": [{
             "account_role": "customer_deposits", "label": _("Deposits held"),
@@ -62,6 +64,21 @@ ROLES = {
                      "purchasing.invoice.create")],
         "sign_hint": _("Positive: the trader owes you."),
         "settle_kind": "receipt", "settle_label": _("Receive payment"),
+    },
+    PartyRoleType.WORKSHOP: {
+        "title": _("Workshops"),
+        "subtitle": _("Workshops that make or repair goods from your gold."),
+        "empty": _("No workshops yet"),
+        "new_title": _("New workshop"),
+        "edit_title": _("Edit workshop"),
+        "list_url": "workshops", "new_url": "workshop-new", "edit_url": "workshop-edit",
+        "api": "workshop", "account_role": "workshops",
+        "label": _("Workshop"), "statement_url": "workshop-statement",
+        "sign_hint": _("Gold: positive is your gold held by the workshop. "
+                       "Money: negative is labour you owe them."),
+        "settle_kind": "payment", "settle_label": _("Pay workshop"),
+        "actions": [("work-order-new", "workshop", _("Send gold"), "send",
+                     "manufacturing.order.issue")],
     },
 }
 PROFILES = {PartyRoleType.CUSTOMER: "customer_profile", PartyRoleType.SUPPLIER: "supplier_profile"}
@@ -212,3 +229,23 @@ def trade_account_edit(request, pk):
 @permission_required("parties.trade_account.view")
 def trade_account_statement(request, pk):
     return _statement(request, PartyRoleType.TRADE_ACCOUNT, pk)
+
+
+@permission_required("parties.workshop.view")
+def workshops(request):
+    return _list(request, PartyRoleType.WORKSHOP)
+
+
+@permission_required("parties.workshop.create")
+def workshop_new(request):
+    return _form(request, PartyRoleType.WORKSHOP)
+
+
+@permission_required("parties.workshop.edit")
+def workshop_edit(request, pk):
+    return _form(request, PartyRoleType.WORKSHOP, pk)
+
+
+@permission_required("parties.workshop.view")
+def workshop_statement(request, pk):
+    return _statement(request, PartyRoleType.WORKSHOP, pk)

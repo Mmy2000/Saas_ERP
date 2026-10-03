@@ -1,0 +1,201 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'repairs/js/repairs.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'repairs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Repairs" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print receipt" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "repairs.order.create" order.branch as can_create %}
+{% can "repairs.order.update" order.branch as can_update %}
+{% can "repairs.order.deliver" order.branch as can_deliver %}
+{% can "repairs.order.cancel" order.branch as can_cancel %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div class="flex items-start gap-4">
+        <div class="grid size-16 shrink-0 place-items-center rounded-xl bg-slate-900 text-white">
+          <span class="text-[10px] tracking-wide text-slate-400">{% translate "Bag" %}</span>
+          <span class="num -mt-2 text-2xl font-semibold">{{ order.bag_number }}</span>
+        </div>
+        <div>
+          <p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+          <p class="text-sm text-slate-500">{{ order.branch.name }}</p>
+        </div>
+      </div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{{ order.get_kind_display }}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ order.number }}</p>
+        <p class="num text-sm text-slate-500">{{ order.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "repairs/_state.html" %}</div>
+      </div>
+    </header>
+    <dl class="grid grid-cols-1 gap-x-8 gap-y-2 border-b border-slate-100 px-6 py-4 text-sm sm:grid-cols-2">
+      <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Customer" %}</dt><dd>{% if customer_url %}<a class="font-medium text-brand-700 hover:underline" href="{{ customer_url }}">{{ order.who }}</a>{% else %}<span class="font-medium">{{ order.who }}</span>{% endif %}</dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Phone" %}</dt><dd class="num">{% if order.customer_id %}{{ order.customer.phone|default:"—" }}{% else %}{{ order.customer_phone|default:"—" }}{% endif %}</dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Promised for" %}</dt><dd class="num {% if order.is_overdue %}font-medium text-red-600{% endif %}">{{ order.promised_on|date:"SHORT_DATE_FORMAT"|default:"—" }}</dd></div>
+      {% if order.workshop_id %}<div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Workshop" %}</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'workshop-edit' order.workshop_id %}">{{ order.workshop.name }}</a> <span class="num text-xs text-slate-400">{{ order.sent_on|date:"SHORT_DATE_FORMAT" }}</span></dd></div>{% endif %}
+    </dl>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Piece and work" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight in (g)" %}</th><th class="text-end">{% translate "Weight out (g)" %}</th><th class="text-end">{% translate "Difference" %}</th><th class="text-end">{% translate "Price" %}</th></tr></thead>
+        <tbody>
+        {% for line in lines %}
+          <tr>
+            <td class="text-slate-900">{{ line.description }}</td>
+            <td>{{ line.karat.label|default:"—" }}</td>
+            <td class="text-end"><span class="num">{{ line.weight_in_g|num:3 }}</span></td>
+            <td class="text-end">{% if line.weight_out_g is not None %}<span class="num">{{ line.weight_out_g|num:3 }}</span>{% else %}—{% endif %}</td>
+            <td class="text-end">{% if line.loss_g is not None %}<span class="num {% if line.loss_g > 0 %}text-red-600{% elif line.loss_g < 0 %}text-emerald-600{% endif %}" dir="ltr">{% if line.loss_g > 0 %}−{{ line.loss_g|num:3 }}{% elif line.loss_g < 0 %}+{{ line.loss_g|absolute|num:3 }}{% else %}0.000{% endif %}</span>{% else %}—{% endif %}</td>
+            <td class="text-end"><span class="num">{{ line.charge_amount|num:2 }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <dl class="ms-auto max-w-sm divide-y divide-slate-100 border-t border-slate-100 text-sm">
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Charge" %}</dt><dd class="num">{{ order.charge_amount|num:2 }}</dd></div>
+      {% if order.state != "delivered" %}
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Deposit held" %}</dt><dd class="num">− {{ order.deposit_amount|num:2 }}</dd></div>
+      <div class="flex justify-between bg-slate-50 px-6 py-3"><dt class="font-medium text-slate-700">{% translate "Still to pay" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-base font-semibold">{{ order.due_amount|num:2 }}</dd></div>
+      {% else %}
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Paid on delivery" %}</dt><dd class="num">{{ order.paid_amount|num:2 }}</dd></div>
+      {% if order.change_amount %}<div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Change given" %}</dt><dd class="num">{{ order.change_amount|num:2 }}</dd></div>{% endif %}
+      {% if order.balance_amount %}<div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "On the customer's account" %}</dt><dd class="num">{{ order.balance_amount|num:2 }}</dd></div>{% endif %}
+      {% endif %}
+    </dl>
+    {% if payments %}
+    <div class="border-t border-slate-100 px-6 py-4">
+      <h2 class="mb-2 text-sm font-semibold text-slate-900">{% translate "Payments" %}</h2>
+      <ul class="space-y-1.5 text-sm">
+        {% for p in payments %}<li class="flex justify-between gap-4"><span class="text-slate-600">{{ p.get_stage_display }}{% if p.number %} <span class="num text-xs text-slate-400">{{ p.number }}</span>{% endif %} · <span class="num text-xs text-slate-400">{{ p.business_date|date:"SHORT_DATE_FORMAT" }}</span></span><span class="num">{{ p.amount|num:2 }} {{ p.currency.code }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if order.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ order.note }}</p>{% endif %}
+    {% if order.status == "voided" and order.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ order.void_reason }}</p>{% endif %}
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Customer's signature" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+    </div>
+  </article>
+
+  <aside class="space-y-6" data-no-print>
+    {% if order.is_open %}
+    {% if order.state == "received" and can_update %}
+    <form data-api-form data-shape="repair-send" data-method="POST" data-endpoint="{{ endpoint }}send/" data-success="{% translate 'Sent to the workshop.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Send to a workshop" %}</h2></div>
+      <div class="card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <select class="form-input" name="workshop" data-remote="{% url 'workshop-list' %}" data-label-field="name" aria-label="{% translate 'Workshop' %}"></select>
+        <p class="form-error" data-error-for="workshop"></p>
+        <button type="submit" class="btn btn-secondary w-full">{% icon "send" "size-4" %}{% translate "Send" %}</button>
+        <p class="text-xs text-slate-500">{% translate "Or mark it ready below if the work is done in the shop." %}</p>
+      </div>
+    </form>
+    {% endif %}
+
+    {% if order.state == "received" or order.state == "at_workshop" %}{% if can_update %}
+    <form data-api-form data-shape="repair-ready" data-method="POST" data-endpoint="{{ endpoint }}ready/" data-success="{% translate 'Ready for pickup.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Mark ready" %}</h2></div>
+      <div class="card-body space-y-4">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% for line in lines %}
+        <div class="rounded-lg border border-slate-200 p-3" data-ready-line="{{ line.pk }}">
+          <p class="mb-2 truncate text-sm font-medium text-slate-900">{{ line.description }} <span class="num text-xs font-normal text-slate-400">{{ line.weight_in_g|num:3 }} {% translate "g" %}</span></p>
+          <div class="grid grid-cols-2 gap-2">
+            <label><span class="text-xs text-slate-500">{% translate "Weight out (g)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-weight-out value="{{ line.weight_in_g|stringformat:'s' }}"></label>
+            <label><span class="text-xs text-slate-500">{% translate "Price" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-charge value="{{ line.charge_amount|stringformat:'s' }}"></label>
+          </div>
+          <p class="form-error" data-error-for="lines.{{ forloop.counter0 }}.weight_out_g"></p>
+        </div>
+        {% endfor %}
+        {% if order.workshop_id %}
+        <label class="block"><span class="form-label">{% translate "Workshop's labour" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></span>
+          <input class="form-input num w-full text-start" inputmode="decimal" name="labour_amount" placeholder="0.00"></label>
+        <p class="form-error" data-error-for="labour_amount"></p>
+        {% endif %}
+        <button type="submit" class="btn btn-secondary w-full">{% icon "check" "size-4" %}{% translate "Ready for pickup" %}</button>
+      </div>
+    </form>
+    {% endif %}{% endif %}
+
+    {% if order.state == "ready" and can_deliver %}
+    <form data-api-form data-shape="repair-deliver" data-method="POST" data-endpoint="{{ endpoint }}deliver/" data-success="{% translate 'Delivered.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Deliver and take payment" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-4" data-payment>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% if order.due_amount > 0 %}
+        {% if order.customer_id %}<label class="flex items-center gap-3"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-on-account><span class="text-sm text-slate-700">{% translate "Leave the rest on the customer's account" %}</span></label>{% endif %}
+        <div class="grid grid-cols-1 gap-4" data-pay-now>
+          <div><label class="form-label" for="p-method">{% translate "How" %}</label>
+            <select id="p-method" class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="card">{% translate "Card" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option></select></div>
+          <div><label class="form-label" for="p-currency">{% translate "Currency" %}</label>
+            <select id="p-currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+          <div><label class="form-label" for="p-amount">{% translate "Amount" %}</label>
+            <input id="p-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount value="{{ order.due_amount|stringformat:'s' }}"></div>
+          {% include "treasury/holder_selects.html" with prefix="p-" %}
+        </div>
+        {% elif order.due_amount < 0 %}
+        <p class="text-sm text-slate-600">{% blocktranslate trimmed with amount=order.due_amount|absolute|num:2 %}The deposit is more than the charge: give back {{ amount }} in cash.{% endblocktranslate %}</p>
+        {% endif %}
+        <p class="form-error" data-error-for="payments"></p>
+        <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Deliver" %}</button>
+      </div>
+    </form>
+    {% endif %}
+
+    {% if can_create and order.customer_id %}
+    <form data-api-form data-shape="repair-deposit" data-method="POST" data-endpoint="{{ endpoint }}deposit/" data-success="{% translate 'Deposit recorded.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Add a deposit" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-4" data-payment>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <div><label class="form-label" for="d-method">{% translate "How" %}</label>
+          <select id="d-method" class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="card">{% translate "Card" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option></select></div>
+        <div><label class="form-label" for="d-currency">{% translate "Currency" %}</label>
+          <select id="d-currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="d-amount">{% translate "Amount" %}</label>
+          <input id="d-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount><p class="form-error" data-error-for="amount"></p></div>
+        {% include "treasury/holder_selects.html" with prefix="d-" %}
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Record deposit" %}</button>
+      </div>
+    </form>
+    {% endif %}
+
+    {% if can_cancel %}
+    <form data-api-form data-shape="repair-cancel" data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Cancel" %}</h2></div>
+      <div class="card-body space-y-4" data-payment>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <p class="text-sm text-slate-600">{% translate "Give the pieces back to the customer first." %}</p>
+        {% if order.deposit_amount > 0 %}
+        <div><label class="form-label" for="x-method">{% translate "The deposit" %}</label>
+          <select id="x-method" class="form-input" data-method>
+            <option value="cash">{% translate "Pay back in cash" %}</option>
+            <option value="bank_transfer">{% translate "Pay back by bank transfer" %}</option>
+            <option value="customer_credit">{% translate "Keep on the customer's account" %}</option>
+          </select></div>
+        <input type="hidden" data-currency value="{{ home_currency }}">
+        {% include "treasury/holder_selects.html" with prefix="x-" %}
+        {% endif %}
+        <input class="form-input" data-reason placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel the repair" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        {% if order.labour_amount %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Workshop's labour" %}</dt><dd class="num">{{ order.labour_amount|num:2 }}</dd></div>{% endif %}
+        {% if order.ready_on %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Ready since" %}</dt><dd class="num">{{ order.ready_on|date:"SHORT_DATE_FORMAT" }}</dd></div>{% endif %}
+        {% if order.delivered_at %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Delivered" %}</dt><dd class="num">{{ order.delivered_at|date:"SHORT_DATETIME_FORMAT" }}</dd></div>{% endif %}
+        {% if order.delivery_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ order.delivery_entry.number }}</dd></div>{% endif %}
+      </dl>
+    </section>
+  </aside>
+</div>
+<span hidden data-branch data-value="{{ order.branch_id }}"></span>
+{% endblock %}

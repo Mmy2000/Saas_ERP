@@ -32,6 +32,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                 ("reservation-new", "reservation")),
         NavItem(_("Wholesale"), "trade-sales", "scale", "sales.trade.view",
                 ("trade-sale-new", "trade-sale", "trade-return")),
+        NavItem(_("Repairs"), "repairs", "wrench", "repairs.order.view",
+                ("repair-new", "repair")),
     ]),
     (_("Pricing"), [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),
@@ -48,6 +50,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                  "supplier-return-new", "supplier-return")),
         NavItem(_("Scrap gold"), "scrap", "coins", "purchasing.scrap.view",
                 ("scrap-buy", "scrap-sell", "scrap-purchase", "scrap-sale")),
+        NavItem(_("Work orders"), "work-orders", "send", "manufacturing.order.view",
+                ("work-order-new", "work-order")),
     ]),
     (_("Partners"), [
         NavItem(_("Customers"), "customers", "users", "parties.customer.view",
@@ -56,6 +60,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                 ("supplier-new", "supplier-edit", "supplier-statement")),
         NavItem(_("Trade accounts"), "trade-accounts", "building-2", "parties.trade_account.view",
                 ("trade-account-new", "trade-account-edit", "trade-account-statement")),
+        NavItem(_("Workshops"), "workshops", "store", "parties.workshop.view",
+                ("workshop-new", "workshop-edit", "workshop-statement")),
         NavItem(_("Receipts & payments"), "settlements", "arrow-left-right", "settlements.view",
                 ("settlement-new", "settlement-view")),
     ]),

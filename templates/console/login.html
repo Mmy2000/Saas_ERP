@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Platform console" %}{% endblock %}
+{% block body %}
+<div class="relative flex min-h-full items-center justify-center overflow-hidden bg-ink-950 px-6 py-12">
+  <div aria-hidden="true" class="login-glow absolute inset-0 opacity-60"></div>
+  <div aria-hidden="true" class="login-grid absolute inset-0"></div>
+  <div class="absolute end-6 top-6">{% include "components/lang_switch.html" %}</div>
+  <div class="relative w-full max-w-sm">
+    <div class="mb-8 flex flex-col items-center text-center">
+      <span class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-300 to-brand-600 text-ink-950 shadow-pop">{% icon "gem" "size-6" %}</span>
+      <h1 class="mt-5 text-2xl font-semibold tracking-tight text-white">{% translate "Platform console" %}</h1>
+      <p class="mt-1.5 text-sm text-slate-400">{% translate "For the Gweb team: every client, in one place." %}</p>
+    </div>
+    <form method="post" class="space-y-5 rounded-2xl border border-white/10 bg-white p-6 shadow-pop" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div></div>
+      {% endif %}
+      <div><label class="form-label" for="{{ form.username.id_for_label }}">{% translate "Email" %}</label>{{ form.username }}</div>
+      <div><label class="form-label" for="{{ form.password.id_for_label }}">{% translate "Password" %}</label>{{ form.password }}</div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-primary h-10 w-full">{% translate "Sign in" %}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

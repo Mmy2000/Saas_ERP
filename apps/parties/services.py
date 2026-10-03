@@ -242,6 +242,28 @@ def update_trade_account(party_id: int, data: PartyData, *, actor=None) -> Party
     return party
 
 
+def create_workshop(data: PartyData, *, actor=None) -> Party:
+    """A workshop or stone setter that makes or repairs goods from your gold (legacy `Shh1`)."""
+    if actor is not None:
+        actor.require("parties.workshop.create")
+    with transaction.atomic():
+        party = Party(kind=PartyKind.ORGANIZATION)
+        _apply_party(party, data)
+        _save_party(party, actor)
+        _ensure_role(party, PartyRoleType.WORKSHOP)
+    return party
+
+
+def update_workshop(party_id: int, data: PartyData, *, actor=None) -> Party:
+    if actor is not None:
+        actor.require("parties.workshop.edit")
+    with transaction.atomic():
+        party = _locked(party_id, PartyRoleType.WORKSHOP)
+        _apply_party(party, data)
+        _save_party(party, actor)
+    return party
+
+
 def set_party_active(party_id: int, role: str, active: bool, *, actor=None) -> Party:
     if actor is not None:
         actor.require(f"parties.{role}.deactivate")

@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Work orders" %}{% endblock %}
+{% block page_header %}
+{% can "manufacturing.order.issue" as can_issue %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Work orders" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Gold sent to workshops, and what came back: new goods, scrap, loss and labour." %}</p>
+  </div>
+  {% if can_issue %}<a href="{% url 'work-order-new' %}" class="btn btn-primary">{% icon "send" "size-4" %}{% translate "Send gold" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-2.5">
+    <a href="?state=at_workshop{% if workshop %}&amp;workshop={{ workshop }}{% endif %}" class="tab{% if state == 'at_workshop' %} tab-active{% endif %}">{% translate "At the workshop" %}</a>
+    <a href="?state=received{% if workshop %}&amp;workshop={{ workshop }}{% endif %}" class="tab{% if state == 'received' %} tab-active{% endif %}">{% translate "Received" %}</a>
+    <a href="?state=cancelled{% if workshop %}&amp;workshop={{ workshop }}{% endif %}" class="tab{% if state == 'cancelled' %} tab-active{% endif %}">{% translate "Cancelled" %}</a>
+    <a href="?state=all{% if workshop %}&amp;workshop={{ workshop }}{% endif %}" class="tab{% if state == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
+    {% if workshop %}<a href="?state={{ state }}" class="badge badge-brand ms-auto self-center">{% translate "One workshop" %} {% icon "x" "size-3" %}</a>{% endif %}
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Workshop" %}</th><th>{% translate "Work" %}</th>
+        <th class="text-end">{% translate "Fine gold sent" %}</th><th class="text-end">{% translate "Received" %}</th><th class="text-end">{% translate "Loss" %}</th>
+        <th class="text-end">{% translate "Labour" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for order in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ order.number }}</span></td>
+          <td><span class="num">{{ order.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ order.workshop.name }}</td>
+          <td>{{ order.get_kind_display }}</td>
+          <td class="text-end"><span class="num">{{ order.issued_fine_weight_g|num:4 }}</span></td>
+          <td class="text-end">{% if order.received_at %}<span class="num">{{ order.received_fine_weight_g|num:4 }}</span>{% else %}—{% endif %}</td>
+          <td class="text-end">{% if order.received_at %}{% if order.gain_fine_weight_g %}<span class="num text-emerald-600" dir="ltr">+{{ order.gain_fine_weight_g|num:4 }}</span>{% else %}<span class="num {% if order.loss_fine_weight_g %}text-red-600{% endif %}">{{ order.loss_fine_weight_g|num:4 }}</span>{% endif %}{% else %}—{% endif %}</td>
+          <td class="text-end">{% if order.received_at %}<span class="num">{{ order.labour_amount|num:2 }}</span>{% else %}—{% endif %}</td>
+          <td>{% include "manufacturing/_state.html" %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'work-order' order.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No work orders here" as empty_title %}
+    {% translate "Send gold to a workshop to start one." as empty_text %}
+    {% include "components/empty_state.html" with icon="send" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

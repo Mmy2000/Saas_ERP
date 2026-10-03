@@ -24,7 +24,10 @@ PAGES = ["/", "/branches/", "/catalog/karats/", "/catalog/categories/", "/pricin
          "/purchasing/scrap/?tab=sales", "/purchasing/scrap/buy/", "/purchasing/scrap/sell/",
          "/purchasing/returns/", "/purchasing/returns/new/", "/sales/wholesale/",
          "/sales/wholesale/new/", "/trade-accounts/", "/trade-accounts/new/",
-         "/settlements/new/?side=trade_account"]
+         "/settlements/new/?side=trade_account", "/workshops/", "/workshops/new/",
+         "/manufacturing/", "/manufacturing/?state=all", "/manufacturing/new/",
+         "/settlements/new/?side=workshop", "/repairs/", "/repairs/?state=all",
+         "/repairs/new/"]
 
 
 def test_every_string_is_translated_to_arabic():
