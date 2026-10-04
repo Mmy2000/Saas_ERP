@@ -1,0 +1,62 @@
+<style>
+  .md { position: relative; }
+  .md-band { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: calc(-1 * {{ page.margin }}) calc(-1 * {{ page.margin }}) 18px; padding: 18px {{ page.margin }}; background: var(--accent); color: #fff; }
+  .md-brand { display: flex; align-items: center; gap: 12px; }
+  .md-brand img { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; background: #fff; padding: 4px; }
+  .md-brand h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+  .md-brand p { margin: 2px 0 0; font-size: 11px; opacity: .85; }
+  .md-title { text-align: end; }
+  .md-title h2 { margin: 0; font-size: 22px; font-weight: 700; }
+  .md-title p { margin: 2px 0 0; font-size: 13px; opacity: .9; }
+  .md-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 12px; }
+  .md-card { padding: 10px 12px; border-radius: 10px; background: var(--soft); border: 1px solid var(--line); }
+  .md-card div { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+  .md-card span:first-child { color: var(--muted); }
+  .md-note { margin: 0 0 14px; font-size: 12px; color: var(--muted); }
+  .md-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+  .md-table th { padding: 8px 10px; text-align: start; font-size: 11px; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--accent); }
+  .md-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .md-table tbody tr:nth-child(even) td { background: var(--soft); }
+  .md-table .end { text-align: end; }
+  .md-section { margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: var(--soft); font-size: 12px; }
+  .md-section h3 { margin: 0 0 4px; font-size: 12px; }
+  .md-section div { display: flex; justify-content: space-between; padding: 2px 0; }
+  .md-bottom { display: flex; justify-content: space-between; gap: 24px; margin-top: 18px; }
+  .md-terms { flex: 1; font-size: 11px; color: var(--muted); white-space: pre-line; }
+  .md-totals { min-width: 46%; font-size: 12.5px; }
+  .md-totals div { display: flex; justify-content: space-between; padding: 5px 10px; }
+  .md-totals .strong { margin-top: 4px; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; }
+  .md-sign { display: flex; justify-content: space-between; margin-top: 40px; font-size: 11px; color: var(--muted); }
+  .md-sign span { width: 40%; padding-top: 6px; border-top: 1px solid var(--line); text-align: center; }
+  .md-foot { margin-top: 20px; text-align: center; font-size: 11px; color: var(--muted); }
+  .md-stamp { position: absolute; top: 40%; inset-inline: 0; text-align: center; font-size: 64px; font-weight: 800; color: rgb(220 38 38 / .15); transform: rotate(-18deg); pointer-events: none; }
+</style>
+<div class="md">
+  {% if doc.status %}<div class="md-stamp">{{ doc.status }}</div>{% endif %}
+  <header class="md-band">
+    <div class="md-brand">
+      {% if design.show_logo %}<img src="{{ doc.company.logo }}" alt="">{% endif %}
+      <div>
+        <h1>{{ doc.company.name }}</h1>
+        <p>{% if doc.company.address %}{{ doc.company.address }}{% endif %}{% if doc.company.phone %} · <span class="num">{{ doc.company.phone }}</span>{% endif %}</p>
+      </div>
+    </div>
+    <div class="md-title"><h2>{{ doc.title }}</h2><p class="num">{{ doc.number }}</p></div>
+  </header>
+  {% if design.header_note %}<p class="md-note">{{ design.header_note }}</p>{% endif %}
+  <div class="md-cards">
+    <div class="md-card">{% for label, value in doc.party %}<div><span>{{ label }}</span><strong>{{ value }}</strong></div>{% endfor %}</div>
+    <div class="md-card">{% for label, value in doc.meta %}<div><span>{{ label }}</span><span class="num">{{ value }}</span></div>{% endfor %}{% if doc.company.tax_no %}<div><span>{{ doc.labels.tax_no }}</span><span class="num">{{ doc.company.tax_no }}</span></div>{% endif %}</div>
+  </div>
+  {% if doc.columns %}<table class="md-table">
+    <thead><tr><th>#</th>{% for column in doc.columns %}<th{% if column.align == "end" %} class="end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in doc.rows %}<tr><td class="num">{{ forloop.counter }}</td>{% for cell in row.cells %}<td class="{{ cell.align }}">{{ cell.value }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>{% endif %}
+  {% for section in doc.sections %}<div class="md-section"><h3>{{ section.title }}</h3>{% for label, value in section.lines %}<div><span>{{ label }}</span><span class="num">{{ value }}</span></div>{% endfor %}</div>{% endfor %}
+  <div class="md-bottom">
+    <div class="md-terms">{{ design.terms }}</div>
+    <div class="md-totals">{% for total in doc.totals %}<div{% if total.strong %} class="strong"{% endif %}><span>{{ total.label }}</span><span class="num">{{ total.value }}</span></div>{% endfor %}</div>
+  </div>
+  {% if design.signatures %}<div class="md-sign"><span>{{ doc.signatures.0 }}</span><span>{{ doc.signatures.1 }}</span></div>{% endif %}
+  {% if design.footer_note %}<p class="md-foot">{{ design.footer_note }}</p>{% endif %}
+</div>

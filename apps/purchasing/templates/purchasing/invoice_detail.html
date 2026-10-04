@@ -7,6 +7,7 @@
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{% if invoice.number %}{{ invoice.number }}{% else %}{% translate "Draft purchase" %}{% endif %}</span></h1>
     {% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}
+    {% if invoice.number %}<a href="{% url 'print-document' 'purchase_invoice' invoice.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-secondary ms-auto text-xs">{% icon "printer" "size-4" %}{% translate "Print" %}</a>{% endif %}
   </div>
   <p class="mt-1 text-sm text-slate-500"><a class="font-medium text-slate-700 hover:underline" href="{% url invoice.seller_page invoice.supplier_id %}">{{ invoice.supplier.name }}</a>{% if invoice.seller_role == "trade_account" %} <span class="badge badge-brand">{{ invoice.get_seller_role_display }}</span>{% endif %} · <span class="num">{{ invoice.business_date|date:"DATE_FORMAT" }}</span> · {{ invoice.branch.name }}{% if invoice.supplier_reference %} · {% translate "their no." %} <span class="num">{{ invoice.supplier_reference }}</span>{% endif %}</p>
 </div>

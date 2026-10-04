@@ -224,3 +224,90 @@ def test_scroll_buttons(signed_in):
     page.wait_for_function("() => window.scrollY === 0")
     wait_shown("top", False)
     assert errors == []
+
+
+def test_document_design_preview_follows_the_form(signed_in):
+    page, base, errors = signed_in("en")
+    page.goto(f"{base}/settings/documents/sales_invoice/")
+    frame = page.frame_locator("[data-design-preview]")
+    frame.locator(".cl-table").wait_for(timeout=8000)  # classic by default
+    page.select_option("select[name=layout]", "modern")
+    frame.locator(".md-band").wait_for(timeout=8000)
+    page.fill("input[name=footer_note]", "See you soon")
+    frame.locator("text=See you soon").wait_for(timeout=8000)
+    assert errors == []
+
+
+def test_document_designer_drag_drop_select_style_save(signed_in):
+    from apps.core.tenancy import tenant_context
+    from apps.platform.tenants.models import Tenant
+    from apps.printing.models import DocumentDesign
+
+    page, base, errors = signed_in("en", viewport=(1500, 950))
+    page.goto(f"{base}/settings/documents/sales_invoice/designer/")
+    frame = page.frame_locator("[data-frame]")
+    frame.locator("[data-block]").first.wait_for(timeout=8000)
+    count = page.locator("[data-layers] li[data-id]").count()
+    # The toolbar selects are enhanced before the designer fills them: their lists are not empty.
+    page.locator("header .ts-wrapper").first.click()
+    page.locator(".ts-dropdown .option", has_text="A5").wait_for()
+    page.keyboard.press("Escape")
+
+    # Drag a "Line" block from the palette to the end of the layers...
+    page.locator("[data-new=divider]").drag_to(page.locator("[data-drop-end]"))
+    assert page.locator("[data-layers] li[data-id]").count() == count + 1
+    # ...and a "Space" block straight onto the page.
+    page.locator("[data-new=spacer]").drag_to(page.locator("[data-canvas]"),
+                                               target_position={"x": 400, "y": 300})
+    assert page.locator("[data-layers] li[data-id]").count() == count + 2
+    frame.locator(".bk-spacer").first.wait_for(timeout=8000)
+
+    # Click the items table in the page: the panel shows its properties; round its corners.
+    frame.locator(".bk-items").first.click()
+    page.locator("[data-inspector]").get_by_text("Items table").wait_for()
+    page.fill("[data-field='style.radius']", "16")
+    frame.locator(".bk-items[style*='border-radius:16px']").wait_for(timeout=8000)
+
+    page.click("[data-save]")
+    page.wait_for_function("() => !document.querySelector('[data-save]').disabled")
+    page.locator(".toast").first.wait_for()
+    tenant = Tenant.objects.get(slug="e2e")
+    with tenant_context(tenant.id):
+        design = DocumentDesign.objects.get()
+    assert design.layout == "builder"
+    assert any(b["type"] == "items" and b["style"]["radius"] == 16 for b in design.blocks)
+    assert errors == []
+
+
+def _printed(page):
+    """Click Print in the print-table dialog; returns the HTML it sends to the print frame."""
+    page.evaluate("""() => { window.__printed = null; const append = Element.prototype.append;
+      document.body.append = function (...nodes) {
+        nodes.forEach((n) => { if (n.tagName === "IFRAME") window.__printed = n.srcdoc; });
+        return append.apply(this, nodes); }; }""")
+    page.locator("[data-print-go]").click()
+    page.wait_for_function("() => window.__printed")
+    return page.evaluate("window.__printed")
+
+
+def test_print_table_picks_columns_and_every_page(signed_in):
+    from apps.core.tenancy import tenant_context
+    from apps.parties.services import PartyData, create_customer
+    from apps.platform.tenants.models import Tenant
+
+    page, base, errors = signed_in("en")
+    with tenant_context(Tenant.objects.get(slug="e2e").id):
+        for n in range(30):  # two pages of 25
+            create_customer(PartyData(name=f"Customer {n:02}", phone=f"0100000{n:04}"))
+
+    page.goto(f"{base}/customers/")
+    page.locator("main").get_by_role("button", name="Print").click()
+    dialog = page.locator("[data-print-dialog]")
+    dialog.wait_for()
+    phone = dialog.locator("[data-print-columns] label", has_text="Phone").locator("input")
+    phone.uncheck()
+    dialog.locator("label", has_text="All pages").click()
+    html = _printed(page)
+    assert "Customer 00" in html and "Customer 29" in html  # both pages
+    assert "Phone" not in html and "0100000" not in html  # the column left out
+    assert errors == []

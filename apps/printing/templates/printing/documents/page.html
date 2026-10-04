@@ -1,0 +1,92 @@
+{% load i18n static %}<!doctype html>
+<html lang="{{ doc.lang }}" dir="{{ doc.dir }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ doc.title }} {{ doc.number }}</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 100 900; src: url("{% static 'core/fonts/inter-latin-wght.woff2' %}") format("woff2"); }
+  @font-face { font-family: "Plex Arabic"; font-weight: 400; src: url("{% static 'core/fonts/plex-arabic-400.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: "Plex Arabic"; font-weight: 600; src: url("{% static 'core/fonts/plex-arabic-600.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: "Plex Arabic"; font-weight: 700; src: url("{% static 'core/fonts/plex-arabic-700.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @page { size: {{ page.size }}; margin: {{ page.margin }}; }
+  :root { --accent: {{ design.color }}; --ink: #18181b; --muted: #71717a; --line: #e4e4e7; --soft: #fafafa; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #e4e4e7; color: var(--ink); font: 13px/1.5 "Inter", "Plex Arabic", system-ui, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+  .sheet { background: #fff; margin: 16px auto; padding: {{ page.margin }}; box-shadow: 0 1px 3px rgb(0 0 0 / .12);
+           {% if design.paper == "a4" %}width: 210mm; min-height: 297mm;{% elif design.paper == "a5" %}width: 148mm; min-height: 210mm;{% else %}width: 80mm;{% endif %} }
+  .sheet + .sheet { break-before: page; }
+  .toolbar { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; justify-content: center; padding: 10px; background: #18181b; }
+  .toolbar button, .toolbar a { font: 600 13px "Inter", "Plex Arabic", sans-serif; border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; text-decoration: none; }
+  .toolbar .primary { background: var(--accent); color: #fff; }
+  .toolbar .ghost { background: #3f3f46; color: #fff; }
+  .custom-error { max-width: 720px; margin: 16px auto; padding: 12px 16px; border-radius: 8px; background: #fef2f2; color: #991b1b; font-size: 12px; }
+  /* Designer blocks (apps.printing.builder) */
+  .bk-muted { color: var(--muted); }
+  .bk-row { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
+  .bk-cols { display: grid; }
+  .bk-col { min-width: 0; }
+  .bk:last-child { margin-bottom: 0 !important; }
+  {% if page.font %}.sheet.builder { font-size: {{ page.font }}px; color: {{ page.ink }}; background: {{ page.bg }}; padding: {{ page.margin }}; }{% endif %}
+  {% if designer %}
+  .bk { position: relative; cursor: pointer; outline: 1px dashed transparent; outline-offset: 1px; transition: outline-color .12s; }
+  .bk:hover { outline-color: rgb(59 130 246 / .55); }
+  .bk.is-selected { outline: 2px solid #3b82f6; }
+  .bk.is-selected::before { content: attr(data-label); position: absolute; top: -18px; inset-inline-start: -2px; font: 600 10px "Inter", sans-serif; color: #fff; background: #3b82f6; padding: 1px 6px; border-radius: 4px 4px 0 0; z-index: 3; }
+  .bk-col:empty { min-height: 40px; border: 1px dashed #a1a1aa; border-radius: 6px; }
+  .bk-empty { opacity: .45; min-height: 18px; background-image: repeating-linear-gradient(45deg, #f4f4f5 0 6px, transparent 6px 12px); }
+  .bk-cols .bk-col { outline: 1px dotted rgb(161 161 170 / .4); }
+  .drop-before { box-shadow: 0 -3px 0 0 #3b82f6; }
+  .drop-after { box-shadow: 0 3px 0 0 #3b82f6; }
+  .drop-into { outline: 2px dashed #3b82f6 !important; background: rgb(59 130 246 / .06); }
+  {% endif %}
+  @media print {
+    body { background: #fff; }
+    .toolbar, .custom-error { display: none !important; }
+    .sheet { margin: 0; padding: 0; box-shadow: none; width: auto; min-height: 0; }
+  }
+</style>
+</head>
+<body>
+{% if toolbar %}<div class="toolbar"><button type="button" class="primary" onclick="window.print()">{% translate "Print" %}</button><button type="button" class="ghost" onclick="window.close()">{% translate "Close" %}</button></div>{% endif %}
+{% if custom_error %}<div class="custom-error">{% blocktranslate trimmed with error=custom_error %}The custom design has an error, so the standard layout is shown: {{ error }}{% endblocktranslate %}</div>{% endif %}
+{% if custom_body %}{{ custom_body|safe }}{% elif builder_body %}{% for _copy in design.copies %}<div class="sheet builder">{{ builder_body|safe }}</div>{% endfor %}{% else %}
+{% for _copy in design.copies %}<div class="sheet">{% if design.layout == "thermal" %}{% include "printing/documents/layouts/thermal.html" %}{% elif design.layout == "modern" %}{% include "printing/documents/layouts/modern.html" %}{% else %}{% include "printing/documents/layouts/classic.html" %}{% endif %}</div>{% endfor %}
+{% endif %}
+{% if designer %}<script>
+  // Designer preview: report clicks on blocks to the editor (which checks the message comes
+  // from this frame), and show its selection. Only ids are sent, nothing else.
+  document.addEventListener("click", function (event) {
+    var block = event.target.closest("[data-block]");
+    event.preventDefault();
+    parent.postMessage({ designer: "select", id: block ? block.dataset.block : null }, "*");
+  });
+  window.addEventListener("message", function (event) {
+    if (event.source !== parent || !event.data || event.data.designer !== "highlight") return;
+    document.querySelectorAll(".is-selected").forEach(function (el) { el.classList.remove("is-selected"); });
+    if (!event.data.id) return;
+    document.querySelectorAll('[data-block="' + event.data.id + '"]').forEach(function (el) {
+      el.classList.add("is-selected"); el.dataset.label = event.data.label || "";
+    });
+  });
+  // While a block is dragged over the page, mark where it would land.
+  window.addEventListener("message", function (event) {
+    if (event.source !== parent || !event.data || event.data.designer !== "dropmark") return;
+    document.querySelectorAll(".drop-before, .drop-after, .drop-into").forEach(function (el) { el.classList.remove("drop-before", "drop-after", "drop-into"); });
+    if (!event.data.id) return;
+    var block = document.querySelector('[data-block="' + event.data.id + '"]');
+    if (!block) return;
+    if (event.data.column !== undefined) {
+      var column = block.querySelector('.bk-col[data-column="' + event.data.column + '"]');
+      if (column) column.classList.add("drop-into");
+    } else {
+      block.classList.add(event.data.after ? "drop-after" : "drop-before");
+    }
+  });
+  parent.postMessage({ designer: "ready" }, "*");
+</script>{% endif %}
+{% if auto_print %}<script>window.addEventListener("load", function () { setTimeout(function () { window.print(); }, 250); });</script>{% endif %}
+</body>
+</html>

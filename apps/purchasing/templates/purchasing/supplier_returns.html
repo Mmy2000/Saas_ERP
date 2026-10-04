@@ -16,7 +16,7 @@
 <section class="card overflow-hidden">
   {% if page.object_list %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th>
         <th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>

@@ -207,7 +207,7 @@ def test_api_and_pages(tenant_a, shop):
     for path in ("/repairs/", "/repairs/?state=delivered", "/repairs/new/",
                  f"/repairs/new/?customer={shop.customer.pk}",
                  f"/repairs/?customer={shop.customer.pk}&state=all", "/repairs/?q=1",
-                 f"/repairs/{repair['id']}/"):
+                 f"/repairs/{repair['id']}/", f"/print/repair/{repair['id']}/"):
         assert client.get(path).status_code == 200, path
     customer_page = client.get(f"/customers/{shop.customer.pk}/").content.decode()
     assert f"/repairs/new/?customer={shop.customer.pk}" in customer_page

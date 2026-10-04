@@ -139,6 +139,7 @@ def test_api_and_pages(tenant_a, shop):
     rid = made.json()["id"]
     assert made.json()["deposit_amount"] == "2500.00"
     for path in ("/sales/reservations/", "/sales/reservations/new/", f"/sales/reservations/{rid}/",
+                 f"/print/reservation/{rid}/",
                  f"/customers/{shop.customer.pk}/"):
         assert client.get(path).status_code == 200, path
     done = client.post(f"/api/v1/sales/reservations/{rid}/complete/", {

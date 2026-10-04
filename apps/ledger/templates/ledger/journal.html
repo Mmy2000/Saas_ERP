@@ -40,7 +40,7 @@
           <span class="text-slate-400 transition group-open:rotate-180">{% icon "chevron-down" "size-4" %}</span>
         </summary>
         <div class="bg-slate-50/50 px-5 pb-4">
-          <table class="table">
+          <table class="table" data-report data-report-caption="{{ entry.number }} · {{ entry.business_date|date:'SHORT_DATE_FORMAT' }}{% if entry.memo %} · {{ entry.memo }}{% endif %}" data-pages="{{ page.paginator.num_pages }}">
             <thead><tr><th>{% translate "Account" %}</th><th>{% translate "Customer/supplier" %}</th><th>{% translate "Commodity" %}</th>
               <th class="text-end">{% translate "Debit" %}</th><th class="text-end">{% translate "Credit" %}</th><th class="text-end">{% translate "Value" %}</th></tr></thead>
             <tbody>

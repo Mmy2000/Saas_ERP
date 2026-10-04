@@ -26,7 +26,7 @@
   </form>
   {% if rows %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Client" %}</th><th>{% translate "Address" %}</th><th>{% translate "Plan" %}</th><th class="text-end">{% translate "Users" %}</th><th class="text-end">{% translate "Branches" %}</th>
         <th class="text-end">{% translate "Sales (30 days)" %}</th><th>{% translate "Last activity" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>

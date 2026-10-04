@@ -10,7 +10,6 @@
   </div>
   <div class="flex gap-2">
     <a class="btn btn-secondary" href="?{{ query }}{% if query %}&{% endif %}format=csv">{% icon "list" "size-4" %}{% translate "Excel (CSV)" %}</a>
-    <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
   </div>
 </div>
 {% endblock %}
@@ -53,7 +52,7 @@
     <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{{ table.title }}</h2>
     {% if table.rows %}
     <div class="overflow-x-auto">
-      <table class="table">
+      <table class="table" data-report="{{ table.title|default:report.title }}">
         <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="text-end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
         <tbody>
         {% for row in table.rows %}<tr>{% for cell in row %}{% include "reports/_cell.html" %}{% endfor %}</tr>{% endfor %}

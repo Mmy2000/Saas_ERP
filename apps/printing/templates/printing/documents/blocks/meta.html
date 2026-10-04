@@ -1,0 +1,2 @@
+{% if p.inline %}<div style="display:flex;flex-wrap:wrap;gap:4px 18px">{% for label, value in doc.meta %}<span>{% if p.labels %}<span class="bk-muted">{{ label }}:</span> {% endif %}<span class="num">{{ value }}</span></span>{% endfor %}</div>
+{% else %}{% for label, value in doc.meta %}<div class="bk-row">{% if p.labels %}<span class="bk-muted">{{ label }}</span>{% endif %}<span class="num">{{ value }}</span></div>{% endfor %}{% endif %}

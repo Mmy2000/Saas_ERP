@@ -23,7 +23,7 @@
   </div>
   {% if page.object_list %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Customer" %}</th><th>{% translate "Until" %}</th>
         <th class="text-end">{% translate "Reserved at" %}</th><th class="text-end">{% translate "Deposits" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>

@@ -1,0 +1,59 @@
+{% load i18n ui %}{% comment %}
+The "Print table" dialog and its button (static/core/js/print_table.js). The button is added to the
+page header only when the page has a <table data-report>.
+{% endcomment %}
+<template data-print-button><button type="button" class="btn btn-secondary" data-no-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button></template>
+<dialog data-print-dialog class="m-auto w-[calc(100%-2rem)] max-w-xl rounded-2xl border border-slate-200 bg-surface p-0 text-slate-800 shadow-pop backdrop:bg-black/40 backdrop:backdrop-blur-[2px]"
+        aria-labelledby="print-dialog-title"
+        {% if brand.workspace_name %}data-company="{{ brand.workspace_name }}" data-logo="{{ brand.workspace_logo }}"{% else %}data-company="{{ brand.name }}" data-logo="{{ brand.logo }}"{% endif %}
+        data-user="{{ request.user.display_name|default:request.user.email }}" data-printed="{% translate 'Printed' %}"
+        data-rows="{% translate 'Rows' %}" data-filters="{% translate 'Filters' %}" data-failed="{% translate 'Could not load every page. Try again.' %}"
+        data-loading="{% translate 'Loading pages…' %}" data-no-columns="{% translate 'This table has no columns to print.' %}">
+  <form method="dialog" class="flex max-h-[85vh] flex-col">
+    <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+      <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">{% icon "printer" "size-[18px]" %}</span>
+      <div class="min-w-0">
+        <h2 id="print-dialog-title" class="text-base font-semibold text-slate-900">{% translate "Print table" %}</h2>
+        <p class="text-xs text-slate-500">{% translate "Choose what to print. To get a PDF, pick “Save as PDF” as the printer." %}</p>
+      </div>
+    </div>
+    <div class="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+      <div>
+        <label class="form-label" for="print-title">{% translate "Title" %}</label>
+        <input id="print-title" name="title" class="form-input" autocomplete="off">
+      </div>
+      <fieldset data-print-groups hidden>
+        <legend class="form-label">{% translate "Tables" %}</legend>
+        <div class="-mx-2 grid grid-cols-1 gap-x-4 sm:grid-cols-2" data-list></div>
+      </fieldset>
+      <fieldset>
+        <div class="mb-1 flex items-center justify-between gap-3">
+          <legend class="form-label mb-0">{% translate "Columns" %}</legend>
+          <label class="flex items-center gap-2 text-xs text-slate-500"><input type="checkbox" data-print-all-columns>{% translate "All" %}</label>
+        </div>
+        <div class="-mx-2 grid grid-cols-1 gap-x-4 sm:grid-cols-2" data-print-columns></div>
+      </fieldset>
+      <div class="flex flex-wrap gap-x-8 gap-y-4">
+        <fieldset data-print-rows>
+          <legend class="form-label">{% translate "Rows" %}</legend>
+          <div class="segmented">
+            <label><input type="radio" name="rows" value="page" class="peer sr-only"><span class="segment">{% translate "This page" %}</span></label>
+            <label><input type="radio" name="rows" value="all" class="peer sr-only"><span class="segment">{% translate "All pages" %} (<span class="num" data-print-pages></span>)</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="form-label">{% translate "Paper" %}</legend>
+          <div class="segmented">
+            <label><input type="radio" name="paper" value="portrait" class="peer sr-only"><span class="segment">{% translate "A4 portrait" %}</span></label>
+            <label><input type="radio" name="paper" value="landscape" class="peer sr-only"><span class="segment">{% translate "A4 landscape" %}</span></label>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 border-t border-slate-100 px-6 py-4">
+      <p class="me-auto text-xs text-slate-500" data-print-status aria-live="polite"></p>
+      <button value="cancel" formnovalidate class="btn btn-secondary">{% translate "Cancel" %}</button>
+      <button value="print" class="btn btn-primary" data-print-go>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+    </div>
+  </form>
+</dialog>

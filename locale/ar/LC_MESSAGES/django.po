@@ -170,6 +170,9 @@ msgstr "المعادل عيار 21 (جم)"
 msgid "24K fineness"
 msgstr "نقاء عيار 24"
 
+msgid "80 mm roll"
+msgstr "رول 80 مم"
+
 msgid "A branch's main cash box opens by itself with its first cash sale."
 msgstr "تُفتح الخزينة الرئيسية للفرع تلقائيًا مع أول بيع نقدي."
 
@@ -227,8 +230,20 @@ msgstr "يوجد قالب بهذا الاسم بالفعل."
 msgid "A walk-in sale can only be refunded in cash."
 msgstr "البيع لعميل نقدي يُرد نقدًا فقط."
 
+msgid "A4"
+msgstr "A4"
+
+msgid "A4 landscape"
+msgstr "A4 عرضي"
+
+msgid "A4 portrait"
+msgstr "A4 طولي"
+
 msgid "A4 sheet, 3 × 8 labels"
 msgstr "ورقة A4، 3 × 8 ملصقات"
+
+msgid "A5"
+msgstr "A5"
 
 msgid "Abandon the count"
 msgstr "إلغاء الجرد"
@@ -362,6 +377,9 @@ msgstr "إضافة ورش"
 msgid "Address"
 msgstr "العنوان"
 
+msgid "Address, phone and tax no."
+msgstr "العنوان والهاتف والرقم الضريبي"
+
 msgid "Addresses"
 msgstr "العناوين"
 
@@ -373,6 +391,9 @@ msgstr "الإدارة"
 
 msgid "After loss (g)"
 msgstr "بعد الخصم (جم)"
+
+msgid "Alignment"
+msgstr "المحاذاة"
 
 msgid "All"
 msgstr "الكل"
@@ -397,6 +418,9 @@ msgstr "كل العملاء يعملون"
 
 msgid "All karats"
 msgstr "كل الأعيرة"
+
+msgid "All pages"
+msgstr "كل الصفحات"
 
 msgid "All your branches, one set of books"
 msgstr "كل فروعك في دفاتر واحدة"
@@ -442,6 +466,12 @@ msgstr "أي فرع"
 
 msgid "Appearance"
 msgstr "المظهر"
+
+msgid "Arabic"
+msgstr "العربية"
+
+msgid "Arabic and English"
+msgstr "العربية والإنجليزية"
 
 msgid "Archive"
 msgstr "أرشفة"
@@ -502,6 +532,9 @@ msgstr "العودة إلى لوحة التحكم"
 
 msgid "Back to top"
 msgstr "اطلع لأعلى الصفحة"
+
+msgid "Background"
+msgstr "الخلفية"
 
 msgid "Bag"
 msgstr "كيس"
@@ -575,6 +608,9 @@ msgstr "رقم الباركود"
 msgid "Barcode prefix"
 msgstr "بادئة الباركود"
 
+msgid "Base text size"
+msgstr "حجم النص الأساسي"
+
 msgid "Beads"
 msgstr "خرز"
 
@@ -587,11 +623,17 @@ msgstr "قيد الإعداد"
 msgid "Between %(low)s and %(high)s."
 msgstr "بين %(low)s و%(high)s."
 
+msgid "Between rows"
+msgstr "بين الصفوف"
+
 msgid "Billed"
 msgstr "الفوترة"
 
 msgid "Birth date"
 msgstr "تاريخ الميلاد"
+
+msgid "Blocks"
+msgstr "البلوكات"
 
 msgid "Blue"
 msgstr "أزرق"
@@ -599,11 +641,29 @@ msgstr "أزرق"
 msgid "board"
 msgstr "النشرة"
 
+msgid "Bold"
+msgstr "عريض"
+
 msgid "Book it at branch"
 msgstr "تسجيل على فرع"
 
+msgid "Border colour"
+msgstr "لون الإطار"
+
+msgid "Border style"
+msgstr "نوع الإطار"
+
+msgid "Border width"
+msgstr "سُمك الإطار"
+
+msgid "Bottom"
+msgstr "أسفل"
+
 msgid "Bought"
 msgstr "المشترى"
+
+msgid "Box"
+msgstr "الصندوق"
 
 msgid "Boxes, bank accounts, card terminals, transfers and currency exchange."
 msgstr "الخزائن والحسابات البنكية وأجهزة البطاقات والتحويلات وتبديل العملات."
@@ -628,6 +688,9 @@ msgstr "الفروع التي تستخدمه"
 
 msgid "Brand"
 msgstr "العلامة التجارية"
+
+msgid "Bring back"
+msgstr "استرجاع"
 
 msgid "Built-in"
 msgstr "أساسي"
@@ -860,6 +923,9 @@ msgstr "نقدي"
 msgid "Cash & banks"
 msgstr "الخزائن والبنوك"
 
+msgid "Cash and bank movement"
+msgstr "حركة خزينة وبنك"
+
 msgid "Cash and banks"
 msgstr "النقدية والبنوك"
 
@@ -905,6 +971,12 @@ msgstr "المجموعات تنظّم أصنافك (خواتم، سلاسل، س
 msgid "Category"
 msgstr "المجموعة"
 
+msgid "Cell padding"
+msgstr "مسافة الخلايا"
+
+msgid "Centre"
+msgstr "الوسط"
+
 msgid "Change given"
 msgstr "الباقي المردود"
 
@@ -928,6 +1000,9 @@ msgstr "معدّل"
 
 msgid "Changing a fineness applies to new documents. Posted documents keep the weights they were posted with."
 msgstr "تغيير النقاوة يسري على المستندات الجديدة. المستندات المرحّلة تحتفظ بأوزانها كما رُحّلت."
+
+msgid "characters"
+msgstr "حرف"
 
 msgid "Charge"
 msgstr "المطلوب"
@@ -1031,6 +1106,9 @@ msgstr "اختر نوع العملية."
 msgid "Choose what is being settled."
 msgstr "اختر نوع التسوية."
 
+msgid "Choose what to print. To get a PDF, pick “Save as PDF” as the printer."
+msgstr "اختر ما تريد طباعته. للحصول على ملف PDF اختر «حفظ كملف PDF» كطابعة."
+
 msgid "Choose where the money comes from."
 msgstr "اختر مصدر المبلغ."
 
@@ -1046,8 +1124,14 @@ msgstr "اختر الطرف."
 msgid "Choose who the settlement is with."
 msgstr "اختر الطرف الذي تتم معه التسوية."
 
+msgid "Classic"
+msgstr "كلاسيكي"
+
 msgid "Clear"
 msgstr "مسح"
+
+msgid "Click a block in the page or in Layers to change it."
+msgstr "اضغط على أي بلوك في الصفحة أو في الطبقات لتعديله."
 
 msgid "Client"
 msgstr "العميل"
@@ -1072,6 +1156,9 @@ msgstr "العملاء حسب الحمل على الخادم"
 
 msgid "Clients using it"
 msgstr "العملاء المستخدمون"
+
+msgid "Close"
+msgstr "إغلاق"
 
 msgid "Close accounting periods"
 msgstr "إقفال الفترات المحاسبية"
@@ -1100,8 +1187,17 @@ msgstr "عملة ذهبية"
 msgid "Collapse or expand the menu"
 msgstr "طي القائمة الجانبية أو توسيعها"
 
+msgid "Colour"
+msgstr "اللون"
+
+msgid "Column %(n)s"
+msgstr "العمود %(n)s"
+
 msgid "Columns"
 msgstr "الأعمدة"
+
+msgid "Columns and details"
+msgstr "الأعمدة والتفاصيل"
 
 msgid "Commission rate is a fraction between 0 and 1."
 msgstr "نسبة العمولة كسر بين 0 و1."
@@ -1166,8 +1262,14 @@ msgstr "مسؤول التواصل"
 msgid "Contact phone"
 msgstr "هاتف التواصل"
 
+msgid "Copies"
+msgstr "عدد النسخ"
+
 msgid "Copies of each"
 msgstr "عدد النسخ لكل قطعة"
+
+msgid "Corners"
+msgstr "الحواف"
 
 msgid "Cost"
 msgstr "التكلفة"
@@ -1181,8 +1283,14 @@ msgstr "تكلفة الألماس المباع"
 msgid "Cost of gold sold"
 msgstr "تكلفة الذهب المباع"
 
+msgid "Could not load every page. Try again."
+msgstr "تعذّر تحميل كل الصفحات. حاول مرة أخرى."
+
 msgid "Could not reach the server. Check your connection and try again."
 msgstr "تعذّر الاتصال بالخادم. تحقق من الاتصال وحاول مرة أخرى."
+
+msgid "Could not save. Check your connection and try again."
+msgstr "تعذر الحفظ. تحقق من الاتصال وحاول مرة أخرى."
 
 msgid "Count"
 msgstr "العدد"
@@ -1247,6 +1355,9 @@ msgstr "الأسعار الحالية"
 msgid "Custom"
 msgstr "مخصص"
 
+msgid "Custom design"
+msgstr "تصميم مخصص"
+
 msgid "Custom order"
 msgstr "طلب تصنيع"
 
@@ -1297,6 +1408,9 @@ msgstr "لوحة التحكم"
 
 msgid "Dashboard, retail sales and returns, gold prices, stock, purchases, customers and suppliers, receipts and payments, branches, users and roles, company settings."
 msgstr "لوحة التحكم، البيع والمرتجعات، أسعار الذهب، المخزون، المشتريات، العملاء والموردون، المقبوضات والمدفوعات، الفروع، المستخدمون والأدوار، إعدادات الشركة."
+
+msgid "Dashed"
+msgstr "متقطع"
 
 msgid "Date"
 msgstr "التاريخ"
@@ -1469,8 +1583,17 @@ msgstr "صِف القطعة والعمل المطلوب."
 msgid "Description"
 msgstr "الوصف"
 
+msgid "Design"
+msgstr "التصميم"
+
+msgid "Design it yourself"
+msgstr "صمّمها بنفسك"
+
 msgid "Design label templates"
 msgstr "تصميم قوالب الملصقات"
+
+msgid "Designer"
+msgstr "المصمم"
 
 msgid "Details"
 msgstr "البيانات"
@@ -1514,6 +1637,15 @@ msgstr "الخصم %%"
 msgid "Document"
 msgstr "المستند"
 
+msgid "Document design changed"
+msgstr "تم تعديل تصميم مستند"
+
+msgid "Document details"
+msgstr "بيانات المستند"
+
+msgid "Documents"
+msgstr "المستندات"
+
 msgid "Documents (30 days)"
 msgstr "المستندات (30 يومًا)"
 
@@ -1538,6 +1670,12 @@ msgstr "حذف نطاق"
 msgid "Domain removed."
 msgstr "تم حذف النطاق."
 
+msgid "Dotted"
+msgstr "منقط"
+
+msgid "Double"
+msgstr "مزدوج"
+
 msgid "Draft"
 msgstr "مسودة"
 
@@ -1549,6 +1687,18 @@ msgstr "مسودة شراء"
 
 msgid "Draft saved."
 msgstr "تم حفظ المسودة."
+
+msgid "Drag a block onto the page or into Layers, or click it to add it after the selected one."
+msgstr "اسحب بلوكاً إلى الصفحة أو إلى الطبقات، أو اضغط عليه لإضافته بعد البلوك المحدد."
+
+msgid "Drag blocks onto the page and set spacing, borders, rounded corners, colours and text for each one."
+msgstr "اسحب البلوكات إلى الصفحة وحدد لكل منها المسافات والإطار وتدوير الحواف والألوان والنص."
+
+msgid "Drop blocks here"
+msgstr "أفلت البلوكات هنا"
+
+msgid "Duplicate"
+msgstr "تكرار"
 
 msgid "Duplicate karat."
 msgstr "عيار مكرر."
@@ -1570,6 +1720,9 @@ msgstr "كل بند يُرحَّل إلى حساب مصروف في دليل ال
 
 msgid "Each client is a separate workspace with its own data, users and address."
 msgstr "كل عميل مساحة عمل مستقلة ببياناتها ومستخدميها وعنوانها."
+
+msgid "Earlier versions"
+msgstr "النسخ السابقة"
 
 msgid "Edit"
 msgstr "تعديل"
@@ -1652,6 +1805,9 @@ msgstr "فارغ: يظهر «عيار 21» بلغة كل مستخدم."
 msgid "Empty: the platform default. 0: no limit."
 msgstr "فارغ: الافتراضي للمنصة. 0: بلا حد."
 
+msgid "Empty: the workspace's accent colour."
+msgstr "فارغ: لون مساحة العمل."
+
 msgid "Enable this client"
 msgstr "تفعيل هذا العميل"
 
@@ -1660,6 +1816,12 @@ msgstr "مفعّل"
 
 msgid "Enabled."
 msgstr "مفعّل."
+
+msgid "End"
+msgstr "النهاية"
+
+msgid "English"
+msgstr "الإنجليزية"
 
 msgid "Enter %(karat)s prices per gram. Other gold karats are calculated from their fineness."
 msgstr "أدخل أسعار %(karat)s للجرام، وتُحسب باقي العيارات تلقائيًا حسب نسبة النقاء."
@@ -1787,11 +1949,17 @@ msgstr "بنود المصروفات وسنداتها المدفوعة من خز�
 msgid "Expense category"
 msgstr "بند المصروف"
 
+msgid "Expense voucher"
+msgstr "سند مصروف"
+
 msgid "Expenses"
 msgstr "المصروفات"
 
 msgid "Expenses by category"
 msgstr "المصروفات حسب البند"
+
+msgid "Extra details"
+msgstr "تفاصيل إضافية"
 
 msgid "Family"
 msgstr "النوع"
@@ -1816,6 +1984,9 @@ msgstr "أرقام مباشرة من الدفاتر لأي يوم أو فترة 
 
 msgid "Filter"
 msgstr "تصفية"
+
+msgid "Filters"
+msgstr "التصفية"
 
 msgid "Fine (g)"
 msgstr "صافي (جم)"
@@ -1862,6 +2033,9 @@ msgstr "ثابت: على المجموعة بضاعة."
 msgid "Fold between the wings (mm)"
 msgstr "الذيل بين الجناحين (مم)"
 
+msgid "Follow another document to print with its design (its layout, colours and texts). Columns and details stay this document's own."
+msgstr "اتبع مستنداً آخر ليُطبع بتصميمه (التخطيط والألوان والنصوص). الأعمدة والتفاصيل تبقى خاصة بهذا المستند."
+
 msgid "Footer links"
 msgstr "روابط التذييل"
 
@@ -1894,6 +2068,9 @@ msgstr "جم"
 
 msgid "Gain"
 msgstr "زيادة"
+
+msgid "Gap"
+msgstr "المسافة بينها"
 
 msgid "Gap across (mm)"
 msgstr "المسافة الأفقية (مم)"
@@ -2027,6 +2204,9 @@ msgstr "جرام"
 msgid "Graphite"
 msgstr "جرافيت"
 
+msgid "Grid"
+msgstr "شبكة"
+
 msgid "Gross weight"
 msgstr "الوزن القائم"
 
@@ -2042,14 +2222,29 @@ msgstr "توقيع المُسلِّم"
 msgid "Head office"
 msgstr "الفرع الرئيسي"
 
+msgid "Header background"
+msgstr "خلفية الرأس"
+
+msgid "Header text"
+msgstr "نص الرأس"
+
 msgid "Heaviest screens"
 msgstr "أثقل الشاشات"
+
+msgid "Height"
+msgstr "الارتفاع"
 
 msgid "Hidden"
 msgstr "مخفية"
 
 msgid "Hidden plans keep their clients but are not offered for new ones."
 msgstr "الباقات المخفية تحتفظ بعملائها لكنها لا تُعرض للعملاء الجدد."
+
+msgid "Highlight background"
+msgstr "خلفية التمييز"
+
+msgid "Highlight text"
+msgstr "نص التمييز"
 
 msgid "History"
 msgstr "السجل"
@@ -2071,6 +2266,12 @@ msgstr "شكل القائمة الجانبية وتذييل الصفحة عند 
 
 msgid "How many %(home)s one unit of each currency is worth."
 msgstr "قيمة الوحدة من كل عملة بالـ %(home)s."
+
+msgid "How your invoices, receipts and vouchers look when printed. A document can have its own design or use another one's."
+msgstr "شكل فواتيرك وإيصالاتك وسنداتك عند الطباعة. يمكن أن يكون لكل مستند تصميمه الخاص أو أن يستخدم تصميم مستند آخر."
+
+msgid "HTML"
+msgstr "HTML"
 
 msgid "IBAN"
 msgstr "رقم الآيبان"
@@ -2096,6 +2297,9 @@ msgstr "جارٍ"
 msgid "In stock"
 msgstr "في المخزون"
 
+msgid "In the accent colour"
+msgstr "باللون المميز"
+
 msgid "In the footer of every workspace page"
 msgstr "في تذييل كل صفحة في مساحات العمل"
 
@@ -2117,6 +2321,9 @@ msgstr "إيرادات"
 msgid "Indigo"
 msgstr "نيلي"
 
+msgid "Inherit"
+msgstr "تلقائي"
+
 msgid "Initial password"
 msgstr "كلمة المرور الأولى"
 
@@ -2132,6 +2339,12 @@ msgstr "سطر غير صحيح."
 msgid "Inventory"
 msgstr "المخزون"
 
+msgid "Invoice and receipt designs"
+msgstr "تصميمات الفواتير والإيصالات"
+
+msgid "It starts from the design of %(name)s and, once saved, becomes this document's own."
+msgstr "يبدأ من تصميم %(name)s، وبعد الحفظ يصبح تصميماً خاصاً بهذا المستند."
+
 msgid "Item"
 msgstr "الصنف"
 
@@ -2140,6 +2353,12 @@ msgstr "مجموعات الأصناف"
 
 msgid "Item lookup URL"
 msgstr "رابط الاستعلام عن الأصناف"
+
+msgid "Items table"
+msgstr "جدول الأصناف"
+
+msgid "Its own design"
+msgstr "تصميم خاص به"
 
 msgid "Jordan"
 msgstr "الأردن"
@@ -2234,6 +2453,9 @@ msgstr "آخر دخول"
 msgid "Late"
 msgstr "متأخر"
 
+msgid "Layers"
+msgstr "الطبقات"
+
 msgid "Layout"
 msgstr "التخطيط"
 
@@ -2273,20 +2495,41 @@ msgstr "الحدود"
 msgid "Limits are checked when the client adds branches or users. Empty: the plan’s limit."
 msgstr "تُطبق الحدود عندما يضيف العميل فروعاً أو مستخدمين. فارغ: حد الباقة."
 
+msgid "Line"
+msgstr "خط"
+
+msgid "Line at the bottom"
+msgstr "سطر في الأسفل"
+
+msgid "Line colour"
+msgstr "لون الخطوط"
+
 msgid "Line under each client's name"
 msgstr "السطر تحت اسم كل عميل"
+
+msgid "Line under the header"
+msgstr "سطر تحت الترويسة"
 
 msgid "Lines"
 msgstr "السطور"
 
+msgid "Lines between rows"
+msgstr "خطوط بين الصفوف"
+
 msgid "Link"
 msgstr "الرابط"
+
+msgid "List (narrow paper)"
+msgstr "قائمة (للورق الضيق)"
 
 msgid "Live"
 msgstr "مباشر"
 
 msgid "Live · updated %(time)s"
 msgstr "مباشر · آخر تحديث %(time)s"
+
+msgid "Loading pages…"
+msgstr "جارٍ تحميل الصفحات…"
 
 msgid "Lock today's gold price"
 msgstr "تثبيت سعر الذهب اليوم"
@@ -2303,8 +2546,17 @@ msgstr "تسجيل الخروج"
 msgid "Logo"
 msgstr "الشعار"
 
+msgid "Logo above the name"
+msgstr "الشعار فوق الاسم"
+
+msgid "Logo corners"
+msgstr "حواف الشعار"
+
 msgid "Logo for dark backgrounds"
 msgstr "شعار للخلفيات الداكنة"
+
+msgid "Logo size"
+msgstr "حجم الشعار"
 
 msgid "Logos"
 msgstr "الشعارات"
@@ -2329,6 +2581,9 @@ msgstr "هل حدث خطأ؟ ألغِ الاستلام لتسجيله من جد�
 
 msgid "Main"
 msgstr "الرئيسية"
+
+msgid "Main branch"
+msgstr "الفرع الرئيسي"
 
 msgid "Main cash"
 msgstr "الخزينة الرئيسية"
@@ -2453,6 +2708,9 @@ msgstr "مركز تداول المعادن"
 msgid "Metal weight"
 msgstr "وزن المعدن"
 
+msgid "Middle"
+msgstr "المنتصف"
+
 msgid "Migrating"
 msgstr "قيد الترحيل"
 
@@ -2461,6 +2719,9 @@ msgstr "مفقود"
 
 msgid "mm"
 msgstr "مم"
+
+msgid "Modern"
+msgstr "عصري"
 
 msgid "Money"
 msgstr "نقدية"
@@ -2507,6 +2768,9 @@ msgstr "أقصى عدد فروع"
 msgid "Most users"
 msgstr "أقصى عدد مستخدمين"
 
+msgid "Move down"
+msgstr "تحريك لأسفل"
+
 msgid "Move goods between branches, in transit until received."
 msgstr "نقل البضاعة بين الفروع، وتبقى في الطريق حتى الاستلام."
 
@@ -2518,6 +2782,9 @@ msgstr "نقل عملائها إلى"
 
 msgid "Move money between cash boxes and bank accounts"
 msgstr "نقل الأموال بين الخزائن والحسابات البنكية"
+
+msgid "Move up"
+msgstr "تحريك لأعلى"
 
 msgid "Movements"
 msgstr "الحركات"
@@ -2531,6 +2798,12 @@ msgstr "يجب أن يكون أكبر من صفر."
 msgid "Must not be negative."
 msgstr "لا يمكن أن يكون سالبًا."
 
+msgid "My design (designer)"
+msgstr "تصميمي (المصمم)"
+
+msgid "My text"
+msgstr "نصي"
+
 msgid "Name"
 msgstr "الاسم"
 
@@ -2542,6 +2815,9 @@ msgstr "الاسم (إنجليزي)"
 
 msgid "Name on screens and receipts"
 msgstr "الاسم على الشاشات والإيصالات"
+
+msgid "Name size"
+msgstr "حجم الاسم"
 
 msgid "Name, address, domain or contact"
 msgstr "الاسم أو العنوان أو النطاق أو التواصل"
@@ -2801,6 +3077,9 @@ msgstr "لا توجد أوامر تشغيل هنا"
 msgid "No workshops yet"
 msgstr "لا توجد ورش بعد"
 
+msgid "No."
+msgstr "الرقم"
+
 msgid "Nobody at this client can sign in or work until you enable it again. The data is kept."
 msgstr "لن يتمكن أحد لدى هذا العميل من الدخول أو العمل حتى تفعّله مرة أخرى. البيانات تبقى محفوظة."
 
@@ -2915,6 +3194,9 @@ msgstr "مسجّل"
 msgid "On file · type to replace"
 msgstr "مسجل · اكتب للاستبدال"
 
+msgid "On one line"
+msgstr "في سطر واحد"
+
 msgid "On the customer's account"
 msgstr "على حساب العميل"
 
@@ -2990,6 +3272,9 @@ msgstr "فروع محددة"
 msgid "Only the company currency is active"
 msgstr "عملة الشركة هي العملة الوحيدة المفعلة"
 
+msgid "Only the platform team can change it"
+msgstr "يعدّله فريق المنصة فقط"
+
 msgid "Only work done by a workshop has a labour charge."
 msgstr "المصنعية تُحسب فقط للعمل الذي تنفذه ورشة."
 
@@ -3001,6 +3286,9 @@ msgstr "مفتوحة للترحيل"
 
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open the designer"
+msgstr "فتح المصمم"
 
 msgid "Open the workspace"
 msgstr "فتح مساحة العمل"
@@ -3083,8 +3371,41 @@ msgstr "اسم مستخدم المالك"
 msgid "Owners"
 msgstr "الملاك"
 
+msgid "Padding"
+msgstr "الحشوة الداخلية"
+
+msgid "Padding bottom"
+msgstr "حشوة من أسفل"
+
+msgid "Padding left"
+msgstr "حشوة من اليسار"
+
+msgid "Padding right"
+msgstr "حشوة من اليمين"
+
+msgid "Padding top"
+msgstr "حشوة من أعلى"
+
+msgid "Page"
+msgstr "صفحة"
+
+msgid "Page background"
+msgstr "خلفية الصفحة"
+
 msgid "Page height (mm)"
 msgstr "ارتفاع الصفحة (مم)"
+
+msgid "Page margin bottom"
+msgstr "هامش الصفحة السفلي"
+
+msgid "Page margin left"
+msgstr "هامش الصفحة الأيسر"
+
+msgid "Page margin right"
+msgstr "هامش الصفحة الأيمن"
+
+msgid "Page margin top"
+msgstr "هامش الصفحة العلوي"
 
 msgid "Page not found"
 msgstr "الصفحة غير موجودة"
@@ -3115,6 +3436,9 @@ msgstr "المدفوع عند التسليم"
 
 msgid "Paid to"
 msgstr "مدفوع إلى"
+
+msgid "Paper"
+msgstr "الورق"
 
 msgid "Partner"
 msgstr "شريك"
@@ -3446,6 +3770,9 @@ msgstr "طباعة ملصقات القطع"
 msgid "Print receipt"
 msgstr "طباعة الإيصال"
 
+msgid "Print table"
+msgstr "طباعة الجدول"
+
 msgid "Printed"
 msgstr "طُبع"
 
@@ -3469,6 +3796,9 @@ msgstr "الموعد"
 
 msgid "Promised for"
 msgstr "موعد التسليم"
+
+msgid "Properties"
+msgstr "الخصائص"
 
 msgid "Publish a rate"
 msgstr "نشر سعر صرف"
@@ -3508,6 +3838,9 @@ msgstr "إلغاء شراء"
 
 msgid "Purchase cancelled."
 msgstr "تم إلغاء الشراء."
+
+msgid "Purchase invoice"
+msgstr "فاتورة شراء"
 
 msgid "Purchases"
 msgstr "المشتريات"
@@ -3560,11 +3893,17 @@ msgstr "جاهز منذ"
 msgid "Reason"
 msgstr "السبب"
 
+msgid "Receipt"
+msgstr "سند قبض"
+
 msgid "Receipt cancelled."
 msgstr "تم إلغاء الاستلام."
 
 msgid "Receipt entry"
 msgstr "قيد الاستلام"
+
+msgid "Receipt or payment"
+msgstr "سند قبض أو صرف"
 
 msgid "Receipts & payments"
 msgstr "القبض والصرف"
@@ -3650,6 +3989,9 @@ msgstr "سجّل ما تم استلامه"
 msgid "Recorded."
 msgstr "تم التسجيل."
 
+msgid "Redo"
+msgstr "إعادة"
+
 msgid "Reference"
 msgstr "المرجع"
 
@@ -3701,6 +4043,9 @@ msgstr "إيرادات التصليح"
 msgid "Repair costs"
 msgstr "تكاليف التصليح"
 
+msgid "Repair or custom order"
+msgstr "تصليح أو طلب تصنيع"
+
 msgid "Repairs"
 msgstr "التصليحات"
 
@@ -3712,6 +4057,12 @@ msgstr "تصليحات تجاوزت موعدها"
 
 msgid "Repairs ready for pickup"
 msgstr "تصليحات جاهزة للاستلام"
+
+msgid "Replace the whole design with this starting point?"
+msgstr "استبدال التصميم كله بنقطة البداية هذه؟"
+
+msgid "Replaces the HTML above."
+msgstr "يستبدل الـ HTML أعلاه."
 
 msgid "Reports"
 msgstr "التقارير"
@@ -3854,11 +4205,17 @@ msgstr "رول (ملصق واحد في كل مرة)"
 msgid "Rose"
 msgstr "وردي"
 
+msgid "Rounded corners"
+msgstr "تدوير الحواف"
+
 msgid "Rounding"
 msgstr "تقريب"
 
 msgid "Rounding differences"
 msgstr "فروق التقريب"
+
+msgid "Row numbers"
+msgstr "أرقام الصفوف"
 
 msgid "Rows"
 msgstr "الصفوف"
@@ -3913,6 +4270,15 @@ msgstr "المبيعات، آخر 7 أيام"
 
 msgid "Salesperson"
 msgstr "البائع"
+
+msgid "Same as %(name)s"
+msgstr "نفس تصميم %(name)s"
+
+msgid "Same as: %(name)s"
+msgstr "نفس تصميم: %(name)s"
+
+msgid "Sample data"
+msgstr "بيانات تجريبية"
 
 msgid "Saudi Arabia"
 msgstr "السعودية"
@@ -4073,6 +4439,9 @@ msgstr "سعر البيع"
 msgid "Sells diamonds"
 msgstr "يبيع الألماس"
 
+msgid "Semi-bold"
+msgstr "شبه عريض"
+
 msgid "Send"
 msgstr "إرسال"
 
@@ -4151,6 +4520,9 @@ msgstr "الحساب مسدد، لا مستحقات على أي طرف."
 msgid "Settlements"
 msgstr "التسويات"
 
+msgid "Shape"
+msgstr "الشكل"
+
 msgid "Share of server time"
 msgstr "نصيبه من وقت الخادم"
 
@@ -4172,6 +4544,24 @@ msgstr "اسم مختصر"
 msgid "Show"
 msgstr "عرض"
 
+msgid "Show labels"
+msgstr "إظهار العناوين"
+
+msgid "Show payments"
+msgstr "إظهار المدفوعات"
+
+msgid "Show scrap gold received"
+msgstr "إظهار الكسر المستلم"
+
+msgid "Show the logo"
+msgstr "إظهار الشعار"
+
+msgid "Show the number"
+msgstr "إظهار الرقم"
+
+msgid "Show who sold it"
+msgstr "إظهار البائع"
+
 msgid "Showing %(start)s–%(end)s of %(total)s"
 msgstr "عرض %(start)s–%(end)s من %(total)s"
 
@@ -4186,6 +4576,15 @@ msgstr "تسجيل الدخول"
 
 msgid "Sign in to your workspace"
 msgstr "تسجيل الدخول إلى حسابك"
+
+msgid "Signature"
+msgstr "التوقيع"
+
+msgid "Signature lines"
+msgstr "خطوط التوقيع"
+
+msgid "Signatures"
+msgstr "التوقيعات"
 
 msgid "Silver"
 msgstr "فضة"
@@ -4229,11 +4628,35 @@ msgstr "البائع"
 msgid "Sold."
 msgstr "تم البيع."
 
+msgid "Solid"
+msgstr "متصل"
+
 msgid "Some of these pieces were already returned."
 msgstr "بعض هذه القطع مرتجعة من قبل."
 
 msgid "Some requests refused"
 msgstr "رُفضت بعض الطلبات"
+
+msgid "Space"
+msgstr "مسافة"
+
+msgid "Space above"
+msgstr "مسافة من أعلى"
+
+msgid "Space above the lines"
+msgstr "مسافة فوق الخطوط"
+
+msgid "Space below"
+msgstr "مسافة من أسفل"
+
+msgid "Space left"
+msgstr "مسافة من اليسار"
+
+msgid "Space right"
+msgstr "مسافة من اليمين"
+
+msgid "Spacing"
+msgstr "المسافات"
 
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
@@ -4246,6 +4669,15 @@ msgstr "بدء جرد"
 
 msgid "Start and cancel stocktakes"
 msgstr "بدء الجرد وإلغاؤه"
+
+msgid "Start from"
+msgstr "ابدأ من"
+
+msgid "Start from the classic layout"
+msgstr "ابدأ من التصميم الكلاسيكي"
+
+msgid "Start from…"
+msgstr "ابدأ من…"
 
 msgid "State"
 msgstr "الحالة"
@@ -4295,6 +4727,15 @@ msgstr "أحجار"
 msgid "Stones (ct)"
 msgstr "الأحجار (قيراط)"
 
+msgid "Stripe colour"
+msgstr "لون التظليل"
+
+msgid "Striped rows"
+msgstr "صفوف مظللة بالتبادل"
+
+msgid "Style"
+msgstr "التنسيق"
+
 msgid "Subtotal"
 msgstr "الإجمالي قبل الخصم"
 
@@ -4330,6 +4771,15 @@ msgstr "موقوف"
 
 msgid "System"
 msgstr "حسب الجهاز"
+
+msgid "Table"
+msgstr "جدول"
+
+msgid "Tables"
+msgstr "الجداول"
+
+msgid "Tags: if, for, with, translate, num. No include, extends or server files; only this client's document data."
+msgstr "الوسوم المتاحة: if وfor وwith وtranslate وnum. لا include ولا extends ولا ملفات من الخادم؛ بيانات مستند هذا العميل فقط."
 
 msgid "Tail tag 70 × 12 mm"
 msgstr "ملصق بذيل 70 × 12 مم"
@@ -4373,14 +4823,38 @@ msgstr "الضرائب"
 msgid "Teal"
 msgstr "أزرق مخضر"
 
+msgid "Terms and conditions"
+msgstr "الشروط والأحكام"
+
+msgid "Text"
+msgstr "النص"
+
+msgid "Text (empty: the document's name)"
+msgstr "النص (فارغ: اسم المستند)"
+
+msgid "Text colour"
+msgstr "لون النص"
+
+msgid "Text size"
+msgstr "حجم النص"
+
 msgid "Text size (pt)"
 msgstr "حجم الخط (نقطة)"
+
+msgid "Text weight"
+msgstr "سُمك النص"
+
+msgid "Texts"
+msgstr "النصوص"
 
 msgid "Thank you for your visit."
 msgstr "شكرًا لزيارتكم."
 
 msgid "That change is not allowed."
 msgstr "هذا التغيير غير مسموح."
+
+msgid "That document already uses this one's design."
+msgstr "هذا المستند يستخدم بالفعل تصميم هذا المستند."
 
 msgid "The bank account must stay in the same currency."
 msgstr "يجب أن يبقى الحساب البنكي بنفس العملة."
@@ -4390,6 +4864,9 @@ msgstr "سعر عملة الشركة دائمًا 1."
 
 msgid "The currency parameter is required."
 msgstr "يجب تحديد العملة."
+
+msgid "The custom design has an error, so the standard layout is shown: %(error)s"
+msgstr "التصميم المخصص به خطأ، لذلك يظهر التصميم القياسي: %(error)s"
 
 msgid "The date has passed."
 msgstr "هذا التاريخ مضى."
@@ -4411,6 +4888,9 @@ msgstr "العربون"
 
 msgid "The discount must be between 0 and 100%."
 msgstr "يجب أن يكون الخصم بين 0 و100%."
+
+msgid "The earlier design is back."
+msgstr "تمت استعادة التصميم السابق."
 
 msgid "The fee must be less than the amount."
 msgstr "يجب أن تكون العمولة أقل من المبلغ."
@@ -4502,6 +4982,9 @@ msgstr "الطلب نفسه ما زال قيد التنفيذ."
 msgid "The supplier's gold balance goes down by the fine gold returned, and their money balance by the making cost you paid."
 msgstr "يقل رصيد ذهب المورد بقدر الذهب الصافي المردود، ورصيده النقدي بقدر المصنعية المدفوعة."
 
+msgid "The thermal layout always prints on an 80 mm roll."
+msgstr "التصميم الحراري يُطبع دائماً على رول 80 مم."
+
 msgid "The trader owes you the fine gold, and the making charge in money."
 msgstr "يصبح التاجر مدينًا لك بالذهب الصافي، وبالمصنعية نقدًا."
 
@@ -4517,6 +5000,9 @@ msgstr "لن يتمكن المستخدم من الدخول، مع الاحتفا
 msgid "The user can sign in again with their roles."
 msgstr "سيتمكن المستخدم من الدخول مرة أخرى بأدواره."
 
+msgid "The workspace language"
+msgstr "لغة مساحة العمل"
+
 msgid "The workspace must keep at least one active owner."
 msgstr "يجب أن يبقى في الحساب مالك نشط واحد على الأقل."
 
@@ -4526,11 +5012,20 @@ msgstr "رقم فاتورتهم"
 msgid "their no."
 msgstr "رقمهم"
 
+msgid "Their no."
+msgstr "رقمهم"
+
 msgid "Theme"
 msgstr "السمة"
 
+msgid "Thermal slip (80 mm)"
+msgstr "إيصال حراري (80 مم)"
+
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
+
+msgid "Thickness"
+msgstr "السُمك"
 
 msgid "This account cannot use the platform console."
 msgstr "هذا الحساب لا يملك صلاحية لوحة المنصة."
@@ -4546,6 +5041,15 @@ msgstr "لا يوجد سعر %(side)s لـ %(karat)s في هذه النشرة."
 
 msgid "This category already has stock, so its family and tracking cannot change."
 msgstr "على هذه المجموعة بضاعة، لذلك لا يمكن تغيير نوعها أو طريقة تتبعها."
+
+msgid "This document prints with the design of the one you chose. Change that one to change both, or pick “Its own design” to design this one separately."
+msgstr "هذا المستند يُطبع بتصميم المستند الذي اخترته. عدّل ذلك المستند ليتغير الاثنان، أو اختر «تصميم خاص به» لتصميم هذا المستند وحده."
+
+msgid "This document uses a custom design made for you. The options below apply only if it is switched off."
+msgstr "هذا المستند يستخدم تصميماً مخصصاً لك. الخيارات أدناه تُطبق فقط إذا أُوقف."
+
+msgid "This document's own"
+msgstr "خاصة بهذا المستند"
 
 msgid "This domain is already in use."
 msgstr "هذا النطاق مستخدم بالفعل."
@@ -4592,6 +5096,9 @@ msgstr "لا يوجد استلام لهذا الأمر لإلغائه."
 msgid "This order is not at the workshop."
 msgstr "هذا الأمر ليس لدى الورشة."
 
+msgid "This page"
+msgstr "هذه الصفحة"
+
 msgid "This repair is already ready."
 msgstr "هذا التصليح جاهز بالفعل."
 
@@ -4604,6 +5111,9 @@ msgstr "هذا الحجز غير مفتوح."
 msgid "This stocktake is closed."
 msgstr "هذا الجرد مغلق."
 
+msgid "This table has no columns to print."
+msgstr "لا توجد أعمدة للطباعة في هذا الجدول."
+
 msgid "This transfer is not in transit."
 msgstr "هذا التحويل ليس في الطريق."
 
@@ -4615,6 +5125,9 @@ msgstr "اسم المستخدم مستخدم بالفعل في هذا الحسا
 
 msgid "Time zone"
 msgstr "المنطقة الزمنية"
+
+msgid "Title"
+msgstr "العنوان"
 
 msgid "To"
 msgstr "إلى"
@@ -4658,6 +5171,9 @@ msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مر
 msgid "Tools"
 msgstr "أدوات"
 
+msgid "Top"
+msgstr "أعلى"
+
 msgid "Top margin (mm)"
 msgstr "الهامش العلوي (مم)"
 
@@ -4678,6 +5194,9 @@ msgstr "الوزن الإجمالي"
 
 msgid "Total weight (g)"
 msgstr "الوزن الإجمالي (جم)"
+
+msgid "Totals"
+msgstr "الإجماليات"
 
 msgid "Tracking"
 msgstr "طريقة التتبع"
@@ -4772,6 +5291,9 @@ msgstr "عملة غير معروفة."
 msgid "Unknown customer."
 msgstr "عميل غير معروف."
 
+msgid "Unknown document type: %(type)s"
+msgstr "نوع مستند غير معروف: %(type)s"
+
 msgid "Unknown field."
 msgstr "بيان غير معروف."
 
@@ -4798,6 +5320,9 @@ msgstr "دور غير معروف."
 
 msgid "Unknown status."
 msgstr "حالة غير معروفة."
+
+msgid "Unsaved changes"
+msgstr "تغييرات غير محفوظة"
 
 msgid "unsettled"
 msgstr "غير مُسوّى"
@@ -4835,6 +5360,9 @@ msgstr "اتبع الباقة"
 msgid "Use the workspace colour (%(name)s)"
 msgstr "استخدام لون مساحة العمل (%(name)s)"
 
+msgid "Use this custom design"
+msgstr "استخدام هذا التصميم المخصص"
+
 msgid "Used in another piece"
 msgstr "مستخدمة في قطعة أخرى"
 
@@ -4867,6 +5395,9 @@ msgstr "القيمة اليوم"
 
 msgid "VAT payable"
 msgstr "ضريبة القيمة المضافة المستحقة"
+
+msgid "Vertical alignment"
+msgstr "المحاذاة الرأسية"
 
 msgid "View accounts, journal and trial balance"
 msgstr "عرض الحسابات واليومية وميزان المراجعة"
@@ -4979,6 +5510,9 @@ msgstr "مرحبًا بعودتك، %(name)s"
 msgid "What"
 msgstr "البيان"
 
+msgid "What a design can use"
+msgstr "ما يمكن للتصميم استخدامه"
+
 msgid "What came back"
 msgstr "ما تم استلامه"
 
@@ -5006,6 +5540,9 @@ msgstr "ما صُرف في فترة، حسب بند المصروف."
 msgid "What you sell: each plan's price, limits and features. Clients get their plan's unless you set their own."
 msgstr "ما تبيعه: سعر كل باقة وحدودها وخصائصها. يحصل العملاء على ما في باقتهم ما لم تحدد لهم غير ذلك."
 
+msgid "When off, the layout and options below are used. A design with an error falls back to them when printing."
+msgstr "عند إيقافه تُستخدم التصميمات والخيارات أدناه. التصميم الذي به خطأ يرجع إليها عند الطباعة."
+
 msgid "When the count is finished: pieces not counted become missing, missing pieces found here come back into stock, and bulk gold is set to the weight entered."
 msgstr "عند انتهاء الجرد: القطع التي لم تُعدّ تُسجَّل عجزًا، والقطع المفقودة التي وُجدت هنا تعود للمخزون، ويُضبط الذهب بالوزن على الوزن المُدخل."
 
@@ -5027,8 +5564,14 @@ msgstr "الجملة وحسابات التجار"
 msgid "Wholesale return"
 msgstr "مرتجع جملة"
 
+msgid "Wholesale sale"
+msgstr "فاتورة جملة"
+
 msgid "Wholesale today"
 msgstr "الجملة اليوم"
+
+msgid "Width"
+msgstr "العرض"
 
 msgid "With"
 msgstr "مع"

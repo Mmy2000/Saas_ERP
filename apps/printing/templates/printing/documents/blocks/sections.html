@@ -1,0 +1,1 @@
+{% for section in doc.sections %}<div style="margin-bottom:6px"><strong>{{ section.title }}</strong>{% for label, value in section.lines %}<div class="bk-row"><span>{{ label }}</span><span class="num">{{ value }}</span></div>{% endfor %}</div>{% endfor %}

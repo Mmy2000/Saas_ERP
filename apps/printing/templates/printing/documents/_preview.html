@@ -1,0 +1,9 @@
+{% load i18n %}{# Live preview of the document being designed (static/printing/js/design-preview.js). #}
+<section class="card overflow-hidden xl:sticky xl:top-20">
+  <div class="card-header"><h2 class="card-title">{% translate "Preview" %}</h2><span class="text-xs text-slate-500" data-preview-status>{% translate "Sample data" %}</span></div>
+  <div class="bg-slate-100 p-3" data-preview-frame-box>
+    <div class="overflow-hidden" style="height: 640px">
+      <iframe title="{% translate 'Preview' %}" data-design-preview class="origin-top-left rtl:origin-top-right border-0 bg-white" style="width: 840px; height: 1190px"></iframe>
+    </div>
+  </div>
+</section>

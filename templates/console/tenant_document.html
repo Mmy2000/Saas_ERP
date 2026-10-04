@@ -1,0 +1,72 @@
+{% extends "console/layout.html" %}
+{% load i18n ui static %}
+{% block title %}{{ kind.label }} · {{ tenant.name }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'printing/js/design-preview.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'console-tenant' tenant.pk %}#documents" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ tenant.name }}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ kind.label }}</h1>
+    <a href="{% url 'console-tenant-designer' tenant.pk kind.key %}" class="btn btn-secondary text-xs">{% icon "layout-dashboard" "size-4" %}{% translate "Open the designer" %}</a>
+    {% if design.use_custom and design.custom_html %}<span class="badge badge-brand">{% translate "Custom design" %}</span>{% else %}<span class="badge badge-neutral">{{ design.get_layout_display }}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 xl:grid-cols-2" data-design-form data-preview-url="{{ preview_url }}" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Custom design" %}</h2><span class="text-xs text-slate-500">{% translate "Only the platform team can change it" %}</span></div>
+      <div class="card-body space-y-4">
+        <label class="flex items-start gap-3">{{ custom.use_custom }}<span><span class="block text-sm text-slate-900">{{ custom.use_custom.label }}</span><span class="block text-xs text-slate-500">{% translate "When off, the layout and options below are used. A design with an error falls back to them when printing." %}</span></span></label>
+        {{ custom.custom_html }}
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="btn btn-secondary text-xs" data-insert-starter>{% icon "layers" "size-4" %}{% translate "Start from the classic layout" %}</button>
+          <span class="text-xs text-slate-500">{% translate "Replaces the HTML above." %}</span>
+        </div>
+        <details class="rounded-lg border border-slate-200 bg-slate-50/70 text-xs text-slate-600">
+          <summary class="cursor-pointer px-3 py-2 font-medium text-slate-800">{% translate "What a design can use" %}</summary>
+          <div class="space-y-2 px-3 pb-3 leading-6" dir="ltr">
+            <p><code>doc.title</code>, <code>doc.number</code>, <code>doc.date</code>, <code>doc.status</code>, <code>doc.currency</code>, <code>doc.lang</code>, <code>doc.dir</code></p>
+            <p><code>doc.company</code>: <code>name legal_name phone whatsapp address tax_no logo branch</code></p>
+            <p><code>doc.meta</code>, <code>doc.party</code>: <code>{% templatetag openblock %} for label, value in doc.party {% templatetag closeblock %}</code></p>
+            <p><code>doc.columns</code> (<code>label align</code>) · <code>doc.rows</code>: <code>row.cells</code> (<code>value align</code>), <code>row.piece row.description row.karat row.weight row.total</code></p>
+            <p><code>doc.sections</code> (<code>title lines</code>) · <code>doc.totals</code> (<code>label value strong</code>) · <code>doc.labels.*</code></p>
+            <p><code>design.color show_logo header_note footer_note terms signatures paper</code> · <code>page.size page.margin</code> · CSS <code>var(--accent)</code></p>
+            <p>{% translate "Tags: if, for, with, translate, num. No include, extends or server files; only this client's document data." %}</p>
+          </div>
+        </details>
+      </div>
+    </section>
+    {% include "printing/documents/_design_fields.html" %}
+    <div class="flex gap-2"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'console-tenant' tenant.pk %}#documents" class="btn btn-secondary">{% translate "Cancel" %}</a></div>
+  </div>
+  <div>{% include "printing/documents/_preview.html" %}</div>
+</form>
+
+{% if versions %}
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Earlier versions" %}</h2></div>
+  <ul class="divide-y divide-slate-100 text-sm">
+    {% for version in versions %}
+    <li class="flex items-center justify-between gap-3 px-5 py-3">
+      <span><span class="num">{{ version.created_at|date:"SHORT_DATETIME_FORMAT" }}</span> <span class="text-xs text-slate-500">· {{ version.saved_by|default:"—" }} · <span class="num">{{ version.custom_html|length }}</span> {% translate "characters" %}</span></span>
+      <form method="post" action="{% url 'console-tenant-document-restore' tenant.pk kind.key version.pk %}">{% csrf_token %}
+        <button type="submit" class="btn btn-ghost text-xs">{% translate "Bring back" %}</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{{ starter|json_script:"design-starter" }}
+<script type="module">
+  const button = document.querySelector("[data-insert-starter]");
+  const area = document.querySelector("textarea[name=custom_html]");
+  button?.addEventListener("click", () => {
+    area.value = JSON.parse(document.getElementById("design-starter").textContent);
+    area.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+</script>
+{% endblock %}

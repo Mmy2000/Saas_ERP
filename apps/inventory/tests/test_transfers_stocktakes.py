@@ -206,6 +206,7 @@ def test_api_and_pages(tenant_a, stock):
     assert scanned.json()["outcome"] == "counted" and scanned.json()["summary"]["counted"] == 1
     for path in ("/stock/transfers/", "/stock/transfers/new/",
                  f"/stock/transfers/{sent.json()['id']}/", "/stock/stocktakes/",
+                 f"/print/transfer/{sent.json()['id']}/",
                  "/stock/stocktakes/new/", f"/stock/stocktakes/{take_id}/",
                  f"/stock/items/{stock.ring_a.pk}/"):
         assert client.get(path).status_code == 200, path

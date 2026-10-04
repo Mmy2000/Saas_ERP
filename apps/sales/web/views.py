@@ -68,6 +68,17 @@ def new_sale(request):
 
 
 @permission_required("sales.invoice.view")
+def invoice_print(request, pk):
+    """The invoice in the client's document design (Settings → Documents)."""
+    from apps.printing.design_views import print_sales_invoice
+
+    invoice = _visible(request).select_related("branch", "sold_by").filter(pk=pk).first()
+    if invoice is None:
+        raise Http404
+    return print_sales_invoice(request, invoice)
+
+
+@permission_required("sales.invoice.view")
 def invoice_detail(request, pk):
     invoice = _visible(request).select_related("journal_entry", "price_board").filter(pk=pk).first()
     if invoice is None:

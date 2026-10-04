@@ -80,6 +80,7 @@ def test_api_and_pages(tenant_a, stock):
     assert made.status_code == 201, made.content
     for path in ("/purchasing/returns/", "/purchasing/returns/new/",
                  f"/purchasing/returns/{made.json()['id']}/",
+                 f"/print/supplier_return/{made.json()['id']}/",
                  f"/stock/items/{stock.ring_b.pk}/"):
         assert client.get(path).status_code == 200, path
     voided = client.post(f"/api/v1/purchasing/returns/{made.json()['id']}/void/", {},

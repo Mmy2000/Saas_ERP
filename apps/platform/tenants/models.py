@@ -208,6 +208,7 @@ EVENT_LABELS = {
     "plan.created": _("Plan created"),
     "plan.updated": _("Plan changed"),
     "plan.deleted": _("Plan deleted"),
+    "document.design": _("Document design changed"),
 }
 
 

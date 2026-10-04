@@ -1,0 +1,16 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Documents" %}{% endblock %}
+{% block page_header %}{% translate "Documents" as title %}{% translate "How your invoices, receipts and vouchers look when printed. A document can have its own design or use another one's." as subtitle %}{% include "components/page_header.html" %}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  {% for group, rows in groups %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{{ group }}</h2></div>
+    <ul class="divide-y divide-slate-100">
+      {% for row in rows %}{% include "printing/documents/_design_row.html" with url_name="document-design" %}{% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

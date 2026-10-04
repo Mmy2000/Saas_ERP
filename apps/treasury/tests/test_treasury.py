@@ -194,6 +194,7 @@ def test_api_and_pages(tenant_a, shop):
                  "/treasury/movements/new/?kind=exchange",
                  "/treasury/movements/new/?kind=card_settlement",
                  f"/treasury/movements/{first.json()['id']}/", "/treasury/box/new/",
+                 f"/print/treasury_document/{first.json()['id']}/",
                  f"/treasury/box/{box.pk}/", f"/treasury/box/{box.pk}/statement/",
                  f"/treasury/bank/{shop.bank.pk}/", f"/treasury/bank/{shop.bank.pk}/statement/",
                  f"/treasury/terminal/{shop.terminal.pk}/", "/treasury/terminal/new/",

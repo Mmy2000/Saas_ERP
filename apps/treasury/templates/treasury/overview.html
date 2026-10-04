@@ -72,7 +72,7 @@
     </div>
     {% if boxes_by_branch %}
     <div class="overflow-x-auto">
-      <table class="table">
+      <table class="table" data-report="{% translate 'Cash boxes' %}">
         <thead><tr><th>{% translate "Branch" %}</th><th>{% translate "Cash box" %}</th><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Balance" %}</th><th></th></tr></thead>
         <tbody>
         {% for branch, rows in boxes_by_branch %}{% for row in rows %}

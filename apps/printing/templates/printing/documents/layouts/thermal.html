@@ -1,0 +1,39 @@
+<style>
+  .th { font-size: 11.5px; line-height: 1.45; color: #000; }
+  .th-center { text-align: center; }
+  .th img { width: 46mm; max-height: 22mm; object-fit: contain; display: block; margin: 0 auto 4px; }
+  .th h1 { margin: 0; font-size: 15px; }
+  .th h2 { margin: 6px 0 2px; font-size: 13px; letter-spacing: .04em; }
+  .th p { margin: 0; }
+  .th-rule { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
+  .th-row { display: flex; justify-content: space-between; gap: 8px; }
+  .th-item { padding: 3px 0; }
+  .th-item .sub { color: #333; font-size: 10.5px; }
+  .th-strong { font-weight: 700; font-size: 13px; }
+  .th-terms { font-size: 10px; white-space: pre-line; }
+  .th-stamp { margin: 4px 0; padding: 2px; border: 2px solid #000; text-align: center; font-weight: 800; }
+</style>
+<div class="th">
+  <div class="th-center">
+    {% if design.show_logo %}<img src="{{ doc.company.logo }}" alt="">{% endif %}
+    <h1>{{ doc.company.name }}</h1>
+    {% if doc.company.branch %}<p>{{ doc.company.branch }}</p>{% endif %}
+    {% if doc.company.address %}<p>{{ doc.company.address }}</p>{% endif %}
+    {% if doc.company.phone %}<p class="num">{{ doc.company.phone }}</p>{% endif %}
+    {% if doc.company.tax_no %}<p>{{ doc.labels.tax_no }} <span class="num">{{ doc.company.tax_no }}</span></p>{% endif %}
+    {% if design.header_note %}<p>{{ design.header_note }}</p>{% endif %}
+    <h2>{{ doc.title }}</h2>
+  </div>
+  {% if doc.status %}<div class="th-stamp">{{ doc.status }}</div>{% endif %}
+  <hr class="th-rule">
+  {% for label, value in doc.meta %}<div class="th-row"><span>{{ label }}</span><span class="num">{{ value }}</span></div>{% endfor %}
+  {% for label, value in doc.party %}<div class="th-row"><span>{{ label }}</span><span>{{ value }}</span></div>{% endfor %}
+  <hr class="th-rule">
+  {% for row in doc.rows %}{% include "printing/documents/_narrow_row.html" %}{% endfor %}
+  {% for section in doc.sections %}<hr class="th-rule"><p><strong>{{ section.title }}</strong></p>{% for label, value in section.lines %}<div class="th-row"><span>{{ label }}</span><span class="num">{{ value }}</span></div>{% endfor %}{% endfor %}
+  <hr class="th-rule">
+  {% for total in doc.totals %}<div class="th-row{% if total.strong %} th-strong{% endif %}"><span>{{ total.label }}</span><span class="num">{{ total.value }}</span></div>{% endfor %}
+  {% if design.terms %}<hr class="th-rule"><p class="th-terms">{{ design.terms }}</p>{% endif %}
+  {% if design.signatures %}<div class="th-row" style="margin-top:10mm;gap:6mm"><span style="flex:1;border-top:1px solid #000;text-align:center;padding-top:2px">{{ doc.signatures.0 }}</span><span style="flex:1;border-top:1px solid #000;text-align:center;padding-top:2px">{{ doc.signatures.1 }}</span></div>{% endif %}
+  {% if design.footer_note %}<hr class="th-rule"><p class="th-center">{{ design.footer_note }}</p>{% endif %}
+</div>

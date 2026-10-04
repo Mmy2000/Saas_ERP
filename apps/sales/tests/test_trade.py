@@ -167,6 +167,7 @@ def test_api_pages_and_settling(tenant_a, stock):
     assert back.status_code == 201, back.content
     for path in ("/sales/wholesale/", "/sales/wholesale/new/", f"/sales/wholesale/{sale_id}/",
                  f"/sales/wholesale/returns/{back.json()['id']}/", "/trade-accounts/",
+                 f"/print/trade_sale/{sale_id}/", f"/print/trade_return/{back.json()['id']}/",
                  "/trade-accounts/new/", f"/trade-accounts/{trader}/",
                  f"/trade-accounts/{trader}/statement/", "/settlements/new/?side=trade_account"):
         assert client.get(path).status_code == 200, path
@@ -262,6 +263,8 @@ class TestBuyingFromTraders:
         assert made.status_code == 201, made.content
         assert made.json()["seller_role"] == "trade_account"
         detail = client.get(f"/purchasing/{made.json()['id']}/").content.decode()
+        printed = client.get(f"/print/purchase_invoice/{made.json()['id']}/")
+        assert printed.status_code == 200 and 'class="sheet' in printed.content.decode()
         assert f"/trade-accounts/{stock.trader.pk}/" in detail
         wholesale = client.get(f"/sales/wholesale/new/?account={stock.trader.pk}")
         assert f'<option value="{stock.trader.pk}" selected>' in wholesale.content.decode()

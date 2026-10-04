@@ -415,6 +415,27 @@
   }
 }
 
+/* Every checkbox is a switch: the knob is a background circle that slides to the inline end when
+   checked. Outside the layers so it beats size-4 / rounded / accent-* left on older markup. */
+input[type="checkbox"] {
+  appearance: none; flex-shrink: 0; cursor: pointer; vertical-align: middle;
+  width: 2.25rem; height: 1.25rem; border: 0; border-radius: 9999px;
+  background-color: var(--color-slate-300);
+  background-image: radial-gradient(circle, #fff 0 0.5rem, transparent calc(0.5rem + 0.5px));
+  background-size: 1.25rem 1.25rem; background-repeat: no-repeat; background-position: left center;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.12);
+  transition: background-color 150ms, background-position 150ms;
+}
+input[type="checkbox"]:hover:not(:disabled) { background-color: var(--color-slate-400); }
+input[type="checkbox"]:checked { background-color: var(--color-brand-600); background-position: right center; }
+input[type="checkbox"]:indeterminate { background-color: var(--color-brand-300); background-position: center; }
+[dir="rtl"] input[type="checkbox"] { background-position: right center; }
+[dir="rtl"] input[type="checkbox"]:checked { background-position: left center; }
+[dir="rtl"] input[type="checkbox"]:indeterminate { background-position: center; }
+input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+
 /* Printing (receipts): only the document itself. */
 @media print {
   #sidebar, [data-no-print], [data-sidebar-backdrop], #toasts { display: none !important; }

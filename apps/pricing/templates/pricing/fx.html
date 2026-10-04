@@ -13,7 +13,7 @@
     <div class="card-header"><h2 class="card-title">{% translate "Current rates" %}</h2></div>
     {% if current %}
     <div class="overflow-x-auto">
-      <table class="table">
+      <table class="table" data-report="{% translate 'Current rates' %}">
         <thead><tr><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Rate" %}</th><th>{% translate "Effective" %}</th></tr></thead>
         <tbody>
         {% for row in current %}
@@ -65,7 +65,7 @@
   <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "Rate history" %}</h2></div>
   {% if history %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{% translate 'Rate history' %}">
       <thead><tr><th>{% translate "Effective" %}</th><th>{% translate "Currency" %}</th><th class="text-end">{% translate "Rate" %}</th><th>{% translate "Published by" %}</th></tr></thead>
       <tbody>
       {% for rate in history %}

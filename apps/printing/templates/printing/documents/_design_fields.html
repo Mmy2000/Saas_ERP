@@ -1,0 +1,49 @@
+{% load i18n %}{# The design options of DesignForm, shared by the workspace page and the console. #}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">{% translate "Design" %}</h2></div>
+  <div class="card-body space-y-3">
+    {% include "console/_field.html" with field=form.follows %}
+    <p class="hidden rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-800" data-follows-note>{% translate "This document prints with the design of the one you chose. Change that one to change both, or pick “Its own design” to design this one separately." %}</p>
+  </div>
+</section>
+<div class="space-y-6" data-own-design>
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Layout" %}</h2></div>
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+      {% include "console/_field.html" with field=form.layout %}
+      {% include "console/_field.html" with field=form.paper %}
+      {% include "console/_field.html" with field=form.lang %}
+      {% include "console/_field.html" with field=form.copies %}
+      <div>{% include "console/_field.html" with field=form.color %}</div>
+      <label class="flex items-center gap-3 self-center">{{ form.show_logo }}<span class="text-sm text-slate-700">{{ form.show_logo.label }}</span></label>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">{% translate "Texts" %}</h2></div>
+    <div class="card-body space-y-5">
+      {% include "console/_field.html" with field=form.header_note %}
+      {% include "console/_field.html" with field=form.footer_note %}
+      {% include "console/_field.html" with field=form.terms %}
+    </div>
+  </section>
+</div>
+{% if form.column_fields or form.option_fields %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">{% translate "Columns and details" %}</h2><span class="text-xs text-slate-500">{% translate "This document's own" %}</span></div>
+  <div class="card-body grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+    {% for field in form.column_fields %}<label class="flex items-center gap-3 text-sm {% if field.field.disabled %}text-slate-400{% else %}text-slate-700{% endif %}">{{ field }}{{ field.label }}</label>{% endfor %}
+    {% for field in form.option_fields %}<label class="flex items-center gap-3 text-sm text-slate-700">{{ field }}{{ field.label }}</label>{% endfor %}
+  </div>
+</section>
+{% endif %}
+<script type="module">
+  // Following another document's design: its look does not apply here, so hide it.
+  const select = document.querySelector("select[name=follows]");
+  const sync = () => {
+    const follows = Boolean(select?.value);
+    document.querySelector("[data-own-design]")?.classList.toggle("hidden", follows);
+    document.querySelector("[data-follows-note]")?.classList.toggle("hidden", !follows);
+  };
+  select?.addEventListener("change", sync);
+  sync();
+</script>

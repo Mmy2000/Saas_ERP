@@ -1,0 +1,5 @@
+<div style="display:flex;gap:10px;align-items:center;{% if p.stack %}flex-direction:column;text-align:center{% endif %}">
+{% if p.logo and doc.company.logo %}<img src="{{ doc.company.logo }}" alt="" style="width:{{ p.logo_size }}px;height:{{ p.logo_size }}px;object-fit:contain;border-radius:{{ p.logo_round }}px">{% endif %}
+<div style="min-width:0"><div style="font-size:{{ p.name_size }}px;font-weight:700;line-height:1.2">{{ doc.company.name }}</div>
+{% if p.details %}{% if doc.company.legal_name %}<div class="bk-muted">{{ doc.company.legal_name }}</div>{% endif %}{% if doc.company.address %}<div class="bk-muted">{{ doc.company.address }}</div>{% endif %}{% if doc.company.phone %}<div class="bk-muted num">{{ doc.company.phone }}</div>{% endif %}{% if doc.company.tax_no %}<div class="bk-muted">{{ doc.labels.tax_no }} <span class="num">{{ doc.company.tax_no }}</span></div>{% endif %}{% endif %}
+</div></div>

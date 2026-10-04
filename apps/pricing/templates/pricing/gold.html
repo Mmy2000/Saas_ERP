@@ -22,7 +22,7 @@
     </div>
     {% if board %}
       <div class="overflow-x-auto">
-        <table class="table">
+        <table class="table" data-report="{% translate 'Current prices' %}">
           <thead><tr>
             <th>{% translate "Karat" %}</th><th class="text-end">{% translate "Sell" %}</th>
             <th class="text-end">{% translate "Buy" %}</th><th class="text-end">{% translate "Scrap buy" %}</th><th></th>
@@ -101,7 +101,7 @@
   <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "Price history" %}</h2></div>
   {% if history %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{% translate 'Price history' %}">
       <thead><tr>
         <th>{% translate "Effective" %}</th><th>{% translate "Reference" %}</th><th class="text-end">{% translate "Sell" %}</th>
         <th class="text-end">{% translate "Buy" %}</th><th>{% translate "Published by" %}</th><th>{% translate "Note" %}</th>

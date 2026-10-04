@@ -34,7 +34,7 @@
   <section class="card overflow-hidden xl:col-span-2">
     <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "History" %}</h2></div>
     <div class="overflow-x-auto">
-      <table class="table">
+      <table class="table" data-report="{% translate 'History' %}">
         <thead><tr><th>{% translate "Date" %}</th><th>{% translate "What happened" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Document" %}</th></tr></thead>
         <tbody>
         {% for movement in movements %}

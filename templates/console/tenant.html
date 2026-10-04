@@ -73,6 +73,7 @@
     {% endif %}
 
     {% include "console/_tenant_features.html" %}
+    {% if document_rows %}{% include "console/_tenant_documents.html" %}{% endif %}
 
     <section class="card overflow-hidden">
       <div class="card-header"><h2 class="card-title">{% translate "Activity" %}</h2><a href="{% url 'console-events' %}?tenant={{ tenant.pk }}" class="btn btn-ghost text-xs">{% translate "See all" %}</a></div>

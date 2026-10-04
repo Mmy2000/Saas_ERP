@@ -33,7 +33,7 @@
   </div>
   {% if page.object_list %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Bag" %}</th><th>{% translate "Number" %}</th><th>{% translate "Customer" %}</th><th>{% translate "Taken in" %}</th><th>{% translate "Promised" %}</th>
         <th class="text-end">{% translate "Charge" %} ({{ home_currency }})</th><th class="text-end">{% translate "Deposit" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>

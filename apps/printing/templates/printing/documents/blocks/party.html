@@ -1,0 +1,2 @@
+{% if p.inline %}<div style="display:flex;flex-wrap:wrap;gap:4px 22px">{% for label, value in doc.party %}<span><span class="bk-muted">{{ label }}:</span> <strong>{{ value }}</strong></span>{% endfor %}</div>
+{% else %}{% for label, value in doc.party %}<div class="bk-row"><span class="bk-muted">{{ label }}</span><strong>{{ value }}</strong></div>{% endfor %}{% endif %}

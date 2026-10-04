@@ -1,0 +1,31 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui static %}
+{% block title %}{{ kind.label }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'printing/js/design-preview.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'document-designs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Documents" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ kind.label }}</h1>
+</div>
+{% endblock %}
+{% block content %}
+{% if design.use_custom and design.custom_html %}
+<div class="mb-6 flex items-start gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-800">{% icon "info" "size-5 mt-px" %}<p>{% translate "This document uses a custom design made for you. The options below apply only if it is switched off." %}</p></div>
+{% endif %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4">
+  <div class="flex items-start gap-3">{% icon "layout-dashboard" "size-5 mt-0.5 text-brand-600" %}
+    <div><p class="text-sm font-semibold text-slate-900">{% translate "Design it yourself" %}</p>
+      <p class="text-xs text-slate-600">{% translate "Drag blocks onto the page and set spacing, borders, rounded corners, colours and text for each one." %}</p>
+      {% if design.follows %}<p class="mt-1 text-xs text-brand-800">{% blocktranslate trimmed with name=design.follows_label %}It starts from the design of {{ name }} and, once saved, becomes this document's own.{% endblocktranslate %}</p>{% endif %}</div></div>
+  <a href="{% url 'document-designer' kind.key %}" class="btn btn-primary">{% icon "pencil" "size-4" %}{% translate "Open the designer" %}</a>
+</div>
+<form method="post" class="grid grid-cols-1 gap-6 xl:grid-cols-2" data-design-form data-preview-url="{{ preview_url }}" novalidate>
+  {% csrf_token %}
+  <div class="space-y-6">
+    {% include "printing/documents/_design_fields.html" %}
+    <div class="flex gap-2"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'document-designs' %}" class="btn btn-secondary">{% translate "Cancel" %}</a></div>
+  </div>
+  <div>{% include "printing/documents/_preview.html" %}</div>
+</form>
+{% endblock %}

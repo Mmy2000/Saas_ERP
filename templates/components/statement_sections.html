@@ -4,7 +4,7 @@
 <section class="border-b border-slate-100 last:border-0">
   <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{{ section.commodity.label }}</h2>
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{{ section.commodity.label }}">
       <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Document" %}</th>
         <th class="text-end">{% translate "Debit" %}</th><th class="text-end">{% translate "Credit" %}</th><th class="text-end">{% translate "Balance" %}</th></tr></thead>
       <tbody>

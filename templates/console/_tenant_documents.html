@@ -1,0 +1,10 @@
+{% load i18n ui %}{# Client page: its printed documents and how each is designed. #}
+<section class="card overflow-hidden" id="documents">
+  <div class="card-header"><h2 class="card-title">{% translate "Documents" %}</h2><span class="text-xs text-slate-500">{% translate "Invoice and receipt designs" %}</span></div>
+  {% for group, rows in document_rows %}
+  <p class="border-t border-slate-100 bg-slate-50/70 px-5 py-1.5 text-[11px] font-semibold text-slate-500">{{ group }}</p>
+  <ul class="divide-y divide-slate-100">
+    {% for row in rows %}{% include "printing/documents/_design_row.html" with url_name="console-tenant-document" %}{% endfor %}
+  </ul>
+  {% endfor %}
+</section>

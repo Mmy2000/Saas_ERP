@@ -119,6 +119,53 @@ them in its views/API/templates as usual, and add a `Feature(...)` listing their
 appears in the console. `tests/test_features.py` fails if a prefix matches no permission or two
 features claim the same one.
 
+### Printed documents (invoice designs)
+
+Each client prints its documents in its own design, from one codebase (the old system kept a git
+branch per client with hand-placed ReportLab coordinates). A document type turns its record into
+one plain shape (`apps/printing/documents.py`: company, title, meta, party, columns + rows,
+sections, totals); a design renders it:
+
+- **Built-in layouts** (`apps/printing/templates/printing/documents/layouts/`): Classic, Modern
+  and an 80 mm thermal slip. The client chooses layout, paper (A4/A5/80 mm), language (Arabic,
+  English or both), colour, logo, notes, terms, columns, details and copies in
+  **Settings → Documents**, with a live preview.
+- **The designer** (drag and drop, clients and staff): the document is a list of blocks (company,
+  logo, title, details, customer, items table, extra details, totals, text, space, line,
+  signatures, 2–3 columns holding blocks). Drag blocks from the palette onto the page or into
+  Layers, click a block in the page to select it, and set its properties and style: spacing and
+  padding on four sides, background, border, rounded corners, alignment, text size, weight and
+  colour; the table has header colours, striped rows, lines, cell padding and a list shape for
+  80 mm paper. Page margins, base text size and colours; undo/redo; Classic, Modern and Thermal
+  starting points. Saved as JSON in `DocumentDesign.blocks`/`page`; everything posted is cleaned
+  by `apps/printing/builder.py` (known types and keys only, clamped numbers, #rrggbb colours)
+  and the server writes the HTML, so it is safe for clients.
+- **Custom HTML** per client and document, written by platform staff only (console → client →
+  Documents), with a live preview, the classic layout as a starting point, and every earlier
+  version kept. It is rendered by a separate template engine with no loaders and plain data
+  only (`apps/printing/render.py`), so it cannot include server files or reach other data; a
+  broken one prints with the built-in layout instead.
+
+Document types (14, grouped as sales, purchases, money and goods): sales invoice and return,
+reservation, wholesale sale and return, repair/custom order, purchase invoice, supplier return,
+scrap purchase and sale, receipt/payment, expense voucher, cash and bank movement, stock
+transfer. Each type has its own columns and details; its look either is its own or **follows**
+another type (`DocumentDesign.follows`; every type follows the sales invoice until given its own
+design, loops are refused). Following copies the look only (layout, paper, language, colour,
+texts, designer blocks, custom HTML), resolved by `render.design_for()`.
+
+**Printing report tables.** A list or report table marked `<table data-report>` gets a Print
+button in the page header (`static/core/js/print_table.js`, dialog in
+`templates/components/print_table.html`): pick the tables and columns (matched by header text,
+remembered per page), this page or every page (`data-pages` = page count; the other pages are
+fetched with `?page=n`), and A4 portrait/landscape. It prints a clean copy with the company,
+title, filters and row count from a hidden frame; "Save as PDF" in the print dialog gives the PDF.
+
+Every document page prints through one URL, `/print/<type>/<pk>/` (`?print=1` opens the print
+dialog), which checks the type's permission and finds the record through the same visibility
+rules as its page. Adding a type: a `DocumentType` in `documents.py` with columns, options, a
+`builder`, a `sampler` and a `finder`. Server-side PDF and pre-printed paper are not done yet.
+
 ### Branding and uploaded files
 
 Console → **Settings**: the platform's name, logo (and one for dark backgrounds), the line shown

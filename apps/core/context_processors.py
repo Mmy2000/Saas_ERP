@@ -88,6 +88,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
     ]),
     (_("Settings"), [
         NavItem(_("Company"), "company", "settings", "org.settings.manage"),
+        NavItem(_("Documents"), "document-designs", "printer", "org.settings.manage",
+                ("document-design",)),
         NavItem(_("Branches"), "branches", "store", "org.branch.view",
                 ("branch-new", "branch-edit")),
         NavItem(_("Users"), "users", "users", "admin.users.view", ("user-new", "user-edit")),

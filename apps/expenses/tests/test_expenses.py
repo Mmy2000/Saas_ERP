@@ -75,5 +75,6 @@ def test_api_and_pages(tenant_a, shop):
     assert voucher.status_code == 201, voucher.content
     category = created.json()["id"]
     for path in ("/expenses/", "/expenses/new/", "/expenses/categories/",
-                 f"/expenses/{voucher.json()['id']}/", f"/expenses/?category={category}"):
+                 f"/expenses/{voucher.json()['id']}/", f"/expenses/?category={category}",
+                 f"/print/expense/{voucher.json()['id']}/"):
         assert client.get(path).status_code == 200, path

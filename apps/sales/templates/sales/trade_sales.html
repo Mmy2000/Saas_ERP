@@ -23,7 +23,7 @@
   </form>
   {% if page.object_list %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Trade account" %}</th><th>{% translate "The trader pays" %}</th>
         <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine gold" %}</th><th class="text-end">{% translate "Money" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>

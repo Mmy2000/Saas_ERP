@@ -176,6 +176,9 @@ def test_api_and_pages(tenant_a, shop):
         HTTP_IDEMPOTENCY_KEY="ret1")
     assert returned.status_code == 201, returned.content
     for path in (f"/settlements/{first.json()['id']}/", f"/customers/{customer.pk}/statement/",
+                 f"/print/settlement/{first.json()['id']}/",
+                 f"/print/sales_return/{returned.json()['id']}/",
+                 f"/print/sales_invoice/{invoice.pk}/",
                  f"/customers/{customer.pk}/statement/?from=2026-01-01",
                  f"/sales/returns/{returned.json()['id']}/", f"/sales/{invoice.pk}/",
                  f"/customers/{customer.pk}/", f"/suppliers/{shop.supplier.pk}/statement/"):

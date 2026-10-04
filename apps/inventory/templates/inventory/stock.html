@@ -10,7 +10,7 @@
   <div class="card-header"><h2 class="card-title">{% translate "By karat" %}</h2></div>
   {% if summary %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{% translate 'By karat' %}">
       <thead><tr>
         <th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th>
         <th class="text-end">{% translate "Pieces weight (g)" %}</th><th class="text-end">{% translate "Bulk weight (g)" %}</th>
@@ -65,7 +65,7 @@
   </form>
   {% endif %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{% translate 'Pieces' %}" data-pages="{{ page.paginator.num_pages }}">
       <thead><tr>
         {% if can_label %}<th class="w-10"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-check-all="item" aria-label="{% translate 'Select all' %}"></th>{% endif %}
         <th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th>
@@ -107,7 +107,7 @@
 <section class="card mt-6 overflow-hidden">
   <div class="card-header"><h2 class="card-title">{% translate "Bulk stock" %}</h2></div>
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table" data-report="{% translate 'Bulk stock' %}">
       <thead><tr><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th>{% translate "Branch" %}</th>
         <th class="text-end">{% translate "Count" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine (g)" %}</th></tr></thead>
       <tbody>

@@ -8,7 +8,7 @@
   <div class="flex gap-2">
     {% can "sales.invoice.create" as can_sell %}
     {% if can_sell %}<a href="{% url 'sale-new' %}" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "New sale" %}</a>{% endif %}
-    <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+    <a href="{% url 'sale-print' invoice.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-primary">{% icon "printer" "size-4" %}{% translate "Print" %}</a>
   </div>
 </div>
 {% endblock %}

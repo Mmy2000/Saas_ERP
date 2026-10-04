@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from functools import wraps
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
@@ -206,11 +207,19 @@ def tenant(request, pk):
         "profile_logo_url": profile.logo.url if profile and profile.logo else "",
         "events": tenant.events.select_related("actor")[:12],
         "feature_states": feature_registry.states(tenant),
+        "document_rows": _document_rows(tenant) if profile else [],
         "settings_form": settings_form, "profile_form": profile_form, "domain_form": DomainForm(),
         "transitions": [(s, TenantStatus(s).label) for s in TRANSITIONS
                         if tenant.status in TRANSITIONS[s]],
         "section": "tenants",
     })
+
+
+def _document_rows(tenant: Tenant) -> list:
+    from apps.printing.design_views import design_rows
+
+    with tenant_context(tenant.id):
+        return design_rows()
 
 
 def _invalid(request, form) -> None:
@@ -620,3 +629,146 @@ def plan_delete(request, pk):
         return redirect("console-plans")
     return render(request, "console/plan_delete.html", {
         "plan": plan, "clients": clients, "form": form, "section": "plans"})
+
+
+# ---- Document designs of a client (custom HTML: platform staff only) ----
+
+def _client_accent(tenant) -> str:
+    from apps.org.models import TenantProfile
+
+    with tenant_context(tenant.id):
+        return (TenantProfile.objects.values_list("accent", flat=True).first()) or "gold"
+
+
+@staff_required
+def tenant_document(request, pk, doc_type):
+    from apps.printing.design_forms import CustomHtmlForm, DesignForm
+    from apps.printing.documents import TYPES
+    from apps.printing.models import DocumentDesignVersion
+    from apps.printing.render import accent_hex, own_design
+
+    tenant = _tenant(pk)
+    if doc_type not in TYPES:
+        raise Http404
+    accent = _client_accent(tenant)
+    with tenant_context(tenant.id):
+        design = own_design(doc_type)
+        accent_color = accent_hex(type(design)(), accent)
+        form = DesignForm(request.POST or None, instance=design, doc_type=doc_type,
+                          accent=accent_color)
+        custom = CustomHtmlForm(request.POST or None, initial={
+            "use_custom": design.use_custom, "custom_html": design.custom_html})
+        if request.method == "POST" and form.is_valid() and custom.is_valid():
+            previous = design.custom_html
+            design = form.apply()
+            design.custom_html = custom.cleaned_data["custom_html"]
+            design.use_custom = custom.cleaned_data["use_custom"]
+            design.save()
+            if previous and previous != design.custom_html:
+                DocumentDesignVersion.objects.create(
+                    design=design, custom_html=previous,
+                    saved_by=request.user.display_name or request.user.email)
+            record(request, "document.design", tenant, document=doc_type,
+                   custom="on" if design.use_custom else "off")
+            messages.success(request, _("Saved."))
+            return redirect("console-tenant-document", pk, doc_type)
+        versions = list(design.versions.all()[:20]) if design.pk else []
+    # "Start from the classic layout": its source, as text, for the editor.
+    import apps.printing
+
+    starter = (Path(apps.printing.__file__).parent / "templates" / "printing" / "documents"
+               / "layouts" / "classic.html").read_text(encoding="utf-8")
+    return render(request, "console/tenant_document.html", {
+        "tenant": tenant, "kind": TYPES[doc_type], "form": form, "custom": custom,
+        "design": design, "versions": versions, "starter": starter,
+        "preview_url": reverse("console-tenant-document-preview", args=[pk, doc_type]),
+        "section": "tenants"})
+
+
+@staff_required
+@require_POST
+def tenant_document_preview(request, pk, doc_type):
+    from apps.org.models import TenantProfile
+    from apps.printing.design_forms import CustomHtmlForm, DesignForm
+    from apps.printing.design_views import with_look
+    from apps.printing.documents import TYPES, _company
+    from apps.printing.render import accent_hex, own_design, render_document
+
+    tenant = _tenant(pk)
+    if doc_type not in TYPES:
+        raise Http404
+    accent = _client_accent(tenant)
+    with tenant_context(tenant.id):
+        design = own_design(doc_type)
+        form = DesignForm(request.POST, instance=design, doc_type=doc_type,
+                          accent=accent_hex(type(design)(), accent))
+        design = with_look(form.apply() if form.is_valid() else form.instance)
+        custom = CustomHtmlForm(request.POST)
+        custom.is_valid()
+        doc = TYPES[doc_type].sampler(design, _company(TenantProfile.objects.first(),
+                                                       _("Main branch")))
+        return render_document(
+            request, doc, design, accent_key=accent, toolbar=False,
+            custom_html=custom.cleaned_data.get("custom_html", ""),
+            use_custom=custom.cleaned_data.get("use_custom", False))
+
+
+@staff_required
+@require_POST
+def tenant_document_restore(request, pk, doc_type, version_id):
+    from apps.printing.models import DocumentDesign, DocumentDesignVersion
+
+    tenant = _tenant(pk)
+    with tenant_context(tenant.id):
+        design = DocumentDesign.objects.filter(doc_type=doc_type).first()
+        version = DocumentDesignVersion.objects.filter(pk=version_id, design=design).first()
+        if design is None or version is None:
+            raise Http404
+        DocumentDesignVersion.objects.create(
+            design=design, custom_html=design.custom_html,
+            saved_by=request.user.display_name or request.user.email)
+        design.custom_html = version.custom_html
+        design.save(update_fields=["custom_html", "updated_at"])
+    record(request, "document.design", tenant, document=doc_type, restored=version_id)
+    messages.success(request, _("The earlier design is back."))
+    return redirect("console-tenant-document", pk, doc_type)
+
+
+@staff_required
+def tenant_designer(request, pk, doc_type):
+    from apps.printing import designer_views
+
+    tenant = _tenant(pk)
+    accent = _client_accent(tenant)
+    urls = {
+        "preview": reverse("console-tenant-designer-preview", args=[pk, doc_type]),
+        "save": reverse("console-tenant-designer-save", args=[pk, doc_type]),
+        "back": reverse("console-tenant-document", args=[pk, doc_type]),
+    }
+    with tenant_context(tenant.id):
+        return designer_views.designer_page(request, doc_type, urls=urls, accent_key=accent,
+                                            title=tenant.name, back_label=tenant.name)
+
+
+@staff_required
+@require_POST
+def tenant_designer_preview(request, pk, doc_type):
+    from apps.printing import designer_views
+
+    tenant = _tenant(pk)
+    accent = _client_accent(tenant)
+    with tenant_context(tenant.id):
+        return designer_views.designer_preview(request, doc_type, accent_key=accent)
+
+
+@staff_required
+@require_POST
+def tenant_designer_save(request, pk, doc_type):
+    from apps.printing import designer_views
+
+    tenant = _tenant(pk)
+    with tenant_context(tenant.id):
+        response = designer_views.designer_save(request, doc_type)
+    if response.status_code == 200:
+        record(request, "document.design", tenant, document=doc_type, designer="saved")
+    return response

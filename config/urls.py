@@ -15,6 +15,8 @@ from apps.org.web import company
 from apps.org.web import views as org
 from apps.parties.web import views as parties
 from apps.pricing.web import views as pricing
+from apps.printing import design_views as documents
+from apps.printing import designer_views as designer
 from apps.printing import views as printing
 from apps.purchasing.web import return_views as supplier_returns
 from apps.purchasing.web import scrap_views as scrap
@@ -34,6 +36,16 @@ urlpatterns = [
     path("media/<path:path>", media.serve, name="media"),
 
     path("settings/company/", company.company, name="company"),
+    path("settings/documents/", documents.designs, name="document-designs"),
+    path("settings/documents/<str:doc_type>/", documents.design_edit, name="document-design"),
+    path("settings/documents/<str:doc_type>/preview/", documents.design_preview,
+         name="document-design-preview"),
+    path("settings/documents/<str:doc_type>/designer/", designer.designer,
+         name="document-designer"),
+    path("settings/documents/<str:doc_type>/designer/preview/", designer.preview,
+         name="document-designer-preview"),
+    path("settings/documents/<str:doc_type>/designer/save/", designer.save,
+         name="document-designer-save"),
     path("branches/", org.branches, name="branches"),
     path("branches/new/", org.branch_new, name="branch-new"),
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
@@ -79,6 +91,8 @@ urlpatterns = [
     path("sales/", sales.invoices, name="sales"),
     path("sales/new/", sales.new_sale, name="sale-new"),
     path("sales/<int:pk>/", sales.invoice_detail, name="sale-detail"),
+    path("sales/<int:pk>/print/", sales.invoice_print, name="sale-print"),
+    path("print/<str:doc_type>/<int:pk>/", documents.print_document, name="print-document"),
     path("sales/returns/<int:pk>/", sales.return_detail, name="sale-return-detail"),
     path("sales/reservations/", sales.reservation_list, name="reservations"),
     path("sales/reservations/new/", sales.reservation_new, name="reservation-new"),

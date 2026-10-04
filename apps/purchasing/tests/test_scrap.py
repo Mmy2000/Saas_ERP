@@ -127,5 +127,7 @@ def test_api_and_pages(tenant_a, shop):
     for path in ("/purchasing/scrap/", "/purchasing/scrap/?tab=sales",
                  "/purchasing/scrap/buy/", "/purchasing/scrap/sell/",
                  f"/purchasing/scrap/bought/{bought.json()['id']}/",
-                 f"/purchasing/scrap/sold/{sold.json()['id']}/"):
+                 f"/purchasing/scrap/sold/{sold.json()['id']}/",
+                 f"/print/scrap_purchase/{bought.json()['id']}/",
+                 f"/print/scrap_sale/{sold.json()['id']}/"):
         assert client.get(path).status_code == 200, path
