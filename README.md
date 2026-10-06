@@ -364,9 +364,7 @@ These are Phase 2 spikes or later phases in the plan:
 - The tenant-prefixed cache wrapper; WhatsApp Business API (messages sent by the platform
   itself), SMS, scheduled report e-mails.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
-- Sending PDFs by e-mail or WhatsApp (needs background jobs), QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it),
-  stones/diamond detail on pieces,
-  reservations of bullion/coins not yet in stock, expiry reminders, partial receipt of a
+- QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it), reservations of bullion/coins not yet in stock, expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
   RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
   (repairs), receiving in several batches, labour paid in gold, stones issued to setters;
