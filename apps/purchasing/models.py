@@ -99,6 +99,12 @@ class SupplierInvoicePiece(TenantScopedModel):
     gross_weight_g = models.DecimalField(max_digits=14, decimal_places=3)
     item = models.OneToOneField("inventory.Item", null=True, blank=True, on_delete=models.PROTECT,
                                 related_name="+")
+    # Diamond pieces and loose stones (apps.diamonds): carats, what the stones cost (invoice
+    # currency), the selling price, and each stone's details.
+    stone_weight_ct = models.DecimalField(max_digits=12, decimal_places=3, default=0)
+    stone_cost = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    label_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    stones = models.JSONField(default=list, blank=True)
 
     class Meta:
         ordering = ["id"]

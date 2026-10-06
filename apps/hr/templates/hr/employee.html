@@ -1,0 +1,134 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ employee.name }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'hr/js/hr.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'employees' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Employees" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ employee.name }}</h1>
+    <span class="badge badge-neutral">{% translate "Code" %} <span class="num">{{ employee.code }}</span></span>
+    {% if not employee.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+    <span class="ms-auto">{% include "audit/_history_link.html" with table="hr_employee" row=employee.pk %}</span>
+  </div>
+  {% if employee.job_title %}<p class="mt-1 text-sm text-slate-500">{{ employee.job_title }}</p>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "hr.employee.manage" as can_manage %}
+{% can "hr.advance.create" as can_advance %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Monthly salary" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ employee.monthly_salary|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+      <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Advances due" %}</p><p class="mt-2 text-2xl font-semibold {% if outstanding %}text-amber-700{% else %}text-slate-900{% endif %}"><span class="num">{{ outstanding|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{% translate "Taken back from the next payroll" %}</p></div>
+      <div class="card card-body">
+        <div class="flex items-center justify-between gap-2"><p class="text-sm text-slate-500">{% translate "Commission" %}</p>
+          <form method="get"><select name="period" class="form-input h-7 py-0 text-xs" onchange="this.form.submit()" aria-label="{% translate 'Month' %}">{% for value, day in months %}<option value="{{ value }}" {% if value == period %}selected{% endif %}>{{ day|date:"F Y" }}</option>{% endfor %}</select></form></div>
+        <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ commission.amount|num:2 }}</span></p>
+        <p class="mt-0.5 text-xs text-slate-500">{% if employee.user_id %}{% blocktranslate trimmed count n=commission.sales %}{{ n }} sale{% plural %}{{ n }} sales{% endblocktranslate %} · {% translate "making" %} <span class="num">{{ commission.making|num:2 }}</span> · <span class="num">{{ commission.grams|num:3 }}</span> {% translate "g" %}{% else %}{% translate "No login linked, so no sales count." %}{% endif %}</p>
+      </div>
+    </section>
+
+    <form class="space-y-6" data-api-form data-endpoint="{{ endpoint }}" data-method="PATCH" data-success="{% translate 'Saved.' %}" novalidate>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      {% include "hr/_employee_fields.html" %}
+      <section class="card">
+        <div class="card-header"><h2 class="card-title">{% translate "Notes" %}</h2></div>
+        <div class="card-body space-y-4">
+          <textarea name="notes" rows="3" class="form-input" aria-label="{% translate 'Notes' %}">{{ employee.notes }}</textarea>
+          <label class="flex items-center gap-3 text-sm text-slate-700"><input type="checkbox" name="is_active" class="size-4 rounded border-slate-300 accent-brand-600" {% if employee.is_active %}checked{% endif %}>{% translate "Active: included in the payroll" %}</label>
+        </div>
+      </section>
+      {% if can_manage %}<div class="flex justify-end"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button></div>{% endif %}
+    </form>
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Payslips" %}</h2></div>
+      {% if payslips %}
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Month" %}</th><th class="text-end">{% translate "Salary" %}</th><th class="text-end">{% translate "Commission" %}</th><th class="text-end">{% translate "Bonuses and deductions" %}</th><th class="text-end">{% translate "Advances" %}</th><th class="text-end">{% translate "Net pay" %}</th></tr></thead>
+          <tbody>
+          {% for line in payslips %}
+            <tr>
+              <td><a class="num text-brand-700 hover:underline" href="{% url 'payroll' line.run_id %}">{{ line.run.period }}</a></td>
+              <td class="text-end"><span class="num">{{ line.salary|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ line.commission|num:2 }}</span></td>
+              <td class="text-end whitespace-nowrap">{% if line.bonus %}<span class="num text-emerald-700">+{{ line.bonus|num:2 }}</span>{% endif %}{% if line.deduction %} <span class="num text-red-700">−{{ line.deduction|num:2 }}</span>{% endif %}{% if not line.bonus and not line.deduction %}<span class="text-slate-400">—</span>{% endif %}</td>
+              <td class="text-end"><span class="num">{{ line.advance|num:2 }}</span></td>
+              <td class="text-end"><span class="num font-semibold text-slate-900">{{ line.net|num:2 }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "Not paid in a payroll yet" %}</p>{% endif %}
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    {% if can_advance and employee.is_active %}
+    <form data-api-form data-shape="hr-advance" data-method="POST" data-endpoint="{{ endpoint }}advance/" data-success="{% translate 'Advance paid.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Give an advance" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-4" data-payment>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <div><label class="form-label" for="a-amount">{% translate "Amount" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></label>
+          <input id="a-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount><p class="form-error" data-error-for="amount"></p></div>
+        <div><label class="form-label" for="a-branch">{% translate "Branch" %}</label>
+          <select id="a-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="a-method">{% translate "Pay with" %}</label>
+          <select id="a-method" class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option></select></div>
+        <input type="hidden" data-currency value="{{ home_currency }}">
+        {% include "treasury/holder_selects.html" with prefix="a-" %}
+        <input class="form-input" data-note placeholder="{% translate 'Note' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% icon "wallet" "size-4" %}{% translate "Pay advance" %}</button>
+      </div>
+    </form>
+
+    <form data-api-form data-shape="hr-adjustment" data-method="POST" data-endpoint="{{ endpoint }}adjustments/" data-success="{% translate 'Saved.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Bonus or deduction" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-4">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <div class="segmented w-full">
+          {% for value, label in kinds %}<label class="flex-1"><input type="radio" name="kind" value="{{ value }}" class="peer sr-only" {% if forloop.first %}checked{% endif %}><span class="segment text-center">{{ label }}</span></label>{% endfor %}
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label><span class="form-label">{% translate "Amount" %}</span><input name="amount" class="form-input num w-full text-start" inputmode="decimal"></label>
+          <label><span class="form-label">{% translate "Month" %}</span><select name="period" class="form-input">{% for value, day in months %}<option value="{{ value }}">{{ day|date:"F Y" }}</option>{% endfor %}</select></label>
+        </div>
+        <p class="form-error" data-error-for="amount"></p><p class="form-error" data-error-for="period"></p>
+        <input name="note" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="200">
+        <button type="submit" class="btn btn-secondary w-full">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+      </div>
+    </form>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Advances" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for a in advances %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3">
+          <span><a class="num text-brand-700 hover:underline" href="{% url 'employee-advance' a.pk %}">{{ a.number }}</a> <span class="num text-xs text-slate-400">{{ a.business_date|date:"SHORT_DATE_FORMAT" }}</span></span>
+          <span class="flex items-center gap-2">{% if a.status == "voided" %}{% include "components/doc_status.html" with status=a.status label=a.get_status_display %}{% endif %}<span class="num font-medium {% if a.status == 'voided' %}text-slate-400 line-through{% endif %}">{{ a.amount|num:2 }}</span></span>
+        </li>
+        {% empty %}<li class="px-5 py-6 text-center text-slate-500">{% translate "No advances" %}</li>{% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Bonuses and deductions" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for adj in adjustments %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3">
+          <span class="min-w-0"><span class="{% if adj.kind == 'bonus' %}text-emerald-700{% else %}text-red-700{% endif %}">{{ adj.get_kind_display }}</span> <span class="num text-xs text-slate-400">{{ adj.year }}-{{ adj.month|stringformat:"02d" }}</span>
+            {% if adj.note %}<span class="block truncate text-xs text-slate-500">{{ adj.note }}</span>{% endif %}</span>
+          <span class="flex shrink-0 items-center gap-1"><span class="num font-medium">{% if adj.kind == "deduction" %}−{% endif %}{{ adj.amount|num:2 }}</span>
+            {% if adj.payroll_line_id %}<span class="badge badge-success">{% translate "Paid" %}</span>{% elif can_advance %}<button type="button" class="btn btn-ghost text-xs text-slate-400" data-delete-adjustment="{% url 'hr-adjustment-detail' adj.pk %}" aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>{% endif %}</span>
+        </li>
+        {% empty %}<li class="px-5 py-6 text-center text-slate-500">{% translate "None yet" %}</li>{% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

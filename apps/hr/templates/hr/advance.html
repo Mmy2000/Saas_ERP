@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ advance.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'employee' advance.employee_id %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ advance.employee.name }}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "hr.advance.void" advance.branch as can_void %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p><p class="text-sm text-slate-500">{{ advance.branch.name }}</p></div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{% translate "Advance to an employee" %}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ advance.number }}</p>
+        <p class="num text-sm text-slate-500">{{ advance.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=advance.status label=advance.get_status_display %}</div>
+      </div>
+    </header>
+    <dl class="divide-y divide-slate-100 text-sm">
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Employee" %}</dt><dd class="font-medium text-slate-900">{{ advance.employee.name }} <span class="num text-xs text-slate-400">#{{ advance.employee.code }}</span></dd></div>
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Paid from" %}</dt><dd>{% if advance.cash_box %}<bdi>{{ advance.cash_box.label }}</bdi>{% else %}<bdi>{{ advance.bank_account.label }}</bdi>{% endif %}</dd></div>
+      <div class="flex justify-between bg-slate-50 px-6 py-4"><dt class="font-medium text-slate-700">{% translate "Amount" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-xl font-semibold text-slate-900">{{ advance.amount|num:2 }}</dd></div>
+    </dl>
+    {% if advance.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ advance.note }}</p>{% endif %}
+    {% if advance.status == "voided" and advance.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ advance.void_reason }}</p>{% endif %}
+    <p class="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">{% translate "Taken back from the employee's next payroll." %}</p>
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Paid by" %}</div>
+    </div>
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% if can_void and advance.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling puts the money back in the box or bank account. Not possible once a payroll has taken it back." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel" %}</button>
+    </form>
+    {% endif %}
+    {% if advance.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ advance.journal_entry.number }}</dd></div></dl></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

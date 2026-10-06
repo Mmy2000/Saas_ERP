@@ -20,7 +20,7 @@ from apps.org.models import Branch
 from apps.pricing.selectors import fine_gram_value
 from apps.sales.models import SalesInvoiceLine, SalesReturn, SalesTradeIn
 from apps.settlements.models import Settlement, SettlementKind
-from apps.treasury.models import BankAccount, CardTerminal, CashBox
+from apps.treasury.models import BankAccount, CardTerminal, CashBox, CashCount
 
 from .registry import BRANCH_FILTER, DATE_FILTERS, Column, Filter, Report, Table, register
 
@@ -53,7 +53,23 @@ class DailySummary(Report):
         day = params.date("date")
         karats = _karat_labels()
         return [self._sales(day, scope, karats), self._scrap(day, scope, karats),
-                self._boxes(day, scope), self._banks(day, scope), self._documents(day, scope)]
+                self._boxes(day, scope), self._counts(day, scope), self._banks(day, scope),
+                self._documents(day, scope)]
+
+    def _counts(self, day, scope):
+        table = Table(_("Cash counts"), [
+            Column("box", _("Cash box")), Column("currency", _("Currency")),
+            Column("expected", _("In the books"), "money"),
+            Column("counted", _("Counted"), "money"),
+            Column("difference", _("Difference"), "money")])
+        counts = _in_scope(CashCount.objects.filter(status=DocStatus.POSTED, business_date=day)
+                           .select_related("branch", "cash_box__currency"), scope)
+        for count in counts.order_by("branch__code", "posted_at"):
+            table.rows.append({"box": f"{count.branch.name} · {count.cash_box.label}",
+                               "currency": count.cash_box.currency.code,
+                               "expected": count.expected, "counted": count.counted,
+                               "difference": count.difference})
+        return table
 
     def _sales(self, day, scope, karats):
         lines = _in_scope(SalesInvoiceLine.objects.filter(

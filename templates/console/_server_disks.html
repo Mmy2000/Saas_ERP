@@ -1,0 +1,15 @@
+{% load i18n ui %}
+<div class="card-header"><h2 class="card-title">{% translate "Disks" %}</h2><span class="text-xs text-slate-500">{% translate "Free space on every drive" %}</span></div>
+<ul class="divide-y divide-slate-100 text-sm">
+  {% for disk in snap.disks %}
+  <li class="px-5 py-3.5">
+    <div class="mb-2 flex items-center justify-between gap-3">
+      <span class="inline-flex min-w-0 items-center gap-2">{% icon "hard-drive" "size-4 text-slate-400" %}<span class="num truncate font-medium text-slate-900">{{ disk.mount }}</span>
+        <span class="text-xs text-slate-400">{{ disk.fstype }}</span>{% if disk.is_app %}<span class="badge badge-brand">{% translate "App" %}</span>{% endif %}</span>
+      <span class="num shrink-0 text-xs text-slate-500">{{ disk.used|filesizeformat }} / {{ disk.total|filesizeformat }}</span>
+    </div>
+    {% if disk.percent >= critical_pct %}{% include "console/_meter.html" with percent=disk.percent level="critical" %}{% elif disk.percent >= warn_pct %}{% include "console/_meter.html" with percent=disk.percent level="warning" %}{% else %}{% include "console/_meter.html" with percent=disk.percent level="good" %}{% endif %}
+    <p class="num mt-1 text-end text-xs {% if disk.percent >= critical_pct %}text-red-600{% elif disk.percent >= warn_pct %}text-amber-700{% else %}text-slate-500{% endif %}">{{ disk.percent|floatformat:0 }}%</p>
+  </li>
+  {% endfor %}
+</ul>

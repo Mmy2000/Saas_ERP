@@ -59,6 +59,7 @@ def _ledger_lines(sales_return: SalesReturn, lines) -> list[LedgerLine]:
 
     add("sales_gold", home, sum((line.metal_amount for line in lines), ZERO))
     add("sales_making", home, sum((line.making_amount for line in lines), ZERO))
+    add("sales_diamonds", home, sum((line.stones_amount for line in lines), ZERO))
     add("sales_making", home, -sales_return.deduction_amount)
     if sales_return.refund_method == RefundMethod.CASH:
         if sales_return.refund_amount:
@@ -69,6 +70,8 @@ def _ledger_lines(sales_return: SalesReturn, lines) -> list[LedgerLine]:
 
     back: dict[str, list[Decimal]] = defaultdict(lambda: [ZERO, ZERO])
     for line in lines:
+        if line.karat is None:  # a loose stone
+            continue
         back[line.karat.metal.code][0] += line.fine_weight_g
         back[line.karat.metal.code][1] += line.metal_value
     for metal_code, (fine, value) in sorted(back.items()):
@@ -78,6 +81,9 @@ def _ledger_lines(sales_return: SalesReturn, lines) -> list[LedgerLine]:
     cost = sum((line.cost_amount for line in lines), ZERO)
     add("inventory_gold", home, cost)
     add("cogs_gold", home, -cost)
+    stones = sum((line.stone_cost_amount for line in lines), ZERO)
+    add("inventory_diamonds", home, stones)
+    add("cogs_diamonds", home, -stones)
     return result
 
 

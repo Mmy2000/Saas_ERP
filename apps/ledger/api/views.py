@@ -1,9 +1,11 @@
+from django.utils.translation import gettext as _
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.ledger import services
+from apps.core.errors import ValidationError
+from apps.ledger import closing, services
 from apps.ledger.models import Account, Commodity, EntryKind, JournalEntry
 from apps.ledger.selectors import trial_balance
 from apps.parties.models import Party
@@ -121,3 +123,63 @@ class TrialBalanceView(APIView):
                       "label": row.account.label, "debit": row.debit, "credit": row.credit,
                       "metals": row.metals} for row in tb.rows],
         })
+
+
+# --- closing months and years -------------------------------------------------------------------
+
+def _period(value) -> tuple[int, int]:
+    """'2026-09' → (2026, 9)."""
+    try:
+        year, month = (int(part) for part in str(value or "").split("-", 1))
+        closing.month_bounds(year, month)
+    except (TypeError, ValueError):
+        message = _("Choose a month.")
+        raise ValidationError(message, fields={"period": [message]}) from None
+    return year, month
+
+
+def _year(value) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        message = _("Choose a year.")
+        raise ValidationError(message, fields={"year": [message]}) from None
+
+
+class PeriodCloseView(APIView):
+    required_permissions = {"POST": "ledger.period.close"}
+
+    def post(self, request):
+        year, month = _period(request.data.get("period"))
+        period = closing.close_month(year, month, confirm=bool(request.data.get("confirm")),
+                                     note=str(request.data.get("note") or ""), actor=request.actor)
+        return Response({"period": period.name, "status": period.status})
+
+
+class PeriodReopenView(APIView):
+    required_permissions = {"POST": "ledger.period.reopen"}
+
+    def post(self, request):
+        year, month = _period(request.data.get("period"))
+        period = closing.reopen_month(year, month, reason=str(request.data.get("reason") or ""),
+                                      actor=request.actor)
+        return Response({"period": period.name, "status": period.status})
+
+
+class YearCloseView(APIView):
+    required_permissions = {"POST": "ledger.period.close"}
+
+    def post(self, request):
+        year_end = closing.close_year(_year(request.data.get("year")), actor=request.actor)
+        return Response({"year": year_end.year, "entry": year_end.entry.number},
+                        status=status.HTTP_201_CREATED)
+
+
+class YearReopenView(APIView):
+    required_permissions = {"POST": "ledger.period.reopen"}
+
+    def post(self, request):
+        year_end = closing.reopen_year(_year(request.data.get("year")),
+                                       reason=str(request.data.get("reason") or ""),
+                                       actor=request.actor)
+        return Response({"year": year_end.year, "reopened": True})

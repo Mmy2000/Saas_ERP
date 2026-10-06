@@ -17,6 +17,7 @@
 </div>
 {% endblock %}
 {% block content %}
+{% can "treasury.reconcile" as can_reconcile %}{% can "treasury.count.create" as can_count %}
 {% can "treasury.setup.manage" as can_manage %}{% can "treasury.transfer.receive" as can_receive %}
 {% if cash_totals %}
 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -83,6 +84,7 @@
             <td class="text-end"><span class="num font-medium {% if row.quantity < 0 %}text-red-600{% endif %}">{{ row.quantity|num:2 }}</span></td>
             <td class="text-end whitespace-nowrap">
               <a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-statement' 'box' row.holder.pk %}">{% translate "Statement" %}</a>
+              {% if can_count %}<a class="btn btn-ghost text-xs" href="{% url 'cash-count-new' %}?box={{ row.holder.pk }}">{% translate "Count it" %}</a>{% endif %}
               {% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-edit' 'box' row.holder.pk %}">{% translate "Edit" %}</a>{% endif %}
             </td>
           </tr>
@@ -112,6 +114,7 @@
         <div class="flex items-center gap-1">
           <span class="num me-2 font-medium {% if row.quantity < 0 %}text-red-600{% endif %}">{{ row.quantity|num:2 }} {{ row.currency.code }}</span>
           <a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-statement' 'bank' row.holder.pk %}">{% translate "Statement" %}</a>
+          {% if can_reconcile %}<a class="btn btn-ghost text-xs" href="{% url 'reconcile' row.holder.pk %}">{% translate "Reconcile" %}</a>{% endif %}
           {% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'treasury-holder-edit' 'bank' row.holder.pk %}">{% translate "Edit" %}</a>{% endif %}
         </div>
       </li>

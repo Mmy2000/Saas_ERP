@@ -203,3 +203,141 @@ class TreasuryDocument(Document):
         if self.source_bank_id:
             return str(_("Bank transfer"))
         return str(_("Cash transfer"))
+
+
+# --- cheques ------------------------------------------------------------------------------------
+
+class ChequeDirection(models.TextChoices):
+    RECEIVED = "received", _("Received")
+    ISSUED = "issued", _("Issued")
+
+
+class ChequeStatus(models.TextChoices):
+    IN_HAND = "in_hand", _("In hand")  # received, not deposited yet
+    DEPOSITED = "deposited", _("Deposited")  # at the bank, waiting to clear
+    OUTSTANDING = "outstanding", _("Outstanding")  # issued, not paid by the bank yet
+    CLEARED = "cleared", _("Cleared")
+    BOUNCED = "bounced", _("Bounced")
+    RETURNED = "returned", _("Returned")  # handed back to the drawer
+    ENDORSED = "endorsed", _("Endorsed")  # passed on to a supplier
+
+
+OPEN_CHEQUE = (ChequeStatus.IN_HAND, ChequeStatus.DEPOSITED, ChequeStatus.OUTSTANDING)
+
+
+class Cheque(Document):
+    """A cheque received from or given to a customer, supplier, trader or workshop. Received
+    cheques wait on "cheques received" until they clear into a bank account (or bounce);
+    issued ones on "cheques payable" until the bank pays them."""
+
+    direction = models.CharField(max_length=10, choices=ChequeDirection.choices)
+    side = models.CharField(max_length=16)  # settlements.PartySide
+    party = models.ForeignKey("parties.Party", on_delete=models.PROTECT, related_name="+")
+    cheque_number = models.CharField(max_length=40)
+    drawn_on = models.CharField(max_length=100, blank=True)  # the drawer's bank, received ones
+    due_date = models.DateField()
+    currency = models.ForeignKey("catalog.Currency", on_delete=models.PROTECT, related_name="+")
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    # Issued: the account it is drawn on. Received: the account it was deposited into.
+    bank_account = models.ForeignKey(BankAccount, null=True, blank=True, on_delete=models.PROTECT,
+                                     related_name="cheques")
+    state = models.CharField(max_length=12, choices=ChequeStatus.choices)
+    state_on = models.DateField(null=True, blank=True)  # when it reached that state
+    endorsed_side = models.CharField(max_length=16, blank=True)
+    endorsed_to = models.ForeignKey("parties.Party", null=True, blank=True,
+                                    on_delete=models.PROTECT, related_name="+")
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+    settle_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["due_date", "id"]
+        constraints = [
+            *Document.Meta.constraints,
+            models.CheckConstraint(condition=Q(amount__gt=0), name="treasury_cheque_amount_check"),
+        ]
+        indexes = [
+            models.Index(fields=["tenant", "state", "due_date"], name="treasury_cheque_due_idx"),
+            models.Index(fields=["tenant", "party"], name="treasury_cheque_party_idx"),
+        ]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+    @property
+    def is_open(self) -> bool:
+        return self.status == "posted" and self.state in OPEN_CHEQUE
+
+
+# --- bank reconciliation ------------------------------------------------------------------------
+
+class BankReconciliation(TenantScopedModel):
+    """A bank statement matched against the books: the lines ticked as on the statement must
+    bring the cleared balance to the statement's closing balance."""
+
+    bank_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT,
+                                     related_name="reconciliations")
+    statement_date = models.DateField()
+    statement_balance = models.DecimalField(max_digits=18, decimal_places=2)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    note = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        ordering = ["-statement_date", "-id"]
+        constraints = [
+            # One reconciliation in progress per bank account.
+            models.UniqueConstraint(fields=["tenant", "bank_account"],
+                                    condition=Q(completed_at__isnull=True),
+                                    name="treasury_recon_one_open_uniq"),
+        ]
+
+    @property
+    def is_completed(self) -> bool:
+        return self.completed_at is not None
+
+
+class ReconciledLine(TenantScopedModel):
+    """A bank journal line ticked as on a statement. A line is cleared once only."""
+
+    reconciliation = models.ForeignKey(BankReconciliation, on_delete=models.CASCADE,
+                                       related_name="lines")
+    journal_line = models.OneToOneField("ledger.JournalLine", on_delete=models.PROTECT,
+                                        related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "journal_line"],
+                                    name="treasury_recon_line_uniq"),
+        ]
+
+
+# --- cash counts --------------------------------------------------------------------------------
+
+class CashCount(Document):
+    """A cash box counted, usually when the day closes. The difference with the books is booked
+    as cash over or short, so the box holds what was counted."""
+
+    cash_box = models.ForeignKey(CashBox, on_delete=models.PROTECT, related_name="counts")
+    expected = models.DecimalField(max_digits=18, decimal_places=2)  # the books, at the count
+    counted = models.DecimalField(max_digits=18, decimal_places=2)
+    difference = models.DecimalField(max_digits=18, decimal_places=2)  # counted - expected
+    # {"200": 5, "0.5": 3}: notes and coins counted, when counted by denomination.
+    denominations = models.JSONField(default=dict, blank=True)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-posted_at", "-id"]
+        constraints = [
+            *Document.Meta.constraints,
+            models.CheckConstraint(condition=Q(counted__gte=0),
+                                   name="treasury_count_counted_check"),
+        ]
+        indexes = [models.Index(fields=["tenant", "cash_box", "-business_date"],
+                                name="treasury_count_box_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"

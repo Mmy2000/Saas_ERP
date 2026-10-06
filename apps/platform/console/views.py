@@ -772,3 +772,40 @@ def tenant_designer_save(request, pk, doc_type):
     if response.status_code == 200:
         record(request, "document.design", tenant, document=doc_type, designer="saved")
     return response
+
+
+# --- server monitoring ---------------------------------------------------------------------------
+
+SERVER_PARTS = {"tiles": "console/_server_tiles.html", "charts": "console/_server_charts.html",
+                "disks": "console/_server_disks.html", "processes": "console/_server_procs.html",
+                "info": "console/_server_info.html"}
+
+
+def _server_context(request) -> dict:
+    from apps.platform.monitor import report as monitor_report
+    from apps.platform.monitor import sampler
+
+    sampler.sample_if_due()
+    history = monitor_report.history(request.GET.get("window", ""))
+    snap = sampler.snapshot()
+    app_disk = next((d for d in snap.disks if d.is_app), None)
+    return {
+        "report": history, "history": history, "snap": snap, "app_disk": app_disk,
+        "windows": monitor_report.WINDOWS, "section": "server",
+        "levels": {"cpu": monitor_report.level(snap.cpu_pct),
+                   "memory": monitor_report.level(snap.mem_pct),
+                   "disk": monitor_report.level(app_disk.percent if app_disk else None),
+                   "swap": monitor_report.level(snap.swap_pct if snap.swap_total else None)},
+        "warn_pct": settings.MONITOR_WARN_PCT, "critical_pct": settings.MONITOR_CRITICAL_PCT,
+        "live_strings": _live_strings(),
+    }
+
+
+@staff_required
+def server(request):
+    return render(request, "console/server.html", _server_context(request))
+
+
+@staff_required
+def server_live(request):
+    return _live(request, SERVER_PARTS, _server_context(request))

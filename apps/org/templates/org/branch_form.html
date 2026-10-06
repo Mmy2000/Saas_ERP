@@ -7,6 +7,7 @@
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if branch %}{{ branch.name }}{% else %}{% translate "New branch" %}{% endif %}</h1>
     {% if branch and not branch.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+    <span class="ms-auto">{% include "audit/_history_link.html" with table="org_branch" row=branch.pk %}</span>
   </div>
 </div>
 {% endblock %}
@@ -38,10 +39,6 @@
         <label class="flex items-center gap-3 sm:col-span-2">
           <input type="checkbox" name="is_head_office" class="size-4 rounded border-slate-300 accent-brand-600" {% if branch.is_head_office %}checked{% endif %}>
           <span class="text-sm text-slate-700">{% translate "Head office" %}</span>
-        </label>
-        <label class="flex items-center gap-3 sm:col-span-2">
-          <input type="checkbox" name="handles_diamonds" class="size-4 rounded border-slate-300 accent-brand-600" {% if branch.handles_diamonds %}checked{% endif %}>
-          <span class="text-sm text-slate-700">{% translate "Sells diamonds" %}</span>
         </label>
       </div>
     </section>

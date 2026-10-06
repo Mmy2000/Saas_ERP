@@ -1,0 +1,14 @@
+{% load i18n %}{# Who a cheque is with: the side, then that side's account. Include with side= and prefix= (unique per page). #}
+<div class="space-y-3" data-party-picker>
+  <div class="segmented">
+    {% for value, label in party_sides %}
+    <label><input type="radio" name="{{ prefix }}side" value="{{ value }}" class="peer sr-only" data-side {% if side == value %}checked{% endif %}>
+      <span class="segment">{{ label }}</span></label>
+    {% endfor %}
+  </div>
+  <div class="{% if side != 'customer' %}hidden{% endif %}" data-party-for="customer"><select class="form-input" data-party data-remote="{% url 'customer-list' %}" data-label-field="name" aria-label="{% translate 'Customer' %}"></select></div>
+  <div class="{% if side != 'supplier' %}hidden{% endif %}" data-party-for="supplier"><select class="form-input" data-party data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}"></select></div>
+  <div class="{% if side != 'trade_account' %}hidden{% endif %}" data-party-for="trade_account"><select class="form-input" data-party data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}"></select></div>
+  <div class="{% if side != 'workshop' %}hidden{% endif %}" data-party-for="workshop"><select class="form-input" data-party data-remote="{% url 'workshop-list' %}" data-label-field="name" aria-label="{% translate 'Workshop' %}"></select></div>
+  <p class="form-error" data-error-for="party"></p>
+</div>

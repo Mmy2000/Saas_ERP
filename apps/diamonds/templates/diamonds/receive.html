@@ -1,0 +1,103 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Receive diamonds" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/receive.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'diamonds' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Diamonds and stones" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Receive diamonds" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Diamond pieces and loose stones from a supplier, each with its stones, certificate and selling price. The gold is owed in fine grams, the stones and making in money." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not categories %}
+<section class="card card-body">
+  {% translate "No diamond categories yet" as empty_title %}
+  {% translate "Add an item category of the family Diamonds (pieces) or Stones (loose stones) first." as empty_text %}
+  {% include "components/empty_state.html" with icon="gem" title=empty_title text=empty_text %}
+</section>
+{% else %}
+<div id="receive" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-post-url="{% url 'diamonds-receive' %}"
+     data-detail-url="{% url 'invoices' %}{id}/" data-saved="{% translate 'Received.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2"><label class="form-label" for="r-supplier">{% translate "Supplier" %}</label>
+          <select id="r-supplier" class="form-input" data-supplier data-remote="{% url 'supplier-list' %}" data-label-field="name"></select>
+          <p class="form-error" data-error-for="supplier"></p></div>
+        <div><label class="form-label" for="r-branch">{% translate "Branch" %}</label>
+          <select id="r-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="r-currency">{% translate "Currency" %}</label>
+          <select id="r-currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="r-ref">{% translate "Supplier's invoice number" %}</label>
+          <input id="r-ref" class="form-input" data-reference maxlength="60"></div>
+        <div><label class="form-label" for="r-note">{% translate "Note" %}</label>
+          <input id="r-note" class="form-input" data-note></div>
+      </div>
+    </section>
+
+    <div class="space-y-4" data-pieces></div>
+    <button type="button" class="btn btn-secondary" data-add-piece>{% icon "plus" "size-4" %}{% translate "Add a piece or stone" %}</button>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Pieces" %}</dt><dd class="num" data-t="pieces">0</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Carats" %}</dt><dd class="num" data-t="carats">0.000</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Stones' cost" %}</dt><dd class="num" data-t="cost">0.00</dd></div>
+        <div class="flex justify-between bg-slate-50 px-5 py-4"><dt class="font-medium text-slate-700">{% translate "Label value" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-xl font-semibold" data-t="label">0.00</dd></div>
+      </dl>
+      <div class="space-y-3 border-t border-slate-100 p-5">
+        <p class="form-error" data-error></p>
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "check" "size-4" %}{% translate "Receive" %}</button>
+        <p class="text-xs text-slate-500">{% translate "Each piece gets a barcode. The supplier invoice is posted at once and can be cancelled from Purchases while the pieces are untouched." %}</p>
+      </div>
+    </section>
+  </aside>
+
+  <template id="piece-template">
+    <section class="card" data-piece>
+      <div class="card-header"><h2 class="card-title" data-piece-title>{% translate "Piece" %}</h2>
+        <button type="button" class="btn btn-ghost text-slate-400" data-remove-piece aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
+      <div class="card-body grid grid-cols-2 gap-4 lg:grid-cols-6">
+        <label class="col-span-2"><span class="form-label">{% translate "Category" %}</span>
+          <select class="form-input" data-field="category">{% for c in categories %}<option value="{{ c.pk }}" data-family="{{ c.product_family }}">{{ c.code }} · {{ c.name }}</option>{% endfor %}</select></label>
+        <label data-gold><span class="form-label">{% translate "Karat" %}</span>
+          <select class="form-input" data-field="karat">{% for k in karats %}<option value="{{ k.pk }}" {% if k.code == 18 %}selected{% endif %}>{{ k.label }}</option>{% endfor %}</select></label>
+        <label data-gold><span class="form-label">{% translate "Weight (g)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="gross_weight_g"></label>
+        <label data-gold><span class="form-label">{% translate "Making / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="making_cost_rate" placeholder="0"></label>
+        <label><span class="form-label">{% translate "Stones' cost" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="stone_cost" placeholder="0"></label>
+        <label><span class="form-label">{% translate "Label price" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="label_price"></label>
+        <p class="form-error col-span-full" data-piece-error></p>
+      </div>
+      <div class="border-t border-slate-100">
+        <div class="flex items-center justify-between px-5 pt-3"><span class="text-sm font-medium text-slate-700">{% translate "Stones" %}</span>
+          <button type="button" class="btn btn-ghost text-xs" data-add-stone>{% icon "plus" "size-4" %}{% translate "Add a stone" %}</button></div>
+        <div class="overflow-x-auto">
+          <table class="table text-sm">
+            <thead><tr><th>{% translate "Kind" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
+              <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th><th></th></tr></thead>
+            <tbody data-stones></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </template>
+  <template id="stone-template">
+    <tr data-stone>
+      <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><input class="form-input num min-w-16 py-1 text-start" inputmode="numeric" data-s="count" value="1"></td>
+      <td><input class="form-input num min-w-20 py-1 text-start" inputmode="decimal" data-s="carat" placeholder="0.50"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="color" maxlength="20" placeholder="D"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="clarity" maxlength="20" placeholder="VS1"></td>
+      <td><input class="form-input min-w-28 py-1" data-s="cut" maxlength="20"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="lab" maxlength="40" placeholder="GIA"></td>
+      <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" maxlength="60"></td>
+      <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>
+    </tr>
+  </template>
+</div>
+{% endif %}
+{% endblock %}

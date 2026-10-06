@@ -27,6 +27,7 @@ class StockPart:
     karat: object | None
     fine_weight_g: Decimal
     cost_amount: Decimal  # making cost (gold) in the company currency; ignored for scrap
+    stone_cost: Decimal = Decimal(0)  # stones in the piece (diamonds), on their own account
 
     @property
     def is_scrap(self) -> bool:
@@ -66,6 +67,9 @@ def stock_lines(parts: list[StockPart], *, sign: int, counter_role: str, branch,
                                 branch=branch))
         lines.append(LedgerLine(account=counter, commodity=commodity, quantity=-sign * fine,
                                 functional_amount=-sign * value, branch=branch, party=party))
+    stones = sum((part.stone_cost for part in parts), ZERO)
+    if stones:
+        making["inventory_diamonds"] = making.get("inventory_diamonds", ZERO) + stones
     home = functional_commodity()
     for role, amount in sorted(making.items()):
         lines.append(LedgerLine(account=account_for(role), commodity=home, quantity=sign * amount,

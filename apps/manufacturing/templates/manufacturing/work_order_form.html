@@ -1,24 +1,38 @@
 {% extends "layouts/app.html" %}
 {% load i18n static ui %}
-{% block title %}{% translate "Send gold" %}{% endblock %}
+{% block title %}{% if in_house %}{% translate "Start production" %}{% else %}{% translate "Send gold" %}{% endif %}{% endblock %}
 {% block head %}<script type="module" src="{% static 'manufacturing/js/issue.js' %}"></script>{% endblock %}
 {% block page_header %}
 <div class="mb-8">
+  {% if in_house %}
+  <a href="{% url 'production' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Production" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Start production" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Take gold or scrap out of stock to make new goods in your own shop. It stays in production until the goods are made." %}</p>
+  {% else %}
   <a href="{% url 'work-orders' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Work orders" %}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Send gold to a workshop" %}</h1>
   <p class="mt-1 text-sm text-slate-500">{% translate "The gold leaves your stock and the workshop holds it until the goods come back." %}</p>
+  {% endif %}
 </div>
 {% endblock %}
 {% block content %}
 <div id="work-order" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
-     data-post-url="{% url 'work-order-api-list' %}" data-detail-url="{% url 'work-orders' %}{id}/" data-saved="{% translate 'Sent.' %}">
+     data-post-url="{% url 'work-order-api-list' %}" {% if in_house %}data-in-house data-detail-url="{% url 'production' %}{id}/" data-saved="{% translate 'Production started.' %}"{% else %}data-detail-url="{% url 'work-orders' %}{id}/" data-saved="{% translate 'Sent.' %}"{% endif %}>
   <div class="space-y-6 xl:col-span-2">
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% if in_house %}
+        <div>
+          <label class="form-label" for="f-craftsman">{% translate "Craftsman" %}</label>
+          <select id="f-craftsman" class="form-input" data-craftsman><option value="">{% translate "Not set" %}</option>{% for e in craftsmen %}<option value="{{ e.pk }}">{{ e.name }}{% if e.job_title %} · {{ e.job_title }}{% endif %}</option>{% endfor %}</select>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "Who makes it, to follow each craftsman's loss." %}</p>
+        </div>
+        {% else %}
         <div>
           <label class="form-label" for="f-workshop">{% translate "Workshop" %}</label>
           <select id="f-workshop" class="form-input" data-workshop data-remote="{% url 'workshop-list' %}" data-label-field="name">{% if workshop %}<option value="{{ workshop.pk }}" selected>{{ workshop.name }}</option>{% endif %}</select>
         </div>
+        {% endif %}
         <div>
           <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
           <select id="f-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select>
@@ -44,8 +58,13 @@
         <input id="f-note" class="form-input" data-note placeholder="{% translate 'What should be made' %}">
       </div>
       <div class="border-t border-slate-100 p-5">
+        {% if in_house %}
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "flame" "size-4" %}{% translate "Start production" %}</button>
+        <p class="mt-2 text-xs text-slate-500">{% translate "When the goods are made, open the order and record them. The difference in fine gold is booked as loss or gain." %}</p>
+        {% else %}
         <button type="button" class="btn btn-primary w-full" data-save>{% icon "send" "size-4" %}{% translate "Send gold" %}</button>
         <p class="mt-2 text-xs text-slate-500">{% translate "When the goods come back, open the order and record what you received. The difference is booked as loss or gain." %}</p>
+        {% endif %}
       </div>
     </section>
   </aside>

@@ -1,0 +1,79 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Cash counts" %}{% endblock %}
+{% block page_header %}
+{% can "treasury.count.create" as can_count %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Cash counts" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Count each cash box when the day closes. Any difference with the books is booked as cash over or short." %}</p>
+  </div>
+  {% if can_count %}<a href="{% url 'cash-count-new' %}" class="btn btn-primary">{% icon "calculator" "size-4" %}{% translate "Count a cash box" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "treasury.count.create" as can_count %}
+<section class="card mb-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Cash boxes" %}</h2></div>
+  {% if rows %}
+  <ul class="divide-y divide-slate-100">
+    {% for row in rows %}
+    <li class="flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3.5">
+      <div class="min-w-0 flex-1">
+        <p class="font-medium text-slate-900">{{ row.box.branch.name }} · {{ row.box.label }}</p>
+        <p class="text-xs text-slate-500">{% if row.last %}{% blocktranslate trimmed with day=row.last.posted_at|date:"SHORT_DATETIME_FORMAT" %}Last counted {{ day }}{% endblocktranslate %}
+          {% if row.last.difference %} · <span class="num {% if row.last.difference < 0 %}text-red-600{% else %}text-emerald-700{% endif %}" dir="ltr">{% if row.last.difference > 0 %}+{% endif %}{{ row.last.difference|num:2 }}</span>{% endif %}
+          {% if row.last.business_date != today %} · <span class="text-amber-700">{% translate "Not counted today" %}</span>{% endif %}
+          {% else %}<span class="text-amber-700">{% translate "Never counted" %}</span>{% endif %}</p>
+      </div>
+      <span class="num font-semibold text-slate-900">{{ row.held|num:row.box.currency.minor_units }} <span class="text-xs font-normal text-slate-400">{{ row.box.currency.code }}</span></span>
+      <div class="flex gap-1">
+        {% if can_count %}<a class="btn btn-secondary text-xs" href="{% url 'cash-count-new' %}?box={{ row.box.pk }}">{% translate "Count it" %}</a>{% endif %}
+        <a class="btn btn-ghost text-xs" href="?box={{ row.box.pk }}">{% translate "History" %}</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "No cash boxes yet" %}</p>{% endif %}
+</section>
+
+<section class="card overflow-hidden">
+  <div class="card-header flex items-center justify-between"><h2 class="card-title">{% translate "Counts" %}</h2>
+    {% if box %}<a href="?" class="badge badge-brand">{% translate "One cash box" %} {% icon "x" "size-3" %}</a>{% endif %}</div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Cash box" %}</th>
+        <th class="text-end">{% translate "In the books" %}</th><th class="text-end">{% translate "Counted" %}</th><th class="text-end">{% translate "Difference" %}</th><th>{% translate "Counted by" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for count in page.object_list %}
+        <tr class="{% if count.status == 'voided' %}text-slate-400 line-through{% endif %}">
+          <td><span class="num font-medium">{{ count.number }}</span></td>
+          <td class="whitespace-nowrap"><span class="num">{{ count.posted_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{{ count.branch.name }} · {{ count.cash_box.label }}</td>
+          <td class="text-end"><span class="num">{{ count.expected|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ count.counted|num:2 }}</span></td>
+          <td class="text-end">{% if count.difference %}<span class="num font-semibold {% if count.difference < 0 %}text-red-600{% else %}text-emerald-700{% endif %}" dir="ltr">{% if count.difference > 0 %}+{% endif %}{{ count.difference|num:2 }}</span>{% else %}<span class="text-emerald-700">{% icon "check" "size-4" %}</span>{% endif %}</td>
+          <td>{{ count.posted_by.display_name|default:"—" }}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'cash-count' count.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?box={{ box }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?box={{ box }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No counts yet" as empty_title %}
+    {% translate "Count a cash box at the end of the day to check it against the books." as empty_text %}
+    {% include "components/empty_state.html" with icon="calculator" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

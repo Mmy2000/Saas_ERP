@@ -77,6 +77,17 @@ function syncRailTitles() {
   }
 }
 
+// Keep the current page's link in view: on a long menu it would otherwise sit below the fold
+// after every page load. Only the menu scrolls (not the page), and only when it is hidden.
+function revealActiveLink() {
+  const link = document.querySelector('#sidebar [aria-current="page"]');
+  const menu = link?.closest("nav");
+  if (!menu || menu.scrollHeight <= menu.clientHeight) return;
+  const top = link.getBoundingClientRect().top - menu.getBoundingClientRect().top + menu.scrollTop;
+  const shown = top >= menu.scrollTop && top + link.offsetHeight <= menu.scrollTop + menu.clientHeight - 32;
+  if (!shown) menu.scrollTop = Math.max(0, top - (menu.clientHeight - link.offsetHeight) / 2);
+}
+
 function toggleRail() {
   const root = document.documentElement;
   const collapsed = root.dataset.sidebar !== "collapsed";
@@ -87,6 +98,7 @@ function toggleRail() {
 
 export function initShell() {
   syncRailTitles();
+  revealActiveLink();
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-sidebar-open]")) setSidebar(true);
     else if (event.target.closest("[data-sidebar-close], [data-sidebar-backdrop]")) setSidebar(false);

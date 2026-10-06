@@ -75,7 +75,14 @@ def item_detail(request, pk):
         movement.doc_title, movement.doc_number = titles.get(
             (movement.document_type, movement.document_id), ("", ""))
         movement.doc_url = document_url(movement.document_type, movement.document_id)
-    return render(request, "inventory/item.html", {"item": item, "movements": movements})
+    from apps.diamonds import services as diamonds
+    from apps.diamonds.models import StoneKind, StoneShape
+
+    context = {"item": item, "movements": movements}
+    if diamonds.is_diamond(item.category) and diamonds.enabled():
+        context.update({"diamond": True, "stones": list(item.stones.all()),
+                        "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices})
+    return render(request, "inventory/item.html", context)
 
 
 # --- transfers --------------------------------------------------------------------------------

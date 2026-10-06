@@ -61,8 +61,14 @@ if (root) {
       set("description", quote.description || "");
       set("karat", quote.karat || "");
       set("gross_weight_g", formatNumber(quote.gross_weight_g, 3));
-      set("metal_price_per_g", formatNumber(quote.metal_price_per_g));
-      set("making_rate_net", formatNumber(quote.making_rate_net));
+      if (quote.label_price) {
+        // Diamond pieces and stones sell at their label price, not gold price + making.
+        set("metal_price_per_g", "—");
+        set("making_rate_net", `${root.dataset.labelPrice} ${formatNumber(quote.label_price)}`);
+      } else {
+        set("metal_price_per_g", formatNumber(quote.metal_price_per_g));
+        set("making_rate_net", formatNumber(quote.making_rate_net));
+      }
       set("line_total", formatNumber(quote.line_total));
       row.querySelector("[data-floor]").classList.toggle("hidden", !quote.at_cost_floor);
       const discount = row.querySelector("[data-discount]");

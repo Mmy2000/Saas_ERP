@@ -8,6 +8,7 @@
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if holder %}{{ holder.label }}{% elif kind == "box" %}{% translate "New cash box" %}{% elif kind == "bank" %}{% translate "New bank account" %}{% else %}{% translate "New card terminal" %}{% endif %}</h1>
     {% if holder and not holder.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+    {% if kind == "box" %}<span class="ms-auto">{% include "audit/_history_link.html" with table="treasury_cashbox" row=holder.pk %}</span>{% elif kind == "bank" %}<span class="ms-auto">{% include "audit/_history_link.html" with table="treasury_bankaccount" row=holder.pk %}</span>{% else %}<span class="ms-auto">{% include "audit/_history_link.html" with table="treasury_cardterminal" row=holder.pk %}</span>{% endif %}
   </div>
   {% if holder %}<p class="mt-1 text-sm text-slate-500">{% translate "Ledger account" %} <span class="num">{{ holder.account.code }}</span></p>{% endif %}
 </div>

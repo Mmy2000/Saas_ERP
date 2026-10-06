@@ -65,7 +65,8 @@ class SalesInvoiceLine(TenantScopedModel):
     category = models.ForeignKey("catalog.ItemCategory", null=True, on_delete=models.PROTECT,
                                  related_name="+")
     qty = models.IntegerField(default=1)  # pieces: 1; bulk: pieces counted, may be 0
-    karat = models.ForeignKey("catalog.Karat", on_delete=models.PROTECT, related_name="+")
+    karat = models.ForeignKey("catalog.Karat", null=True, blank=True, on_delete=models.PROTECT,
+                              related_name="+")  # none for loose stones
     gross_weight_g = models.DecimalField(max_digits=14, decimal_places=3)
     fine_weight_g = models.DecimalField(max_digits=16, decimal_places=4)
     metal_price_per_g = models.DecimalField(max_digits=18, decimal_places=4)
@@ -78,6 +79,10 @@ class SalesInvoiceLine(TenantScopedModel):
     line_total = models.DecimalField(max_digits=18, decimal_places=2)
     cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # making cost
     metal_value = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # for COGS
+    # Diamond pieces and loose stones, sold at their label price: the part of the price that is
+    # not gold (stones and workmanship), and what the stones cost.
+    stones_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    stone_cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
     class Meta:
         ordering = ["position", "id"]

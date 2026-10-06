@@ -8,6 +8,7 @@
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if member %}{{ member.user.display_name }}{% else %}{% translate "New user" %}{% endif %}</h1>
     {% if member and not member.is_active %}<span class="badge badge-warning">{{ member.get_status_display }}</span>{% endif %}
+    <span class="ms-auto">{% include "audit/_history_link.html" with table="iam_membership" row=member.pk %}</span>
   </div>
 </div>
 {% endblock %}

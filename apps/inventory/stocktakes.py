@@ -216,7 +216,7 @@ def post_stocktake(stocktake_id: int, *, actor=None) -> Stocktake:
                                    business_date=today, doc=doc)
                 line.result, line.adjusted = StocktakeResult.MISSING, True
                 lost.append(StockPart(item.category, item.karat, item.fine_weight_g,
-                                      item.cost_amount))
+                                      item.cost_amount, item.stone_cost_amount))
             else:  # sold or sent away while counting
                 line.result = StocktakeResult.LEFT
             line.save(update_fields=["result", "adjusted", "updated_at"])
@@ -232,7 +232,7 @@ def post_stocktake(stocktake_id: int, *, actor=None) -> Stocktake:
             line.save(update_fields=["adjusted", "updated_at"])
             item = Item.objects.select_related("category", "karat__metal").get(pk=item.pk)
             found.append(StockPart(item.category, item.karat, item.fine_weight_g,
-                                   item.cost_amount))
+                                   item.cost_amount, item.stone_cost_amount))
 
         for line in stocktake.lot_lines.filter(counted_gross_weight_g__isnull=False).select_related(
                 "lot__category", "lot__karat__metal").order_by("lot_id"):

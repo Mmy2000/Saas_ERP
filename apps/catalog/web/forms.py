@@ -31,6 +31,17 @@ def _style(form: forms.Form) -> None:
         field.widget.attrs.setdefault("class", css)
 
 
+DIAMOND_FAMILIES = (ProductFamily.DIAMOND, ProductFamily.STONE)
+
+
+def _diamonds_on() -> bool:
+    from apps.core.tenancy import get_current_tenant_id
+    from apps.platform.tenants.features import is_enabled
+
+    tenant_id = get_current_tenant_id()
+    return tenant_id is not None and is_enabled(tenant_id, "diamonds")
+
+
 class CategoryForm(forms.Form):
     code = forms.CharField(label=_("Code"), max_length=32)
     name = forms.CharField(label=_("Name"), max_length=200)
@@ -63,6 +74,12 @@ class CategoryForm(forms.Form):
                    if c.depth < MAX_CATEGORY_DEPTH and c.pk not in excluded]
         self.fields["parent"].choices = [("", _("— Top level —"))] + [
             (c.pk, f"{'· ' * (c.depth - 1)}{c.code} {c.name}") for c in parents]
+        if not _diamonds_on() and (category is None or category.product_family
+                                   not in DIAMOND_FAMILIES):
+            # Diamonds and stones are a module the platform switches on per client.
+            self.fields["product_family"].choices = [
+                (value, label) for value, label in ProductFamily.choices
+                if value not in DIAMOND_FAMILIES]
         karats = Karat.objects.select_related("metal").filter(is_active=True)
         self.fields["default_karat"].choices = [("", "—")] + [(k.pk, k.label) for k in karats]
         self.currencies = list(Currency.objects.filter(is_active=True).order_by("code"))

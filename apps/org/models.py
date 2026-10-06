@@ -54,7 +54,6 @@ class Branch(TenantScopedModel):
     code = models.PositiveSmallIntegerField()
     name = models.CharField(max_length=200)
     is_head_office = models.BooleanField(default=False)
-    handles_diamonds = models.BooleanField(default=False)
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)

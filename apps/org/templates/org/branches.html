@@ -28,7 +28,6 @@
           <td><span class="num">{{ branch.phone|default:"—" }}</span></td>
           <td>
             {% if branch.is_head_office %}<span class="badge badge-brand">{% translate "Head office" %}</span>{% endif %}
-            {% if branch.handles_diamonds %}<span class="badge badge-neutral">{% translate "Diamonds" %}</span>{% endif %}
           </td>
           <td>{% if branch.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
           <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'branch-edit' branch.pk %}">{% translate "Edit" %}</a>{% endif %}</td>

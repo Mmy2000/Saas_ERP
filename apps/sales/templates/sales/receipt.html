@@ -42,10 +42,15 @@
         <tbody>
         {% for line in lines %}
           <tr>
-            <td>{% if line.item_id %}<div class="num font-medium">{{ line.item.barcode }}</div>{% else %}<div class="font-medium">{% translate "By weight" %}{% if line.qty %} · <span class="num">{{ line.qty }}</span> {% translate "pcs" %}{% endif %}</div>{% endif %}<div class="text-xs text-slate-500"><bdi>{{ line.category.name }}</bdi> · <bdi>{{ line.karat.label }}</bdi></div></td>
+            <td>{% if line.item_id %}<div class="num font-medium">{{ line.item.barcode }}</div>{% else %}<div class="font-medium">{% translate "By weight" %}{% if line.qty %} · <span class="num">{{ line.qty }}</span> {% translate "pcs" %}{% endif %}</div>{% endif %}<div class="text-xs text-slate-500"><bdi>{{ line.category.name }}</bdi>{% if line.karat %} · <bdi>{{ line.karat.label }}</bdi>{% endif %}{% if line.item.stone_weight_ct %} · <span class="num">{{ line.item.stone_weight_ct|num:2 }}</span> {% translate "ct" %}{% endif %}</div></td>
             <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+            {% if line.stones_amount or line.stone_cost_amount %}
+            <td class="text-end text-slate-400" colspan="1">—</td>
+            <td class="text-end"><span class="text-xs text-slate-500">{% translate "Label price" %}</span>{% if line.discount_rate %}<div class="text-xs text-emerald-700"><span class="num">−{{ line.discount_amount|num:2 }}</span></div>{% endif %}</td>
+            {% else %}
             <td class="text-end"><span class="num">{{ line.metal_price_per_g|num:2 }}</span></td>
             <td class="text-end"><span class="num">{{ line.making_rate_net|num:2 }}</span>{% if line.discount_rate %}<div class="text-xs text-emerald-700"><span class="num">−{{ line.discount_amount|num:2 }}</span></div>{% endif %}</td>
+            {% endif %}
             <td class="text-end font-medium"><span class="num">{{ line.line_total|num:2 }}</span></td>
           </tr>
         {% endfor %}

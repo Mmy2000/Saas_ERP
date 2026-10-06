@@ -6,7 +6,6 @@ from apps.core.errors import DomainError, ValidationError
 from apps.core.tenancy import tenant_context
 from apps.inventory.models import Item, ItemStatus, LotBalance
 from apps.inventory.services import scrap_category
-from apps.inventory.tests.test_transfers_stocktakes import Stock
 from apps.ledger.selectors import party_balance, trial_balance
 from apps.manufacturing.services import (
     IssueInput,
@@ -19,22 +18,13 @@ from apps.manufacturing.services import (
     plan_receipt,
     receive_work_order,
 )
-from apps.parties.services import PartyData, create_customer, create_workshop
+from apps.parties.services import PartyData, create_customer
 from apps.sales.services import post_sale
 from conftest import login
 
 pytestmark = pytest.mark.django_db
 
-# The chain lot holds 20 g of 21K with a making cost of 100/g.
-
-
-@pytest.fixture
-def stock(tenant_a):
-    with tenant_context(tenant_a.id):
-        stock = Stock()
-        stock.workshop = create_workshop(PartyData(name="Atef Workshop"))
-        stock.rings = stock.ring_a.category
-        yield stock
+# The chain lot holds 20 g of 21K with a making cost of 100/g (the `stock` fixture).
 
 
 def send(stock, grams="10", workshop=None):

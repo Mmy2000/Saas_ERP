@@ -1,0 +1,27 @@
+{% load i18n ui %}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span class="inline-flex items-center gap-2"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "cpu" "size-4" %}</span>{% translate "CPU" %}</span>{% include "console/_level.html" with level=levels.cpu %}</div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ snap.cpu_pct|floatformat:0 }}%</span></p>
+    <div class="mt-3">{% include "console/_meter.html" with percent=snap.cpu_pct level=levels.cpu %}</div>
+    <p class="mt-2 text-xs text-slate-500">{% blocktranslate trimmed with cores=snap.cores threads=snap.threads %}{{ cores }} cores · {{ threads }} threads{% endblocktranslate %}{% if snap.load %} · {% translate "load" %} <span class="num">{{ snap.load.0|floatformat:2 }}</span>{% endif %}</p>
+  </div>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span class="inline-flex items-center gap-2"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "memory-stick" "size-4" %}</span>{% translate "Memory" %}</span>{% include "console/_level.html" with level=levels.memory %}</div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ snap.mem_pct|floatformat:0 }}%</span></p>
+    <div class="mt-3">{% include "console/_meter.html" with percent=snap.mem_pct level=levels.memory %}</div>
+    <p class="mt-2 text-xs text-slate-500"><span class="num">{{ snap.mem_used|filesizeformat }}</span> / <span class="num">{{ snap.mem_total|filesizeformat }}</span>{% if snap.swap_total %} · {% translate "swap" %} <span class="num">{{ snap.swap_pct|floatformat:0 }}%</span>{% endif %}</p>
+  </div>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span class="inline-flex items-center gap-2"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "hard-drive" "size-4" %}</span>{% translate "Disk" %} <span class="num text-xs text-slate-400">{{ app_disk.mount }}</span></span>{% include "console/_level.html" with level=levels.disk %}</div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ app_disk.percent|floatformat:0 }}%</span></p>
+    <div class="mt-3">{% include "console/_meter.html" with percent=app_disk.percent level=levels.disk %}</div>
+    <p class="mt-2 text-xs text-slate-500"><span class="num">{{ app_disk.used|filesizeformat }}</span> / <span class="num">{{ app_disk.total|filesizeformat }}</span></p>
+  </div>
+  <div class="card card-body">
+    <div class="flex items-center justify-between text-sm text-slate-500"><span class="inline-flex items-center gap-2"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "database" "size-4" %}</span>{% translate "Database" %}</span><span class="text-xs text-slate-400">PostgreSQL <span class="num">{{ snap.postgres }}</span></span></div>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ snap.db_size|filesizeformat }}</span></p>
+    <p class="mt-3 text-xs text-slate-500">{% blocktranslate trimmed count n=snap.db_connections|default:0 %}{{ n }} open connection{% plural %}{{ n }} open connections{% endblocktranslate %}</p>
+    <p class="mt-2 text-xs text-slate-500">{% translate "This web process" %} <span class="num">{{ snap.process_rss|filesizeformat }}</span></p>
+  </div>
+</div>

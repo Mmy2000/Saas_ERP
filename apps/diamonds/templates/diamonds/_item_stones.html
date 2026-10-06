@@ -1,0 +1,60 @@
+{% load i18n static ui authz %}{# On a diamond piece's or loose stone's page: its stones, certificates and label price. #}
+{% can "diamonds.manage" item.branch as can_edit %}
+<script type="module" src="{% static 'diamonds/js/item_stones.js' %}"></script>
+<form class="card mt-6 overflow-hidden" {% if can_edit %}data-api-form data-shape="item-stones" data-method="PUT" data-endpoint="{% url 'diamonds-item-stones' item.pk %}" data-success="{% translate 'Saved.' %}"{% endif %} novalidate>
+  <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "gem" "size-4 text-slate-400" %}{% translate "Stones" %}</h2>
+    {% if can_edit %}<button type="button" class="btn btn-ghost text-xs" data-add-stone>{% icon "plus" "size-4" %}{% translate "Add a stone" %}</button>{% endif %}</div>
+  <div class="hidden mx-5 mt-4 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+  <div class="overflow-x-auto">
+    <table class="table text-sm">
+      <thead><tr><th>{% translate "Kind" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
+        <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
+      <tbody data-stones>
+      {% for st in stones %}
+        {% if can_edit and not st.setting_id %}
+        <tr data-stone>
+          <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in stone_kinds %}<option value="{{ value }}" {% if st.kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
+          <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}" {% if st.shape == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
+          <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="{{ st.count }}"></td>
+          <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" value="{{ st.carat|stringformat:'s' }}"></td>
+          <td><input class="form-input min-w-20 py-1" data-s="color" value="{{ st.color }}" maxlength="20"></td>
+          <td><input class="form-input min-w-20 py-1" data-s="clarity" value="{{ st.clarity }}" maxlength="20"></td>
+          <td><input class="form-input min-w-28 py-1" data-s="cut" value="{{ st.cut }}" maxlength="20"></td>
+          <td><input class="form-input min-w-20 py-1" data-s="lab" value="{{ st.lab }}" maxlength="40"></td>
+          <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" value="{{ st.certificate_no }}" maxlength="60"></td>
+          <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td>{{ st.get_kind_display }}</td><td>{{ st.get_shape_display|default:"—" }}</td><td><span class="num">{{ st.count }}</span></td><td><span class="num">{{ st.carat|num:3 }}</span></td>
+          <td>{{ st.color|default:"—" }}</td><td>{{ st.clarity|default:"—" }}</td><td>{{ st.cut|default:"—" }}</td><td>{{ st.lab|default:"—" }}</td><td><span class="num">{{ st.certificate_no|default:"—" }}</span></td>
+          {% if can_edit %}<td class="text-xs text-slate-400">{% if st.setting_id %}{% translate "set" %}{% endif %}</td>{% endif %}
+        </tr>
+        {% endif %}
+      {% empty %}
+        {% if not can_edit %}<tr><td colspan="9" class="py-6 text-center text-slate-400">{% translate "No stones recorded" %}</td></tr>{% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if can_edit %}
+  <div class="flex flex-wrap items-end gap-3 border-t border-slate-100 p-5">
+    <label class="w-48"><span class="form-label">{% translate "Label price" %}</span><input name="label_price" class="form-input num text-start" inputmode="decimal" value="{{ item.label_price|default_if_none:''|stringformat:'s' }}"><p class="form-error" data-error-for="label_price"></p></label>
+    <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+  </div>
+  <template id="stone-row">
+    <tr data-stone>
+      <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in stone_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="1"></td>
+      <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" placeholder="0.50"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="color" maxlength="20"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="clarity" maxlength="20"></td>
+      <td><input class="form-input min-w-28 py-1" data-s="cut" maxlength="20"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="lab" maxlength="40"></td>
+      <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" maxlength="60"></td>
+      <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>
+    </tr>
+  </template>
+  {% endif %}
+</form>

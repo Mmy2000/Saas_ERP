@@ -18,7 +18,9 @@ class IssueLineSerializer(serializers.Serializer):
 
 class IssueSerializer(serializers.Serializer):
     branch = serializers.IntegerField()
-    workshop = serializers.IntegerField(allow_null=True)
+    workshop = serializers.IntegerField(allow_null=True, required=False, default=None)
+    in_house = serializers.BooleanField(required=False, default=False)
+    craftsman = serializers.IntegerField(allow_null=True, required=False, default=None)
     kind = serializers.ChoiceField(choices=WorkOrderKind.choices, required=False,
                                    default=WorkOrderKind.MANUFACTURE)
     lines = IssueLineSerializer(many=True)
@@ -50,12 +52,15 @@ class VoidSerializer(serializers.Serializer):
 
 
 class WorkOrderSerializer(serializers.ModelSerializer):
-    workshop_name = serializers.CharField(source="workshop.name")
+    workshop_name = serializers.CharField(source="workshop.name", default=None)
+    craftsman_name = serializers.CharField(source="craftsman.name", default=None)
+    in_house = serializers.BooleanField(read_only=True)
     state = serializers.CharField(read_only=True)
 
     class Meta:
         model = WorkOrder
-        fields = ["id", "number", "status", "state", "branch", "workshop", "workshop_name", "kind",
+        fields = ["id", "number", "status", "state", "branch", "in_house", "workshop",
+                  "workshop_name", "craftsman", "craftsman_name", "kind",
                   "business_date", "issued_gross_weight_g", "issued_fine_weight_g",
                   "received_on", "received_fine_weight_g", "loss_fine_weight_g",
                   "gain_fine_weight_g", "labour_amount", "note"]
@@ -79,9 +84,10 @@ def _receipt(request) -> services.ReceiptInput:
 
 
 class WorkOrderViewSet(viewsets.GenericViewSet):
-    queryset = WorkOrder.objects.select_related("workshop")
+    queryset = WorkOrder.objects.select_related("workshop", "craftsman")
     serializer_class = WorkOrderSerializer
-    filterset_fields = {"workshop": ["exact"], "status": ["exact"], "kind": ["exact"]}
+    filterset_fields = {"workshop": ["exact", "isnull"], "craftsman": ["exact"],
+                        "status": ["exact"], "kind": ["exact"]}
     required_permissions = {
         "list": "manufacturing.order.view",
         "retrieve": "manufacturing.order.view",
@@ -115,6 +121,7 @@ class WorkOrderViewSet(viewsets.GenericViewSet):
         d = payload.validated_data
         order = services.issue_work_order(services.IssueInput(
             branch_id=d["branch"], workshop_id=d["workshop"], kind=d["kind"], note=d["note"],
+            in_house=d["in_house"], craftsman_id=d["craftsman"],
             lines=tuple(services.IssueLineInput(
                 category_id=ln["category"], karat_id=ln["karat"],
                 gross_weight_g=ln["gross_weight_g"], qty=ln["qty"]) for ln in d["lines"])),

@@ -1,0 +1,72 @@
+{% load i18n authz %}{# The employee form fields (new and edit). Needs `employee` (or None), branches, members, bases. #}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">{% translate "Details" %}</h2></div>
+  <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label class="form-label" for="f-name">{% translate "Name" %}</label>
+      <input id="f-name" name="name" class="form-input" value="{{ employee.name|default:'' }}" maxlength="200" required>
+      <p class="form-error" data-error-for="name"></p>
+    </div>
+    <div>
+      <label class="form-label" for="f-job">{% translate "Job" %}</label>
+      <input id="f-job" name="job_title" class="form-input" value="{{ employee.job_title|default:'' }}" maxlength="100" placeholder="{% translate 'Sales, cashier, workshop…' %}">
+    </div>
+    <div>
+      <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+      <select id="f-branch" name="branch" class="form-input" data-empty="null">
+        <option value="">—</option>
+        {% for b in branches %}<option value="{{ b.pk }}" {% if employee.branch_id == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="f-phone">{% translate "Phone" %}</label>
+      <input id="f-phone" name="phone" class="form-input num w-full text-start" inputmode="tel" value="{{ employee.phone|default:'' }}">
+    </div>
+    <div>
+      <label class="form-label" for="f-nid">{% translate "National ID" %}</label>
+      <input id="f-nid" name="national_id" class="form-input num w-full text-start" data-empty="omit" autocomplete="off"
+             placeholder="{% if employee.national_id_encrypted %}{% translate 'On file · type to replace' %}{% endif %}">
+    </div>
+    <div>
+      <label class="form-label" for="f-hired">{% translate "Hired on" %}</label>
+      <input id="f-hired" name="hired_on" type="date" class="form-input" data-empty="null" value="{{ employee.hired_on|date:'Y-m-d' }}">
+    </div>
+    <div class="sm:col-span-2">
+      <label class="form-label" for="f-address">{% translate "Address" %}</label>
+      <textarea id="f-address" name="address" rows="2" class="form-input">{{ employee.address|default:'' }}</textarea>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-commission>
+  <div class="card-header"><h2 class="card-title">{% translate "Pay" %}</h2></div>
+  <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+    <div>
+      <label class="form-label" for="f-salary">{% translate "Monthly salary" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></label>
+      <input id="f-salary" name="monthly_salary" class="form-input num w-full text-start" inputmode="decimal" value="{{ employee.monthly_salary|default_if_none:''|stringformat:'s' }}" placeholder="0.00">
+      <p class="form-error" data-error-for="monthly_salary"></p>
+    </div>
+    <div>
+      {% can "admin.users.manage" as can_add_user %}<label class="form-label" for="f-user">{% translate "Sells with the login" %}</label>
+      <select id="f-user" name="user" class="form-input" data-empty="null">
+        <option value="">{% translate "No login" %}</option>
+        {% for m in members %}<option value="{{ m.user_id }}" {% if employee.user_id == m.user_id %}selected{% endif %}>{{ m.user.display_name }} (@{{ m.username }})</option>{% endfor %}
+      </select>
+      <p class="mt-1.5 text-xs text-slate-500">{% translate "Sales rung up with this login count towards the commission." %}
+        {% translate "The list shows the users of this workspace." %}{% if can_add_user %}
+        <a class="font-medium text-brand-700 hover:underline" href="{% url 'user-new' %}" target="_blank" rel="noopener">{% translate "Add a user" %}</a>{% endif %}</p>
+      <p class="form-error" data-error-for="user"></p>
+    </div>
+    <div>
+      <label class="form-label" for="f-basis">{% translate "Commission" %}</label>
+      <select id="f-basis" name="commission_basis" class="form-input" data-basis>
+        {% for value, label in bases %}<option value="{{ value }}" {% if employee.commission_basis == value or not employee and value == "none" %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div data-rate>
+      <label class="form-label" for="f-rate"><span data-rate-label="making_pct">{% translate "Share of the making charge (%)" %}</span><span data-rate-label="per_gram">{% translate "Amount per gram sold" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></span></label>
+      <input id="f-rate" name="commission_rate" class="form-input num w-full text-start" inputmode="decimal" value="{{ employee.commission_rate|default_if_none:''|stringformat:'s' }}" placeholder="0">
+      <p class="form-error" data-error-for="commission_rate"></p>
+    </div>
+  </div>
+</section>

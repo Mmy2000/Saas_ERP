@@ -44,6 +44,10 @@ class Column:
         return self.places is not None
 
 
+# A row may carry "_style" (heading, subtotal or total: statements with sections) and "_indent".
+ROW_STYLES = ("heading", "subtotal", "total")
+
+
 @dataclass
 class Table:
     title: str

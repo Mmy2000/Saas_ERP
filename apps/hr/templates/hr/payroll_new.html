@@ -1,0 +1,87 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Prepare payroll" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'hr/js/hr.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <a href="{% url 'payrolls' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Payroll" %}</a>
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% blocktranslate trimmed with month=period_date|date:"F Y" %}Payroll for {{ month }}{% endblocktranslate %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Check every payslip. Advances are taken back in full unless you change the amount." %}</p>
+  </div>
+  <form method="get" class="flex gap-2">
+    <select name="period" class="form-input w-44" onchange="this.form.submit()" aria-label="{% translate 'Month' %}">{% for value, day in months %}<option value="{{ value }}" {% if value == period %}selected{% endif %}>{{ day|date:"F Y" }}</option>{% endfor %}</select>
+  </form>
+</div>
+{% endblock %}
+{% block content %}
+{% if plan.paid %}
+<div class="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">{% icon "circle-alert" "size-5" %}
+  <span>{% blocktranslate trimmed with number=plan.paid.number %}This month is already paid ({{ number }}).{% endblocktranslate %} <a class="font-medium underline" href="{% url 'payroll' plan.paid.pk %}">{% translate "Open it" %}</a></span></div>
+{% endif %}
+<div id="payroll-new" class="grid grid-cols-1 gap-6 2xl:grid-cols-4" data-period="{{ period }}"
+     data-preview-url="{% url 'hr-payroll-preview' %}" data-post-url="{% url 'hr-payroll-list' %}"
+     data-detail-url="{% url 'payrolls' %}{id}/" data-saved="{% translate 'Payroll paid.' %}">
+  <section class="card overflow-hidden 2xl:col-span-3">
+    {% if plan.lines %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Salary" %}</th><th class="text-end">{% translate "Commission" %}</th><th class="text-end">{% translate "Bonuses" %}</th>
+          <th class="text-end">{% translate "Deductions" %}</th><th class="text-end">{% translate "Gross" %}</th><th class="text-end">{% translate "Advance taken back" %}</th><th class="text-end">{% translate "Net pay" %}</th></tr></thead>
+        <tbody>
+        {% for line in plan.lines %}
+          <tr data-line="{{ line.employee.pk }}">
+            <td class="whitespace-nowrap"><a class="font-medium text-slate-900 hover:underline" href="{% url 'employee' line.employee.pk %}">{{ line.employee.name }}</a>
+              {% if line.commission.sales %}<div class="text-xs text-slate-500">{% blocktranslate trimmed count n=line.commission.sales %}{{ n }} sale{% plural %}{{ n }} sales{% endblocktranslate %}</div>{% endif %}</td>
+            <td class="text-end"><span class="num">{{ line.salary|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.commission.amount|num:2 }}</span></td>
+            <td class="text-end"><span class="num text-emerald-700">{{ line.bonus|num:2 }}</span></td>
+            <td class="text-end"><span class="num text-red-700">{{ line.deduction|num:2 }}</span></td>
+            <td class="text-end"><span class="num" data-f="gross">{{ line.gross|num:2 }}</span></td>
+            <td class="text-end">{% if line.outstanding %}<input class="form-input num ms-auto w-28 py-1 text-end" inputmode="decimal" data-advance value="{{ line.advance|stringformat:'s' }}" aria-label="{% translate 'Advance taken back' %}">
+              <div class="mt-0.5 text-[11px] text-slate-400">{% translate "due" %} <span class="num">{{ line.outstanding|num:2 }}</span></div>{% else %}<span class="num text-slate-400">0.00</span>{% endif %}</td>
+            <td class="text-end"><span class="num font-semibold text-slate-900" data-f="net">{{ line.net|num:2 }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="border-t-2 border-slate-200 font-semibold">
+          <td class="px-5 py-3">{% translate "Total" %}</td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ totals.salary|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ totals.commission|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ totals.bonus|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ totals.deduction|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ totals.gross|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num" data-t="advance">{{ totals.advance|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num text-base" data-t="net">{{ totals.net|num:2 }}</span></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    {% else %}
+      {% translate "Nobody is due anything this month" as empty_title %}
+      {% translate "Add employees with a salary, or bonuses for this month." as empty_text %}
+      {% include "components/empty_state.html" with icon="users" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  <aside class="space-y-6">
+    <section class="card xl:grid xl:grid-cols-2 2xl:block" data-payment>
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "People" %}</dt><dd class="num">{{ plan.lines|length }}</dd></div>
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Advances taken back" %}</dt><dd class="num" data-t="advance">{{ totals.advance|num:2 }}</dd></div>
+        <div class="flex justify-between bg-slate-50 px-5 py-4"><dt class="font-medium text-slate-700">{% translate "To pay" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></dt><dd class="num text-xl font-semibold text-slate-900" data-t="net">{{ totals.net|num:2 }}</dd></div>
+      </dl>
+      <div class="grid grid-cols-1 gap-4 border-t border-slate-100 p-5 xl:border-s xl:border-t-0 2xl:border-s-0 2xl:border-t">
+        <div><label class="form-label" for="p-branch">{% translate "Branch" %}</label>
+          <select id="p-branch" class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="p-method">{% translate "Pay with" %}</label>
+          <select id="p-method" class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option></select></div>
+        <input type="hidden" data-currency value="{{ home_currency }}">
+        {% include "treasury/holder_selects.html" with prefix="p-" %}
+        <input class="form-input" data-note placeholder="{% translate 'Note' %}">
+        <p class="form-error" data-error></p>
+        <button type="button" class="btn btn-primary w-full" data-pay {% if plan.paid or not plan.lines %}disabled{% endif %}>{% icon "check" "size-4" %}{% translate "Pay the payroll" %}</button>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

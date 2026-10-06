@@ -1,18 +1,34 @@
-from datetime import date
+from datetime import date, timedelta
+from decimal import Decimal
 
 from django.core.paginator import Paginator
+from django.db.models import Count, Q, Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.catalog.models import Currency
+from apps.core.documents import document_url
+from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.ledger.statements import account_statement
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
+from apps.settlements.models import PartySide
 
-from .holders import HOLDER_MODELS, MANAGE
-from .models import TreasuryDocument, TreasuryKind
+from . import reconciliation
+from .counts import DENOMINATIONS
+from .holders import HOLDER_MODELS, MANAGE, balance
+from .models import (
+    OPEN_CHEQUE,
+    CashCount,
+    Cheque,
+    ChequeDirection,
+    ChequeStatus,
+    TreasuryDocument,
+    TreasuryKind,
+)
 from .selectors import (
     cash_totals,
     holder_rows,
@@ -172,4 +188,186 @@ def holder_statement(request, kind, pk):
         "sections": account_statement(holder.account, date_from, date_to),
         "date_from": date_from, "date_to": date_to,
         "profile": TenantProfile.objects.first(),
+    })
+
+
+# --- cheques -------------------------------------------------------------------------------------
+
+CHEQUE_FILTERS = ("open", "due", "cleared", "bounced", "other", "cancelled", "all")
+
+
+def _visible_cheques(request):
+    cheques = Cheque.objects.select_related("party", "bank_account", "branch", "endorsed_to")
+    scope = request.actor.branch_ids("treasury.cheque.view")
+    return cheques if scope is None else cheques.filter(branch_id__in=scope)
+
+
+@permission_required("treasury.cheque.view")
+def cheques(request):
+    direction = (request.GET.get("direction") if request.GET.get("direction")
+                 in ChequeDirection.values else ChequeDirection.RECEIVED)
+    state = request.GET.get("state") if request.GET.get("state") in CHEQUE_FILTERS else "open"
+    today = timezone.localdate()
+    visible = _visible_cheques(request)
+    queryset = visible.filter(direction=direction)
+    posted = queryset.filter(status=DocStatus.POSTED)
+    if state == "open":
+        queryset = posted.filter(state__in=OPEN_CHEQUE)
+    elif state == "due":
+        queryset = posted.filter(state__in=OPEN_CHEQUE, due_date__lte=today)
+    elif state == "cleared":
+        queryset = posted.filter(state=ChequeStatus.CLEARED)
+    elif state == "bounced":
+        queryset = posted.filter(state=ChequeStatus.BOUNCED)
+    elif state == "other":
+        queryset = posted.filter(state__in=(ChequeStatus.RETURNED, ChequeStatus.ENDORSED))
+    elif state == "cancelled":
+        queryset = queryset.filter(status=DocStatus.VOIDED)
+    term = request.GET.get("q", "").strip()
+    if term:
+        queryset = queryset.filter(Q(cheque_number__icontains=term) | Q(number__icontains=term)
+                                   | Q(party__name__icontains=term))
+    ordering = ("due_date", "id") if state in ("open", "due") else ("-business_date", "-id")
+    page = Paginator(queryset.order_by(*ordering), 25).get_page(request.GET.get("page"))
+
+    open_cheques = visible.filter(status=DocStatus.POSTED, state__in=OPEN_CHEQUE)
+    week = today + timedelta(days=7)
+
+    def total(queryset):
+        return queryset.aggregate(n=Count("id"), a=Sum("amount"))
+
+    return render(request, "treasury/cheques.html", {
+        "page": page, "direction": direction, "state": state, "term": term, "today": today,
+        "cards": {
+            "in_hand": total(open_cheques.filter(state=ChequeStatus.IN_HAND)),
+            "deposited": total(open_cheques.filter(state=ChequeStatus.DEPOSITED)),
+            "outstanding": total(open_cheques.filter(state=ChequeStatus.OUTSTANDING)),
+            "due_week": total(open_cheques.filter(due_date__lte=week)),
+        },
+        "home_currency": functional_currency(),
+    })
+
+
+@permission_required("treasury.cheque.manage")
+def cheque_new(request):
+    direction = (request.GET.get("direction") if request.GET.get("direction")
+                 in ChequeDirection.values else ChequeDirection.RECEIVED)
+    side = request.GET.get("side") if request.GET.get("side") in PartySide.values else (
+        PartySide.CUSTOMER if direction == ChequeDirection.RECEIVED else PartySide.SUPPLIER)
+    return render(request, "treasury/cheque_form.html", {
+        "direction": direction, "side": side, "party_sides": PartySide.choices,
+        "branches": _branches(request, "treasury.cheque.manage"),
+        "default_branch": request.membership.default_branch_id,
+        "banks": visible_banks(None).filter(is_active=True, currency__code=functional_currency()),
+        "home_currency": functional_currency(), "today": timezone.localdate(),
+    })
+
+
+@permission_required("treasury.cheque.view")
+def cheque_detail(request, pk):
+    cheque = _visible_cheques(request).select_related(
+        "journal_entry", "settle_entry", "posted_by", "currency").filter(pk=pk).first()
+    if cheque is None:
+        raise Http404
+    return render(request, "treasury/cheque.html", {
+        "cheque": cheque, "profile": TenantProfile.objects.first(),
+        "endpoint": reverse("cheque-api-detail", args=[cheque.pk]),
+        "banks": visible_banks(None).filter(is_active=True, currency=cheque.currency),
+        "today": timezone.localdate(), "party_sides": PartySide.choices,
+    })
+
+
+# --- bank reconciliation -------------------------------------------------------------------------
+
+@permission_required("treasury.reconcile")
+def reconcile(request, pk):
+    bank = visible_banks(None).filter(pk=pk).first()
+    if bank is None:
+        raise Http404
+    chosen = request.GET.get("id", "")
+    item = (bank.reconciliations.filter(pk=int(chosen)).first() if chosen.isdigit()
+            else reconciliation.open_reconciliation(bank))
+    context = {
+        "bank": bank, "item": item,
+        "history": bank.reconciliations.filter(completed_at__isnull=False)
+        .select_related("completed_by")[:12],
+        "latest": reconciliation.last_completed(bank),
+        "today": timezone.localdate(),
+    }
+    if item is not None:
+        ticked = set(item.lines.values_list("journal_line_id", flat=True))
+        lines = (item.lines.select_related("journal_line__entry").order_by(
+            "journal_line__business_date", "journal_line_id") if item.is_completed
+            else reconciliation.candidates(item))
+        rows = []
+        for line in lines:
+            journal_line = line.journal_line if item.is_completed else line
+            rows.append({"line": journal_line, "ticked": journal_line.pk in ticked,
+                         "url": document_url(journal_line.entry.source_type,
+                                             journal_line.entry.source_id)})
+        context.update({"rows": rows, "figures": reconciliation.summary(item),
+                        "endpoint": reverse("reconciliation-detail", args=[item.pk])})
+    return render(request, "treasury/reconcile.html", context)
+
+
+# --- cash counts ---------------------------------------------------------------------------------
+
+@permission_required("treasury.view")
+def cash_counts(request):
+    scope = _scope(request)
+    boxes = list(visible_boxes(scope).filter(is_active=True).select_related("branch", "currency")
+                 .order_by("branch__code", "currency__code", "-is_default", "name"))
+    last = {}
+    for count in (CashCount.objects.filter(cash_box__in=boxes, status=DocStatus.POSTED)
+                  .order_by("cash_box_id", "-posted_at", "-id")):
+        last.setdefault(count.cash_box_id, count)
+    rows = [{"box": box, "held": balance(box.account_id)[0], "last": last.get(box.pk)}
+            for box in boxes]
+    history = CashCount.objects.select_related("cash_box__currency", "branch", "posted_by")
+    if scope is not None:
+        history = history.filter(branch_id__in=scope)
+    chosen = request.GET.get("box", "")
+    if chosen.isdigit():
+        history = history.filter(cash_box_id=int(chosen))
+    page = Paginator(history.order_by("-posted_at", "-id"), 25).get_page(request.GET.get("page"))
+    return render(request, "treasury/counts.html", {
+        "rows": rows, "page": page, "box": chosen if chosen.isdigit() else "",
+        "today": timezone.localdate(),
+    })
+
+
+@permission_required("treasury.count.create")
+def cash_count_new(request):
+    allowed = request.actor.branch_ids("treasury.count.create")
+    boxes = visible_boxes(allowed).filter(is_active=True).select_related("branch", "currency")
+    chosen = request.GET.get("box", "")
+    box = boxes.filter(pk=int(chosen)).first() if chosen.isdigit() else None
+    if box is None:
+        box = boxes.filter(branch_id=request.membership.default_branch_id,
+                           is_default=True).first() or boxes.first()
+    return render(request, "treasury/count_form.html", {
+        "box": box, "boxes": boxes.order_by("branch__code", "currency__code"),
+        "expected": balance(box.account_id)[0] if box else 0,
+        "denominations": DENOMINATIONS.get(box.currency.code, ()) if box else (),
+    })
+
+
+@permission_required("treasury.view")
+def cash_count(request, pk):
+    count = (CashCount.objects.select_related("cash_box__currency", "branch", "posted_by",
+                                              "journal_entry")
+             .filter(pk=pk).first())
+    scope = _scope(request)
+    if count is None or (scope is not None and count.branch_id not in scope):
+        raise Http404
+    order = DENOMINATIONS.get(count.cash_box.currency.code, ())
+    lines = [{"value": key, "pieces": count.denominations[key],
+              "total": Decimal(key) * count.denominations[key]}
+             for key in order if key in count.denominations]
+    latest = (CashCount.objects.filter(cash_box=count.cash_box, status=DocStatus.POSTED)
+              .order_by("-posted_at", "-id").first())
+    return render(request, "treasury/count.html", {
+        "count": count, "lines": lines, "is_latest": latest == count,
+        "profile": TenantProfile.objects.first(),
+        "endpoint": reverse("cash-count-detail", args=[count.pk]),
     })

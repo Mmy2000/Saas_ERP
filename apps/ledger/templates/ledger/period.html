@@ -1,0 +1,103 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ item.start|date:"F Y" }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'periods' %}?year={{ item.year }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Closing periods" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ item.start|date:"F Y" }}</h1>
+    {% if item.state == "closed" %}<span class="badge badge-neutral">{% icon "lock" "size-3" %}{% translate "Closed" %}</span>
+    {% elif item.state == "open" %}<span class="badge badge-warning"><span class="badge-dot"></span>{% translate "To close" %}</span>
+    {% else %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "In progress" %}</span>{% endif %}
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><bdi dir="ltr" class="num">{{ item.start|date:"SHORT_DATE_FORMAT" }} – {{ item.end|date:"SHORT_DATE_FORMAT" }}</bdi></p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "ledger.period.close" as can_close %}{% can "ledger.period.reopen" as can_reopen %}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Income" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ item.figures.income|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Expenses" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ item.figures.expenses|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{% translate "Cost of goods sold, salaries, expenses and losses" %}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% if item.figures.profit < 0 %}{% translate "Net loss" %}{% else %}{% translate "Net profit" %}{% endif %}</p><p class="mt-2 text-2xl font-semibold {% if item.figures.profit < 0 %}text-red-700{% else %}text-slate-900{% endif %}"><span class="num">{{ item.figures.profit|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Journal entries" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ item.figures.entries }}</span></p>
+    <a class="mt-0.5 inline-block text-xs font-medium text-brand-700 hover:underline" href="{% url 'journal' %}?from={{ item.start|date:'Y-m-d' }}&to={{ item.end|date:'Y-m-d' }}">{% translate "See the entries" %}</a></div>
+</div>
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header"><h2 class="card-title">{% translate "Before closing" %}</h2></div>
+    {% if item.state == "closed" %}
+      <p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "This month is closed: nothing can be posted into it and none of its documents can be cancelled." %}</p>
+    {% elif checks %}
+      <ul class="divide-y divide-slate-100">
+        {% for check in checks %}
+        <li><a class="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50" href="{{ check.url }}">
+          <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">{% icon check.icon "size-4" %}</span>
+          <span class="flex-1 text-sm text-slate-700">{{ check.label }}</span>
+          <span class="num rounded-md bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-900">{{ check.count }}</span>
+          <span class="text-slate-400 rtl:rotate-180">→</span></a></li>
+        {% endfor %}
+      </ul>
+      <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{% translate "Finish these first if they belong to this month: once it is closed nothing can be dated into it." %}</p>
+    {% else %}
+      <div class="flex items-center gap-3 px-5 py-6 text-sm text-emerald-800">{% icon "circle-check" "size-5 text-emerald-600" %}{% translate "Nothing is left unfinished in this month." %}</div>
+    {% endif %}
+  </section>
+
+  <aside class="space-y-6">
+    <section class="card">
+      {% if item.state == "closed" %}
+        <dl class="divide-y divide-slate-100 text-sm">
+          <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Closed by" %}</dt><dd>{{ item.period.closed_by.display_name|default:"—" }}</dd></div>
+          <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Closed on" %}</dt><dd class="num">{{ item.period.closed_at|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+        </dl>
+        <div class="border-t border-slate-100 p-5">
+        {% if year_closed %}
+          <p class="text-sm text-slate-500">{% blocktranslate with year=item.year %}The year {{ year }} is closed. Reopen the year before reopening its months.{% endblocktranslate %}</p>
+        {% elif not item.can_reopen %}
+          <p class="text-sm text-slate-500">{% translate "Later months are closed. Reopen them first, starting with the latest." %}</p>
+        {% elif can_reopen %}
+          <form data-api-form data-method="POST" data-endpoint="{% url 'ledger-period-reopen' %}" data-success="{% translate 'The month is open again.' %}" class="space-y-3" novalidate>
+            <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+            <input type="hidden" name="period" value="{{ item.key }}">
+            <label class="block"><span class="form-label">{% translate "Why reopen it?" %}</span><input name="reason" class="form-input" maxlength="300"></label>
+            <p class="form-error" data-error-for="reason"></p>
+            <button type="submit" class="btn btn-secondary w-full">{% icon "lock-open" "size-4" %}{% translate "Reopen the month" %}</button>
+          </form>
+        {% endif %}
+        </div>
+      {% elif item.state == "current" %}
+        <p class="p-5 text-sm text-slate-500">{% translate "A month can be closed once it is over." %}</p>
+      {% elif not item.can_close %}
+        <p class="p-5 text-sm text-slate-600">{% blocktranslate trimmed with month=upcoming|date:"F Y" %}Months are closed in order: close {{ month }} first.{% endblocktranslate %}
+          <a class="font-medium text-brand-700 hover:underline" href="{% url 'period' upcoming.year upcoming.month %}">{% translate "Open it" %}</a></p>
+      {% elif can_close %}
+        <form data-api-form data-method="POST" data-endpoint="{% url 'ledger-period-close' %}" data-success="{% translate 'The month is closed.' %}" class="space-y-4 p-5" novalidate>
+          <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+          <input type="hidden" name="period" value="{{ item.key }}">
+          <p class="text-sm text-slate-600">{% translate "After closing, nothing can be posted into this month and none of its documents can be cancelled. Corrections go into the next open month." %}</p>
+          <input name="note" class="form-input" placeholder="{% translate 'Note (optional)' %}" maxlength="300">
+          {% if checks %}<label class="flex items-start gap-3 text-sm text-slate-700"><input type="checkbox" name="confirm" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600">{% translate "Close it anyway, with the unfinished work above" %}</label>{% endif %}
+          <button type="submit" class="btn btn-primary w-full">{% icon "lock" "size-4" %}{% blocktranslate with month=item.start|date:"F" %}Close {{ month }}{% endblocktranslate %}</button>
+        </form>
+      {% else %}
+        <p class="p-5 text-sm text-slate-500">{% translate "You do not have permission to close months." %}</p>
+      {% endif %}
+    </section>
+
+    {% if events %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "History" %}</h2></div>
+      <ul class="divide-y divide-slate-100">
+        {% for e in events %}
+        <li class="px-5 py-3 text-sm">
+          <div class="flex items-center justify-between gap-3"><span class="font-medium text-slate-900">{{ e.get_action_display }}</span><span class="num text-xs text-slate-400">{{ e.at|date:"SHORT_DATETIME_FORMAT" }}</span></div>
+          <div class="mt-0.5 text-xs text-slate-500">{{ e.user.display_name|default:"—" }}{% if e.reason %} · {{ e.reason }}{% endif %}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

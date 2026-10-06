@@ -259,7 +259,7 @@ class PlanForm(Styled, forms.ModelForm):
             name = f"feature_{feature.key}"
             self.fields[name] = forms.BooleanField(
                 label=feature.label, help_text=feature.description, required=False,
-                initial=saved.get(feature.key, True))
+                initial=saved.get(feature.key, feature.default))
             self.feature_fields.append((feature, name))
         for field in self.fields.values():
             if isinstance(field, forms.BooleanField):

@@ -6,5 +6,6 @@ register_permissions(_("Accounting"), [
     ("ledger.view", _("View accounts, journal and trial balance")),
     ("ledger.journal.post", _("Post and reverse manual journal entries")),
     ("ledger.accounts.manage", _("Manage the chart of accounts")),
-    ("ledger.period.close", _("Close accounting periods")),
+    ("ledger.period.close", _("Close months and financial years")),
+    ("ledger.period.reopen", _("Reopen closed months and years")),
 ])

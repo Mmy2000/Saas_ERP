@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "apps.core",
     "apps.platform.tenants",
+    "apps.platform.monitor",
     "apps.iam",
     "apps.org",
     "apps.catalog",
@@ -49,7 +50,10 @@ INSTALLED_APPS = [
     "apps.printing",
     "apps.manufacturing",
     "apps.repairs",
+    "apps.hr",
     "apps.reports",
+    "apps.diamonds",
+    "apps.audit",
 ]
 
 MIDDLEWARE = [
@@ -65,6 +69,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "apps.iam.middleware.TenantMembershipMiddleware",
+    "apps.audit.middleware.AuditUserMiddleware",  # SET LOCAL app.user_id for the audit trail
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -154,6 +159,13 @@ STATIC_ROOT = BASE_DIR / "var" / "static"
 # apps.core.media.serve, which checks host and user: never point a web server straight at it.
 MEDIA_URL = "/media/"
 MEDIA_ROOT = env.path("MEDIA_ROOT", default=BASE_DIR / "var" / "media")
+
+# Server monitoring (platform console → Server). `manage.py monitor_server` records a sample
+# every MONITOR_SAMPLE_SECONDS; the page also records while it is open. Thresholds are in %.
+MONITOR_SAMPLE_SECONDS = env.int("MONITOR_SAMPLE_SECONDS", default=10)
+MONITOR_RETENTION_DAYS = env.int("MONITOR_RETENTION_DAYS", default=7)
+MONITOR_WARN_PCT = env.int("MONITOR_WARN_PCT", default=75)
+MONITOR_CRITICAL_PCT = env.int("MONITOR_CRITICAL_PCT", default=90)
 
 # Client traffic (platform console → Traffic). Each client's limit can be changed there; this
 # is the default for clients without one. 0 = no limit.

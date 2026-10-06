@@ -13,6 +13,12 @@ Gold piece (retail):
 Bulk gold by weight: the same, with the category's making rate and the lot's average making
 cost per gram as the floor.
 
+Diamond piece or loose stone (apps.diamonds), sold at its label price:
+    discount        ≤ the seller's diamond limit, on the whole label price
+    gold part       = round2(board sell price × metal weight)          (none for loose stones)
+    line total      = max(label × (1 − discount), what it cost)   (gold part + making + stones)
+    stones part     = line total − gold part: the stones and the workmanship
+
 Scrap trade-in:
     net weight      = gross − loss
     price/g         = board scrap-buy price for the karat (buy price if none), or an override
@@ -58,6 +64,9 @@ class ItemQuote:
     at_cost_floor: bool
     lot_id: int | None = None
     qty: int = 1
+    stones_amount: Decimal = ZERO  # label-priced pieces: the price beyond the gold
+    stone_cost: Decimal = ZERO
+    label_price: Decimal | None = None
 
 
 @dataclass(frozen=True)
@@ -123,6 +132,29 @@ def quote_item(item, board, *, discount_rate, max_discount: Decimal,
         making=list_making_rate(item, functional_currency), cost_amount=item.cost_amount,
         discount=_discount(discount_rate, max_discount), item_id=item.pk,
         barcode=item.barcode, description=item.category.name, fine_weight_g=item.fine_weight_g)
+
+
+def quote_label_priced(item, board, *, discount_rate, max_discount: Decimal) -> ItemQuote:
+    """A diamond piece or loose stone, at its label price (see the module docstring)."""
+    if not item.label_price:
+        raise DomainError(_("Piece %(barcode)s has no label price.") % {"barcode": item.barcode},
+                          code="PRICING_NO_LABEL_PRICE")
+    discount = _discount(discount_rate, max_discount)
+    label = item.label_price
+    metal_price = board.price(item.karat, PriceSide.SELL) if item.karat else ZERO
+    metal_amount = round_money(metal_price * item.metal_weight_g) if item.karat else ZERO
+    asked = round_money(label * (1 - discount))
+    floor = min(metal_amount + item.cost_amount + item.stone_cost_amount, label)
+    total = max(asked, floor)
+    gold = min(metal_amount, total)
+    return ItemQuote(
+        item_id=item.pk, barcode=item.barcode, description=item.category.name,
+        karat_label=item.karat.label if item.karat else "", gross_weight_g=item.gross_weight_g,
+        fine_weight_g=item.fine_weight_g, metal_price_per_g=metal_price, making_rate=ZERO,
+        discount_rate=discount, making_rate_net=ZERO, metal_amount=gold, making_amount=ZERO,
+        line_total=total, discount_amount=label - total, cost_amount=item.cost_amount,
+        at_cost_floor=total > asked, stones_amount=total - gold,
+        stone_cost=item.stone_cost_amount, label_price=label)
 
 
 def quote_bulk(lot, balance, board, *, gross_weight_g, qty: int = 0, discount_rate,

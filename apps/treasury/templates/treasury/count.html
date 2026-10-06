@@ -1,0 +1,62 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ count.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'cash-counts' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Cash counts" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "treasury.count.void" count.branch as can_void %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{% translate "Cash count" %} · {{ count.branch.name }} · {{ count.cash_box.label }}</p></div>
+      <div class="text-end">
+        <p class="num text-xl font-semibold text-slate-900">{{ count.number }}</p>
+        <p class="num text-sm text-slate-500">{{ count.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=count.status label=count.get_status_display %}</div>
+      </div>
+    </header>
+    {% if lines %}
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Note or coin" %}</th><th class="text-end">{% translate "How many" %}</th><th class="text-end">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for line in lines %}<tr><td><span class="num">{{ line.value }}</span></td><td class="text-end"><span class="num">{{ line.pieces }}</span></td><td class="text-end"><span class="num">{{ line.total|num:2 }}</span></td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+    {% endif %}
+    <dl class="ms-auto max-w-sm divide-y divide-slate-100 border-t border-slate-100 text-sm">
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "In the books" %}</dt><dd class="num">{{ count.expected|num:2 }}</dd></div>
+      <div class="flex justify-between px-6 py-2.5"><dt class="text-slate-500">{% translate "Counted" %}</dt><dd class="num">{{ count.counted|num:2 }}</dd></div>
+      <div class="flex justify-between bg-slate-50 px-6 py-3"><dt class="font-medium text-slate-700">{% if count.difference < 0 %}{% translate "Short" %}{% elif count.difference > 0 %}{% translate "Over" %}{% else %}{% translate "Matches the books" %}{% endif %} <span class="text-xs text-slate-400">{{ count.cash_box.currency.code }}</span></dt>
+        <dd class="num text-base font-semibold {% if count.difference < 0 %}text-red-600{% elif count.difference > 0 %}text-emerald-700{% endif %}" dir="ltr">{% if count.difference > 0 %}+{% endif %}{{ count.difference|num:2 }}</dd></div>
+    </dl>
+    {% if count.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ count.note }}</p>{% endif %}
+    {% if count.status == "voided" and count.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ count.void_reason }}</p>{% endif %}
+    <div class="grid grid-cols-2 gap-10 px-6 pt-14 pb-6 text-sm text-slate-600" data-print-only>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Counted by" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Checked by" %}</div>
+    </div>
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% if can_void and count.status == "posted" and is_latest %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Counted wrong? Cancel the count and count again: the difference it booked is undone." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel the count" %}</button>
+    </form>
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Counted by" %}</dt><dd>{{ count.posted_by.display_name|default:"—" }}</dd></div>
+        {% if count.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ count.journal_entry.number }}</dd></div>{% endif %}
+        <div class="px-5 py-3"><a class="btn btn-ghost w-full text-xs" href="{% url 'treasury-holder-statement' 'box' count.cash_box_id %}">{% translate "Cash box statement" %}</a></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

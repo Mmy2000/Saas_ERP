@@ -1,11 +1,13 @@
 from datetime import date
 
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.shortcuts import render
 from django.utils import timezone
 
 from apps.iam.authz import permission_required
-from apps.ledger.models import Account, Commodity, EntryKind, JournalEntry
+from apps.ledger import closing
+from apps.ledger.models import Account, Commodity, EntryKind, JournalEntry, PeriodEvent, YearEnd
 from apps.ledger.selectors import account_balances, trial_balance
 from apps.org.models import Branch
 
@@ -75,4 +77,46 @@ def trial_balance_view(request):
         "tb": tb, "as_of": as_of, "manual": EntryKind.MANUAL,
         "home_currency": Commodity.objects.filter(is_functional=True).values_list(
             "code", flat=True).first(),
+    })
+
+
+def _home_currency():
+    return Commodity.objects.filter(is_functional=True).values_list("code", flat=True).first()
+
+
+@permission_required("ledger.view")
+def periods(request):
+    years = closing.years()
+    upcoming = closing.next_to_close()
+    try:
+        year = int(request.GET.get("year", ""))
+    except ValueError:
+        year = upcoming[0] if upcoming else years[0]
+    if year not in years:
+        year = years[0]
+    return render(request, "ledger/periods.html", {
+        "view": closing.year_view(year), "years": years,
+        "upcoming": date(*upcoming, 1) if upcoming else None,
+        "events": PeriodEvent.objects.select_related("user")[:12],
+        "home_currency": _home_currency(),
+    })
+
+
+@permission_required("ledger.view")
+def period(request, year, month):
+    try:
+        closing.month_bounds(year, month)
+    except Exception:  # noqa: BLE001 - any bad month is a 404
+        raise Http404 from None
+    item = closing.months_of(year)[month - 1]
+    if item.state in (closing.MonthState.FUTURE, closing.MonthState.BEFORE):
+        raise Http404
+    upcoming = closing.next_to_close()
+    return render(request, "ledger/period.html", {
+        "item": item,
+        "checks": closing.checklist(year, month, request.actor),
+        "upcoming": date(*upcoming, 1) if upcoming else None,
+        "year_closed": YearEnd.objects.filter(year=year, reopened_at__isnull=True).exists(),
+        "events": PeriodEvent.objects.select_related("user").filter(year=year, month=month)[:10],
+        "home_currency": _home_currency(),
     })

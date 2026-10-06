@@ -77,8 +77,10 @@ def test_gold_balances_and_sales(shop):
 def test_pages_and_csv(tenant_a, shop):
     client = login(tenant_a, language="en")
     assert client.get("/reports/").status_code == 200
-    for code in REPORTS:
-        assert client.get(f"/reports/{code}/").status_code == 200, code
+    for code, report in REPORTS.items():
+        # Diamond reports belong to the Diamonds feature, off unless switched on.
+        expected = 403 if report.permission().startswith("diamonds.") else 200
+        assert client.get(f"/reports/{code}/").status_code == expected, code
     page = client.get("/reports/sales/?group=seller&date_from=2026-01-01&date_to=2026-12-31")
     assert page.status_code == 200 and b"Sales analysis" in page.content
     csv = client.get("/reports/daily_summary/?format=csv")

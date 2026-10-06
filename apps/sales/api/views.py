@@ -51,6 +51,7 @@ class QuoteView(APIView):
         return Response({
             "board": quote.board.pk,
             "max_discount_rate": request.actor.limit(services.DISCOUNT_LIMIT),
+            "max_diamond_discount_rate": request.actor.limit(services.DIAMOND_DISCOUNT_LIMIT),
             "lines": [{
                 "item": ln.item_id, "lot": ln.lot_id, "qty": ln.qty,
                 "barcode": ln.barcode, "description": ln.description,
@@ -58,6 +59,7 @@ class QuoteView(APIView):
                 "metal_price_per_g": ln.metal_price_per_g, "making_rate": ln.making_rate,
                 "discount_rate": ln.discount_rate, "making_rate_net": ln.making_rate_net,
                 "line_total": ln.line_total, "at_cost_floor": ln.at_cost_floor,
+                "label_price": ln.label_price, "stones_amount": ln.stones_amount,
             } for ln in quote.lines],
             "trade_ins": [{
                 "karat": t.karat_label, "gross_weight_g": t.gross_weight_g,

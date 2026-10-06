@@ -55,7 +55,11 @@ def test_todays_figures(tenant_a, busy_day):
     assert balances["/trade-accounts/"] == {"EGP": Decimal("150"), "XAU": Decimal("4.375")}
     assert balances["/suppliers/"] == {"EGP": Decimal("-3650"), "XAU": Decimal("-25.75")}
     assert balances["/customers/"] == {}
-    assert [(a.url, a.count) for a in data["attention"]] == [("/stock/transfers/", 1)]
+    # (The fixtures post on fixed dates, so a "months to close" reminder may follow: its
+    # rules are covered in apps/ledger/tests/test_closing.py.)
+    attention = [(a.url, a.count) for a in data["attention"]
+                 if not a.url.startswith("/accounting/periods/")]
+    assert attention == [("/stock/transfers/", 1)]
     assert len(data["recent"]) == 3 and all(doc["url"] for doc in data["recent"])
 
 

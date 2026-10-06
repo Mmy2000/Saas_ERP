@@ -19,6 +19,8 @@ from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.core.models import DocStatus
 from apps.core.numeric import round_money, to_decimal
 from apps.core.sequences import allocate_number
+from apps.diamonds.services import is_diamond
+from apps.diamonds.services import require_enabled as require_diamonds
 from apps.inventory.models import Item, ItemStatus, LotBalance, MovementType, StockLot
 from apps.inventory.services import (
     SCRAP_CATEGORY_CODE,
@@ -40,7 +42,14 @@ from apps.ledger.services import (
 )
 from apps.org.models import Branch
 from apps.parties.models import Party, PartyRoleType
-from apps.pricing.engine import ItemQuote, TradeInQuote, quote_bulk, quote_item, quote_trade_in
+from apps.pricing.engine import (
+    ItemQuote,
+    TradeInQuote,
+    quote_bulk,
+    quote_item,
+    quote_label_priced,
+    quote_trade_in,
+)
 from apps.pricing.selectors import current_price_board, fine_gram_value, functional_currency
 from apps.pricing.selectors import fx_rate as rate_in_force
 from apps.treasury.holders import Holder, default_cash_box, resolve_tender
@@ -57,6 +66,7 @@ from .models import (
 
 DOC_TYPE = "sales.SalesInvoice"
 DISCOUNT_LIMIT = "sales.discount.max_rate.gold"
+DIAMOND_DISCOUNT_LIMIT = "diamonds.discount.max_rate"
 PAYMENT_TOLERANCE = Decimal("0.01")
 ZERO = Decimal(0)
 
@@ -167,6 +177,13 @@ def _find_item(line: SaleLineInput, branch, reserved_ids=frozenset()) -> Item:
     return item
 
 
+def _may_sell_diamonds(actor, branch) -> None:
+    """Diamond pieces need the Diamonds feature for the client and the right to sell them."""
+    require_diamonds()
+    if actor is not None and not actor.can("diamonds.sell", branch):
+        raise DomainError(_("You may not sell diamond pieces."), code="SALES_DIAMONDS_DENIED")
+
+
 def _find_lot(line: SaleLineInput, branch):
     """The branch's bulk stock of a category and karat (scrap is sold from its own screen)."""
     lot = (StockLot.objects.select_related("category", "karat__metal")
@@ -208,6 +225,8 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
 
     home = functional_currency()
     max_discount = actor.limit(DISCOUNT_LIMIT) if actor is not None else Decimal(1)
+    diamond_discount = (actor.limit(DIAMOND_DISCOUNT_LIMIT) if actor is not None
+                        else Decimal(1))
     if reservation is not None and (customer is None or customer.pk != reservation.customer_id):
         message = _("A reservation is sold to its own customer.")
         raise ValidationError(message, fields={"customer": [message]})
@@ -236,8 +255,13 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
                     raise DomainError(_("Piece %(barcode)s is already on this sale.")
                                       % {"barcode": source.barcode}, code="SALES_DUPLICATE_ITEM")
                 seen.add(source.pk)
-                priced = quote_item(source, board, discount_rate=line.discount_rate,
-                                    max_discount=max_discount, functional_currency=home)
+                if is_diamond(source.category):
+                    _may_sell_diamonds(actor, branch)
+                    priced = quote_label_priced(source, board, discount_rate=line.discount_rate,
+                                                max_discount=diamond_discount)
+                else:
+                    priced = quote_item(source, board, discount_rate=line.discount_rate,
+                                        max_discount=max_discount, functional_currency=home)
         except (DomainError, ValidationError) as exc:
             raise _line_error("lines", index, exc.message, exc.code) from exc
         quote.items.append(source)
@@ -377,13 +401,16 @@ def _ledger_lines(invoice: SalesInvoice, quote: SaleQuote, lines, trade_ins,
         add("metal_position", commodity, -fine, -value)
         add("metal_position", home, value)
 
-    # Revenue, split into gold and making charges.
+    # Revenue, split into gold, making charges and (diamond pieces) stones.
     add("sales_gold", home, -sum((line.metal_amount for line in lines), ZERO))
     add("sales_making", home, -sum((line.making_amount for line in lines), ZERO))
+    add("sales_diamonds", home, -sum((line.stones_amount for line in lines), ZERO))
 
     # Cost of goods sold: the fine grams leave inventory, plus the making cost paid.
     sold: dict[str, list[Decimal]] = defaultdict(lambda: [ZERO, ZERO])
     for line in lines:
+        if line.karat is None:  # a loose stone: no gold
+            continue
         sold[line.karat.metal.code][0] += line.fine_weight_g
         sold[line.karat.metal.code][1] += line.metal_value
     for metal_code, (fine, value) in sorted(sold.items()):
@@ -393,6 +420,9 @@ def _ledger_lines(invoice: SalesInvoice, quote: SaleQuote, lines, trade_ins,
     making_cost = sum((line.cost_amount for line in lines), ZERO)
     add("cogs_gold", home, making_cost)
     add("inventory_gold", home, -making_cost)
+    stones = sum((line.stone_cost_amount for line in lines), ZERO)
+    add("cogs_diamonds", home, stones)
+    add("inventory_diamonds", home, -stones)
     return result
 
 
@@ -439,7 +469,8 @@ def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
                                    doc=doc, branch=quote.branch)
                 fine = priced.fine_weight_g
                 where = {"item": source, "qty": 1}
-            value = round_money(fine * fine_gram_value(source.karat.metal.code))
+            value = (round_money(fine * fine_gram_value(source.karat.metal.code))
+                     if source.karat else ZERO)
             lines.append(SalesInvoiceLine(
                 invoice=invoice, position=position, karat=source.karat,
                 category=source.category, **where,
@@ -449,6 +480,7 @@ def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
                 metal_amount=priced.metal_amount, making_amount=priced.making_amount,
                 discount_amount=priced.discount_amount, line_total=priced.line_total,
                 cost_amount=priced.cost_amount, metal_value=value,
+                stones_amount=priced.stones_amount, stone_cost_amount=priced.stone_cost,
             ))
         lines.sort(key=lambda line: line.position)
         SalesInvoiceLine.objects.bulk_create(lines)

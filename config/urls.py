@@ -3,10 +3,13 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
+from apps.audit import views as audit
 from apps.catalog.web import manage as catalog_manage
 from apps.catalog.web import views as catalog
 from apps.core import media
+from apps.diamonds import views as diamonds
 from apps.expenses import views as expenses
+from apps.hr import views as hr
 from apps.iam.web import views as iam
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
@@ -49,6 +52,7 @@ urlpatterns = [
     path("branches/", org.branches, name="branches"),
     path("branches/new/", org.branch_new, name="branch-new"),
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
+    path("settings/activity/", audit.activity, name="activity"),
     path("settings/users/", iam.users, name="users"),
     path("settings/users/new/", iam.user_new, name="user-new"),
     path("settings/users/<int:pk>/", iam.user_edit, name="user-edit"),
@@ -76,12 +80,28 @@ urlpatterns = [
     path("trade-accounts/<int:pk>/", parties.trade_account_edit, name="trade-account-edit"),
     path("trade-accounts/<int:pk>/statement/", parties.trade_account_statement,
          name="trade-account-statement"),
+    path("hr/", hr.employees, name="employees"),
+    path("hr/new/", hr.employee_new, name="employee-new"),
+    path("hr/<int:pk>/", hr.employee, name="employee"),
+    path("hr/advances/<int:pk>/", hr.advance, name="employee-advance"),
+    path("hr/payroll/", hr.payrolls, name="payrolls"),
+    path("hr/payroll/new/", hr.payroll_new, name="payroll-new"),
+    path("hr/payroll/<int:pk>/", hr.payroll, name="payroll"),
+    path("hr/commissions/", hr.commissions, name="commissions"),
     path("repairs/", repairs.repairs, name="repairs"),
     path("repairs/new/", repairs.repair_new, name="repair-new"),
     path("repairs/<int:pk>/", repairs.repair, name="repair"),
     path("manufacturing/", manufacturing.work_orders, name="work-orders"),
     path("manufacturing/new/", manufacturing.work_order_new, name="work-order-new"),
     path("manufacturing/<int:pk>/", manufacturing.work_order, name="work-order"),
+    path("diamonds/", diamonds.stock, name="diamonds"),
+    path("diamonds/receive/", diamonds.receive, name="diamonds-receive-form"),
+    path("diamonds/settings/", diamonds.settings_list, name="stone-settings"),
+    path("diamonds/settings/new/", diamonds.setting_new, name="stone-setting-new"),
+    path("diamonds/settings/<int:pk>/", diamonds.setting, name="stone-setting"),
+    path("production/", manufacturing.production, name="production"),
+    path("production/new/", manufacturing.production_new, name="production-new"),
+    path("production/<int:pk>/", manufacturing.work_order, name="production-order"),
     path("workshops/", parties.workshops, name="workshops"),
     path("workshops/new/", parties.workshop_new, name="workshop-new"),
     path("workshops/<int:pk>/", parties.workshop_edit, name="workshop-edit"),
@@ -108,6 +128,13 @@ urlpatterns = [
     path("treasury/movements/", treasury.documents, name="treasury-documents"),
     path("treasury/movements/new/", treasury.document_new, name="treasury-document-new"),
     path("treasury/movements/<int:pk>/", treasury.document_detail, name="treasury-document"),
+    path("treasury/counts/", treasury.cash_counts, name="cash-counts"),
+    path("treasury/counts/new/", treasury.cash_count_new, name="cash-count-new"),
+    path("treasury/counts/<int:pk>/", treasury.cash_count, name="cash-count"),
+    path("treasury/cheques/", treasury.cheques, name="cheques"),
+    path("treasury/cheques/new/", treasury.cheque_new, name="cheque-new"),
+    path("treasury/cheques/<int:pk>/", treasury.cheque_detail, name="cheque"),
+    path("treasury/reconcile/<int:pk>/", treasury.reconcile, name="reconcile"),
     path("treasury/<str:kind>/new/", treasury.holder_new, name="treasury-holder-new"),
     path("treasury/<str:kind>/<int:pk>/", treasury.holder_edit, name="treasury-holder-edit"),
     path("treasury/<str:kind>/<int:pk>/statement/", treasury.holder_statement,
@@ -149,6 +176,12 @@ urlpatterns = [
     path("accounting/journal/", ledger.journal, name="journal"),
     path("accounting/journal/new/", ledger.journal_new, name="journal-new"),
     path("accounting/trial-balance/", ledger.trial_balance_view, name="trial-balance"),
+    path("accounting/profit-and-loss/", reports.run_report, {"code": "profit_loss"},
+         name="profit-loss"),
+    path("accounting/balance-sheet/", reports.run_report, {"code": "balance_sheet"},
+         name="balance-sheet"),
+    path("accounting/periods/", ledger.periods, name="periods"),
+    path("accounting/periods/<int:year>/<int:month>/", ledger.period, name="period"),
 
     path("api/v1/", include("config.api_urls")),
 ]

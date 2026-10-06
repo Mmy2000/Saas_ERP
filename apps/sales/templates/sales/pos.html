@@ -13,7 +13,7 @@
 {% else %}
 <div id="pos" class="grid grid-cols-1 gap-6 xl:grid-cols-3"
      data-quote-url="{{ quote_url }}" data-post-url="{{ post_url }}" data-receipt-url="{% url 'sales' %}{id}/"
-     data-home-currency="{{ home_currency }}" data-by-weight="{% translate 'By weight' %}">
+     data-home-currency="{{ home_currency }}" data-by-weight="{% translate 'By weight' %}" data-label-price="{% translate 'Label price' %}">
   <div class="space-y-6 xl:col-span-2">
     <section class="card">
       <div class="card-header">

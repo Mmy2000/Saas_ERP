@@ -68,6 +68,9 @@ class Item(TenantScopedModel):
                                       on_delete=models.PROTECT, related_name="+")
     cost_making_rate = models.DecimalField(max_digits=18, decimal_places=4, default=0)
     cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    # Cost of the stones set in the piece (diamonds, gems), in the company currency: carried
+    # on "diamonds and stones" inventory, apart from the gold and its making cost.
+    stone_cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     # Sale making charge per gram (company currency) unless a promotion overrides it.
     list_making_rate = models.DecimalField(max_digits=18, decimal_places=4, default=0)
     label_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)

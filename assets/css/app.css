@@ -269,6 +269,16 @@
   .nav-section { @apply mt-5 mb-1 px-2.5 text-[11px] font-semibold tracking-wide text-slate-400 uppercase; }
   :lang(ar) .nav-section { @apply text-xs tracking-normal normal-case; }
 
+  /* Charts (server monitoring): series colours validated for light and dark surfaces. */
+  .viz { --series-1: #2a78d6; --series-2: #eb6834; }
+  [data-theme="dark"] .viz { --series-1: #3987e5; --series-2: #d95926; }
+  .viz-line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round;
+              stroke-linecap: round; }
+  .viz-area { opacity: 0.12; }
+  .viz-grid { stroke: var(--color-slate-200); stroke-width: 1; vector-effect: non-scaling-stroke;
+              stroke-dasharray: 2 3; }
+  .viz-cursor { stroke: var(--color-slate-400); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
   /* Platform console sidebar (always dark). */
   .console-link { @apply relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-zinc-400
                          transition-colors hover:bg-white/5 hover:text-white; }
@@ -435,6 +445,9 @@ input[type="checkbox"]:indeterminate { background-color: var(--color-brand-300);
 input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+
+/* Shown only on paper (e.g. a signature column on a payroll). */
+@media screen { [data-print-only] { display: none !important; } }
 
 /* Printing (receipts): only the document itself. */
 @media print {

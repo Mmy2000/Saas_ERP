@@ -1,0 +1,23 @@
+{% load i18n ui %}
+<div class="card-header"><h2 class="card-title">{% translate "Machine" %}</h2>{% icon "server" "size-4 text-slate-400" %}</div>
+<dl class="divide-y divide-slate-100 text-sm">
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Host" %}</dt><dd class="num truncate font-medium text-slate-900">{{ snap.host }}</dd></div>
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Operating system" %}</dt><dd class="num text-slate-900">{{ snap.os }}</dd></div>
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Processor" %}</dt><dd class="num truncate text-end text-slate-900" title="{{ snap.cpu_model }}">{{ snap.cpu_model|truncatechars:38 }}</dd></div>
+  {% if snap.freq_mhz %}<div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Clock speed" %}</dt><dd class="num text-slate-900">{{ snap.freq_mhz|floatformat:0 }} MHz</dd></div>{% endif %}
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Running for" %}</dt><dd class="text-slate-900">{{ snap.booted_at|timesince }}</dd></div>
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "App started" %}</dt><dd class="text-slate-900">{% blocktranslate trimmed with ago=snap.process_started|timesince %}{{ ago }} ago{% endblocktranslate %}</dd></div>
+  <div class="flex justify-between gap-4 px-5 py-2.5"><dt class="text-slate-500">{% translate "Versions" %}</dt><dd class="num text-slate-900">Python {{ snap.python }} · Django {{ snap.django }}</dd></div>
+</dl>
+<div class="border-t border-slate-100 px-5 py-4">
+  <p class="mb-2.5 text-xs font-medium text-slate-500">{% translate "Each CPU thread" %}</p>
+  <div class="grid grid-cols-4 gap-2 sm:grid-cols-8 xl:grid-cols-4">
+    {% for value in snap.per_core %}
+    <div class="rounded-lg border border-slate-200 px-2 py-1.5" title="{{ forloop.counter }}: {{ value|floatformat:0 }}%">
+      <p class="num text-[10px] text-slate-400">#{{ forloop.counter }}</p>
+      <p class="num text-sm font-medium text-slate-900">{{ value|floatformat:0 }}%</p>
+      <div class="mt-1 h-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {% if value >= critical_pct %}bg-red-500{% elif value >= warn_pct %}bg-amber-500{% else %}bg-emerald-500{% endif %}" style="width: {{ value|floatformat:0 }}%"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

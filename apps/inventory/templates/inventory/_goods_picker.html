@@ -17,7 +17,7 @@
 {% endif %}
 
 <section class="card overflow-hidden">
-  <div class="card-header"><h2 class="card-title">{% if bulk_only %}{% translate "Gold sent" %}{% else %}{% translate "Bulk gold by weight" %}{% endif %}</h2>
+  <div class="card-header"><h2 class="card-title">{% if in_house %}{% translate "Gold used" %}{% elif bulk_only %}{% translate "Gold sent" %}{% else %}{% translate "Bulk gold by weight" %}{% endif %}</h2>
     <button type="button" class="btn btn-ghost text-xs" data-add-bulk>{% icon "plus" "size-4" %}{% translate "Add a line" %}</button></div>
   <div class="divide-y divide-slate-100" data-bulk></div>
   <template id="bulk-row">

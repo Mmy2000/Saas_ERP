@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Diamonds and stones" %}{% endblock %}
+{% block page_header %}
+{% can "diamonds.receive" as can_receive %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Diamonds and stones" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Diamond pieces and loose stones: their stones, certificates, cost and label price." %}</p>
+  </div>
+  {% if can_receive %}<a href="{% url 'diamonds-receive-form' %}" class="btn btn-primary">{% icon "inbox" "size-4" %}{% translate "Receive diamonds" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "inventory.item.view_cost" as can_cost %}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Pieces" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.n|default:0 }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Carats" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.ct|default:0|num:2 }}</span></p></div>
+  {% if can_cost %}<div class="card card-body"><p class="text-sm text-slate-500">{% translate "Stones' cost" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.cost|default:0|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>{% endif %}
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Label value" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.label|default:0|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+</div>
+<section class="card overflow-hidden">
+  <div class="flex flex-col gap-3 border-b border-slate-100 p-3 lg:flex-row lg:items-center">
+    <div class="flex flex-wrap items-center gap-1">
+      <a href="?state=in_stock&amp;family={{ family }}" class="tab{% if state == 'in_stock' %} tab-active{% endif %}">{% translate "In stock" %}</a>
+      <a href="?state=sold&amp;family={{ family }}" class="tab{% if state == 'sold' %} tab-active{% endif %}">{% translate "Sold" %}</a>
+      <a href="?state=all&amp;family={{ family }}" class="tab{% if state == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
+    </div>
+    <div class="segmented">
+      <a href="?state={{ state }}" class="segment{% if not family %} segment-active{% endif %}">{% translate "Everything" %}</a>
+      {% for value, label in families %}<a href="?state={{ state }}&amp;family={{ value }}" class="segment{% if family == value %} segment-active{% endif %}">{{ label }}</a>{% endfor %}
+    </div>
+    <form method="get" class="flex gap-2 lg:ms-auto">
+      <input type="hidden" name="state" value="{{ state }}"><input type="hidden" name="family" value="{{ family }}">
+      <input name="q" value="{{ term }}" class="form-input w-full lg:w-72" placeholder="{% translate 'Barcode, certificate or category' %}">
+    </form>
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Piece" %}</th><th>{% translate "Stones" %}</th>
+        <th class="text-end">{% translate "Gold (g)" %}</th><th class="text-end">{% translate "Carats" %}</th>
+        {% if can_cost %}<th class="text-end">{% translate "Stones' cost" %}</th>{% endif %}<th class="text-end">{% translate "Label price" %}</th><th>{% translate "Status" %}</th></tr></thead>
+      <tbody>
+      {% for item in page.object_list %}
+        <tr>
+          <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' item.pk %}">{{ item.barcode }}</a></td>
+          <td><bdi>{{ item.category.name }}</bdi>{% if item.karat %} <span class="text-xs text-slate-500">{{ item.karat.label }}</span>{% endif %}<div class="text-xs text-slate-400">{{ item.branch.name }}</div></td>
+          <td class="max-w-xs text-sm text-slate-600"><bdi dir="ltr">{{ item.summary|default:"—" }}</bdi></td>
+          <td class="text-end">{% if item.karat %}<span class="num">{{ item.metal_weight_g|num:3 }}</span>{% else %}—{% endif %}</td>
+          <td class="text-end"><span class="num">{{ item.stone_weight_ct|num:3 }}</span></td>
+          {% if can_cost %}<td class="text-end"><span class="num">{{ item.stone_cost_amount|num:2 }}</span></td>{% endif %}
+          <td class="text-end"><span class="num font-semibold text-slate-900">{{ item.label_price|num:2 }}</span></td>
+          <td>{% include "inventory/_status.html" with item=item %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No diamonds here" as empty_title %}
+    {% translate "Receive diamond pieces and loose stones from a supplier to start." as empty_text %}
+    {% include "components/empty_state.html" with icon="gem" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

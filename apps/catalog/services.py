@@ -21,6 +21,7 @@ from .models import (
     Karat,
     Metal,
     MetalCode,
+    ProductFamily,
 )
 
 CURRENCY_SYMBOLS = {"EGP": "ج.م", "USD": "$", "AED": "د.إ", "SAR": "ر.س", "EUR": "€"}
@@ -61,6 +62,19 @@ def seed_reference_data(*, functional_currency: str = "EGP",
         defaults={"fineness": DEFAULT_SILVER_FINENESS, "is_reference": True,
                   "legacy_code": LEGACY_SILVER_CODE},
     )
+
+
+def _check_family(family: str) -> None:
+    """Diamond and stone categories only where the platform switched diamonds on."""
+    if family not in (ProductFamily.DIAMOND, ProductFamily.STONE):
+        return
+    from apps.core.tenancy import get_current_tenant_id
+    from apps.platform.tenants.features import is_enabled
+
+    tenant_id = get_current_tenant_id()
+    if tenant_id is None or not is_enabled(tenant_id, "diamonds"):
+        message = _("Diamonds and gemstones are not part of this workspace.")
+        raise ValidationError(message, fields={"product_family": [message]})
 
 @dataclass(frozen=True)
 class MakingChargeInput:
@@ -112,6 +126,7 @@ def create_item_category(cmd: CreateItemCategoryCommand, *, actor=None) -> ItemC
         if not Decimal(0) <= commission_rate <= Decimal(1):
             raise ValidationError(_("Commission rate is a fraction between 0 and 1."),
                                   fields={"commission_rate": [_("Out of range.")]})
+        _check_family(cmd.product_family)
 
         category = ItemCategory(
             code=cmd.code.strip(), name=cmd.name.strip(), short_name=cmd.short_name,
@@ -214,6 +229,8 @@ def update_item_category(category_id: int, cmd: UpdateItemCategoryCommand, *,
         shift = depth - category.depth
         category.code, category.name = cmd.code.strip(), cmd.name.strip()
         category.short_name, category.parent, category.depth = cmd.short_name, parent, depth
+        if cmd.product_family != category.product_family:
+            _check_family(cmd.product_family)
         category.product_family, category.tracking = cmd.product_family, cmd.tracking
         category.default_karat, category.barcode_prefix = default_karat, cmd.barcode_prefix
         category.commission_rate, category.is_active = commission_rate, cmd.is_active

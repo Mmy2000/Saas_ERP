@@ -1,0 +1,124 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Bank reconciliation" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'treasury/js/reconcile.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'treasury' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Cash & banks" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Bank reconciliation" %} · {{ bank.label }}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Tick the movements that appear on the bank statement. When the cleared balance equals the statement balance, the statement is reconciled." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    {% if item %}
+    <section class="card" id="reconcile" data-tick-url="{{ endpoint }}tick/" data-completed="{{ item.is_completed|yesno:'1,' }}">
+      <div class="card-header flex flex-wrap items-center justify-between gap-2">
+        <h2 class="card-title">{% blocktranslate trimmed with day=item.statement_date|date:"SHORT_DATE_FORMAT" %}Statement of {{ day }}{% endblocktranslate %}</h2>
+        {% if item.is_completed %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Reconciled" %}</span>{% else %}<span class="badge badge-warning"><span class="badge-dot"></span>{% translate "In progress" %}</span>{% endif %}
+      </div>
+      <div class="grid grid-cols-2 gap-4 border-b border-slate-100 bg-slate-50/70 px-5 py-4 text-sm sm:grid-cols-4">
+        <div><p class="text-xs text-slate-500">{% translate "Previous statement" %}</p><p class="num mt-0.5 font-semibold text-slate-900">{{ figures.opening|num:2 }}</p></div>
+        <div><p class="text-xs text-slate-500">{% translate "Cleared balance" %}</p><p class="num mt-0.5 font-semibold text-slate-900" data-f="cleared">{{ figures.cleared|num:2 }}</p></div>
+        <div><p class="text-xs text-slate-500">{% translate "Statement balance" %}</p><p class="num mt-0.5 font-semibold text-slate-900">{{ item.statement_balance|num:2 }}</p></div>
+        <div><p class="text-xs text-slate-500">{% translate "Difference" %}</p><p class="num mt-0.5 font-semibold {% if figures.difference %}text-red-600{% else %}text-emerald-600{% endif %}" data-f="difference">{{ figures.difference|num:2 }}</p></div>
+      </div>
+      {% if rows %}
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th class="w-10">{% if not item.is_completed %}<input type="checkbox" class="size-4 accent-brand-600" data-all aria-label="{% translate 'Tick all' %}">{% endif %}</th>
+            <th>{% translate "Date" %}</th><th>{% translate "Movement" %}</th><th class="text-end">{% translate "In" %}</th><th class="text-end">{% translate "Out" %}</th></tr></thead>
+          <tbody>
+          {% for row in rows %}
+            <tr class="{% if row.ticked %}bg-emerald-50/40{% endif %}" data-row>
+              <td><input type="checkbox" class="size-4 accent-brand-600" value="{{ row.line.pk }}" data-line data-amount="{{ row.line.quantity|stringformat:'s' }}" {% if row.ticked %}checked{% endif %} {% if item.is_completed %}disabled{% endif %} aria-label="{% translate 'On the statement' %}"></td>
+              <td class="whitespace-nowrap"><span class="num">{{ row.line.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+              <td><span class="text-slate-900">{{ row.line.entry.memo|default:row.line.memo }}</span>
+                <div class="num text-xs text-slate-400">{% if row.url %}<a class="text-brand-700 hover:underline" href="{{ row.url }}">{{ row.line.entry.number }}</a>{% else %}{{ row.line.entry.number }}{% endif %}</div></td>
+              <td class="text-end">{% if row.line.quantity > 0 %}<span class="num text-emerald-700">{{ row.line.quantity|num:2 }}</span>{% endif %}</td>
+              <td class="text-end">{% if row.line.quantity < 0 %}<span class="num text-red-700">{{ row.line.quantity|absolute|num:2 }}</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "No movements to tick up to this date." %}</p>
+      {% endif %}
+      {% if not item.is_completed %}
+      <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 p-5">
+        <p class="form-error w-full" data-error></p>
+        <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}complete/" data-success="{% translate 'Reconciled.' %}">
+          <button type="submit" class="btn btn-primary" data-complete {% if figures.difference %}disabled{% endif %}>{% icon "check" "size-4" %}{% translate "Complete reconciliation" %}</button>
+        </form>
+        <button type="button" class="btn btn-ghost text-red-700" data-discard="{{ endpoint }}" data-confirm="{% translate 'Discard this reconciliation? The ticks are lost; entries it booked stay.' %}">{% translate "Discard" %}</button>
+      </div>
+      {% endif %}
+    </section>
+    {% else %}
+    <section class="card">
+      <div class="card-body">
+        {% translate "Start with the bank statement" as empty_title %}
+        {% translate "Enter the statement's date and closing balance, then tick the movements it shows." as empty_text %}
+        {% include "components/empty_state.html" with icon="landmark" title=empty_title text=empty_text %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-6">
+    {% if not item or not item.is_completed %}
+    <form data-api-form data-method="{% if item %}PATCH{% else %}POST{% endif %}" data-endpoint="{% if item %}{{ endpoint }}{% else %}{% url 'reconciliation-list' %}{% endif %}"
+          data-success="{% translate 'Saved.' %}" class="card card-body space-y-4" novalidate>
+      <h2 class="card-title">{% translate "Bank statement" %}</h2>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <input type="hidden" name="bank_account" value="{{ bank.pk }}">
+      <div><label class="form-label" for="r-date">{% translate "Statement date" %}</label>
+        <input id="r-date" type="date" name="statement_date" class="form-input" value="{% if item %}{{ item.statement_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"><p class="form-error" data-error-for="statement_date"></p></div>
+      <div><label class="form-label" for="r-balance">{% translate "Closing balance" %} <span class="text-xs text-slate-400">{{ bank.currency.code }}</span></label>
+        <input id="r-balance" name="statement_balance" class="form-input num text-start" inputmode="decimal" value="{% if item %}{{ item.statement_balance|stringformat:'s' }}{% endif %}"><p class="form-error" data-error-for="statement_balance"></p></div>
+      <input name="note" class="form-input" placeholder="{% translate 'Note' %}" maxlength="300" value="{{ item.note|default:'' }}">
+      <button type="submit" class="btn btn-secondary w-full">{% if item %}{% translate "Update" %}{% else %}{% translate "Start" %}{% endif %}</button>
+    </form>
+    {% endif %}
+
+    {% if item and not item.is_completed %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}bank-item/" data-success="{% translate 'Booked.' %}" class="card card-body space-y-3" novalidate>
+      <h2 class="card-title">{% translate "On the statement, not in the books" %}</h2>
+      <p class="text-sm text-slate-600">{% translate "Book a charge or interest the bank took or paid on its own. It is dated the statement date and ticked." %}</p>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <div class="segmented">
+        <label><input type="radio" name="kind" value="charge" class="peer sr-only" checked><span class="segment">{% translate "Bank charges" %}</span></label>
+        <label><input type="radio" name="kind" value="interest" class="peer sr-only"><span class="segment">{% translate "Bank interest" %}</span></label>
+      </div>
+      <input name="amount" class="form-input num text-start" inputmode="decimal" placeholder="{% translate 'Amount' %}"><p class="form-error" data-error-for="amount"></p>
+      <input name="memo" class="form-input" placeholder="{% translate 'Description' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% icon "plus" "size-4" %}{% translate "Book it" %}</button>
+    </form>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Reconciled statements" %}</h2></div>
+      {% if history %}
+      <ul class="divide-y divide-slate-100">
+        {% for done in history %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3 text-sm">
+          <a class="hover:underline" href="?id={{ done.pk }}"><span class="num font-medium text-slate-900">{{ done.statement_date|date:"SHORT_DATE_FORMAT" }}</span>
+            <span class="block text-xs text-slate-500">{{ done.completed_by.display_name|default:"—" }}</span></a>
+          <span class="num text-slate-900">{{ done.statement_balance|num:2 }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "None yet" %}</p>{% endif %}
+      {% if item and item.is_completed and latest == item %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}reopen/" data-redirect="?" data-success="{% translate 'Reopened.' %}" class="border-t border-slate-100 p-5">
+        <div class="mb-3 hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <button type="submit" class="btn btn-secondary w-full">{% icon "lock-open" "size-4" %}{% translate "Reopen this statement" %}</button>
+      </form>
+      {% endif %}
+      {% if item and item.is_completed %}<div class="border-t border-slate-100 p-5"><a class="btn btn-ghost w-full" href="?">{% translate "Back to the current statement" %}</a></div>{% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

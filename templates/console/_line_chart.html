@@ -1,0 +1,37 @@
+{% load i18n %}{# One line chart from apps.platform.monitor.report.Chart: `chart`. Hover: static/core/js/charts.js. #}
+<div class="card-header">
+  <h2 class="card-title">{{ chart.title }}</h2>
+  <div class="flex items-center gap-3 text-xs text-slate-500">
+    {% if chart.series|length > 1 %}
+      {% for s in chart.series %}<span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-3 rounded-full" style="background: var(--{{ s.key }})"></span>{{ s.label }} <span class="num font-medium text-slate-700">{{ s.latest }}</span></span>{% endfor %}
+    {% else %}
+      <span>{% translate "Now" %} <span class="num font-medium text-slate-900">{{ chart.latest.0 }}</span></span>
+      {% if chart.peak %}<span>{% translate "Peak" %} <span class="num font-medium text-slate-700">{{ chart.peak }}</span></span>{% endif %}
+    {% endif %}
+  </div>
+</div>
+<div class="relative px-5 pt-4 pb-2" dir="ltr" data-chart='{{ chart.points }}'>
+  {% if chart.empty %}
+    <div class="grid h-40 place-items-center text-sm text-slate-400">{% translate "No readings in this period yet" %}</div>
+  {% else %}
+  <div class="flex gap-3">
+    <div class="relative h-40 w-16 shrink-0 text-end" aria-hidden="true">
+      {% for y, label in chart.ticks %}<span class="num absolute end-0 -translate-y-1/2 text-[10px] whitespace-nowrap text-slate-400" style="top: {% widthratio y 160 100 %}%">{{ label }}</span>{% endfor %}
+    </div>
+    <div class="relative h-40 min-w-0 flex-1" data-chart-plot>
+      <svg viewBox="0 0 600 160" preserveAspectRatio="none" class="absolute inset-0 size-full overflow-visible" role="img" aria-label="{{ chart.title }}">
+        {% for y, label in chart.ticks %}<line class="viz-grid" x1="0" x2="600" y1="{{ y }}" y2="{{ y }}"></line>{% endfor %}
+        {% for s in chart.series %}
+          {% if chart.series|length == 1 %}<path class="viz-area" d="{{ s.area }}" style="fill: var(--{{ s.key }})"></path>{% endif %}
+          <path class="viz-line" d="{{ s.line }}" style="stroke: var(--{{ s.key }})"></path>
+        {% endfor %}
+        <line class="viz-cursor" x1="0" x2="0" y1="0" y2="160" hidden data-chart-cursor></line>
+      </svg>
+      <div class="pointer-events-none absolute top-1 z-10 hidden min-w-36 rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs shadow-pop" data-chart-tip></div>
+    </div>
+  </div>
+  <div class="num ms-[4.75rem] mt-1.5 flex justify-between text-[10px] text-slate-400" aria-hidden="true">
+    <span>{{ chart.times.0|date:"SHORT_DATETIME_FORMAT" }}</span><span>{% translate "Now" %}</span>
+  </div>
+  {% endif %}
+</div>

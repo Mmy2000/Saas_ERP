@@ -19,7 +19,6 @@ class BranchInput:
     name: str
     phone: str = ""
     address: str = ""
-    handles_diamonds: bool = False
     is_head_office: bool = False
 
 
@@ -28,7 +27,6 @@ def _save(branch: Branch, data: BranchInput, actor) -> Branch:
     branch.name = data.name.strip()
     branch.phone = data.phone.strip()
     branch.address = data.address.strip()
-    branch.handles_diamonds = data.handles_diamonds
     branch.is_head_office = data.is_head_office
     branch.updated_by = getattr(actor, "user", None)
     branch._stamp_tenant()

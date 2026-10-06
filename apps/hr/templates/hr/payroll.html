@@ -1,0 +1,73 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ run.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'payrolls' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Payroll" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "hr.payroll.void" run.branch as can_void %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
+  <article class="card receipt xl:col-span-3">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p><p class="text-sm text-slate-500">{% blocktranslate trimmed with month=period_date|date:"F Y" %}Payroll for {{ month }}{% endblocktranslate %}</p></div>
+      <div class="text-end">
+        <p class="num text-xl font-semibold text-slate-900">{{ run.number }}</p>
+        <p class="num text-sm text-slate-500">{{ run.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=run.status label=run.get_status_display %}</div>
+      </div>
+    </header>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Salary" %}</th><th class="text-end">{% translate "Commission" %}</th><th class="text-end">{% translate "Bonuses" %}</th>
+          <th class="text-end">{% translate "Deductions" %}</th><th class="text-end">{% translate "Advance taken back" %}</th><th class="text-end">{% translate "Net pay" %}</th><th class="w-28 text-center" data-print-only>{% translate "Signature" %}</th></tr></thead>
+        <tbody>
+        {% for line in lines %}
+          <tr>
+            <td><span class="font-medium text-slate-900">{{ line.employee.name }}</span> <span class="num text-xs text-slate-400">#{{ line.employee.code }}</span>
+              {% if line.commission %}<div class="text-xs text-slate-500">{% if line.commission_basis == "making_pct" %}<span class="num">{{ line.commission_rate|num:2 }}%</span> × <span class="num">{{ line.commission_base|num:2 }}</span>{% else %}<span class="num">{{ line.commission_rate|num:2 }}</span> × <span class="num">{{ line.commission_base|num:3 }}</span> {% translate "g" %}{% endif %}</div>{% endif %}</td>
+            <td class="text-end"><span class="num">{{ line.salary|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.commission|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.bonus|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.deduction|num:2 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.advance|num:2 }}</span></td>
+            <td class="text-end"><span class="num font-semibold text-slate-900">{{ line.net|num:2 }}</span></td>
+            <td data-print-only></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="border-t-2 border-slate-200 font-semibold">
+          <td class="px-5 py-3">{% translate "Total" %}</td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ run.total_salary|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ run.total_commission|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ run.total_bonus|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ run.total_deduction|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num">{{ run.total_advance|num:2 }}</span></td>
+          <td class="px-5 py-3 text-end"><span class="num text-base">{{ run.total_net|num:2 }}</span> <span class="text-xs font-normal text-slate-400">{{ home_currency }}</span></td>
+          <td data-print-only></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{% translate "Paid from" %}: {% if run.cash_box %}<bdi>{{ run.cash_box.label }}</bdi>{% else %}<bdi>{{ run.bank_account.label }}</bdi>{% endif %}{% if run.note %} · {{ run.note }}{% endif %}</p>
+    {% if run.status == "voided" and run.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ run.void_reason }}</p>{% endif %}
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% if can_void and run.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancelling puts the money back, makes the advances due again and frees the bonuses and deductions, so the month can be paid again." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel payroll" %}</button>
+    </form>
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Posted by" %}</dt><dd>{{ run.posted_by.display_name|default:"—" }}</dd></div>
+        {% if run.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ run.journal_entry.number }}</dd></div>{% endif %}
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

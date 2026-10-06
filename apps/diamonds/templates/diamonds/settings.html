@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Stone setting" %}{% endblock %}
+{% block page_header %}
+{% can "diamonds.setting" as can_set %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stone setting" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Loose stones set into mountings: the stones' details and cost move onto the piece, with the setter's labour." %}</p>
+  </div>
+  {% if can_set %}<a href="{% url 'stone-setting-new' %}" class="btn btn-primary">{% icon "sparkles" "size-4" %}{% translate "Set stones" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Piece" %}</th><th>{% translate "Setter" %}</th>
+        <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Labour" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for s in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ s.number }}</span></td>
+          <td><span class="num">{{ s.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td><a class="num text-brand-700 hover:underline" href="{% url 'stock-item' s.piece_id %}">{{ s.piece.barcode }}</a></td>
+          <td>{% if s.setter %}{{ s.setter.name }}{% else %}<span class="text-slate-500">{% translate "In our own shop" %}</span>{% endif %}</td>
+          <td class="text-end"><span class="num">{{ s.stones_carat|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ s.labour_amount|num:2 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=s.status label=s.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'stone-setting' s.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No stones set yet" as empty_title %}
+    {% translate "Set loose stones into a diamond mounting to record it here." as empty_text %}
+    {% include "components/empty_state.html" with icon="sparkles" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

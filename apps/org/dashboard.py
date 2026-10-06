@@ -214,11 +214,17 @@ def needs_attention(actor) -> list[Attention]:
     if actor.can("manufacturing.order.view"):
         from apps.manufacturing.models import WorkOrder
 
-        out = _scoped(WorkOrder.objects.filter(status=DocStatus.POSTED, received_at__isnull=True),
-                      actor.branch_ids("manufacturing.order.view")).count()
+        open_orders = _scoped(WorkOrder.objects.filter(
+            status=DocStatus.POSTED, received_at__isnull=True),
+            actor.branch_ids("manufacturing.order.view"))
+        out = open_orders.filter(workshop__isnull=False).count()
         if out:
             items.append(Attention(_("Work orders at workshops"), out,
                                    reverse("work-orders"), "send"))
+        making = open_orders.filter(workshop__isnull=True).count()
+        if making:
+            items.append(Attention(_("Production in progress"), making,
+                                   reverse("production"), "flame"))
     if actor.can("purchasing.invoice.view"):
         from apps.purchasing.models import SupplierInvoice
 
@@ -227,6 +233,33 @@ def needs_attention(actor) -> list[Attention]:
         if drafts:
             items.append(Attention(_("Purchases not posted yet"), drafts,
                                    reverse("invoices") + "?status=draft", "receipt"))
+    if actor.can("treasury.cheque.view"):
+        from apps.treasury.models import OPEN_CHEQUE, Cheque, ChequeDirection
+
+        open_cheques = _scoped(Cheque.objects.filter(status=DocStatus.POSTED,
+                                                     state__in=OPEN_CHEQUE),
+                               actor.branch_ids("treasury.cheque.view"))
+        collect = open_cheques.filter(direction=ChequeDirection.RECEIVED,
+                                      due_date__lte=today).count()
+        if collect:
+            items.append(Attention(_("Cheques due to collect"), collect,
+                                   reverse("cheques") + "?direction=received&state=due",
+                                   "receipt-text"))
+        paying = open_cheques.filter(direction=ChequeDirection.ISSUED,
+                                     due_date__lte=today + timedelta(days=7)).count()
+        if paying:
+            items.append(Attention(_("Issued cheques due this week"), paying,
+                                   reverse("cheques") + "?direction=issued&state=open",
+                                   "landmark"))
+    if actor.can("ledger.period.close") and actor.branch_ids("ledger.period.close") is None:
+        from apps.ledger.closing import next_to_close
+
+        upcoming = next_to_close()
+        if upcoming is not None:
+            year, month = upcoming
+            behind = (today.year - year) * 12 + today.month - month
+            items.append(Attention(_("Finished months not closed yet"), behind,
+                                   reverse("period", args=[year, month]), "calendar-check"))
     return items
 
 

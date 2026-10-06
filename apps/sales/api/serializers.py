@@ -75,7 +75,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     def get_lines(self, invoice):
         return [{"item": ln.item_id, "lot": ln.lot_id, "barcode": ln.label,
-                 "category": ln.category_id, "qty": ln.qty, "karat": ln.karat.label,
+                 "category": ln.category_id, "qty": ln.qty,
+                 "karat": ln.karat.label if ln.karat_id else "",
                  "gross_weight_g": str(ln.gross_weight_g),
                  "metal_price_per_g": str(ln.metal_price_per_g),
                  "making_rate_net": str(ln.making_rate_net),

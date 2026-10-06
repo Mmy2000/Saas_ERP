@@ -34,6 +34,8 @@ urlpatterns = [
     path("clients/<int:pk>/traffic/live/", console.tenant_traffic_live,
          name="console-tenant-traffic-live"),
     path("clients/<int:pk>/access/", console.tenant_access, name="console-tenant-access"),
+    path("server/", console.server, name="console-server"),
+    path("server/live/", console.server_live, name="console-server-live"),
     path("traffic/", console.traffic, name="console-traffic"),
     path("traffic/live/", console.traffic_live, name="console-traffic-live"),
     path("settings/", console.platform_settings, name="console-settings"),

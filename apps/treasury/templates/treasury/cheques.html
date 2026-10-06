@@ -1,0 +1,95 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Cheques" %}{% endblock %}
+{% block page_header %}
+{% can "treasury.cheque.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Cheques" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Cheques received from customers and given to suppliers, with their due dates, until the bank pays them." %}</p>
+  </div>
+  {% if can_manage %}
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'cheque-new' %}?direction=issued" class="btn btn-secondary">{% icon "send" "size-4" %}{% translate "Issue a cheque" %}</a>
+    <a href="{% url 'cheque-new' %}?direction=received" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Receive a cheque" %}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <a href="?direction=received&amp;state=open" class="card card-body transition hover:border-brand-300">
+    <p class="text-sm text-slate-500">{% translate "In hand" %}</p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ cards.in_hand.a|default:0|num:2 }}</span></p>
+    <p class="mt-0.5 text-xs text-slate-500">{% blocktranslate trimmed count n=cards.in_hand.n %}{{ n }} cheque{% plural %}{{ n }} cheques{% endblocktranslate %}</p></a>
+  <a href="?direction=received&amp;state=open" class="card card-body transition hover:border-brand-300">
+    <p class="text-sm text-slate-500">{% translate "At the bank" %}</p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ cards.deposited.a|default:0|num:2 }}</span></p>
+    <p class="mt-0.5 text-xs text-slate-500">{% blocktranslate trimmed count n=cards.deposited.n %}{{ n }} cheque{% plural %}{{ n }} cheques{% endblocktranslate %}</p></a>
+  <a href="?direction=issued&amp;state=open" class="card card-body transition hover:border-brand-300">
+    <p class="text-sm text-slate-500">{% translate "Issued, not paid yet" %}</p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ cards.outstanding.a|default:0|num:2 }}</span></p>
+    <p class="mt-0.5 text-xs text-slate-500">{% blocktranslate trimmed count n=cards.outstanding.n %}{{ n }} cheque{% plural %}{{ n }} cheques{% endblocktranslate %}</p></a>
+  <a href="?direction={{ direction }}&amp;state=due" class="card card-body transition hover:border-brand-300 {% if cards.due_week.n %}border-amber-200 bg-amber-50/40{% endif %}">
+    <p class="text-sm text-slate-500">{% translate "Due within a week" %}</p>
+    <p class="mt-2 text-2xl font-semibold {% if cards.due_week.n %}text-amber-800{% else %}text-slate-900{% endif %}"><span class="num">{{ cards.due_week.a|default:0|num:2 }}</span></p>
+    <p class="mt-0.5 text-xs text-slate-500">{% blocktranslate trimmed count n=cards.due_week.n %}{{ n }} cheque{% plural %}{{ n }} cheques{% endblocktranslate %} · {{ home_currency }}</p></a>
+</div>
+
+<section class="card overflow-hidden">
+  <div class="flex flex-col gap-3 border-b border-slate-100 p-3 lg:flex-row lg:items-center">
+    <div class="segmented">
+      <a href="?direction=received&amp;state={{ state }}" class="segment{% if direction == 'received' %} segment-active{% endif %}">{% translate "Received cheques" %}</a>
+      <a href="?direction=issued&amp;state={{ state }}" class="segment{% if direction == 'issued' %} segment-active{% endif %}">{% translate "Issued cheques" %}</a>
+    </div>
+    <div class="flex flex-wrap items-center gap-1">
+      {% translate "Due" as l_due %}{% translate "Cleared" as l_cleared %}{% translate "Bounced" as l_bounced %}{% translate "Returned or endorsed" as l_other %}{% translate "Cancelled" as l_cancelled %}{% translate "All" as l_all %}
+      <a href="?direction={{ direction }}&amp;state=open" class="tab{% if state == 'open' %} tab-active{% endif %}">{% translate "Not paid yet" %}</a>
+      <a href="?direction={{ direction }}&amp;state=due" class="tab{% if state == 'due' %} tab-active{% endif %}">{{ l_due }}</a>
+      <a href="?direction={{ direction }}&amp;state=cleared" class="tab{% if state == 'cleared' %} tab-active{% endif %}">{{ l_cleared }}</a>
+      <a href="?direction={{ direction }}&amp;state=bounced" class="tab{% if state == 'bounced' %} tab-active{% endif %}">{{ l_bounced }}</a>
+      {% if direction == "received" %}<a href="?direction={{ direction }}&amp;state=other" class="tab{% if state == 'other' %} tab-active{% endif %}">{{ l_other }}</a>{% endif %}
+      <a href="?direction={{ direction }}&amp;state=cancelled" class="tab{% if state == 'cancelled' %} tab-active{% endif %}">{{ l_cancelled }}</a>
+      <a href="?direction={{ direction }}&amp;state=all" class="tab{% if state == 'all' %} tab-active{% endif %}">{{ l_all }}</a>
+    </div>
+    <form method="get" class="flex gap-2 lg:ms-auto">
+      <input type="hidden" name="direction" value="{{ direction }}"><input type="hidden" name="state" value="{{ state }}">
+      <input name="q" value="{{ term }}" class="form-input w-full lg:w-64" placeholder="{% translate 'Cheque number or name' %}">
+    </form>
+  </div>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Due date" %}</th><th>{% translate "Cheque no." %}</th><th>{% if direction == "received" %}{% translate "From" %}{% else %}{% translate "To" %}{% endif %}</th>
+        <th>{% translate "Bank" %}</th><th class="text-end">{% translate "Amount" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for cheque in page.object_list %}
+        <tr>
+          <td class="whitespace-nowrap"><span class="num {% if cheque.is_open and cheque.due_date <= today %}font-semibold text-amber-700{% endif %}">{{ cheque.due_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td><span class="num font-medium text-slate-900">{{ cheque.cheque_number }}</span><div class="num text-xs text-slate-400">{{ cheque.number }}</div></td>
+          <td>{{ cheque.party.name }}{% if cheque.endorsed_to %}<div class="text-xs text-slate-500">→ {{ cheque.endorsed_to.name }}</div>{% endif %}</td>
+          <td class="text-sm text-slate-600">{% if direction == "received" %}{{ cheque.drawn_on|default:"—" }}{% if cheque.bank_account %}<div class="text-xs text-slate-400">→ {{ cheque.bank_account.label }}</div>{% endif %}{% else %}{{ cheque.bank_account.label }}{% endif %}</td>
+          <td class="text-end"><span class="num font-semibold text-slate-900">{{ cheque.amount|num:2 }}</span></td>
+          <td>{% include "treasury/_cheque_state.html" %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'cheque' cheque.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?direction={{ direction }}&state={{ state }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?direction={{ direction }}&state={{ state }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No cheques here" as empty_title %}
+    {% translate "Record cheques you receive or issue to follow them until the bank pays them." as empty_text %}
+    {% include "components/empty_state.html" with icon="receipt-text" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

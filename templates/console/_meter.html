@@ -1,0 +1,1 @@
+{# A usage bar: `percent`, `level`. #}<div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {% if level == 'critical' %}bg-red-500{% elif level == 'warning' %}bg-amber-500{% else %}bg-emerald-500{% endif %}" style="width: {{ percent|floatformat:0 }}%"></div></div>

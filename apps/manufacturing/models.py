@@ -1,4 +1,5 @@
-"""Work orders with workshops (§7.11, §8.5). Legacy: the issue / receipt / loss rows of `Shh2`.
+"""Work orders with workshops, and in-house production orders (§7.11, §8.5). Legacy: the issue /
+receipt / loss rows of `Shh2`.
 
 A work order is posted when gold is sent out (the workshop then owes that fine gold on its
 account) and completed when the goods come back: new pieces and bulk gold into stock, scrap
@@ -22,7 +23,12 @@ class WorkOrderKind(models.TextChoices):
 
 
 class WorkOrder(Document):
-    workshop = models.ForeignKey("parties.Party", on_delete=models.PROTECT, related_name="+")
+    # Empty for in-house production: the gold stays with us (in production) and our own
+    # craftsman makes the goods.
+    workshop = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
+                                 related_name="+")
+    craftsman = models.ForeignKey("hr.Employee", null=True, blank=True, on_delete=models.PROTECT,
+                                  related_name="+")
     kind = models.CharField(max_length=12, choices=WorkOrderKind.choices,
                             default=WorkOrderKind.MANUFACTURE)
     issued_gross_weight_g = models.DecimalField(max_digits=16, decimal_places=3, default=0)
@@ -55,7 +61,12 @@ class WorkOrder(Document):
         return self.number or f"#{self.pk}"
 
     @property
+    def in_house(self) -> bool:
+        return self.workshop_id is None
+
+    @property
     def at_workshop(self) -> bool:
+        """Out and not back yet: at the workshop, or in production in-house."""
         return self.status == "posted" and self.received_at is None
 
     @property

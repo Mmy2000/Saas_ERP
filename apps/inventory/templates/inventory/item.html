@@ -8,7 +8,8 @@
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{{ item.barcode }}</span></h1>
     {% include "inventory/_status.html" with item=item %}
     {% can "inventory.item.print_label" as can_label %}
-    {% if can_label %}<a href="{% url 'labels' %}?item={{ item.pk }}" class="btn btn-secondary ms-auto">{% icon "printer" "size-4" %}{% translate "Print label" %}</a>{% endif %}
+    <span class="ms-auto">{% include "audit/_history_link.html" with table="inventory_item" row=item.pk %}</span>
+    {% if can_label %}<a href="{% url 'labels' %}?item={{ item.pk }}" class="btn btn-secondary">{% icon "printer" "size-4" %}{% translate "Print label" %}</a>{% endif %}
   </div>
   <p class="mt-1 text-sm text-slate-500"><bdi>{{ item.category.name }}</bdi> · <bdi>{{ item.karat.label|default:"—" }}</bdi> · <bdi>{{ item.branch.name }}</bdi></p>
 </div>
@@ -27,6 +28,9 @@
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost / g" %}</dt><dd class="num">{{ item.cost_making_rate|num:2 }} {{ item.cost_currency.code }}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost" %}</dt><dd class="num">{{ item.cost_amount|num:2 }}</dd></div>
       {% endif %}
+      {% if item.stone_weight_ct %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Stones" %}</dt><dd class="num">{{ item.stone_weight_ct|num:3 }} {% translate "ct" %}</dd></div>{% endif %}
+      {% if can_cost and item.stone_cost_amount %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Stones' cost" %}</dt><dd class="num">{{ item.stone_cost_amount|num:2 }}</dd></div>{% endif %}
+      {% if item.label_price %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Label price" %}</dt><dd class="num font-semibold">{{ item.label_price|num:2 }}</dd></div>{% endif %}
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Supplier" %}</dt><dd>{{ item.supplier.name|default:"—" }}</dd></div>
     </dl>
   </section>
@@ -50,4 +54,5 @@
     </div>
   </section>
 </div>
+{% if diamond %}{% include "diamonds/_item_stones.html" %}{% endif %}
 {% endblock %}

@@ -1,0 +1,109 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ cheque.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'treasury/js/cheques.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'cheques' %}?direction={{ cheque.direction }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Cheques" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "treasury.cheque.manage" cheque.branch as can_manage %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{% if cheque.direction == "received" %}{% translate "Cheque received" %}{% else %}{% translate "Cheque issued" %}{% endif %} · {{ cheque.branch.name }}</p></div>
+      <div class="text-end">
+        <p class="num text-xl font-semibold text-slate-900">{{ cheque.number }}</p>
+        <p class="num text-sm text-slate-500">{{ cheque.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "treasury/_cheque_state.html" %}</div>
+      </div>
+    </header>
+    <div class="grid grid-cols-1 gap-x-8 gap-y-4 p-6 text-sm sm:grid-cols-2">
+      <div><p class="text-slate-500">{% if cheque.direction == "received" %}{% translate "From" %}{% else %}{% translate "To" %}{% endif %}</p><p class="mt-0.5 font-medium text-slate-900">{{ cheque.party.name }}</p></div>
+      <div><p class="text-slate-500">{% translate "Amount" %}</p><p class="mt-0.5 text-xl font-semibold text-slate-900"><span class="num">{{ cheque.amount|num:2 }}</span> <span class="text-xs font-normal text-slate-400">{{ cheque.currency.code }}</span></p></div>
+      <div><p class="text-slate-500">{% translate "Cheque no." %}</p><p class="num mt-0.5 font-medium text-slate-900">{{ cheque.cheque_number }}</p></div>
+      <div><p class="text-slate-500">{% translate "Due date" %}</p><p class="num mt-0.5 font-medium {% if cheque.is_open and cheque.due_date <= today %}text-amber-700{% else %}text-slate-900{% endif %}">{{ cheque.due_date|date:"SHORT_DATE_FORMAT" }}</p></div>
+      {% if cheque.drawn_on %}<div><p class="text-slate-500">{% translate "Drawn on" %}</p><p class="mt-0.5 text-slate-900">{{ cheque.drawn_on }}</p></div>{% endif %}
+      {% if cheque.bank_account %}<div><p class="text-slate-500">{% if cheque.direction == "received" %}{% translate "Deposited in" %}{% else %}{% translate "From our bank account" %}{% endif %}</p><p class="mt-0.5 text-slate-900">{{ cheque.bank_account.label }}</p></div>{% endif %}
+      {% if cheque.endorsed_to %}<div><p class="text-slate-500">{% translate "Endorsed to" %}</p><p class="mt-0.5 font-medium text-slate-900">{{ cheque.endorsed_to.name }}</p></div>{% endif %}
+      {% if cheque.state_on and cheque.state != "in_hand" and cheque.state != "outstanding" %}<div><p class="text-slate-500">{{ cheque.get_state_display }}</p><p class="num mt-0.5 text-slate-900">{{ cheque.state_on|date:"SHORT_DATE_FORMAT" }}</p></div>{% endif %}
+    </div>
+    {% if cheque.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ cheque.note }}</p>{% endif %}
+    {% if cheque.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm {% if cheque.status == 'voided' or cheque.state == 'bounced' %}text-red-700{% else %}text-slate-600{% endif %}">{% translate "Reason" %}: {{ cheque.void_reason }}</p>{% endif %}
+  </article>
+
+  <aside class="space-y-6" data-no-print>
+    {% if can_manage and cheque.status == "posted" %}
+      {% if cheque.state == "in_hand" %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}deposit/" data-success="{% translate 'Deposited.' %}" class="card card-body space-y-3" novalidate>
+        <h2 class="card-title">{% translate "Deposit at the bank" %}</h2>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <select name="bank_account" class="form-input" aria-label="{% translate 'Bank account' %}">{% for bank in banks %}<option value="{{ bank.pk }}">{{ bank.label }}</option>{% endfor %}</select>
+        <p class="form-error" data-error-for="bank_account"></p>
+        <button type="submit" class="btn btn-secondary w-full">{% icon "landmark" "size-4" %}{% translate "Deposit it" %}</button>
+      </form>
+      {% endif %}
+      {% if cheque.state == "in_hand" or cheque.state == "deposited" or cheque.state == "outstanding" %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}clear/" data-success="{% translate 'Cleared.' %}" class="card card-body space-y-3" novalidate>
+        <h2 class="card-title">{% if cheque.direction == "received" %}{% translate "The bank paid it" %}{% else %}{% translate "The bank paid it out" %}{% endif %}</h2>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% if cheque.state == "in_hand" %}
+        <select name="bank_account" class="form-input" aria-label="{% translate 'Bank account' %}">{% for bank in banks %}<option value="{{ bank.pk }}">{{ bank.label }}</option>{% endfor %}</select>
+        {% endif %}
+        <p class="text-sm text-slate-600">{% if cheque.direction == "received" %}{% translate "The amount goes into the bank account." %}{% else %}{% translate "The amount leaves the bank account." %}{% endif %}</p>
+        <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Mark as cleared" %}</button>
+      </form>
+      {% endif %}
+      {% if cheque.state == "in_hand" %}
+      <form data-api-form data-shape="cheque-endorse" data-method="POST" data-endpoint="{{ endpoint }}endorse/" data-success="{% translate 'Endorsed.' %}" class="card card-body space-y-3" novalidate>
+        <h2 class="card-title">{% translate "Endorse to someone else" %}</h2>
+        <p class="text-sm text-slate-600">{% translate "Pay a supplier with this cheque: their balance goes down by its amount." %}</p>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        {% include "treasury/_party_picker.html" with prefix="e-" side="supplier" %}
+        <button type="submit" class="btn btn-secondary w-full">{% icon "arrow-left-right" "size-4" %}{% translate "Endorse" %}</button>
+      </form>
+      {% endif %}
+      {% if cheque.state == "in_hand" or cheque.state == "deposited" or cheque.state == "outstanding" or cheque.direction == "received" and cheque.state == "cleared" %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}bounce/" data-success="{% translate 'Marked as bounced.' %}" class="card card-body space-y-3" novalidate>
+        <h2 class="card-title">{% translate "Bounced" %}</h2>
+        <p class="text-sm text-slate-600">{% if cheque.direction == "received" %}{% translate "The bank refused it: the payer owes the amount again." %}{% else %}{% translate "The bank refused it: you owe the amount again." %}{% endif %}</p>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Mark as bounced" %}</button>
+      </form>
+      {% endif %}
+      {% if cheque.state == "in_hand" or cheque.state == "deposited" or cheque.state == "outstanding" %}
+      <details class="card group">
+        <summary class="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-medium text-slate-700">{% translate "More actions" %}<span class="text-slate-400 transition group-open:rotate-180">{% icon "chevron-down" "size-4" %}</span></summary>
+      {% if cheque.state == "in_hand" %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}hand-back/" data-success="{% translate 'Handed back.' %}" class="space-y-3 border-t border-slate-100 p-5" novalidate>
+        <p class="text-sm text-slate-600">{% translate "Give the cheque back to the payer (replaced or paid another way): they owe the amount again." %}</p>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% translate "Hand it back" %}</button>
+      </form>
+      {% endif %}
+      {% if cheque.state == "in_hand" or cheque.state == "deposited" or cheque.state == "outstanding" %}
+      <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="space-y-3 border-t border-slate-100 p-5" novalidate>
+        <p class="text-sm text-slate-600">{% translate "Recorded by mistake? Cancelling undoes it as if it was never recorded." %}</p>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+        <button type="submit" class="btn btn-ghost w-full text-red-700">{% translate "Cancel the cheque" %}</button>
+      </form>
+      {% endif %}
+      </details>
+      {% endif %}
+    {% endif %}
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        {% if cheque.journal_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ cheque.journal_entry.number }}</dd></div>{% endif %}
+        {% if cheque.settle_entry %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{{ cheque.get_state_display }}</dt><dd class="num">{{ cheque.settle_entry.number }}</dd></div>{% endif %}
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Recorded by" %}</dt><dd>{{ cheque.posted_by.display_name|default:"—" }}</dd></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

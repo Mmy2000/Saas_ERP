@@ -1,0 +1,24 @@
+{% extends "console/layout.html" %}
+{% load i18n ui static %}
+{% block title %}{% translate "Server" %}{% endblock %}
+{% block head %}{{ live_strings|json_script:"live-strings" }}<script type="module" src="{% static 'core/js/console-live.js' %}"></script><script type="module" src="{% static 'core/js/charts.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Server" %}</h1>
+    <p class="mt-1.5 text-sm text-slate-500">{% blocktranslate trimmed with host=snap.host %}How hard {{ host }} is working: processor, memory, disks, network and database, live.{% endblocktranslate %}</p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">{% include "console/_live_status.html" %}{% include "console/_window_switch.html" %}</div>
+</div>
+{% endblock %}
+{% block content %}
+<div data-live data-live-url="{% url 'console-server-live' %}" data-window="{{ history.key }}">
+  <div data-live-part="tiles">{% include "console/_server_tiles.html" %}</div>
+  <div class="mt-6" data-live-part="charts">{% include "console/_server_charts.html" %}</div>
+  <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <section class="card overflow-hidden xl:col-span-2" data-live-part="processes">{% include "console/_server_procs.html" %}</section>
+    <section class="card" data-live-part="info">{% include "console/_server_info.html" %}</section>
+  </div>
+  <section class="card mt-6" data-live-part="disks">{% include "console/_server_disks.html" %}</section>
+</div>
+{% endblock %}

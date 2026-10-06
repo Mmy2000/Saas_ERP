@@ -55,7 +55,7 @@
       <table class="table" data-report="{{ table.title|default:report.title }}">
         <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="text-end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
         <tbody>
-        {% for row in table.rows %}<tr>{% for cell in row %}{% include "reports/_cell.html" %}{% endfor %}</tr>{% endfor %}
+        {% for row in table.rows %}<tr class="{% if row.style == 'heading' %}bg-slate-50/80 font-semibold text-slate-900{% elif row.style == 'subtotal' %}font-semibold text-slate-900{% elif row.style == 'total' %}border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-900{% endif %}">{% for cell in row.cells %}{% if forloop.first and row.indent %}<td class="px-5 py-3" style="padding-inline-start: {{ row.indent }}"><bdi>{{ cell.value|default_if_none:"" }}</bdi></td>{% else %}{% include "reports/_cell.html" %}{% endif %}{% endfor %}</tr>{% endfor %}
         </tbody>
         {% if table.totals %}<tfoot><tr class="border-t-2 border-slate-200 font-semibold">{% for cell in table.totals %}{% include "reports/_cell.html" %}{% endfor %}</tr></tfoot>{% endif %}
       </table>

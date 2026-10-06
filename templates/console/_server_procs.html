@@ -1,0 +1,17 @@
+{% load i18n ui %}
+<div class="card-header"><h2 class="card-title">{% translate "Busiest processes" %}</h2><span class="text-xs text-slate-500">{% translate "By memory" %}</span></div>
+<div class="overflow-x-auto">
+  <table class="table">
+    <thead><tr><th>{% translate "Process" %}</th><th class="text-end">{% translate "PID" %}</th><th class="text-end">{% translate "CPU" %}</th><th class="text-end">{% translate "Memory" %}</th></tr></thead>
+    <tbody>
+    {% for proc in snap.processes %}
+      <tr>
+        <td><span class="num font-medium text-slate-900">{{ proc.name }}</span>{% if proc.is_self %} <span class="badge badge-brand">{% translate "This web process" %}</span>{% endif %}</td>
+        <td class="text-end"><span class="num text-slate-500">{{ proc.pid }}</span></td>
+        <td class="text-end"><span class="num">{{ proc.cpu|floatformat:1 }}%</span></td>
+        <td class="text-end"><span class="num">{{ proc.rss|filesizeformat }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,73 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if record %}{% translate "History" %}{% else %}{% translate "Activity" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  {% if record %}
+  <a href="{% url 'activity' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Activity" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "History" %} · <bdi>{{ record.name }}</bdi></h1>
+  <p class="mt-1 text-sm text-slate-500">{{ record.what }} — {% translate "every change, who made it and when." %}</p>
+  {% else %}
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Activity" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Every change to prices, customers and suppliers, pieces, users, roles, cash boxes and settings: who made it, when, and what it was before." %}</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% if not record %}
+<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
+  <label class="sm:w-56"><span class="form-label">{% translate "What" %}</span>
+    <select name="table" class="form-input"><option value="">{% translate "Everything" %}</option>
+      {% for key, label in tables %}<option value="{{ key }}" {% if filters.table == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  <label class="sm:w-48"><span class="form-label">{% translate "Who" %}</span>
+    <select name="user" class="form-input"><option value="">{% translate "Anyone" %}</option>
+      {% for m in members %}<option value="{{ m.user_id }}" {% if filters.user == m.user_id|stringformat:"s" %}selected{% endif %}>{{ m.user.display_name }} (@{{ m.username }})</option>{% endfor %}</select></label>
+  <label><span class="form-label">{% translate "From" %}</span><input type="date" name="from" class="form-input" value="{{ filters.from|date:'Y-m-d' }}"></label>
+  <label><span class="form-label">{% translate "To" %}</span><input type="date" name="to" class="form-input" value="{{ filters.to|date:'Y-m-d' }}"></label>
+  <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+</form>
+{% endif %}
+
+<section class="card overflow-hidden">
+  {% if rows %}
+  <ol class="divide-y divide-slate-100">
+    {% for row in rows %}
+    <li class="flex gap-4 px-5 py-4">
+      <span class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full {% if row.event.action == 'I' %}bg-emerald-50 text-emerald-700{% elif row.event.action == 'D' %}bg-red-50 text-red-700{% else %}bg-brand-50 text-brand-700{% endif %}">
+        {% if row.event.action == "I" %}{% icon "plus" "size-4" %}{% elif row.event.action == "D" %}{% icon "trash-2" "size-4" %}{% else %}{% icon "pencil" "size-4" %}{% endif %}</span>
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <p class="text-sm text-slate-900"><span class="font-medium">{{ row.event.user.display_name|default:_("Automatic") }}</span>
+            <span class="text-slate-500">{{ row.event.get_action_display }}</span>
+            <span class="text-slate-500">{{ row.what|lower }}</span>
+            {% if not record %}<a class="font-medium text-brand-700 hover:underline" href="?table={{ row.event.table_name }}&amp;row={{ row.event.row_id }}"><bdi>{{ row.name }}</bdi></a>{% endif %}</p>
+          <span class="num text-xs text-slate-400">{{ row.event.at|date:"SHORT_DATETIME_FORMAT" }}</span>
+        </div>
+        {% if row.changes %}
+        <dl class="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">
+          {% for change in row.changes %}
+            <dt class="text-slate-500">{{ change.label }}</dt>
+            <dd class="min-w-0 break-words text-slate-900">{% if row.event.action == "U" %}<span class="text-slate-400 line-through"><bdi>{{ change.old }}</bdi></span> <span class="text-slate-400 rtl:rotate-180 inline-block">→</span> <bdi>{{ change.new }}</bdi>{% else %}<bdi>{{ change.new }}</bdi>{% endif %}</dd>
+          {% endfor %}
+        </dl>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No changes recorded" as empty_title %}
+    {% translate "Changes to master data appear here as they happen." as empty_text %}
+    {% include "components/empty_state.html" with icon="history" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

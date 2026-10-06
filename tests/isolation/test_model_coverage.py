@@ -12,6 +12,7 @@ NOT_TENANT_SCOPED = {
     "tenants.Tenant",  # platform registry
     "tenants.TenantDomain",  # platform registry, read by host resolution
     "tenants.PlatformEvent",  # platform console audit log (platform staff only)
+    "monitor.ServerSample",  # server readings for the console (no client data)
     "tenants.TenantTraffic",  # request counters per client, written before tenant resolution
     "tenants.TenantRouteTraffic",
     "tenants.PlatformSettings",  # the platform's own branding (console settings)
@@ -89,3 +90,25 @@ def test_test_connection_is_not_a_superuser():
     with connection.cursor() as cursor:
         cursor.execute("SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user")
         assert cursor.fetchone() == (False, False)
+
+
+@pytest.mark.django_db
+def test_every_tenant_foreign_key_is_guarded():
+    """Each tenant table's same-tenant guard lists exactly its foreign keys to tenant tables.
+    A new model or foreign key needs `GuardTenantFKs("<model>")` in its migration."""
+    from apps.audit.triggers import GUARD_TRIGGER, tenant_fk_pairs
+
+    offenders = []
+    for model in _project_models():
+        if not issubclass(model, TenantScopedModel):
+            continue
+        expected = tenant_fk_pairs(model)
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT tgargs FROM pg_trigger WHERE tgrelid = %s::regclass "
+                           "AND tgname = %s", [model._meta.db_table, GUARD_TRIGGER])
+            row = cursor.fetchone()
+        args = bytes(row[0]).split(b"\x00")[:-1] if row else []
+        installed = sorted(zip(*[iter(a.decode() for a in args)] * 2, strict=True))
+        if installed != expected:
+            offenders.append(model._meta.label)
+    assert offenders == [], f"Missing or stale same-tenant guard (GuardTenantFKs): {offenders}"

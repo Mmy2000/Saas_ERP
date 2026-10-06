@@ -27,7 +27,11 @@ PAGES = ["/", "/branches/", "/catalog/karats/", "/catalog/categories/", "/pricin
          "/settlements/new/?side=trade_account", "/workshops/", "/workshops/new/",
          "/manufacturing/", "/manufacturing/?state=all", "/manufacturing/new/",
          "/settlements/new/?side=workshop", "/repairs/", "/repairs/?state=all",
-         "/repairs/new/"]
+         "/repairs/new/", "/hr/", "/hr/?status=all", "/hr/new/", "/hr/payroll/",
+         "/hr/payroll/new/", "/hr/commissions/", "/accounting/periods/",
+         "/production/", "/production/new/", "/accounting/profit-and-loss/",
+         "/accounting/balance-sheet/", "/treasury/cheques/", "/treasury/cheques/new/",
+         "/treasury/counts/", "/treasury/counts/new/", "/settings/activity/"]
 
 
 def test_every_string_is_translated_to_arabic():

@@ -55,7 +55,8 @@ def _fine(weight: Decimal, karat) -> Decimal:
 def create_item(*, category, karat, gross_weight_g, branch, business_date: date, doc: DocRef,
                 supplier=None, stone_weight_ct="0", cost_currency=None, cost_making_rate="0",
                 cost_amount="0", list_making_rate="0", external_code: str = "",
-                movement_type: str = MovementType.PURCHASE_RECEIPT, actor=None) -> Item:
+                movement_type: str = MovementType.PURCHASE_RECEIPT, actor=None,
+                stone_cost_amount="0", label_price=None) -> Item:
     gross = quantize(gross_weight_g, WEIGHT)
     if gross <= 0:
         raise DomainError(_("A piece must weigh more than zero."), code="INVENTORY_ZERO_WEIGHT")
@@ -71,6 +72,8 @@ def create_item(*, category, karat, gross_weight_g, branch, business_date: date,
         status=ItemStatus.IN_STOCK, branch=branch, cost_currency=cost_currency,
         cost_making_rate=to_decimal(cost_making_rate), cost_amount=cost,
         list_making_rate=to_decimal(list_making_rate), external_code=external_code,
+        stone_cost_amount=quantize(stone_cost_amount or "0", MONEY),
+        label_price=quantize(label_price, MONEY) if label_price not in (None, "") else None,
         created_by=getattr(actor, "user", None),
     )
     StockMovement.objects.create(

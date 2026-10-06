@@ -4,7 +4,8 @@ Posting, in one transaction:
 1. serialized lines → one Item per piece (barcode, weights, cost); bulk lines → lot receipts;
 2. the invoice number (PI);
 3. one ledger entry: the supplier is owed the gold in fine grams (per metal) and the making
-   charges in the invoice currency; inventory takes both.
+   charges in the invoice currency; inventory takes both. Diamond pieces and loose stones
+   (apps.diamonds) also owe their stones' cost, carried on "diamonds and stones" inventory.
 Voiding reverses all three, and only while every piece is still in stock at the branch.
 """
 
@@ -23,7 +24,7 @@ from apps.catalog.domain.metal import fine_weight
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.core.models import DocStatus
-from apps.core.numeric import FX_RATE, UNIT_PRICE, WEIGHT, quantize, round_money
+from apps.core.numeric import FX_RATE, GRAMS_PER_CARAT, UNIT_PRICE, WEIGHT, quantize, round_money
 from apps.core.sequences import allocate_number
 from apps.inventory.models import ItemStatus, MovementType
 from apps.inventory.services import DocRef, change_item_status, create_item, lot_for, move_lot
@@ -226,6 +227,11 @@ def _end_of(day: date) -> datetime:
     return timezone.make_aware(datetime.combine(day, time.max))
 
 
+def _stone_cost(lines) -> Decimal:
+    """What the stones of the invoice's pieces cost, in the invoice currency."""
+    return sum((piece.stone_cost for line in lines for piece in line.pieces.all()), Decimal(0))
+
+
 def _ledger_lines(invoice: SupplierInvoice, lines, fx: Decimal) -> list[LedgerLine]:
     inventory = account_for("inventory_gold")
     payable = account_for(SELLER_ACCOUNT[invoice.seller_role])
@@ -253,6 +259,15 @@ def _ledger_lines(invoice: SupplierInvoice, lines, fx: Decimal) -> list[LedgerLi
             LedgerLine(account=payable, commodity=money_commodity(invoice.currency),
                        quantity=-making, functional_amount=-functional, party=invoice.supplier),
         ]
+    stones = _stone_cost(lines)
+    if stones > 0:
+        functional = round_money(stones * fx)
+        result += [
+            LedgerLine(account=account_for("inventory_diamonds"), commodity=functional_commodity(),
+                       quantity=functional),
+            LedgerLine(account=payable, commodity=money_commodity(invoice.currency),
+                       quantity=-stones, functional_amount=-functional, party=invoice.supplier),
+        ]
     return result
 
 
@@ -276,15 +291,25 @@ def post_invoice(invoice_id: int, *, actor=None) -> SupplierInvoice:
         for line in lines:
             if line.category.tracking == Tracking.SERIALIZED:
                 for piece in line.pieces.all():
+                    # Making is charged on the metal: the stones are not gold.
+                    metal = max(piece.gross_weight_g - piece.stone_weight_ct * GRAMS_PER_CARAT,
+                                Decimal(0))
                     piece.item = create_item(
                         category=line.category, karat=line.karat,
                         gross_weight_g=piece.gross_weight_g, branch=invoice.branch,
                         business_date=invoice.business_date, doc=doc, supplier=invoice.supplier,
                         cost_currency=invoice.currency, cost_making_rate=line.making_cost_rate,
-                        cost_amount=round_money(line.making_cost_rate * piece.gross_weight_g * fx),
+                        cost_amount=round_money(line.making_cost_rate * metal * fx),
                         list_making_rate=line.list_making_rate, actor=actor,
+                        stone_weight_ct=piece.stone_weight_ct,
+                        stone_cost_amount=round_money(piece.stone_cost * fx),
+                        label_price=piece.label_price,
                     )
                     piece.save(update_fields=["item", "updated_at"])
+                    if piece.stones:
+                        from apps.diamonds.services import add_stones
+
+                        add_stones(piece.item, piece.stones)
             else:
                 move_lot(lot_for(line.category, line.karat, invoice.branch), qty=line.qty,
                          gross_weight_g=line.gross_weight_g,
@@ -350,8 +375,11 @@ def void_invoice(invoice_id: int, *, reason: str = "", actor=None) -> SupplierIn
 def totals(invoice: SupplierInvoice) -> dict:
     """Display totals: pieces, weights, fine grams per metal, making charges."""
     result = {"pieces": 0, "gross_weight_g": Decimal(0), "making_cost_amount": Decimal(0),
-              "fine_by_metal": defaultdict(Decimal)}
-    for line in invoice.lines.select_related("karat__metal", "category"):
+              "fine_by_metal": defaultdict(Decimal), "stone_cost": Decimal(0)}
+    lines = list(invoice.lines.select_related("karat__metal", "category")
+                 .prefetch_related("pieces"))
+    result["stone_cost"] = _stone_cost(lines)
+    for line in lines:
         result["pieces"] += line.qty if line.category.tracking == Tracking.SERIALIZED else 0
         result["gross_weight_g"] += line.gross_weight_g
         result["making_cost_amount"] += line.making_cost_amount

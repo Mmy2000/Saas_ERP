@@ -1,0 +1,58 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Employees" %}{% endblock %}
+{% block page_header %}
+{% can "hr.employee.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Employees" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Your team, their salaries, commissions and advances." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "user-plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
+    <label class="relative flex-1">
+      <span class="sr-only">{% translate "Search" %}</span>
+      <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" name="q" value="{{ term }}" class="form-input ps-9" placeholder="{% translate 'Name, phone or job' %}">
+    </label>
+    <select name="status" class="form-input sm:w-44" aria-label="{% translate 'Status' %}">
+      <option value="active" {% if status == "active" %}selected{% endif %}>{% translate "Active" %}</option>
+      <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{% translate "Inactive" %}</option>
+      <option value="all" {% if status == "all" %}selected{% endif %}>{% translate "All" %}</option>
+    </select>
+    <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
+  </form>
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th class="w-16">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Branch" %}</th>
+        <th class="text-end">{% translate "Monthly salary" %} ({{ home_currency }})</th><th>{% translate "Commission" %}</th>
+        <th class="text-end">{% translate "Advances due" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for e in page.object_list %}
+        <tr>
+          <td><span class="num text-slate-500">{{ e.code }}</span></td>
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'employee' e.pk %}">{{ e.name }}</a>
+            <div class="text-xs text-slate-500">{{ e.job_title|default:"" }}{% if e.user %}{% if e.job_title %} · {% endif %}<span class="num">@{{ e.user.display_name|default:e.user.email }}</span>{% endif %}</div></td>
+          <td>{{ e.branch.name|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ e.monthly_salary|num:2 }}</span></td>
+          <td>{% if e.commission_basis == "making_pct" %}<span class="num">{{ e.commission_rate|num:2 }}%</span> <span class="text-xs text-slate-500">{% translate "of making" %}</span>{% elif e.commission_basis == "per_gram" %}<span class="num">{{ e.commission_rate|num:2 }}</span> <span class="text-xs text-slate-500">{% translate "per gram" %}</span>{% else %}—{% endif %}</td>
+          <td class="text-end">{% if e.outstanding %}<span class="num font-medium text-amber-700">{{ e.outstanding|num:2 }}</span>{% else %}<span class="num text-slate-400">0.00</span>{% endif %}</td>
+          <td>{% if e.is_active %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'employee' e.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No employees yet" as empty_title %}
+    {% translate "Add your team to pay salaries, advances and sales commissions." as empty_text %}
+    {% include "components/empty_state.html" with icon="users" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -42,18 +42,28 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 | Wholesale to trade accounts by weight: pieces and bulk gold priced as gold at the board's sell price plus a making charge per gram (per category, list rate by default, live server quote); settled in gold (the trader owes the fine grams, and the making in money) or in money (the whole value); returns of whole lines at the sale's values; cancellable. Receipts and gold settlements work with trade accounts too | `apps/sales/trade.py` | §7.7 |
 | Buying from trade accounts: a purchase invoice or return can be from a supplier or a trade account (`seller_role`); a trader's side posts to the trade accounts ledger, so wholesale sales, purchases and returns share one balance and one statement. The trader page links to "Sell wholesale" and "Buy from them" | `apps/purchasing/` | §7.7, §7.8 |
 | Workshops and work orders: workshops as a party (statement, pay labour, give or take gold); send gold or scrap by weight to a workshop (its gold balance goes up), receive new pieces (barcoded, costed), bulk gold and scrap back; loss (هالك) or gain worked out per metal and booked explicitly (a gain must be confirmed); labour and the making cost carried in the gold sent become the cost of the new goods; cancel an order while out, or undo a receipt while its goods are untouched | `apps/manufacturing/` | §7.11, §8.5 |
+| In-house production: production orders take gold, bullion or scrap out of stock into "production in progress" (stock card: used in production), optionally naming the craftsman (an employee); recording what was made creates barcoded pieces, bulk gold or scrap (any karat: scrap can be melted into new pieces), books the fine-gold loss or gain, and adds the craftsman's labour per gram to the cost of the goods against "production labour absorbed" (salaries are already an expense). What comes out is valued at what went in, so production in progress clears exactly. Cancel while in production, or undo the record while the goods are untouched; list filtered by craftsman | `apps/manufacturing/` | §7.11, §8.5 |
 | Repairs and custom orders: take in a customer's pieces (registered customer or walk-in name/phone) with descriptions, weights and prices; a bag number per branch; promised date; deposits held for the customer; send to a workshop or do it in the shop; mark ready with weights out (difference shown), final prices and the workshop's labour (a repair cost owed to the workshop); deliver with deposits applied, cash/card/transfer or on account, change in cash; cancel with the deposit paid back or credited. Only money is booked: the pieces are the customer's | `apps/repairs/` | §7.12 |
+| Employees and payroll: employees with a branch, monthly salary and a commission rule (a share of the making charge sold, or an amount per gram), linked to the login they sell with; advances paid from a cash box or bank account (Dr employee advances) and taken back from the next payroll (the amount can be changed per payslip); bonuses and salary deductions per month; a monthly payroll prepared and checked before paying (salary + commission + bonuses − deductions − advances), posted to salaries, sales commissions and employee advances, one per month, printable with a signature column, cancellable (advances due again, adjustments freed); a commissions page per month with sales, making charge and weight sold per seller, returns in the month taken off | `apps/hr/` | §7.12 |
+| Diamonds and gemstones (a platform feature, off unless switched on for the client or its plan in the console): diamond pieces and loose stones as barcoded pieces with stone details (kind, shape, count, carats, colour, clarity, cut, lab and certificate number), a stones' cost and a label price; receiving from suppliers (gold owed in fine grams, making on the metal weight, the stones' cost on "diamonds and stones" inventory); selling at the label price with a diamond discount limit and a floor at cost, the gold part to gold sales and the rest to diamond sales and cost; returns, transfers, stocktakes and supplier returns carry the stones' cost; stone setting (loose stones into a mounting: details and cost move onto the piece, setter's labour owed or absorbed, cancellable); diamond stock and diamond sales reports. Wholesale by weight refuses diamond pieces | `apps/diamonds/` | §7.6, §7.7 |
 | Customer deposits: the customer page and statement show reservation deposits held (their own statement part, from the deposits account), with a link to that customer's reservations; the dashboard shows the total held | `apps/parties/web/views.py` | §7.7 |
 | Customer and supplier statements per currency and metal: opening balance, running balance, links to documents (also for cash boxes, bank accounts, terminals) | `apps/ledger/statements.py` | §7.4, §19 |
 | Reports: a registry of report classes (filters, permission per report, tables) with one screen, print and CSV for Excel: daily summary, gold balances, sales analysis with margin, expenses by category | `apps/reports/` | §7.12, §3.1 |
+| Financial statements: profit and loss (sales, cost of sales, gross profit, operating expenses, operating profit, other income and losses, net profit; % of sales and the fine gold booked; against the period before, the same period last year, or month by month) and the balance sheet on any day (assets, liabilities and equity grouped as in the chart, cash boxes and bank accounts rolled up, amounts and fine grams per metal, profit not yet closed as its own equity line). Both per branch, printable and exported to Excel; year-end closing entries are left out of the profit and loss | `apps/reports/statements.py` | §7.10, §7.12 |
 | Treasury: cash boxes per branch and currency (each with its own ledger account; the default box opens with the first cash sale), bank accounts (all or some branches), card terminals with fee rates; every payment records the box / account / terminal it went through | `apps/treasury/` | §7.9, §15 |
 | Treasury movements: transfers and bank deposits/withdrawals, cash sent between branches (in transit through branch clearing until received), currency exchange with gain/loss, card settlements with bank fees; statements per box/account/terminal | `apps/treasury/services.py` | §7.9, §15 |
+| Cheques: received from customers, suppliers, traders or workshops (on "cheques received" until cleared) and issued from our bank accounts (on "cheques payable" until the bank pays them), with due dates; deposit, clear, bounce (also after clearing), hand back, endorse to another party (e.g. to pay a supplier), cancel if recorded by mistake; lists by state with what is due this week, and dashboard reminders | `apps/treasury/cheques.py` | §7.9 |
+| Bank reconciliation: per bank account, the statement date and closing balance, then tick the booked movements on the statement (cleared balance against statement balance, difference live); book bank charges or interest found on the statement from the same screen; complete when the difference is zero; history of reconciled statements, the latest can be reopened | `apps/treasury/reconciliation.py` | §7.9 |
+| Cash counts: count a cash box (by notes and coins for the main currencies, or as a total) against its balance in the books; a shortage or surplus is booked to cash over and short (a reason is required), so the box holds what was counted; boxes not counted today are flagged; printable with signatures; the latest count of a box can be cancelled; the daily summary report lists the day's counts | `apps/treasury/counts.py` | §7.9 |
 | Expenses: categories posting to expense accounts, vouchers paid from a box or bank account | `apps/expenses/` | §7.12 |
 | Idempotency keys on money-moving API actions (double clicks and retries never post twice) | `apps/core/api/idempotency.py` | §11.4 |
 | Multi-commodity double-entry ledger: chart of accounts, posting service, balance projections, reversals, trial balance, manual journal | `apps/ledger/` | §7.10, ADR-005 |
+| Closing periods: months close in order once they are over, after a checklist of unfinished work (unposted purchases, stocktakes in progress, goods and cash between branches, unpaid payroll; closing anyway needs a confirmation); a closed month takes no postings and none of its entries can be reversed, so no document dated in it can be cancelled; months reopen newest first with a reason. Closing a year (all its months closed) posts one entry on 31 December moving every income and expense balance, in money and in gold, to retained earnings; reopening the year reverses it. Full history of who closed and reopened what; a dashboard reminder for finished months still open. Needs the permission for all branches | `apps/ledger/closing.py` | §7.10 |
 | Dashboard: today's retail sales (against yesterday), wholesale, cash on hand, gold in stock, sales for the last 7 days, balances with customers / traders / suppliers in money and gold, what needs attention (incoming transfers, open stocktakes, overdue reservations, unposted purchases) and today's postings; each block follows the user's permissions and branches | `apps/org/dashboard.py` | §17 |
 | Web UI: Tailwind design system, RTL/LTR shell, dashboard and module pages | `templates/`, `apps/*/templates/`, `assets/` | §17 |
 | Arabic / English UI, language cookie → tenant default | `apps/core/i18n.py`, `locale/`, `ops/i18n/` | §17 |
+| Audit trail: a database trigger records every insert, change and delete of the master data (prices, currencies, karats, categories, customers and suppliers, pieces' edits, users, roles and permissions, branches, cash boxes and bank accounts, ledger accounts, employees, label and document designs): who (the signed-in user, passed to PostgreSQL per request), when, and the old and new values; secrets masked; append-only. Owners see it under Settings → Activity, and "History" on each record | `apps/audit/` | §21 |
+| Same-tenant foreign keys: a trigger on every tenant table refuses a row that points at another tenant's row (PostgreSQL checks foreign keys without RLS); the isolation suite fails when a table's guard is missing or stale | `apps/audit/triggers.py` | §5.3 |
 | Isolation test suite | `tests/isolation/` | §23.3 |
 
 ## Local setup (Windows / PowerShell)
@@ -190,6 +200,24 @@ minute; empty = `TENANT_REQUESTS_PER_MINUTE`, default 600; 0 = no limit). Over t
 workspace answers 429 until the next minute. Run `manage.py prune_traffic` daily to keep 30 days
 of per-minute counters and 90 days of per-route ones.
 
+### Server monitoring
+
+Console → **Server** shows the machine live (refreshes every 5 s): CPU (and each thread), memory
+and swap, the app's disk and every other drive, network and disk activity, the busiest processes,
+PostgreSQL size, connections and version, and history charts for 15 minutes to 7 days. Readings
+over `MONITOR_WARN_PCT` (75) are marked high, over `MONITOR_CRITICAL_PCT` (90) critical.
+
+History comes from samples. While the page is open it records one every
+`MONITOR_SAMPLE_SECONDS` (10); to keep history around the clock run the recorder as a service:
+
+```
+python manage.py monitor_server            # until stopped (systemd / supervisor / NSSM)
+python manage.py monitor_server --once     # or one sample a minute from cron / Task Scheduler
+```
+
+Samples older than `MONITOR_RETENTION_DAYS` (7) are deleted automatically. Needs `psutil`
+(in `requirements/base.txt`).
+
 ## Frontend assets
 
 Tailwind CSS v4 through its CLI (Node is needed only to rebuild; the built CSS is committed):
@@ -282,9 +310,7 @@ Tests connect as `app_owner`, never as a superuser (superusers bypass RLS, which
 These are Phase 2 spikes or later phases in the plan:
 
 - RLS on the global `iam_user` table, and wiring the `app_platform` role into a DB alias.
-- The same-tenant FK trigger for cross-tenant FK injection (§5.3). For now FK inputs are
-  resolved through tenant-scoped querysets, which RLS already restricts.
-- Celery `TenantTask`, the outbox, audit events, the tenant-prefixed cache wrapper.
+- Celery `TenantTask`, the outbox, the tenant-prefixed cache wrapper.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
 - Server-side PDF of documents (WeasyPrint, a Phase 2 spike; receipts and vouchers print from the
   browser), QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it),
@@ -293,9 +319,17 @@ These are Phase 2 spikes or later phases in the plan:
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
   RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
   (repairs), receiving in several batches, labour paid in gold, stones issued to setters;
+  production: bills of materials, stones and findings used, a loss allowance per craftsman;
+  diamonds: certificate scans, selling part of a parcel of stones, a diamond
+  price list (Rapaport-style), buying diamond pieces for money instead of gold;
   repairs: photos of the pieces, paying in scrap gold, gold added by the workshop.
-- Treasury: bank reconciliation, cheques, cash counts / drawer close, FX revaluation of foreign
+- Payroll: attendance and leave, overtime, social insurance and income tax, payslips per
+  employee by email, paying part of the team from a cash box and part by bank, commission tiers
+  or targets, commission on wholesale sales.
+- Treasury: blind counts (hiding the book balance from the cashier), cheques in a foreign currency, importing bank statement
+  files to match automatically, FX revaluation of foreign
   cash (exchanges and transfers use average carrying value; receipts and payments in a foreign
   currency still use the rate in force), choosing among several cash boxes on the sales screen.
 - Invitations for people who already have an account in another workspace (OQ-6).
-- Fiscal period closing screens (the ledger already refuses postings into closed periods).
+- Closing: per-branch closing, approval by a second person, a closing report pack (P&L and
+  balance sheet per month), revaluing gold at the year-end price.

@@ -139,6 +139,9 @@ def _piece(line: TradeLineInput, branch) -> Item:
     if item.karat is None:
         raise DomainError(_("Piece %(barcode)s has no karat and cannot be priced by weight.")
                           % {"barcode": item.barcode}, code="PRICING_NO_KARAT")
+    if item.stone_cost_amount or item.category.product_family in ("diamond", "stone"):
+        raise DomainError(_("Diamond pieces are sold at their label price, not by weight."),
+                          code="SALES_DIAMOND_BY_WEIGHT")
     return item
 
 

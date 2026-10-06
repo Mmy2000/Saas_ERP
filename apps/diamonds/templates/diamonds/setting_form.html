@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Set stones" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/setting.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'stone-settings' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Stone setting" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Set stones" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Scan the mounting and the loose stones set into it, then weigh the finished piece." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="setting" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-lookup-url="{% url 'diamonds-lookup' %}"
+     data-post-url="{% url 'diamonds-settings' %}" data-detail-url="{% url 'stone-settings' %}{id}/" data-saved="{% translate 'Stones set.' %}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "The mounting" %}</h2></div>
+      <div class="card-body space-y-3">
+        <form class="flex gap-2" data-scan="diamond"><input class="form-input num flex-1" placeholder="{% translate 'Scan or type the barcode' %}" autocomplete="off"><button class="btn btn-secondary" type="submit">{% translate "Add" %}</button></form>
+        <div class="hidden rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm" data-piece></div>
+        <p class="form-error" data-error-for="piece"></p>
+      </div>
+    </section>
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Loose stones" %}</h2><span class="text-sm text-slate-500"><span class="num" data-carats>0.000</span> {% translate "ct" %}</span></div>
+      <form class="flex gap-2 border-b border-slate-100 p-4" data-scan="stone"><input class="form-input num flex-1" placeholder="{% translate 'Scan a stone or type its certificate number' %}" autocomplete="off"><button class="btn btn-secondary" type="submit">{% translate "Add" %}</button></form>
+      <table class="table"><tbody data-stones></tbody></table>
+      <p class="px-5 py-6 text-center text-sm text-slate-400" data-stones-empty>{% translate "No stones yet" %}</p>
+      <p class="form-error px-5 pb-3" data-error-for="stones"></p>
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card card-body space-y-4">
+      <div><label class="form-label" for="s-after">{% translate "Weight after setting (g)" %}</label>
+        <input id="s-after" class="form-input num text-start" inputmode="decimal" data-after><p class="form-error" data-error-for="gross_after_g"></p></div>
+      <div><label class="form-label" for="s-setter">{% translate "Setter" %}</label>
+        <select id="s-setter" class="form-input" data-setter data-remote="{% url 'workshop-list' %}" data-label-field="name"><option value="">{% translate "In our own shop" %}</option></select></div>
+      <div><label class="form-label" for="s-labour">{% translate "Labour" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></label>
+        <input id="s-labour" class="form-input num text-start" inputmode="decimal" data-labour placeholder="0"><p class="form-error" data-error-for="labour_amount"></p></div>
+      <input class="form-input" data-note placeholder="{% translate 'Note' %}">
+      <p class="form-error" data-error></p>
+      <button type="button" class="btn btn-primary w-full" data-save>{% icon "sparkles" "size-4" %}{% translate "Set the stones" %}</button>
+      <p class="text-xs text-slate-500">{% translate "The stones leave stock as used in this piece. A setter's labour is owed to their workshop; in our shop it is added to the cost." %}</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

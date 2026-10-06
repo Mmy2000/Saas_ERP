@@ -10,6 +10,7 @@
     {% if party %}
       <span class="badge badge-neutral">{% translate "Code" %} <span class="num">{{ party.code }}</span></span>
       {% if not party.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+      <span class="ms-auto">{% include "audit/_history_link.html" with table="parties_party" row=party.pk %}</span>
     {% endif %}
   </div>
 </div>

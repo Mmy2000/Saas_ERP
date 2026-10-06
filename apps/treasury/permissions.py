@@ -10,4 +10,9 @@ register_permissions(_("Treasury"), [
     ("treasury.exchange.create", _("Exchange currencies")),
     ("treasury.card_settlement.create", _("Record card settlements from the bank")),
     ("treasury.void", _("Cancel treasury documents")),
+    ("treasury.cheque.view", _("View cheques received and issued")),
+    ("treasury.cheque.manage", _("Record cheques and mark them deposited, cleared or bounced")),
+    ("treasury.reconcile", _("Reconcile bank accounts with their statements")),
+    ("treasury.count.create", _("Count cash boxes and book the difference")),
+    ("treasury.count.void", _("Cancel cash counts")),
 ])

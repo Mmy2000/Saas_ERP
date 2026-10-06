@@ -1,0 +1,57 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% if direction == "received" %}{% translate "Receive a cheque" %}{% else %}{% translate "Issue a cheque" %}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'treasury/js/cheques.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'cheques' %}?direction={{ direction }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Cheques" %}</a>
+  {% if direction == "received" %}
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Receive a cheque" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "The payer's balance goes down now; the money reaches your bank when the cheque clears." %}</p>
+  {% else %}
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Issue a cheque" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "What you owe goes down now; the money leaves your bank account when the cheque is paid." %}</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<form data-api-form data-shape="cheque" data-method="POST" data-endpoint="{% url 'cheque-api-list' %}" data-redirect="{% url 'cheques' %}{id}/"
+      data-success="{% translate 'Saved.' %}" class="grid grid-cols-1 gap-6 xl:grid-cols-3" novalidate>
+  <input type="hidden" name="direction" value="{{ direction }}">
+  <div class="space-y-6 xl:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% if direction == "received" %}{% translate "From" %}{% else %}{% translate "To" %}{% endif %}</h2></div>
+      <div class="card-body">{% include "treasury/_party_picker.html" with prefix="p-" %}</div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "The cheque" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div><label class="form-label" for="f-number">{% translate "Cheque no." %}</label>
+          <input id="f-number" name="cheque_number" class="form-input num" maxlength="40" autocomplete="off"><p class="form-error" data-error-for="cheque_number"></p></div>
+        <div><label class="form-label" for="f-amount">{% translate "Amount" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></label>
+          <input id="f-amount" name="amount" class="form-input num text-start" inputmode="decimal"><p class="form-error" data-error-for="amount"></p></div>
+        <div><label class="form-label" for="f-due">{% translate "Due date" %}</label>
+          <input id="f-due" name="due_date" type="date" class="form-input" value="{{ today|date:'Y-m-d' }}"><p class="form-error" data-error-for="due_date"></p></div>
+        {% if direction == "received" %}
+        <div><label class="form-label" for="f-drawn">{% translate "Drawn on" %}</label>
+          <input id="f-drawn" name="drawn_on" class="form-input" maxlength="100" placeholder="{% translate 'The payer’s bank' %}"></div>
+        {% else %}
+        <div><label class="form-label" for="f-bank">{% translate "From our bank account" %}</label>
+          <select id="f-bank" name="bank_account" class="form-input" data-empty="null">{% for bank in banks %}<option value="{{ bank.pk }}">{{ bank.label }}{% if bank.account_number %} · {{ bank.account_number }}{% endif %}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="bank_account"></p></div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card card-body space-y-4">
+      <div><label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+        <select id="f-branch" name="branch" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+      <div><label class="form-label" for="f-note">{% translate "Note" %}</label>
+        <input id="f-note" name="note" class="form-input" maxlength="300"></div>
+      <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% if direction == "received" %}{% translate "Record the cheque" %}{% else %}{% translate "Issue the cheque" %}{% endif %}</button>
+    </section>
+  </aside>
+</form>
+{% endblock %}

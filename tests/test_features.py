@@ -29,7 +29,9 @@ def _workspace(tenant):
 
 
 def test_every_feature_starts_on(tenant_a):
-    assert features.enabled_keys(tenant_a.pk) == {f.key for f in features.FEATURES}
+    """…except specialised modules (diamonds), which the platform switches on per client."""
+    assert features.enabled_keys(tenant_a.pk) == {f.key for f in features.FEATURES if f.default}
+    assert "diamonds" not in features.enabled_keys(tenant_a.pk)
     html = _workspace(tenant_a).get("/").content.decode()
     assert 'href="/repairs/"' in html and 'href="/sales/wholesale/"' in html
 

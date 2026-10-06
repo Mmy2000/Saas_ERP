@@ -135,6 +135,7 @@ class EntryKind(models.TextChoices):
     MANUAL = "manual", _("Manual")
     OPENING = "opening", _("Opening balance")
     REVERSAL = "reversal", _("Reversal")
+    CLOSING = "closing", _("Year-end closing")
 
 
 class JournalEntry(TenantScopedModel):
@@ -230,6 +231,8 @@ class FiscalPeriod(TenantScopedModel):
     status = models.CharField(max_length=8, choices=PeriodStatus.choices,
                               default=PeriodStatus.OPEN)
     closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                  on_delete=models.PROTECT, related_name="+")
 
     class Meta:
         ordering = ["-start_date"]
@@ -242,3 +245,48 @@ class FiscalPeriod(TenantScopedModel):
 
     def __str__(self):
         return self.name
+
+
+class PeriodAction(models.TextChoices):
+    CLOSED = "closed", _("Month closed")
+    REOPENED = "reopened", _("Month reopened")
+    YEAR_CLOSED = "year_closed", _("Year closed")
+    YEAR_REOPENED = "year_reopened", _("Year reopened")
+
+
+class PeriodEvent(TenantScopedModel):
+    """Who closed or reopened which month or year, when and why (append-only history)."""
+
+    action = models.CharField(max_length=16, choices=PeriodAction.choices)
+    year = models.PositiveSmallIntegerField()
+    month = models.PositiveSmallIntegerField(null=True, blank=True)  # empty for a whole year
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                             on_delete=models.PROTECT, related_name="+")
+    at = models.DateTimeField(default=timezone.now)
+    reason = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        ordering = ["-at", "-id"]
+        indexes = [models.Index(fields=["tenant", "-at"], name="ledger_period_event_idx")]
+
+
+class YearEnd(TenantScopedModel):
+    """A closed financial year: its income and expense balances moved to retained earnings by
+    `entry`. Reopening reverses that entry (kept for the history)."""
+
+    year = models.PositiveSmallIntegerField()
+    entry = models.OneToOneField(JournalEntry, on_delete=models.PROTECT, related_name="+")
+    closed_at = models.DateTimeField(default=timezone.now)
+    closed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                  on_delete=models.PROTECT, related_name="+")
+    reopened_at = models.DateTimeField(null=True, blank=True)
+    reopened_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                    on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        ordering = ["-year", "-id"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "year"],
+                                    condition=Q(reopened_at__isnull=True),
+                                    name="ledger_year_end_open_uniq"),
+        ]

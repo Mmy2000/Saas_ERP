@@ -8,7 +8,8 @@ for them all disappear or refuse at once, with no per-screen code.
 Whether a feature is on for a client:
     1. the client's own setting (console → client → Features), if there is one;
     2. else its plan's choice (console → Plans or Features), if one was saved;
-    3. else on.
+    3. else the feature's own default: on, except for specialised modules such as diamonds,
+       which each client only gets when switched on for them.
 
 Adding a module: give it its own permission codes (register_permissions) and add a Feature
 here listing their prefix. It then shows up in the console on its own.
@@ -21,8 +22,8 @@ from dataclasses import dataclass
 from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
 
-# A feature with no saved choice for a plan is on, so adding a module changes nothing for
-# existing clients until it is switched off for a plan or a client in the console.
+# A feature with no saved choice falls back on its default (on for almost all), so adding a
+# module changes nothing for existing clients until it is switched for a plan or a client.
 CACHE_SECONDS = 300
 
 
@@ -34,6 +35,7 @@ class Feature:
     group: object
     icon: str
     permissions: tuple[str, ...]  # permission code prefixes this feature owns
+    default: bool = True  # with no choice saved for the plan or the client
 
     def owns(self, code: str) -> bool:
         return any(code == p or code.startswith(p) for p in self.permissions)
@@ -72,6 +74,9 @@ FEATURES: list[Feature] = [
     Feature("treasury", _("Cash boxes and banks"),
             _("Boxes, bank accounts, card terminals, transfers and currency exchange."),
             MONEY, "wallet", ("treasury.",)),
+    Feature("hr", _("Employees and payroll"),
+            _("Employees, advances, monthly payroll and sales commissions."),
+            MONEY, "users", ("hr.",)),
     Feature("expenses", _("Expenses"),
             _("Expense categories and vouchers paid from a box or bank."),
             MONEY, "receipt-text", ("expenses.",)),
@@ -84,6 +89,10 @@ FEATURES: list[Feature] = [
     Feature("reports", _("Reports"),
             _("Daily summary, gold balances, sales analysis and expenses, with export."),
             TOOLS, "chart-column", ("reports.",)),
+    Feature("diamonds", _("Diamonds and gemstones"),
+            _("Stone details and certificates, label-price selling, loose stones, stone "
+              "setting and diamond reports. Off unless switched on for the client."),
+            GOODS, "gem", ("diamonds.",), default=False),
 ]
 BY_KEY = {feature.key: feature for feature in FEATURES}
 
@@ -106,7 +115,7 @@ def plan_defaults() -> dict[str, dict[str, bool]]:
     """{plan: {feature key: on?}} with the console's saved choices over the code defaults."""
     from .models import Plan, PlanFeature
 
-    table = {code: {f.key: True for f in FEATURES}
+    table = {code: {f.key: f.default for f in FEATURES}
              for code in Plan.objects.values_list("code", flat=True)}
     for row in PlanFeature.objects.filter(key__in=BY_KEY):
         table.setdefault(row.plan_id, {})[row.key] = row.enabled
@@ -126,8 +135,8 @@ def states(tenant) -> list[FeatureState]:
 
     defaults = plan_defaults().get(tenant.plan_id, {})
     own = dict(TenantFeature.objects.filter(tenant=tenant).values_list("key", "enabled"))
-    return [FeatureState(f, own.get(f.key, defaults.get(f.key, True)),
-                         defaults.get(f.key, True), f.key in own) for f in FEATURES]
+    return [FeatureState(f, own.get(f.key, defaults.get(f.key, f.default)),
+                         defaults.get(f.key, f.default), f.key in own) for f in FEATURES]
 
 
 def enabled_keys(tenant_id: int) -> frozenset[str]:

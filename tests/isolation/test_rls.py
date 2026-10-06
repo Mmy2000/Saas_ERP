@@ -62,7 +62,7 @@ def test_insert_for_another_tenant_is_rejected(tenant_a, tenant_b):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO org_branch (tenant_id, code, name, is_head_office, "
-                    "handles_diamonds, address, phone, is_active, created_at, updated_at) "
-                    "VALUES (%s, 50, 'x', false, false, '', '', true, now(), now())",
+                    "address, phone, is_active, created_at, updated_at) "
+                    "VALUES (%s, 50, 'x', false, '', '', true, now(), now())",
                     [tenant_b.id],
                 )

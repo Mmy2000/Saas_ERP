@@ -152,7 +152,8 @@ def post_supplier_return(data: SupplierReturnInput, *, actor=None) -> SupplierRe
         doc.total_cost = sum((line.cost_amount for line in lines), ZERO)
         doc.number = allocate_number("PR", branch=branch, fiscal_year=today.year)
         ledger = stock_lines(
-            [StockPart(line.category, line.karat, line.fine_weight_g, line.cost_amount)
+            [StockPart(line.category, line.karat, line.fine_weight_g, line.cost_amount,
+                       line.item.stone_cost_amount if line.item_id else 0)
              for line in lines], sign=-1, counter_role=SELLER_ACCOUNT[role], branch=branch,
             values=[line.metal_value for line in lines], party=supplier)
         if ledger:

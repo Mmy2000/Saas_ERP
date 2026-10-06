@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Payroll" %}{% endblock %}
+{% block page_header %}
+{% can "hr.payroll.post" as can_post %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Payroll" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Monthly pay: salaries, commissions, bonuses and deductions, less advances." %}</p>
+  </div>
+  {% if can_post %}
+  <form method="get" action="{% url 'payroll-new' %}" class="flex gap-2">
+    <select name="period" class="form-input w-44" aria-label="{% translate 'Month' %}">{% for value, day in months %}<option value="{{ value }}">{{ day|date:"F Y" }}</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-primary">{% icon "calculator" "size-4" %}{% translate "Prepare payroll" %}</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Month" %}</th><th class="text-end">{% translate "Salaries" %}</th><th class="text-end">{% translate "Commissions" %}</th>
+        <th class="text-end">{% translate "Advances taken back" %}</th><th class="text-end">{% translate "Net paid" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for run in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ run.number }}</span></td>
+          <td><span class="num">{{ run.period }}</span></td>
+          <td class="text-end"><span class="num">{{ run.total_salary|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ run.total_commission|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ run.total_advance|num:2 }}</span></td>
+          <td class="text-end"><span class="num font-semibold text-slate-900">{{ run.total_net|num:2 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=run.status label=run.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'payroll' run.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No payroll paid yet" as empty_title %}
+    {% translate "Choose a month and prepare its payroll: you check every payslip before paying." as empty_text %}
+    {% include "components/empty_state.html" with icon="wallet" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

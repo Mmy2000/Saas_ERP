@@ -279,12 +279,16 @@ function placeButton(button) {
     (firstTable.closest(".card") || firstTable).before(wrap);
     return;
   }
-  const actions = [...header.children].find((child) => !child.contains(h1) && child.querySelector(".btn"));
-  if (actions) { actions.prepend(button); return; }
+  const actions = [...header.children].find((child) => !child.contains(h1)
+    && (child.matches(".btn") || child.querySelector(".btn")));
+  if (actions && !actions.matches(".btn")) { actions.prepend(button); return; }
+  // A lone action button sits straight in the header: group the two so they stay together.
   const wrap = document.createElement("div");
   wrap.className = "flex shrink-0 items-center gap-2";
+  if (actions) actions.replaceWith(wrap);
   wrap.append(button);
-  header.append(wrap);
+  if (actions) wrap.append(actions);
+  else header.append(wrap);
 }
 
 export function initPrintTables() {

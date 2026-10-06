@@ -1,0 +1,1 @@
+{% load i18n ui authz %}{# A "History" link to a record's changes. Include with table= (db table) and row= (pk). #}{% can "admin.audit.history" as can_audit %}{% if can_audit and row %}<a class="btn btn-ghost text-xs" href="{% url 'activity' %}?table={{ table }}&amp;row={{ row }}">{% icon "history" "size-4" %}{% translate "History" %}</a>{% endif %}

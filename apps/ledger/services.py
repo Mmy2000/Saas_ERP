@@ -116,9 +116,13 @@ class _Totals:
     metal: dict[int, Decimal] = field(default_factory=lambda: defaultdict(lambda: ZERO))
 
 
+def closed_period_on(business_date: date) -> FiscalPeriod | None:
+    return FiscalPeriod.objects.filter(status=PeriodStatus.CLOSED, start_date__lte=business_date,
+                                       end_date__gte=business_date).first()
+
+
 def _ensure_period_open(business_date: date) -> None:
-    closed = FiscalPeriod.objects.filter(status=PeriodStatus.CLOSED, start_date__lte=business_date,
-                                         end_date__gte=business_date).first()
+    closed = closed_period_on(business_date)
     if closed is not None:
         raise DomainError(_("The period %(period)s is closed.") % {"period": closed.name},
                           code="LEDGER_PERIOD_CLOSED")
@@ -206,7 +210,8 @@ def _apply_projections(lines: list[JournalLine]) -> None:
 def post_entry(*, branch, business_date: date, lines: list[LineInput],
                kind: str = EntryKind.AUTO, memo: str = "", source_type: str = "",
                source_id: int | None = None, reverses: JournalEntry | None = None,
-               absorb_rounding: bool = False, actor=None) -> JournalEntry:
+               absorb_rounding: bool = False, actor=None,
+               _closing: bool = False) -> JournalEntry:
     """Post one balanced entry. Raises ValidationError/DomainError and writes nothing if any
     invariant fails. `absorb_rounding` books a functional difference up to 0.05 to the
     "rounding" account (FX conversions, §8.6)."""
@@ -216,7 +221,8 @@ def post_entry(*, branch, business_date: date, lines: list[LineInput],
         raise ValidationError(_("An entry needs at least two lines."), code="LEDGER_TOO_FEW_LINES")
 
     with transaction.atomic():
-        _ensure_period_open(business_date)
+        if not _closing:  # only the year-end closing (apps.ledger.closing) posts into a closed year
+            _ensure_period_open(business_date)
         prepared = _prepare(lines, branch)
         totals = _totals(prepared)
 
@@ -256,8 +262,10 @@ def post_entry(*, branch, business_date: date, lines: list[LineInput],
 
 
 def reverse_entry(entry_id: int, *, business_date: date | None = None, memo: str = "",
-                  actor=None) -> JournalEntry:
-    """Post the mirror image of an entry (the only way to correct a posted one)."""
+                  actor=None, _closing: bool = False) -> JournalEntry:
+    """Post the mirror image of an entry (the only way to correct a posted one). An entry in a
+    closed month cannot be reversed, so cancelling its document is refused too: the month's
+    figures stay as they were closed."""
     entry = JournalEntry.objects.filter(pk=entry_id).first()
     if entry is None:
         raise NotFound(_("Not found."))
@@ -268,6 +276,12 @@ def reverse_entry(entry_id: int, *, business_date: date | None = None, memo: str
     if entry.kind == EntryKind.REVERSAL:
         raise DomainError(_("A reversal cannot be reversed; post a new entry instead."),
                           code="LEDGER_REVERSE_REVERSAL")
+    closed = None if _closing else closed_period_on(entry.business_date)
+    if closed is not None:
+        raise DomainError(
+            _("%(number)s was posted in %(period)s, which is closed. Reopen that month, or "
+              "correct it with a new entry.") % {"number": entry.number, "period": closed.name},
+            code="LEDGER_PERIOD_CLOSED")
     lines = [
         LineInput(account=line.account, commodity=line.commodity, quantity=-line.quantity,
                   functional_amount=-line.functional_amount, party=line.party,
@@ -279,6 +293,7 @@ def reverse_entry(entry_id: int, *, business_date: date | None = None, memo: str
         lines=lines, kind=EntryKind.REVERSAL,
         memo=memo or _("Reversal of %(number)s") % {"number": entry.number},
         source_type=entry.source_type, source_id=entry.source_id, reverses=entry, actor=actor,
+        _closing=_closing,
     )
 
 

@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Commissions" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sales commissions" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% blocktranslate trimmed with month=period_date|date:"F Y" %}What each seller sold in {{ month }} and the commission it earns. Returns in the month are taken off.{% endblocktranslate %}</p>
+  </div>
+  <form method="get" class="flex gap-2">
+    <select name="period" class="form-input w-44" onchange="this.form.submit()" aria-label="{% translate 'Month' %}">{% for value, day in months %}<option value="{{ value }}" {% if value == period %}selected{% endif %}>{{ day|date:"F Y" }}</option>{% endfor %}</select>
+  </form>
+</div>
+{% endblock %}
+{% block content %}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Sellers" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ rows|length }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Making charge sold" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ making|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Commissions" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ total|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+</div>
+<section class="card overflow-hidden">
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Rule" %}</th><th class="text-end">{% translate "Sales" %}</th><th class="text-end">{% translate "Making charge sold" %}</th><th class="text-end">{% translate "Weight sold (g)" %}</th><th class="text-end">{% translate "Commission" %}</th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'employee' row.employee.pk %}?period={{ period }}">{{ row.employee.name }}</a></td>
+          <td>{% if row.employee.commission_basis == "making_pct" %}<span class="num">{{ row.employee.commission_rate|num:2 }}%</span> <span class="text-xs text-slate-500">{% translate "of making" %}</span>{% elif row.employee.commission_basis == "per_gram" %}<span class="num">{{ row.employee.commission_rate|num:2 }}</span> <span class="text-xs text-slate-500">{% translate "per gram" %}</span>{% else %}—{% endif %}</td>
+          <td class="text-end"><span class="num">{{ row.result.sales }}</span></td>
+          <td class="text-end"><span class="num">{{ row.result.making|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ row.result.grams|num:3 }}</span></td>
+          <td class="text-end"><span class="num font-semibold text-slate-900">{{ row.result.amount|num:2 }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No commissions this month" as empty_title %}
+    {% translate "Give sellers a commission rule and link them to the login they sell with." as empty_text %}
+    {% include "components/empty_state.html" with icon="chart-column" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

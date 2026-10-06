@@ -269,7 +269,8 @@ def build_sales_invoice(invoice, design, ctx=None):
         lines = [{"piece": line.item.barcode if line.item_id else (
                       _t(_("By weight"), lang)
                       + (f" · {line.qty} {_t(_('pcs'), lang)}" if line.qty else "")),
-                  "description": line.category.name, "karat": line.karat.label,
+                  "description": line.category.name,
+                  "karat": line.karat.label if line.karat_id else "",
                   "weight": line.gross_weight_g, "gold_price": line.metal_price_per_g,
                   "making": line.making_rate_net, "discount": line.discount_amount,
                   "total": line.line_total}
@@ -329,7 +330,7 @@ def build_sales_return(doc, design, ctx=None):
     home = _home()
     with translation.override(_lang_of(design)):
         rows = [{"piece": o.item.barcode if o.item_id else _t(_("By weight"), design.language),
-                 "description": o.category.name, "karat": o.karat.label,
+                 "description": o.category.name, "karat": o.karat.label if o.karat_id else "",
                  "weight": o.gross_weight_g, "total": o.line_total}
                 for o in (line.original_line for line in doc.lines.select_related(
                     "original_line__item", "original_line__category",
@@ -373,7 +374,8 @@ def build_reservation(res, design, ctx=None):
     lang = design.language
     with translation.override(_lang_of(design)):
         rows = [{"piece": line.item.barcode, "description": line.item.category.name,
-                 "karat": line.item.karat.label, "weight": line.item.gross_weight_g,
+                 "karat": line.item.karat.label if line.item.karat_id else "",
+                 "weight": line.item.gross_weight_g,
                  "total": line.quoted_total}
                 for line in res.lines.select_related("item__category", "item__karat__metal")]
         deposits = [(f"{d.number} · {_day(d.business_date)} · {d.get_kind_display()}",

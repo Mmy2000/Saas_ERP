@@ -41,7 +41,10 @@ def _shape(table) -> dict:
         return [{"value": row.get(c.key), "places": c.places, "kind": c.kind,
                  "negative": c.numeric and (row.get(c.key) or 0) < 0} for c in table.columns]
     return {"title": table.title, "note": table.note, "columns": table.columns,
-            "rows": [cells(row) for row in table.rows],
+            "rows": [{"cells": cells(row), "style": row.get("_style", ""),
+                      # the first cell's start padding: 1.25rem plus 1.25rem per level
+                      "indent": f"{1.25 * (1 + row['_indent']):g}rem" if row.get("_indent")
+                      else ""} for row in table.rows],
             "totals": cells(table.totals) if table.totals else None}
 
 

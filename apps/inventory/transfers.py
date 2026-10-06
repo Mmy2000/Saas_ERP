@@ -186,7 +186,8 @@ def send_transfer(data: TransferInput, *, actor=None) -> StockTransfer:
 
 
 def _parts(lines) -> list[StockPart]:
-    return [StockPart(line.category, line.karat, line.fine_weight_g, line.cost_amount)
+    return [StockPart(line.category, line.karat, line.fine_weight_g, line.cost_amount,
+                      line.item.stone_cost_amount if line.item_id else 0)
             for line in lines]
 
 
