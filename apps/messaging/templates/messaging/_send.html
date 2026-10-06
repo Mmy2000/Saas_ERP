@@ -1,0 +1,51 @@
+{% load i18n static ui authz %}{% comment %}
+The Send button and its dialog (static/messaging/js/send.js): e-mail the PDF, or open WhatsApp
+with a private link to it. Include once per page with doc_type and pk; a statement passes
+doc_type="statement" with role, date_from and date_to. Hidden without messaging.send.
+{% endcomment %}{% can "messaging.send" as can_send %}{% if can_send %}
+<button type="button" class="btn btn-secondary{% if small %} text-xs{% endif %}" data-send-open
+        data-doc-type="{{ doc_type }}" data-pk="{{ pk }}" data-role="{{ role|default:'' }}"
+        data-date-from="{{ date_from|date:'Y-m-d' }}" data-date-to="{{ date_to|date:'Y-m-d' }}">{% icon "send" "size-4" %}{% translate "Send" %}</button>
+<script type="module" src="{% static 'messaging/js/send.js' %}"></script>
+<dialog data-send-dialog class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-surface p-0 text-start text-slate-800 shadow-pop backdrop:bg-black/40 backdrop:backdrop-blur-[2px]"
+        aria-labelledby="send-dialog-title" data-draft-url="{% url 'message-draft' %}" data-send-url="{% url 'message-send' %}"
+        data-queued="{% translate 'The e-mail will be sent in a moment. See Settings → Sent messages.' %}"
+        data-shared="{% translate 'WhatsApp is opening with the message and the link.' %}">
+  <form method="dialog" class="flex max-h-[85vh] flex-col" novalidate>
+    <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+      <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600 ring-1 ring-brand-200/70">{% icon "send" "size-[18px]" %}</span>
+      <div class="min-w-0">
+        <h2 id="send-dialog-title" class="text-base font-semibold text-slate-900">{% translate "Send" %}</h2>
+        <p class="truncate text-xs text-slate-500" data-send-label></p>
+      </div>
+    </div>
+    <div class="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+      <div class="segmented">
+        <label><input type="radio" name="channel" value="email" class="peer sr-only" checked><span class="segment inline-flex items-center gap-1.5">{% icon "inbox" "size-4" %}{% translate "E-mail" %}</span></label>
+        <label><input type="radio" name="channel" value="whatsapp" class="peer sr-only"><span class="segment inline-flex items-center gap-1.5">{% icon "send" "size-4" %}{% translate "WhatsApp" %}</span></label>
+      </div>
+      <div data-for="email">
+        <label class="form-label" for="send-email">{% translate "E-mail address" %}</label>
+        <input id="send-email" type="email" class="form-input" dir="ltr" autocomplete="off" data-send-email>
+        <p class="form-error" data-error-for="to"></p>
+      </div>
+      <div data-for="whatsapp" hidden>
+        <label class="form-label" for="send-phone">{% translate "WhatsApp number" %}</label>
+        <input id="send-phone" class="form-input num w-full text-start" dir="ltr" autocomplete="off" data-send-phone placeholder="201001234567">
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "With the country code. Leave it empty to choose the chat in WhatsApp." %}</p>
+      </div>
+      <div>
+        <label class="form-label" for="send-message">{% translate "Message" %}</label>
+        <textarea id="send-message" rows="6" class="form-input" data-send-message></textarea>
+        <p class="mt-1.5 text-xs text-slate-500" data-for="email">{% translate "The PDF is attached, in your document design." %}</p>
+        <p class="mt-1.5 text-xs text-slate-500" data-for="whatsapp" hidden>{% translate "A private link to the PDF is added at the end. It works for 30 days, and you can stop it from Sent messages." %}</p>
+      </div>
+      <p class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-send-error role="alert"></p>
+    </div>
+    <div class="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
+      <button value="cancel" formnovalidate class="btn btn-secondary">{% translate "Cancel" %}</button>
+      <button type="button" class="btn btn-primary" data-send-go data-label-email="{% translate 'Send e-mail' %}" data-label-whatsapp="{% translate 'Open WhatsApp' %}">{% translate "Send e-mail" %}</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}

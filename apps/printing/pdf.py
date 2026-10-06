@@ -209,24 +209,29 @@ def pdf_response(content: bytes, filename: str, *, inline: bool = False) -> Http
     return response
 
 
-def pdf_page(request, template: str, context: dict, *, title, filename: str,
-             landscape: bool = False) -> HttpResponse:
-    """A page made from printing/sheet.html (reports, statements) as a downloaded PDF, with
-    page numbers. When there is no Chromium, a page that says so (503)."""
-    from django.shortcuts import render
+def sheet_pdf(template: str, context: dict, *, title, landscape: bool = False) -> bytes:
+    """A page made from printing/sheet.html (reports, statements) as PDF bytes, with page
+    numbers. Needs no request (background jobs use it); raises PdfUnavailable."""
     from django.template.loader import render_to_string
 
-    from apps.core.appearance import ACCENTS, _workspace_accent
+    from apps.core.appearance import accent_swatch
     from apps.org.models import TenantProfile
 
     profile = TenantProfile.objects.first()
-    swatches = {key: swatch for key, _label, swatch in ACCENTS}
     html = render_to_string(template, {
         **context, "sheet_title": title, "profile": profile, "logo": logo_src(profile),
-        "landscape": landscape, "accent": swatches.get(_workspace_accent(request), "#9a6122"),
-    }, request=request)
+        "landscape": landscape, "accent": accent_swatch(getattr(profile, "accent", "")),
+    })
+    return html_to_pdf(html, Paper(landscape=landscape, page_numbers=True))
+
+
+def pdf_page(request, template: str, context: dict, *, title, filename: str,
+             landscape: bool = False) -> HttpResponse:
+    """`sheet_pdf` as a downloaded file; without Chromium, a page that says so (503)."""
+    from django.shortcuts import render
+
     try:
-        content = html_to_pdf(html, Paper(landscape=landscape, page_numbers=True))
+        content = sheet_pdf(template, context, title=title, landscape=landscape)
     except PdfUnavailable:
         return render(request, "printing/pdf_unavailable.html", status=503)
     return pdf_response(content, filename)

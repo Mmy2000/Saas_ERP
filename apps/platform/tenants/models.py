@@ -201,6 +201,8 @@ EVENT_LABELS = {
     "profile.updated": _("Company settings changed"),
     "domain.added": _("Domain added"),
     "domain.removed": _("Domain removed"),
+    "job.retried": _("Background job run again"),
+    "job.cancelled": _("Background job cancelled"),
     "traffic.limit": _("Request limit changed"),
     "platform.settings": _("Platform settings changed"),
     "feature.client": _("Feature changed for a client"),

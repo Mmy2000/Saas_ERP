@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.urls import include, path
 
 from apps.core import media
+from apps.platform.console import jobs as console_jobs
 from apps.platform.console import views as console
 
 
@@ -35,6 +36,9 @@ urlpatterns = [
          name="console-tenant-traffic-live"),
     path("clients/<int:pk>/access/", console.tenant_access, name="console-tenant-access"),
     path("server/", console.server, name="console-server"),
+    path("jobs/", console_jobs.jobs, name="console-jobs"),
+    path("jobs/<int:pk>/retry/", console_jobs.job_retry, name="console-job-retry"),
+    path("jobs/<int:pk>/cancel/", console_jobs.job_cancel, name="console-job-cancel"),
     path("server/live/", console.server_live, name="console-server-live"),
     path("traffic/", console.traffic, name="console-traffic"),
     path("traffic/live/", console.traffic_live, name="console-traffic-live"),

@@ -1,0 +1,10 @@
+{% load i18n ui %}{% autoescape off %}{% blocktranslate with name=name %}Good morning {{ name }},{% endblocktranslate %}
+
+{% if items %}{% translate "Needs attention today:" %}
+{% for item in items %}- {{ item.label }}: {{ item.count }}  {{ item.url }}
+{% endfor %}{% endif %}{% if sales and sales.count %}
+{% blocktranslate count count=sales.count with total=sales.total|num:2 %}Yesterday: {{ count }} sale, {{ total }} in total.{% plural %}Yesterday: {{ count }} sales, {{ total }} in total.{% endblocktranslate %}
+{% endif %}
+{{ home }}
+
+{{ company }}{% endautoescape %}

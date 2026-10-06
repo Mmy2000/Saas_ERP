@@ -124,14 +124,14 @@ def print_document_pdf(request, doc_type, pk):
 
 def _pdf(request, doc, design):
     from .pdf import PdfUnavailable, pdf_response
-    from .render import document_pdf
+    from .render import document_filename, document_pdf
 
     try:
         content = document_pdf(request, doc, design, accent_key=_accent(request))
     except PdfUnavailable:
         return render(request, "printing/pdf_unavailable.html", status=503)
-    name = " ".join(part for part in (str(doc.title), doc.number) if part) or "document"
-    return pdf_response(content, f"{name}.pdf", inline=request.GET.get("inline") == "1")
+    return pdf_response(content, document_filename(doc),
+                        inline=request.GET.get("inline") == "1")
 
 
 def print_sales_invoice(request, invoice):

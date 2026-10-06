@@ -1,0 +1,32 @@
+{% load i18n ui %}{% get_current_language as LANG %}{% get_current_language_bidi as RTL %}<!doctype html>
+<html lang="{{ LANG }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:24px 12px;background:#f4f4f5;font-family:Segoe UI,Tahoma,Arial,sans-serif;color:#18181b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;">
+    <tr><td style="padding:22px 24px 6px;">
+      <p style="margin:0;font-size:13px;color:#71717a;">{{ company }} · {{ today }}</p>
+      <h1 style="margin:6px 0 0;font-size:19px;font-weight:600;">{% blocktranslate with name=name %}Good morning {{ name }}{% endblocktranslate %}</h1>
+    </td></tr>
+    {% if items %}
+    <tr><td style="padding:14px 24px 4px;">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#52525b;">{% translate "Needs attention today:" %}</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        {% for item in items %}<tr>
+          <td style="padding:9px 0;border-top:1px solid #f4f4f5;font-size:14px;"><a href="{{ item.url }}" style="color:#18181b;text-decoration:none;">{{ item.label }}</a></td>
+          <td style="padding:9px 0;border-top:1px solid #f4f4f5;font-size:14px;font-weight:600;text-align:{% if RTL %}left{% else %}right{% endif %};">{{ item.count }}</td>
+        </tr>{% endfor %}
+      </table>
+    </td></tr>
+    {% endif %}
+    {% if sales and sales.count %}
+    <tr><td style="padding:14px 24px 4px;">
+      <p style="margin:0;padding:12px 14px;background:#fafafa;border-radius:8px;font-size:14px;">{% blocktranslate count count=sales.count with total=sales.total|num:2 %}Yesterday: {{ count }} sale, {{ total }} in total.{% plural %}Yesterday: {{ count }} sales, {{ total }} in total.{% endblocktranslate %}</p>
+    </td></tr>
+    {% endif %}
+    <tr><td style="padding:18px 24px 24px;">
+      {% if home %}<a href="{{ home }}" style="display:inline-block;padding:10px 18px;background:#18181b;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">{% translate "Open the dashboard" %}</a>{% endif %}
+    </td></tr>
+  </table>
+  <p style="max-width:560px;margin:12px auto 0;font-size:11px;color:#a1a1aa;text-align:center;">{% translate "You get this e-mail because the owner added you to the daily reminders. Ask them to take you off the list." %}</p>
+</body>
+</html>

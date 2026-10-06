@@ -11,6 +11,9 @@ msgstr ""
 msgid "% of sales"
 msgstr "% من المبيعات"
 
+msgid "%(age)s ago"
+msgstr "منذ %(age)s"
+
 msgid "%(ago)s ago"
 msgstr "منذ %(ago)s"
 
@@ -180,6 +183,15 @@ msgstr "%(n)s مرفوض"
 msgid "%(n)s requests"
 msgstr "%(n)s طلب"
 
+msgid "%(n)s retrying"
+msgid_plural "%(n)s retrying"
+msgstr[0] "%(n)s تُعاد"
+msgstr[1] "واحدة تُعاد"
+msgstr[2] "اثنتان تُعادان"
+msgstr[3] "%(n)s تُعاد"
+msgstr[4] "%(n)s تُعاد"
+msgstr[5] "%(n)s تُعاد"
+
 msgid "%(n)s s of server time"
 msgstr "%(n)s ثانية من وقت الخادم"
 
@@ -191,6 +203,15 @@ msgstr[2] "عمليتا بيع"
 msgstr[3] "%(n)s عمليات بيع"
 msgstr[4] "%(n)s عملية بيع"
 msgstr[5] "%(n)s عملية بيع"
+
+msgid "%(n)s scheduled"
+msgid_plural "%(n)s scheduled"
+msgstr[0] "%(n)s مجدولة"
+msgstr[1] "واحدة مجدولة"
+msgstr[2] "اثنتان مجدولتان"
+msgstr[3] "%(n)s مجدولة"
+msgstr[4] "%(n)s مجدولة"
+msgstr[5] "%(n)s مجدولة"
 
 msgid "%(n)s server errors"
 msgstr "%(n)s خطأ في الخادم"
@@ -299,6 +320,13 @@ msgstr "المالك الجديد يحتاج كلمة مرور."
 msgid "A piece must weigh more than zero."
 msgstr "يجب أن يكون وزن القطعة أكبر من صفر."
 
+msgid ""
+"A private link to the PDF is added at the end. It works for 30 days, and you"
+" can stop it from Sent messages."
+msgstr ""
+"يُضاف في آخر الرسالة رابط خاص لملف PDF. يعمل لمدة 30 يومًا، ويمكنك إيقافه من"
+" «الرسائل المرسلة»."
+
 msgid "A reconciliation is already in progress."
 msgstr "توجد تسوية قيد التنفيذ بالفعل."
 
@@ -385,6 +413,9 @@ msgstr "الحسابات"
 
 msgid "Across every client"
 msgstr "على مستوى كل العملاء"
+
+msgid "Actions"
+msgstr "إجراءات"
 
 msgid "Activate"
 msgstr "تفعيل"
@@ -716,6 +747,9 @@ msgstr "لدى الورشة"
 msgid "At workshop"
 msgstr "لدى الورشة"
 
+msgid "Attempts"
+msgstr "المحاولات"
+
 msgid "Automatic"
 msgstr "تلقائي"
 
@@ -748,6 +782,15 @@ msgstr "اطلع لأعلى الصفحة"
 
 msgid "Background"
 msgstr "الخلفية"
+
+msgid "Background job cancelled"
+msgstr "إلغاء مهمة في الخلفية"
+
+msgid "Background job run again"
+msgstr "إعادة تشغيل مهمة في الخلفية"
+
+msgid "Background jobs"
+msgstr "المهام في الخلفية"
 
 msgid "Bag"
 msgstr "كيس"
@@ -1030,6 +1073,9 @@ msgstr "المشتري"
 msgid "Buying price"
 msgstr "سعر الشراء"
 
+msgid "By"
+msgstr "بواسطة"
+
 msgid "By category"
 msgstr "حسب الصنف"
 
@@ -1152,6 +1198,9 @@ msgstr "ملغاة"
 
 msgid "Cancelled %(number)s"
 msgstr "إلغاء %(number)s"
+
+msgid "Cancelled from the console."
+msgstr "أُلغيت من لوحة المنصة."
 
 msgid "Cancelled receipt of %(number)s"
 msgstr "إلغاء استلام %(number)s"
@@ -1632,6 +1681,9 @@ msgstr "النقاء"
 msgid "Classic"
 msgstr "كلاسيكي"
 
+msgid "Clean up old jobs"
+msgstr "تنظيف المهام القديمة"
+
 msgid "Clear"
 msgstr "مسح"
 
@@ -1836,6 +1888,9 @@ msgstr "عدد النسخ"
 
 msgid "Copies of each"
 msgstr "عدد النسخ لكل قطعة"
+
+msgid "Copy link"
+msgstr "نسخ الرابط"
 
 msgid "Corners"
 msgstr "الحواف"
@@ -2046,6 +2101,15 @@ msgstr "قطع العملاء المستلمة وأكياسها ومكانها �
 msgid "Cut"
 msgstr "القطع"
 
+msgid "Daily reminders"
+msgstr "التذكيرات اليومية"
+
+msgid "Daily reminders e-mail"
+msgstr "بريد التذكيرات اليومية"
+
+msgid "Daily reminders · %(company)s · %(date)s"
+msgstr "التذكيرات اليومية · %(company)s · %(date)s"
+
 msgid "Daily summary"
 msgstr "ملخص اليوم"
 
@@ -2100,6 +2164,21 @@ msgstr "إيقاف حسابات التجار"
 
 msgid "Deactivate workshops"
 msgstr "إيقاف الورش"
+
+msgid ""
+"Dear %(name)s,\n"
+"\n"
+"Please find attached your %(document)s.\n"
+"\n"
+"Thank you,\n"
+"%(company)s"
+msgstr ""
+"عزيزنا %(name)s،\n"
+"\n"
+"تجد مرفقًا %(document)s.\n"
+"\n"
+"شكرًا لك،\n"
+"%(company)s"
 
 msgid "Debit"
 msgstr "مدين"
@@ -2438,6 +2517,9 @@ msgstr "حذف نطاق"
 msgid "Domain removed."
 msgstr "تم حذف النطاق."
 
+msgid "Done"
+msgstr "تمّت"
+
 msgid "Dotted"
 msgstr "منقط"
 
@@ -2496,6 +2578,32 @@ msgstr "تكرار"
 
 msgid "Duplicate karat."
 msgstr "عيار مكرر."
+
+msgid "E-mail"
+msgstr "البريد الإلكتروني"
+
+msgid "E-mail address"
+msgstr "عنوان البريد الإلكتروني"
+
+msgid "E-mail and WhatsApp"
+msgstr "البريد الإلكتروني وواتساب"
+
+msgid "E-mail documents and statements, and share them on WhatsApp"
+msgstr "إرسال المستندات وكشوف الحساب بالبريد الإلكتروني ومشاركتها على واتساب"
+
+msgid ""
+"E-mails and reminders wait in the queue until one starts. Run it as a "
+"service next to the app:"
+msgstr ""
+"تنتظر الرسائل والتذكيرات في الطابور حتى يبدأ أحدها. شغّله كخدمة بجوار "
+"التطبيق:"
+
+msgid ""
+"E-mails to customers, the daily reminders and clean-ups, run by the worker "
+"(manage.py run_worker)."
+msgstr ""
+"رسائل العملاء والتذكيرات اليومية والتنظيف، يشغّلها العامل (manage.py "
+"run_worker)."
 
 msgid "e.g. 18, 21 or 24 for gold, 925 for silver."
 msgstr "مثال: 18 أو 21 أو 24 للذهب، و925 للفضة."
@@ -2676,6 +2784,9 @@ msgstr "أدخل نطاقًا مثل erp.example.com."
 msgid "Enter a number."
 msgstr "أدخل رقمًا."
 
+msgid "Enter a valid e-mail address."
+msgstr "أدخل عنوان بريد إلكتروني صحيحًا."
+
 msgid "Enter a valid email address."
 msgstr "أدخل بريدًا إلكترونيًا صحيحًا."
 
@@ -2787,6 +2898,15 @@ msgid "Every finished month is closed."
 msgstr "كل الشهور المنتهية مقفلة."
 
 msgid ""
+"Every morning at 7:30: cheques due, months not closed, repairs ready and the"
+" other reminders on the dashboard, with yesterday's sales. Each person only "
+"sees what their roles allow."
+msgstr ""
+"كل صباح الساعة 7:30: الشيكات المستحقة، والشهور غير المقفلة، والتصليحات "
+"الجاهزة، وباقي تذكيرات لوحة التحكم، مع مبيعات الأمس. لا يرى كل شخص إلا ما "
+"تسمح به أدواره."
+
+msgid ""
 "Every posted entry. Entries are never edited: mistakes are corrected with a "
 "reversal."
 msgstr ""
@@ -2860,6 +2980,15 @@ msgstr "المصروفات حسب البند"
 
 msgid "Extra details"
 msgstr "تفاصيل إضافية"
+
+msgid "Failed"
+msgstr "فشلت"
+
+msgid "failed in the last 24 hours"
+msgstr "فشلت خلال آخر 24 ساعة"
+
+msgid "Failed jobs and jobs being retried show here."
+msgstr "تظهر هنا المهام الفاشلة والمهام التي تُعاد محاولتها."
 
 msgid "Family"
 msgstr "النوع"
@@ -3180,6 +3309,12 @@ msgid ""
 msgstr ""
 "الذهب: الموجب هو ذهبك لدى الورشة. النقدية: السالب هو مصنعية مستحقة لهم."
 
+msgid "gone"
+msgstr "متوقف"
+
+msgid "Good morning %(name)s"
+msgstr "صباح الخير يا %(name)s"
+
 msgid "Goods"
 msgstr "البضاعة"
 
@@ -3260,6 +3395,27 @@ msgstr "أثقل الشاشات"
 msgid "Height"
 msgstr "الارتفاع"
 
+msgid "Hello %(name)s, here is your %(document)s from %(company)s."
+msgstr "مرحبًا %(name)s، هذه %(document)s من %(company)s."
+
+msgid ""
+"Hello,\n"
+"\n"
+"Please find attached your %(document)s.\n"
+"\n"
+"Thank you,\n"
+"%(company)s"
+msgstr ""
+"مرحبًا،\n"
+"\n"
+"تجد مرفقًا %(document)s.\n"
+"\n"
+"شكرًا لك،\n"
+"%(company)s"
+
+msgid "Here is your %(document)s from %(company)s."
+msgstr "هذه %(document)s من %(company)s."
+
 msgid "Hidden"
 msgstr "مخفية"
 
@@ -3333,6 +3489,9 @@ msgstr "متوقف منذ شهر"
 
 msgid "In"
 msgstr "وارد"
+
+msgid "in %(when)s"
+msgstr "بعد %(when)s"
 
 msgid "In every cash box"
 msgstr "في كل الخزائن"
@@ -3414,6 +3573,13 @@ msgstr "المخزون"
 msgid "Invoice and receipt designs"
 msgstr "تصميمات الفواتير والإيصالات"
 
+msgid ""
+"Invoices and statements e-mailed to customers or shared on WhatsApp, and the"
+" daily reminders."
+msgstr ""
+"الفواتير وكشوف الحساب المرسلة للعملاء بالبريد أو على واتساب، والتذكيرات "
+"اليومية."
+
 msgid "Issue a cheque"
 msgstr "إصدار شيك"
 
@@ -3437,6 +3603,9 @@ msgid ""
 "document's own."
 msgstr "يبدأ من تصميم %(name)s، وبعد الحفظ يصبح تصميماً خاصاً بهذا المستند."
 
+msgid "It will be sent in a moment."
+msgstr "ستُرسل خلال لحظات."
+
 msgid "Item"
 msgstr "الصنف"
 
@@ -3454,6 +3623,15 @@ msgstr "تصميم خاص به"
 
 msgid "Job"
 msgstr "الوظيفة"
+
+msgid "Job cancelled."
+msgstr "أُلغيت المهمة."
+
+msgid "Jobs"
+msgstr "المهام"
+
+msgid "Jobs appear here as the app asks for them."
+msgstr "تظهر المهام هنا عندما يطلبها التطبيق."
 
 msgid "Jordan"
 msgstr "الأردن"
@@ -3539,6 +3717,9 @@ msgstr "آخر نشاط"
 msgid "Last 24 hours"
 msgstr "آخر 24 ساعة"
 
+msgid "last 24 hours"
+msgstr "آخر 24 ساعة"
+
 msgid "Last 30 days"
 msgstr "آخر 30 يومًا"
 
@@ -3559,6 +3740,9 @@ msgstr "آخر ساعة"
 
 msgid "Last scans"
 msgstr "آخر ما تم مسحه"
+
+msgid "Last seen"
+msgstr "آخر ظهور"
 
 msgid "Last sign-in"
 msgstr "آخر دخول"
@@ -3639,6 +3823,15 @@ msgstr "خطوط بين الصفوف"
 
 msgid "Link"
 msgstr "الرابط"
+
+msgid "Link copied."
+msgstr "نُسخ الرابط."
+
+msgid "Link shared"
+msgstr "تمت مشاركة الرابط"
+
+msgid "Link stopped"
+msgstr "أُوقف الرابط"
 
 msgid "List (narrow paper)"
 msgstr "قائمة (للورق الضيق)"
@@ -3870,6 +4063,12 @@ msgstr "أقصى خصم على المصنعية (ذهب)"
 msgid "Memory"
 msgstr "الذاكرة"
 
+msgid "Message"
+msgstr "الرسالة"
+
+msgid "Messages to customers"
+msgstr "رسائل العملاء"
+
 msgid "Metal"
 msgstr "المعدن"
 
@@ -4061,6 +4260,9 @@ msgstr "يحتاج متابعة"
 
 msgid "Needs attention"
 msgstr "يحتاج متابعة"
+
+msgid "Needs attention today:"
+msgstr "يحتاج انتباهك اليوم:"
 
 msgid ""
 "Negative: money you hold for the customer until the reservation is completed"
@@ -4255,6 +4457,9 @@ msgstr "لا توجد أصناف ألماس بعد"
 msgid "No diamonds here"
 msgstr "لا يوجد ألماس هنا"
 
+msgid "No e-mail address"
+msgstr "لا يوجد بريد إلكتروني"
+
 msgid "No employees yet"
 msgstr "لا يوجد موظفون بعد"
 
@@ -4281,6 +4486,9 @@ msgstr "لا يوجد سجل بعد"
 
 msgid "No item categories yet"
 msgstr "لا توجد مجموعات أصناف بعد"
+
+msgid "No jobs"
+msgstr "لا توجد مهام"
 
 msgid "No ledger commodity for %(metal)s."
 msgstr "لا توجد وحدة محاسبية لـ %(metal)s."
@@ -4329,6 +4537,9 @@ msgstr "لا توجد قطع بعد"
 
 msgid "No price set"
 msgstr "بدون سعر"
+
+msgid "No problems"
+msgstr "لا توجد مشكلات"
 
 msgid "No production orders here"
 msgstr "لا توجد أوامر إنتاج هنا"
@@ -4387,6 +4598,9 @@ msgstr "لا توجد مبيعات جملة بعد"
 msgid "No work orders here"
 msgstr "لا توجد أوامر تشغيل هنا"
 
+msgid "No worker is running"
+msgstr "لا يوجد عامل يعمل"
+
 msgid "No workshops yet"
 msgstr "لا توجد ورش بعد"
 
@@ -4411,6 +4625,9 @@ msgstr "لا مستحقات لأحد هذا الشهر."
 
 msgid "None"
 msgstr "لا يوجد"
+
+msgid "none running"
+msgstr "لا يعمل أي منها"
 
 msgid "None yet"
 msgstr "لا يوجد بعد"
@@ -4448,6 +4665,9 @@ msgstr "غير متاحة في باقتك"
 msgid "Not open to users yet."
 msgstr "غير متاح للمستخدمين بعد."
 
+msgid "Not opened yet"
+msgstr "لم يُفتح بعد"
+
 msgid "Not paid in a payroll yet"
 msgstr "لم يُصرف في مسير بعد"
 
@@ -4459,6 +4679,9 @@ msgstr "غير ممكن لشيك حالته: %(state)s."
 
 msgid "Not published yet"
 msgstr "لم يُنشر بعد"
+
+msgid "Not sent"
+msgstr "لم تُرسل"
 
 msgid "Not set"
 msgstr "غير محدد"
@@ -4505,11 +4728,17 @@ msgstr "لا توجد سجلات بعد"
 msgid "Nothing returned yet"
 msgstr "لا توجد مرتجعات بعد"
 
+msgid "Nothing sent yet"
+msgstr "لم يُرسل شيء بعد"
+
 msgid "Nothing to show."
 msgstr "لا يوجد ما يُعرض."
 
 msgid "Nothing unexpected."
 msgstr "لا توجد قطع غير متوقعة."
+
+msgid "nothing waiting"
+msgstr "لا شيء في الانتظار"
 
 msgid "Nothing was posted in this year."
 msgstr "لم يُرحّل شيء في هذه السنة."
@@ -4537,6 +4766,9 @@ msgstr "معروضة"
 
 msgid "Offered for new clients"
 msgstr "معروضة للعملاء الجدد"
+
+msgid "oldest waiting %(age)s"
+msgstr "أقدمها ينتظر منذ %(age)s"
 
 msgid "Oman"
 msgstr "عُمان"
@@ -4614,6 +4846,18 @@ msgstr "التسجيل على الحساب يكون لعميل أو مورد ف�
 msgid "Only a registered customer can pay later."
 msgstr "التأجيل متاح للعميل المسجّل فقط."
 
+msgid "Only a shared link can be stopped."
+msgstr "يمكن إيقاف الرابط المُشارك فقط."
+
+msgid "Only a waiting job can be cancelled."
+msgstr "يمكن إلغاء المهمة المنتظرة فقط."
+
+msgid "Only a waiting, failed or cancelled job can be run again."
+msgstr "يمكن إعادة تشغيل المهمة المنتظرة أو الفاشلة أو الملغاة فقط."
+
+msgid "Only an e-mail that was not sent can be sent again."
+msgstr "يمكن إعادة إرسال البريد الذي لم يُرسل فقط."
+
 msgid "Only cheques received are deposited."
 msgstr "تُودَع الشيكات الواردة فقط."
 
@@ -4677,11 +4921,26 @@ msgstr "فتحه"
 msgid "Open menu"
 msgstr "فتح القائمة"
 
+msgid "Open the dashboard"
+msgstr "افتح لوحة التحكم"
+
 msgid "Open the designer"
 msgstr "فتح المصمم"
 
 msgid "Open the workspace"
 msgstr "فتح مساحة العمل"
+
+msgid "Open WhatsApp"
+msgstr "افتح واتساب"
+
+msgid "Opened once"
+msgid_plural "Opened %(n)s times"
+msgstr[0] "لم يُفتح"
+msgstr[1] "فُتح مرة واحدة"
+msgstr[2] "فُتح مرتين"
+msgstr[3] "فُتح %(n)s مرات"
+msgstr[4] "فُتح %(n)s مرة"
+msgstr[5] "فُتح %(n)s مرة"
 
 msgid "Opening"
 msgstr "الافتتاحي"
@@ -5314,6 +5573,9 @@ msgstr "الطابعة"
 msgid "Printing"
 msgstr "الطباعة"
 
+msgid "Problems"
+msgstr "المشكلات"
+
 msgid "Process"
 msgstr "العملية"
 
@@ -5427,6 +5689,9 @@ msgstr "نسبة نقاء كل عيار. تعتمد عليها كل تحويلا
 
 msgid "Qatar"
 msgstr "قطر"
+
+msgid "Queued"
+msgstr "أُضيفت"
 
 msgid "Quiet"
 msgstr "هادئ"
@@ -5801,6 +6066,9 @@ msgstr "مبيعات التجزئة"
 msgid "Retained earnings"
 msgstr "الأرباح المحتجزة"
 
+msgid "Retrying"
+msgstr "تُعاد المحاولة"
+
 msgid "Return %(number)s of sale %(sale)s"
 msgstr "مرتجع %(number)s من البيع %(sale)s"
 
@@ -5909,8 +6177,17 @@ msgstr "ياقوت"
 msgid "Rule"
 msgstr "القاعدة"
 
+msgid "Run again"
+msgstr "شغّلها مجددًا"
+
 msgid "Run every branch of your jewelry business from one place."
 msgstr "أدِر كل فروع محلات المجوهرات من مكان واحد."
+
+msgid "running"
+msgstr "يعمل"
+
+msgid "Running"
+msgstr "قيد التشغيل"
 
 msgid "Running for"
 msgstr "يعمل منذ"
@@ -6160,6 +6437,9 @@ msgstr "عرض القيود"
 msgid "See the history of changes (who changed what, and when)"
 msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
 
+msgid "See the messages sent to customers"
+msgstr "عرض الرسائل المرسلة للعملاء"
+
 msgid "Select all"
 msgstr "تحديد الكل"
 
@@ -6214,8 +6494,14 @@ msgstr "شبه عريض"
 msgid "Send"
 msgstr "إرسال"
 
+msgid "Send again"
+msgstr "أرسل مجددًا"
+
 msgid "Send an Idempotency-Key header with this request."
 msgstr "أرسل ترويسة Idempotency-Key مع هذا الطلب."
+
+msgid "Send e-mail"
+msgstr "أرسل البريد"
 
 msgid "Send gold"
 msgstr "إرسال ذهب"
@@ -6238,6 +6524,13 @@ msgstr "إرسال بضاعة"
 msgid "Send goods to another branch"
 msgstr "إرسال بضاعة إلى فرع آخر"
 
+msgid ""
+"Send invoices and statements as PDFs by e-mail or a WhatsApp link, and the "
+"daily reminders e-mail."
+msgstr ""
+"إرسال الفواتير وكشوف الحساب كملفات PDF بالبريد الإلكتروني أو برابط على "
+"واتساب، وبريد التذكيرات اليومية."
+
 msgid "Send pieces and bulk weight back to suppliers."
 msgstr "إرجاع القطع والأوزان إلى الموردين."
 
@@ -6246,6 +6539,12 @@ msgstr "إرسال التصليحات للورش وتجهيزها"
 
 msgid "Send to a workshop"
 msgstr "إرسال لورشة"
+
+msgid "Sent"
+msgstr "أُرسلت"
+
+msgid "Sent messages"
+msgstr "الرسائل المرسلة"
 
 msgid "Sent to branch"
 msgstr "تحويل لفرع"
@@ -6497,6 +6796,9 @@ msgstr "ابدأ الإنتاج لتصنيع مشغولات جديدة من ذه
 msgid "Start with the bank statement"
 msgstr "ابدأ بكشف الحساب البنكي"
 
+msgid "Started"
+msgstr "بدأ"
+
 msgid "State"
 msgstr "الحالة"
 
@@ -6581,6 +6883,9 @@ msgstr "تم تركيب الأحجار."
 
 msgid "Stones' cost"
 msgstr "تكلفة الأحجار"
+
+msgid "Stop the link"
+msgstr "أوقف الرابط"
 
 msgid "Stripe colour"
 msgstr "لون التظليل"
@@ -6804,6 +7109,9 @@ msgstr "العربون"
 msgid "The discount must be between 0 and 100%."
 msgstr "يجب أن يكون الخصم بين 0 و100%."
 
+msgid "The e-mail will be sent in a moment. See Settings → Sent messages."
+msgstr "سيُرسل البريد خلال لحظات. راجع الإعدادات ← الرسائل المرسلة."
+
 msgid "The earlier design is back."
 msgstr "تمت استعادة التصميم السابق."
 
@@ -6835,6 +7143,9 @@ msgstr "لا يمكن إيقاف الفرع الرئيسي."
 msgid "The image must be 2 MB or smaller."
 msgstr "يجب ألا يزيد حجم الصورة عن 2 ميجابايت."
 
+msgid "The job will run again in a moment."
+msgstr "ستعمل المهمة مجددًا خلال لحظات."
+
 msgid "The karat this supplier's gold balance is shown in."
 msgstr "العيار الذي يُعرض به رصيد الذهب لهذا المورد."
 
@@ -6849,6 +7160,9 @@ msgstr "لا يمكن حذف آخر باقة."
 
 msgid "The last statement reconciled was on %(day)s."
 msgstr "آخر كشف تمت تسويته بتاريخ %(day)s."
+
+msgid "The link no longer works."
+msgstr "لم يعد الرابط يعمل."
 
 msgid "The list shows the users of this workspace."
 msgstr "القائمة تعرض مستخدمي مساحة العمل."
@@ -6897,6 +7211,9 @@ msgstr "لم يُصرف مسير رواتب هذا الشهر"
 
 msgid "The PDF could not be made right now"
 msgstr "تعذّر إنشاء ملف PDF الآن"
+
+msgid "The PDF is attached, in your document design."
+msgstr "يُرفق ملف PDF بتصميم مستنداتك."
 
 msgid "The period %(period)s is closed."
 msgstr "الفترة %(period)s مقفلة."
@@ -7393,6 +7710,9 @@ msgstr "عملة غير معروفة."
 msgid "Unknown customer."
 msgstr "عميل غير معروف."
 
+msgid "Unknown document type."
+msgstr "نوع مستند غير معروف."
+
 msgid "Unknown document type: %(type)s"
 msgstr "نوع مستند غير معروف: %(type)s"
 
@@ -7422,6 +7742,9 @@ msgstr "صلاحيات غير معروفة."
 
 msgid "Unknown role."
 msgstr "دور غير معروف."
+
+msgid "Unknown statement."
+msgstr "كشف حساب غير معروف."
 
 msgid "Unknown status."
 msgstr "حالة غير معروفة."
@@ -7466,6 +7789,13 @@ msgid "Use Print and choose “Save as PDF” instead, or try again in a minute.
 msgstr ""
 "استخدم «طباعة» واختر «حفظ بتنسيق PDF» بدلاً من ذلك، أو حاول مرة أخرى بعد "
 "دقيقة."
+
+msgid ""
+"Use Send on an invoice, receipt or statement to e-mail it or share it on "
+"WhatsApp."
+msgstr ""
+"استخدم «إرسال» في الفاتورة أو الإيصال أو كشف الحساب لإرساله بالبريد أو "
+"مشاركته على واتساب."
 
 msgid "Use the plan"
 msgstr "اتبع الباقة"
@@ -7606,6 +7936,12 @@ msgstr "مُطّلع"
 msgid "Violet"
 msgstr "بنفسجي"
 
+msgid "Waiting"
+msgstr "في الانتظار"
+
+msgid "Waiting to send"
+msgstr "في انتظار الإرسال"
+
 msgid "Walk-in"
 msgstr "زبون"
 
@@ -7718,6 +8054,15 @@ msgstr ""
 msgid "WhatsApp"
 msgstr "واتساب"
 
+msgid "WhatsApp is opening with the message and the link."
+msgstr "يُفتح واتساب بالرسالة والرابط."
+
+msgid "WhatsApp number"
+msgstr "رقم واتساب"
+
+msgid "When"
+msgstr "متى"
+
 msgid ""
 "When off, the layout and options below are used. A design with an error "
 "falls back to them when printing."
@@ -7786,6 +8131,9 @@ msgstr "مع"
 msgid "With a certificate"
 msgstr "بشهادة"
 
+msgid "With the country code. Leave it empty to choose the chat in WhatsApp."
+msgstr "مع كود الدولة. اتركه فارغًا لتختار المحادثة في واتساب."
+
 msgid "Work"
 msgstr "العمل"
 
@@ -7797,6 +8145,12 @@ msgstr "أوامر التشغيل"
 
 msgid "Work orders at workshops"
 msgstr "أوامر تشغيل لدى الورش"
+
+msgid "Worker"
+msgstr "العامل"
+
+msgid "Workers"
+msgstr "العمّال"
 
 msgid "Workshop"
 msgstr "ورشة"
@@ -7846,6 +8200,15 @@ msgstr "سنوياً"
 msgid "Yes"
 msgstr "نعم"
 
+msgid "Yesterday: %(count)s sale, %(total)s in total."
+msgid_plural "Yesterday: %(count)s sales, %(total)s in total."
+msgstr[0] "أمس: لا مبيعات."
+msgstr[1] "أمس: عملية بيع واحدة، الإجمالي %(total)s."
+msgstr[2] "أمس: عمليتا بيع، الإجمالي %(total)s."
+msgstr[3] "أمس: %(count)s عمليات بيع، الإجمالي %(total)s."
+msgstr[4] "أمس: %(count)s عملية بيع، الإجمالي %(total)s."
+msgstr[5] "أمس: %(count)s عملية بيع، الإجمالي %(total)s."
+
 msgid "you"
 msgstr "أنت"
 
@@ -7863,6 +8226,16 @@ msgstr "ليست لديك صلاحية لتنفيذ هذا الإجراء."
 
 msgid "You don't have access to this page"
 msgstr "ليست لديك صلاحية لفتح هذه الصفحة"
+
+msgid "You don't have permission to do that."
+msgstr "ليست لديك صلاحية لذلك."
+
+msgid ""
+"You get this e-mail because the owner added you to the daily reminders. Ask "
+"them to take you off the list."
+msgstr ""
+"تصلك هذه الرسالة لأن المالك أضافك إلى التذكيرات اليومية. اطلب منه إزالتك من "
+"القائمة."
 
 msgid "You may not change the scrap gold price."
 msgstr "لا يُسمح لك بتعديل سعر الكسر."

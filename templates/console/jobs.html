@@ -1,0 +1,118 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Jobs" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Background jobs" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "E-mails to customers, the daily reminders and clean-ups, run by the worker (manage.py run_worker)." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not alive %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+  {% icon "triangle-alert" "size-5 shrink-0" %}
+  <div>
+    <p class="font-semibold">{% translate "No worker is running" %}</p>
+    <p class="mt-0.5">{% translate "E-mails and reminders wait in the queue until one starts. Run it as a service next to the app:" %} <code class="num rounded bg-white/70 px-1.5 py-0.5 text-xs" dir="ltr">python manage.py run_worker</code></p>
+  </div>
+</div>
+{% endif %}
+
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <div class="card card-body">
+    <p class="inline-flex items-center gap-2 text-sm text-slate-500"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "cpu" "size-4" %}</span>{% translate "Workers" %}</p>
+    <p class="mt-3 text-3xl font-semibold {% if alive %}text-slate-900{% else %}text-amber-700{% endif %}"><span class="num">{{ alive|length }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% if alive %}{% translate "running" %}{% else %}{% translate "none running" %}{% endif %}</p>
+  </div>
+  <div class="card card-body">
+    <p class="inline-flex items-center gap-2 text-sm text-slate-500"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "inbox" "size-4" %}</span>{% translate "Waiting" %}</p>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ counts.due|add:counts.running }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% if oldest %}{% blocktranslate trimmed with age=oldest|timesince:now %}oldest waiting {{ age }}{% endblocktranslate %}{% else %}{% translate "nothing waiting" %}{% endif %}{% if counts.later %} · {% blocktranslate trimmed count n=counts.later %}{{ n }} scheduled{% plural %}{{ n }} scheduled{% endblocktranslate %}{% endif %}</p>
+  </div>
+  <div class="card card-body">
+    <p class="inline-flex items-center gap-2 text-sm text-slate-500"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "circle-check" "size-4" %}</span>{% translate "Done" %}</p>
+    <p class="mt-3 text-3xl font-semibold text-slate-900"><span class="num">{{ counts.done }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% translate "last 24 hours" %}</p>
+  </div>
+  <div class="card card-body {% if counts.failed or counts.retrying %}border-red-200 bg-red-50/40{% endif %}">
+    <p class="inline-flex items-center gap-2 text-sm text-slate-500"><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "circle-alert" "size-4" %}</span>{% translate "Problems" %}</p>
+    <p class="mt-3 text-3xl font-semibold {% if counts.failed or counts.retrying %}text-red-700{% else %}text-slate-900{% endif %}"><span class="num">{{ counts.failed }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% translate "failed in the last 24 hours" %}{% if counts.retrying %} · {% blocktranslate trimmed count n=counts.retrying %}{{ n }} retrying{% plural %}{{ n }} retrying{% endblocktranslate %}{% endif %}</p>
+  </div>
+</div>
+
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-3">
+    <a href="?view=problems" class="tab{% if view == 'problems' %} tab-active{% endif %}">{% translate "Problems" %}</a>
+    <a href="?view=waiting" class="tab{% if view == 'waiting' %} tab-active{% endif %}">{% translate "Waiting" %}</a>
+    <a href="?view=done" class="tab{% if view == 'done' %} tab-active{% endif %}">{% translate "Done" %}</a>
+    <a href="?view=all" class="tab{% if view == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
+  </div>
+  {% if rows %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Job" %}</th><th>{% translate "Client" %}</th><th>{% translate "Status" %}</th><th class="text-end">{% translate "Attempts" %}</th><th>{% translate "Queued" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for row in rows %}{% with job=row.job %}
+        <tr>
+          <td class="min-w-[12rem]"><div class="font-medium text-slate-900">{{ row.label }}</div><div class="num text-xs text-slate-400">{{ job.name }} #{{ job.pk }}</div></td>
+          <td>{% if job.tenant %}<a class="text-brand-700 hover:underline" href="{% url 'console-tenant' job.tenant_id %}">{{ job.tenant.name }}</a>{% else %}<span class="text-slate-400">{% translate "Platform" %}</span>{% endif %}</td>
+          <td>
+            {% if job.status == "done" %}<span class="badge badge-success">{% translate "Done" %}</span>
+            {% elif job.status == "failed" %}<span class="badge badge-danger">{% translate "Failed" %}</span>
+            {% elif job.status == "running" %}<span class="badge badge-brand">{% translate "Running" %}</span>
+            {% elif job.status == "cancelled" %}<span class="badge">{% translate "Cancelled" %}</span>
+            {% elif job.attempts %}<span class="badge badge-warning">{% translate "Retrying" %}</span>
+            {% else %}<span class="badge">{% translate "Waiting" %}</span>{% endif %}
+            {% if job.status == "queued" and job.run_at > now %}<div class="mt-1 text-xs text-slate-500">{% blocktranslate trimmed with when=job.run_at|timeuntil:now %}in {{ when }}{% endblocktranslate %}</div>{% endif %}
+            {% if job.last_error and job.status != "done" %}<div class="mt-1 max-w-md break-words text-xs text-red-600" title="{{ job.last_error }}">{{ job.last_error|truncatechars:160 }}</div>{% endif %}
+          </td>
+          <td class="text-end"><span class="num">{{ job.attempts }} / {{ job.max_attempts }}</span></td>
+          <td class="whitespace-nowrap"><span class="num text-sm">{{ job.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td class="whitespace-nowrap text-end">
+            {% if job.status == "failed" or job.status == "cancelled" or job.status == "queued" and job.attempts %}
+            <form method="post" action="{% url 'console-job-retry' job.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-secondary text-xs">{% icon "repeat" "size-3.5" %}{% translate "Run again" %}</button></form>
+            {% endif %}
+            {% if job.status == "queued" %}
+            <form method="post" action="{% url 'console-job-cancel' job.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-ghost text-xs text-red-700">{% icon "x" "size-3.5" %}{% translate "Cancel" %}</button></form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-3 text-sm">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?view={{ view }}&amp;page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-secondary" href="?view={{ view }}&amp;page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+    {% if view == "problems" %}{% translate "No problems" as empty_title %}{% translate "Failed jobs and jobs being retried show here." as empty_text %}{% else %}{% translate "No jobs" as empty_title %}{% translate "Jobs appear here as the app asks for them." as empty_text %}{% endif %}
+    {% include "components/empty_state.html" with icon="circle-check" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+
+{% if workers %}
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Workers" %}</h2></div>
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Worker" %}</th><th>{% translate "Started" %}</th><th>{% translate "Last seen" %}</th><th class="text-end">{% translate "Done" %}</th><th class="text-end">{% translate "Failed" %}</th></tr></thead>
+      <tbody>
+      {% for worker in workers %}
+        <tr>
+          <td><span class="num">{{ worker.name }}</span> {% if worker in alive %}<span class="badge badge-success ms-1">{% translate "running" %}</span>{% else %}<span class="badge ms-1">{% translate "gone" %}</span>{% endif %}</td>
+          <td><span class="num text-sm">{{ worker.started_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td class="text-sm text-slate-600">{% blocktranslate trimmed with age=worker.seen_at|timesince:now %}{{ age }} ago{% endblocktranslate %}</td>
+          <td class="text-end"><span class="num">{{ worker.jobs_done }}</span></td>
+          <td class="text-end"><span class="num">{{ worker.jobs_failed }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

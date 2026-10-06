@@ -146,7 +146,8 @@ def document_html(request, doc: Doc, design: DocumentDesign, *, accent_key: str,
         **context, "custom_body": body, "custom_error": error,
         "toolbar": toolbar and not for_pdf, "for_pdf": for_pdf,
         "builder_body": builder_body, "designer": designer and not for_pdf,
-        "auto_print": request.GET.get("print") == "1" and not for_pdf,
+        "auto_print": (request is not None and request.GET.get("print") == "1"
+                       and not for_pdf),
     }, request=request)
 
 
@@ -158,6 +159,23 @@ def document_pdf(request, doc: Doc, design: DocumentDesign, *, accent_key: str) 
     _inline_logo(doc)
     html = document_html(request, doc, design, accent_key=accent_key, for_pdf=True)
     return pdf.html_to_pdf(html, pdf.Paper(roll=True) if paper == Paper.ROLL80 else pdf.A4)
+
+
+def record_pdf(doc_type: str, record) -> tuple[bytes, str]:
+    """(PDF, file name) of one record in the client's design, with no request (background
+    jobs, shared links). Costs are never shown: these go to customers."""
+    from apps.org.models import TenantProfile
+
+    design = design_for(doc_type)
+    doc = TYPES[doc_type].builder(record, design, {"can_cost": False})
+    profile = TenantProfile.objects.values_list("accent", flat=True).first() or ""
+    content = document_pdf(None, doc, design, accent_key=profile)
+    return content, document_filename(doc)
+
+
+def document_filename(doc: Doc) -> str:
+    name = " ".join(part for part in (str(doc.title), doc.number) if part) or "document"
+    return f"{name}.pdf"
 
 
 def _inline_logo(doc: Doc) -> None:

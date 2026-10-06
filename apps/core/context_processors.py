@@ -118,6 +118,7 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Users"), "users", "users", "admin.users.view", ("user-new", "user-edit")),
         NavItem(_("Roles"), "roles", "shield-check", "admin.users.view", ("role-new", "role-edit")),
         NavItem(_("Activity"), "activity", "history", "admin.audit.history"),
+        NavItem(_("Sent messages"), "messages", "send", "messaging.view"),
         NavItem(_("Label templates"), "label-templates", "printer", "printing.templates.manage",
                 ("label-template-new", "label-template-edit")),
     ]),

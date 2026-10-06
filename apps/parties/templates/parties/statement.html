@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
   <a href="{{ edit_url }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ party.name }}</a>
-  <div class="flex gap-2"><a class="btn btn-secondary" href="?from={{ date_from|date:'Y-m-d' }}&amp;to={{ date_to|date:'Y-m-d' }}&amp;format=pdf" title="{% translate 'Download as a PDF file' %}" data-pdf-link>{% icon "file-down" "size-4" %}PDF</a><button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button></div>
+  <div class="flex gap-2"><a class="btn btn-secondary" href="?from={{ date_from|date:'Y-m-d' }}&amp;to={{ date_to|date:'Y-m-d' }}&amp;format=pdf" title="{% translate 'Download as a PDF file' %}" data-pdf-link>{% icon "file-down" "size-4" %}PDF</a>{% include "messaging/_send.html" with doc_type="statement" pk=party.pk %}<button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button></div>
 </div>
 {% endblock %}
 {% block content %}

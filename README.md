@@ -232,6 +232,43 @@ python manage.py monitor_server --once     # or one sample a minute from cron / 
 Samples older than `MONITOR_RETENTION_DAYS` (7) are deleted automatically. Needs `psutil`
 (in `requirements/base.txt`).
 
+### Background jobs, e-mail and WhatsApp
+
+`apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is
+a row written in the same transaction as the work that asks for it (`enqueue("messaging.send_email",
+message_id=…)`), so a rolled-back sale never sends its e-mail (the outbox pattern). Payloads hold
+ids only. Tasks and daily schedules are declared in each app's `jobs.py` (`@task`, `daily(at=…)`).
+Run the worker as a service next to the app; more than one may run (rows are claimed with
+`FOR UPDATE SKIP LOCKED`):
+
+```
+python manage.py run_worker          # until stopped (systemd / supervisor / NSSM)
+python manage.py run_worker --once   # or: queue the schedules, run what is due, stop (cron)
+```
+
+A client's job runs in that client's `tenant_context` (RLS applies), language and time zone. A
+failure is retried after 30 s, 2 min, 8 min… up to the task's `max_attempts`; a job left running
+by a dead worker goes back in the queue after 15 minutes; finished jobs are deleted after 14 days
+(failed ones after 60). Daily schedules run at the client's local time (`TenantProfile.timezone`),
+once per local day even with several workers. Console → **Jobs** shows whether a worker is alive,
+what is waiting, what failed and why, with Run again / Cancel.
+
+**Sending to customers** (`apps/messaging`, feature "E-mail and WhatsApp", permission
+`messaging.send`): every document page and party statement has a **Send** button.
+- *E-mail*: the PDF in the client's design is attached by the worker. Mail goes out from
+  `DEFAULT_FROM_EMAIL` with the shop's name, reply-to the person who sent it. Configure
+  `EMAIL_URL` (e.g. `smtp+tls://user:password@smtp.example.com:587`); in development mail is
+  written to `var/mail/` instead.
+- *WhatsApp*: no API account needed. The shop's own WhatsApp opens (`wa.me`) with the message and
+  a private link to the PDF (`/shared/<signed token>/`): no login, works for 30 days, counts how
+  often it was opened, and can be stopped from **Settings → Sent messages**.
+- **Sent messages** lists everything sent, its status (waiting, sent, not sent with the reason,
+  link shared/opened), with Send again, Copy link and Stop the link.
+- **Daily reminders e-mail**: at 07:30 local time, each person the owner ticks on Sent messages
+  gets the dashboard's reminders (cheques due, months not closed, repairs ready…) and yesterday's
+  sales, within what their own roles let them see; nothing is sent on a day with nothing to say.
+  Links use `SITE_SCHEME` and `SITE_PORT` with the client's primary domain.
+
 ## Frontend assets
 
 Tailwind CSS v4 through its CLI (Node is needed only to rebuild; the built CSS is committed):
@@ -324,7 +361,8 @@ Tests connect as `app_owner`, never as a superuser (superusers bypass RLS, which
 These are Phase 2 spikes or later phases in the plan:
 
 - RLS on the global `iam_user` table, and wiring the `app_platform` role into a DB alias.
-- Celery `TenantTask`, the outbox, the tenant-prefixed cache wrapper.
+- The tenant-prefixed cache wrapper; WhatsApp Business API (messages sent by the platform
+  itself), SMS, scheduled report e-mails.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
 - Sending PDFs by e-mail or WhatsApp (needs background jobs), QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it),
   stones/diamond detail on pieces,

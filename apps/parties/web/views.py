@@ -160,13 +160,9 @@ def supplier_edit(request, pk):
     return _form(request, PartyRoleType.SUPPLIER, pk)
 
 
-def _statement(request, role, pk):
+def statement_data(role, party, date_from, date_to) -> dict:
+    """A party's statement: its main account's sections and any extra ones (deposits…)."""
     config = ROLES[role]
-    party = parties_with_role(role).filter(pk=pk).first()
-    if party is None:
-        raise Http404
-    date_from = _parse_date(request.GET.get("from"))
-    date_to = _parse_date(request.GET.get("to"))
     account = Account.objects.filter(role=config["account_role"]).first()
     sections = party_statement(party, account, date_from, date_to) if account else []
     extras = []
@@ -176,19 +172,39 @@ def _statement(request, role, pk):
                           if extra_account else [])
         if extra_sections:
             extras.append({**extra, "sections": extra_sections})
+    return {"role": role, "config": config, "party": party, "sections": sections,
+            "extras": extras, "date_from": date_from, "date_to": date_to}
+
+
+def statement_sheet(role, party, date_from, date_to) -> dict:
+    """What apps.printing.pdf needs to make the statement's PDF (also from a background job)."""
+    data = statement_data(role, party, date_from, date_to)
+    return {
+        "template": "printing/statement_sheet.html",
+        "context": {"who_name": party.name, "who_line": f"{data['config']['label']} · {party.code}",
+                    "sections": data["sections"], "extras": data["extras"],
+                    "hint": data["config"]["sign_hint"], "date_from": date_from,
+                    "date_to": date_to},
+        "title": _("Statement of account"), "filename": _statement_filename(party.name, date_to),
+    }
+
+
+def _statement(request, role, pk):
+    party = parties_with_role(role).filter(pk=pk).first()
+    if party is None:
+        raise Http404
+    date_from = _parse_date(request.GET.get("from"))
+    date_to = _parse_date(request.GET.get("to"))
     if request.GET.get("format") == "pdf":
         from apps.printing.pdf import pdf_page
 
-        return pdf_page(request, "printing/statement_sheet.html", {
-            "who_name": party.name, "who_line": f"{config['label']} · {party.code}",
-            "sections": sections, "extras": extras, "hint": config["sign_hint"],
-            "date_from": date_from, "date_to": date_to,
-        }, title=_("Statement of account"), filename=_statement_filename(party.name, date_to))
+        sheet = statement_sheet(role, party, date_from, date_to)
+        return pdf_page(request, sheet["template"], sheet["context"], title=sheet["title"],
+                        filename=sheet["filename"])
+    data = statement_data(role, party, date_from, date_to)
     return render(request, "parties/statement.html", {
-        "role": role, "config": config, "party": party, "sections": sections,
-        "extras": extras,
-        "date_from": date_from, "date_to": date_to, "profile": TenantProfile.objects.first(),
-        "edit_url": reverse(config["edit_url"], args=[party.pk]),
+        **data, "profile": TenantProfile.objects.first(),
+        "edit_url": reverse(data["config"]["edit_url"], args=[party.pk]),
     })
 
 

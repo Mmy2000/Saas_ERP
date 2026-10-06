@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.platform.tenants",
     "apps.platform.monitor",
+    "apps.platform.jobs",
     "apps.iam",
     "apps.org",
     "apps.catalog",
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.diamonds",
     "apps.audit",
+    "apps.messaging",
 ]
 
 MIDDLEWARE = [
@@ -213,3 +215,22 @@ def derived_dev_key(secret: str, purpose: str) -> str:
 
     digest = hashlib.sha256(f"{purpose}:{secret}".encode()).digest()
     return base64.urlsafe_b64encode(digest).decode()
+
+# Background jobs (apps.platform.jobs): `manage.py run_worker` waits this long when idle.
+JOBS_POLL_SECONDS = env.float("JOBS_POLL_SECONDS", default=2)
+
+# E-mail: documents sent to customers and the daily reminders. EMAIL_URL is e.g.
+# smtp+tls://user:password@smtp.example.com:587 (development writes them to var/mail).
+_email = env.email_url("EMAIL_URL", default="smtp://localhost:25")
+EMAIL_BACKEND = _email["EMAIL_BACKEND"]
+EMAIL_HOST = _email.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = _email.get("EMAIL_PORT", 25)
+EMAIL_HOST_USER = _email.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = _email.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = _email.get("EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = _email.get("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = 30
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@localhost")
+# Links in e-mails point at the client's primary domain with this scheme (and port, if any).
+SITE_SCHEME = env("SITE_SCHEME", default="https")
+SITE_PORT = env("SITE_PORT", default="")

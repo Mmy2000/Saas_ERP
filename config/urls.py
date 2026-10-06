@@ -14,6 +14,7 @@ from apps.iam.web import views as iam
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
+from apps.messaging import views as messaging
 from apps.org.web import company
 from apps.org.web import views as org
 from apps.parties.web import views as parties
@@ -53,6 +54,8 @@ urlpatterns = [
     path("branches/new/", org.branch_new, name="branch-new"),
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
     path("settings/activity/", audit.activity, name="activity"),
+    path("settings/messages/", messaging.messages_log, name="messages"),
+    path("shared/<str:token>/", messaging.shared, name="shared-document"),
     path("settings/users/", iam.users, name="users"),
     path("settings/users/new/", iam.user_new, name="user-new"),
     path("settings/users/<int:pk>/", iam.user_edit, name="user-edit"),

@@ -89,6 +89,10 @@ FEATURES: list[Feature] = [
     Feature("reports", _("Reports"),
             _("Daily summary, gold balances, sales analysis and expenses, with export."),
             TOOLS, "chart-column", ("reports.",)),
+    Feature("messaging", _("E-mail and WhatsApp"),
+            _("Send invoices and statements as PDFs by e-mail or a WhatsApp link, and the "
+              "daily reminders e-mail."),
+            TOOLS, "send", ("messaging.",)),
     Feature("diamonds", _("Diamonds and gemstones"),
             _("Stone details and certificates, label-price selling, loose stones, stone "
               "setting and diamond reports. Off unless switched on for the client."),

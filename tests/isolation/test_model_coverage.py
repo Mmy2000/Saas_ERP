@@ -13,6 +13,8 @@ NOT_TENANT_SCOPED = {
     "tenants.TenantDomain",  # platform registry, read by host resolution
     "tenants.PlatformEvent",  # platform console audit log (platform staff only)
     "monitor.ServerSample",  # server readings for the console (no client data)
+    "jobs.Job",  # the job queue for every client: ids only; the worker sets the tenant per job
+    "jobs.Worker",  # running worker processes (console)
     "tenants.TenantTraffic",  # request counters per client, written before tenant resolution
     "tenants.TenantRouteTraffic",
     "tenants.PlatformSettings",  # the platform's own branding (console settings)

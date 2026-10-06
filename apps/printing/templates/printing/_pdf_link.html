@@ -1,1 +1,1 @@
-{% load i18n ui %}<a href="{% url 'print-document-pdf' doc_type pk %}" class="btn btn-secondary{% if small %} text-xs{% endif %}" title="{% translate 'Download as a PDF file' %}" data-pdf-link>{% icon "file-down" "size-4" %}PDF</a>
+{% load i18n ui %}<a href="{% url 'print-document-pdf' doc_type pk %}" class="btn btn-secondary{% if small %} text-xs{% endif %}" title="{% translate 'Download as a PDF file' %}" data-pdf-link>{% icon "file-down" "size-4" %}PDF</a>{% include "messaging/_send.html" %}

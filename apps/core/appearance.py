@@ -30,6 +30,12 @@ ACCENT_KEYS = frozenset(key for key, _label, _swatch in ACCENTS)
 ACCENT_CHOICES = [(key, label) for key, label, _swatch in ACCENTS]
 
 
+def accent_swatch(key: str) -> str:
+    """The colour of an accent key (the default accent's for an unknown one)."""
+    swatches = {k: swatch for k, _label, swatch in ACCENTS}
+    return swatches.get(key) or swatches[DEFAULT_ACCENT]
+
+
 def _workspace_accent(request) -> str:
     """The client's own colour. Tenant hosts render inside the tenant transaction."""
     from .branding import workspace_profile

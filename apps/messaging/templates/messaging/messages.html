@@ -1,0 +1,102 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Sent messages" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'messaging/js/messages.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sent messages" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Invoices and statements e-mailed to customers or shared on WhatsApp, and the daily reminders." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "messaging.send" as can_send %}
+<div class="grid grid-cols-1 gap-6 2xl:grid-cols-3">
+<section class="card overflow-hidden 2xl:col-span-2" id="messages" data-again-url="{% url 'message-again' 0 %}" data-stop-url="{% url 'message-stop' 0 %}"
+         data-queued="{% translate 'It will be sent in a moment.' %}" data-stopped="{% translate 'The link no longer works.' %}"
+         data-copied="{% translate 'Link copied.' %}">
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-3">
+    {% translate "All" as l_all %}{% translate "E-mail" as l_email %}{% translate "WhatsApp" as l_wa %}{% translate "Not sent" as l_failed %}
+    <a href="?show=all" class="tab{% if show == 'all' %} tab-active{% endif %}">{{ l_all }}</a>
+    <a href="?show=email" class="tab{% if show == 'email' %} tab-active{% endif %}">{{ l_email }}</a>
+    <a href="?show=whatsapp" class="tab{% if show == 'whatsapp' %} tab-active{% endif %}">{{ l_wa }}</a>
+    <a href="?show=failed" class="tab{% if show == 'failed' %} tab-active{% endif %}">{{ l_failed }}{% if failed %} <span class="badge badge-danger ms-1 num">{{ failed }}</span>{% endif %}</a>
+  </div>
+  {% if rows %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "What" %}</th><th>{% translate "To" %}</th><th>{% translate "Status" %}</th><th>{% translate "By" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for row in rows %}{% with m=row.message %}
+        <tr data-message="{{ m.pk }}">
+          <td class="whitespace-nowrap"><span class="num">{{ m.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td class="min-w-[14rem]">
+            <div class="flex items-center gap-2">
+              <span class="grid size-7 shrink-0 place-items-center rounded-lg {% if m.channel == 'whatsapp' %}bg-emerald-50 text-emerald-700{% else %}bg-brand-50 text-brand-700{% endif %}">{% if m.channel == "whatsapp" %}{% icon "send" "size-3.5" %}{% else %}{% icon "inbox" "size-3.5" %}{% endif %}</span>
+              <div class="min-w-0">
+                {% if row.url %}<a class="font-medium text-brand-700 hover:underline" href="{{ row.url }}"><bdi>{{ m.doc_label }}</bdi></a>{% else %}<span class="font-medium text-slate-900"><bdi>{{ m.doc_label }}</bdi></span>{% endif %}
+                <div class="text-xs text-slate-500">{{ m.get_channel_display }}{% if m.party %} · <bdi>{{ m.party.name }}</bdi>{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="num">{{ m.recipient|default:"—" }}</span></td>
+          <td>
+            {% if m.status == "sent" %}<span class="badge badge-success">{{ m.get_status_display }}</span>
+            {% elif m.status == "failed" %}<span class="badge badge-danger">{{ m.get_status_display }}</span>
+            {% elif m.status == "queued" %}<span class="badge badge-warning">{{ m.get_status_display }}</span>
+            {% elif m.status == "shared" %}<span class="badge badge-brand">{{ m.get_status_display }}</span>
+            {% else %}<span class="badge">{{ m.get_status_display }}</span>{% endif %}
+            {% if m.channel == "whatsapp" %}<div class="mt-1 text-xs text-slate-500">{% if m.open_count %}{% blocktranslate trimmed count n=m.open_count %}Opened once{% plural %}Opened {{ n }} times{% endblocktranslate %}{% else %}{% translate "Not opened yet" %}{% endif %}</div>{% endif %}
+            {% if m.error %}<div class="mt-1 max-w-xs text-xs text-red-600" title="{{ m.error }}">{{ m.error|truncatechars:90 }}</div>{% endif %}
+          </td>
+          <td class="text-sm text-slate-600">{{ m.created_by.display_name|default:_("Automatic") }}</td>
+          <td class="text-end whitespace-nowrap">
+            {% if can_send and m.status == "failed" %}<button type="button" class="btn btn-secondary text-xs" data-again="{{ m.pk }}">{% icon "repeat" "size-3.5" %}{% translate "Send again" %}</button>{% endif %}
+            {% if row.link %}<button type="button" class="btn btn-ghost text-xs" data-copy="{{ request.scheme }}://{{ request.get_host }}{{ row.link }}">{% icon "copy" "size-3.5" %}{% translate "Copy link" %}</button>
+            {% if can_send %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-stop="{{ m.pk }}">{% icon "x" "size-3.5" %}{% translate "Stop the link" %}</button>{% endif %}{% endif %}
+          </td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?show={{ show }}&amp;page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?show={{ show }}&amp;page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "Nothing sent yet" as empty_title %}
+    {% translate "Use Send on an invoice, receipt or statement to e-mail it or share it on WhatsApp." as empty_text %}
+    {% include "components/empty_state.html" with icon="send" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+
+{% if members is not None %}
+<section class="card self-start">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">{% translate "Daily reminders e-mail" %}</h2>
+      <p class="mt-0.5 text-xs text-slate-500">{% translate "Every morning at 7:30: cheques due, months not closed, repairs ready and the other reminders on the dashboard, with yesterday's sales. Each person only sees what their roles allow." %}</p>
+    </div>
+  </div>
+  <form class="card-body space-y-1" data-api-form data-shape="digest" data-endpoint="{% url 'message-digest' %}" data-method="PUT" data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    {% for item in members %}
+    <label class="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-slate-50 {% if not item.member.user.email %}opacity-60{% endif %}">
+      <input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-digest-member value="{{ item.member.pk }}" {% if item.on %}checked{% endif %} {% if not item.member.user.email %}disabled{% endif %}>
+      <span class="min-w-0">
+        <span class="block text-sm font-medium text-slate-900">{{ item.member.user.display_name|default:item.member.username }}</span>
+        <span class="block truncate text-xs text-slate-500" dir="ltr">{% if item.member.user.email %}{{ item.member.user.email }}{% else %}{% translate "No e-mail address" %}{% endif %}</span>
+      </span>
+    </label>
+    {% endfor %}
+    <div class="pt-3"><button class="btn btn-primary" type="submit">{% translate "Save" %}</button></div>
+  </form>
+</section>
+{% endif %}
+</div>
+{% endblock %}
