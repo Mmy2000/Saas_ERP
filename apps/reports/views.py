@@ -63,6 +63,17 @@ def _csv(report, tables, params) -> HttpResponse:
     return response
 
 
+def _pdf(request, report, tables, params) -> HttpResponse:
+    """The report as a PDF (A4; sideways when its tables are wide)."""
+    from apps.printing.pdf import pdf_page
+
+    stamp = "_".join(str(v) for v in params.values.values() if isinstance(v, date))
+    return pdf_page(request, "reports/print.html", {
+        "report": report, "tables": [_shape(table) for table in tables], "params": params.values,
+    }, title=report.title, filename=f"{report.code}_{stamp}.pdf" if stamp else f"{report.code}.pdf",
+        landscape=max((len(table.columns) for table in tables), default=0) > 6)
+
+
 def run_report(request, code):
     report_class = REPORTS.get(code)
     if report_class is None:
@@ -81,6 +92,8 @@ def run_report(request, code):
         tables = report.run(params, [chosen.pk] if chosen else scope)
         if request.GET.get("format") == "csv":
             return _csv(report, tables, params)
+        if request.GET.get("format") == "pdf":
+            return _pdf(request, report, tables, params)
         return render(request, "reports/report.html", {
             "report": report, "tables": [_shape(table) for table in tables],
             "params": params.values,

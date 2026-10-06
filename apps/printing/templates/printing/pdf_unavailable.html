@@ -1,0 +1,6 @@
+{% extends "error_page.html" %}
+{% load i18n %}
+{% block title %}{% translate "PDF not available" %}{% endblock %}
+{% block code %}503{% endblock %}
+{% block heading %}{% translate "The PDF could not be made right now" %}{% endblock %}
+{% block text %}{% translate "Use Print and choose “Save as PDF” instead, or try again in a minute." %}{% endblock %}

@@ -7,6 +7,7 @@ from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency
 from apps.core.documents import document_url
@@ -183,9 +184,21 @@ def _date(value):
 def holder_statement(request, kind, pk):
     holder = _holder(request, kind, pk)
     date_from, date_to = _date(request.GET.get("from")), _date(request.GET.get("to"))
+    sections = account_statement(holder.account, date_from, date_to)
+    if request.GET.get("format") == "pdf":
+        from apps.printing.pdf import pdf_page
+
+        kinds = {"box": _("Cash box"), "bank": _("Bank account"), "terminal": _("Card terminal")}
+        hint = (_("Debit: card payments taken. Credit: settled by the bank.") if kind == "terminal"
+                else _("Debit: money in. Credit: money out."))
+        day = (date_to or timezone.localdate()).isoformat()
+        return pdf_page(request, "printing/statement_sheet.html", {
+            "who_name": holder.label, "who_line": f"{kinds.get(kind, '')} · {holder.account.code}",
+            "sections": sections, "hint": hint, "date_from": date_from, "date_to": date_to,
+        }, title=_("Statement of account"), filename=f"{_('Statement')} {holder.label} {day}.pdf")
     return render(request, "treasury/statement.html", {
         "kind": kind, "holder": holder,
-        "sections": account_statement(holder.account, date_from, date_to),
+        "sections": sections,
         "date_from": date_from, "date_to": date_to,
         "profile": TenantProfile.objects.first(),
     })

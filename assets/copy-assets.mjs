@@ -38,7 +38,7 @@ const icons = [
   "repeat", "inbox", "wallet", "receipt-text", "send", "clipboard-check", "undo-2", "bookmark", "chart-column",
   "trash-2", "wrench", "sun", "moon", "monitor", "palette", "panel-left-close", "panel-left-open", "arrow-up", "arrow-down", "grip-vertical", "copy", "redo-2", "mouse-pointer-click",
   "cpu", "memory-stick", "hard-drive", "server", "database", "activity", "triangle-alert", "arrow-down-up",
-  "calendar-check", "lock-open", "banknote", "flame", "hammer", "sparkles",
+  "calendar-check", "lock-open", "banknote", "flame", "hammer", "sparkles", "file-down",
 ];
 const bundle = {};
 for (const name of icons) {

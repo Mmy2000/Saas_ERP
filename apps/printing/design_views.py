@@ -92,7 +92,7 @@ def design_preview(request, doc_type):
                            accent_key=_accent(request), toolbar=False)
 
 
-def print_document(request, doc_type, pk):
+def print_document(request, doc_type, pk, *, as_pdf=False):
     """Any document in this client's design. The same permission and scoping as the
     document's own page, so nobody prints what they could not open."""
     kind = _kind(doc_type)
@@ -110,9 +110,28 @@ def print_document(request, doc_type, pk):
         design = design_for(doc_type)
         ctx = {"can_cost": request.actor.can("inventory.item.view_cost")}
         doc = kind.builder(record, design, ctx)
+        if as_pdf:
+            return _pdf(request, doc, design)
         return render_document(request, doc, design, accent_key=_accent(request))
 
     return view(request)
+
+
+def print_document_pdf(request, doc_type, pk):
+    """The same document as a PDF file (to download, e-mail or send on WhatsApp)."""
+    return print_document(request, doc_type, pk, as_pdf=True)
+
+
+def _pdf(request, doc, design):
+    from .pdf import PdfUnavailable, pdf_response
+    from .render import document_pdf
+
+    try:
+        content = document_pdf(request, doc, design, accent_key=_accent(request))
+    except PdfUnavailable:
+        return render(request, "printing/pdf_unavailable.html", status=503)
+    name = " ".join(part for part in (str(doc.title), doc.number) if part) or "document"
+    return pdf_response(content, f"{name}.pdf", inline=request.GET.get("inline") == "1")
 
 
 def print_sales_invoice(request, invoice):

@@ -1,0 +1,26 @@
+{% load i18n ui %}{% for section in sections %}
+<section>
+  <h2>{{ section.commodity.label }}</h2>
+  <table>
+    <thead><tr><th style="width:14%">{% translate "Date" %}</th><th>{% translate "Document" %}</th><th class="end" style="width:15%">{% translate "Debit" %}</th><th class="end" style="width:15%">{% translate "Credit" %}</th><th class="end" style="width:16%">{% translate "Balance" %}</th></tr></thead>
+    <tbody>
+      {% if date_from %}<tr class="heading"><td colspan="4">{% translate "Balance brought forward" %}</td><td class="end"><span class="num{% if section.opening < 0 %} neg{% endif %}">{{ section.opening|num:section.commodity.decimal_places }}</span></td></tr>{% endif %}
+      {% for row in section.rows %}<tr>
+        <td><span class="num">{{ row.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+        <td><bdi>{{ row.memo }}</bdi>{% if row.document_number %} <span class="num">{{ row.document_number }}</span>{% endif %} <span class="muted small num">{{ row.number }}</span></td>
+        <td class="end">{% if row.amount > 0 %}<span class="num">{{ row.amount|num:section.commodity.decimal_places }}</span>{% endif %}</td>
+        <td class="end">{% if row.amount < 0 %}<span class="num">{{ row.amount|absolute|num:section.commodity.decimal_places }}</span>{% endif %}</td>
+        <td class="end"><span class="num{% if row.balance < 0 %} neg{% endif %}">{{ row.balance|num:section.commodity.decimal_places }}</span></td>
+      </tr>{% endfor %}
+    </tbody>
+    <tfoot><tr>
+      <td colspan="2">{% translate "Closing balance" %}</td>
+      <td class="end"><span class="num">{{ section.debit|num:section.commodity.decimal_places }}</span></td>
+      <td class="end"><span class="num">{{ section.credit|num:section.commodity.decimal_places }}</span></td>
+      <td class="end"><span class="num{% if section.closing < 0 %} neg{% endif %}">{{ section.closing|num:section.commodity.decimal_places }}</span></td>
+    </tr></tfoot>
+  </table>
+</section>
+{% empty %}
+<p class="empty">{% translate "No movements in this period" %}</p>
+{% endfor %}

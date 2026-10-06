@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
   <a href="{% url 'supplier-returns' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Returns to suppliers" %}</a>
-  <a href="{% url 'print-document' 'supplier_return' doc.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-primary">{% icon "printer" "size-4" %}{% translate "Print" %}</a>
+  <div class="flex gap-2">{% include "printing/_pdf_link.html" with doc_type="supplier_return" pk=doc.pk %}<a href="{% url 'print-document' 'supplier_return' doc.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-primary">{% icon "printer" "size-4" %}{% translate "Print" %}</a></div>
 </div>
 {% endblock %}
 {% block content %}

@@ -82,6 +82,7 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 
    ```powershell
    .\venv\Scripts\python.exe -m pip install -r requirements/dev.txt
+   .\venv\Scripts\python.exe -m playwright install chromium   # PDFs and browser tests
    .\venv\Scripts\python.exe manage.py migrate --database owner
    ```
 
@@ -174,7 +175,20 @@ title, filters and row count from a hidden frame; "Save as PDF" in the print dia
 Every document page prints through one URL, `/print/<type>/<pk>/` (`?print=1` opens the print
 dialog), which checks the type's permission and finds the record through the same visibility
 rules as its page. Adding a type: a `DocumentType` in `documents.py` with columns, options, a
-`builder`, a `sampler` and a `finder`. Server-side PDF and pre-printed paper are not done yet.
+`builder`, a `sampler` and a `finder`. Pre-printed paper is not done yet.
+
+**PDF files (server side).** `/print/<type>/<pk>/pdf/` gives the same document as a PDF in the
+client's design (A4/A5, or an 80 mm roll as long as the slip; `?inline=1` opens it instead of
+downloading). Reports and statements take `?format=pdf` (`/reports/<code>/`, the profit and loss
+and balance sheet, customer/supplier/trader/workshop statements and cash box/bank statements):
+an A4 sheet (`printing/sheet.html`) with the logo, the period, page numbers, and landscape when a
+table has more than six columns. Every one of those pages has a PDF button next to Print.
+`apps/printing/pdf.py` renders with headless Chromium (Playwright), which shapes Arabic exactly
+like the screen: the page is loaded from a made-up origin, `/static/` and `/media/` are answered
+from local files, every other request is refused and JavaScript is off, so a custom design can
+neither run code nor fetch anything. Two renders at a time per process; each worker thread keeps
+its browser (about 0.3 s per document once warm). Without Chromium the link shows a "use Print →
+Save as PDF" page (503). Install it once per server: `python -m playwright install chromium`.
 
 ### Branding and uploaded files
 
@@ -312,8 +326,7 @@ These are Phase 2 spikes or later phases in the plan:
 - RLS on the global `iam_user` table, and wiring the `app_platform` role into a DB alias.
 - Celery `TenantTask`, the outbox, the tenant-prefixed cache wrapper.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
-- Server-side PDF of documents (WeasyPrint, a Phase 2 spike; receipts and vouchers print from the
-  browser), QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it),
+- Sending PDFs by e-mail or WhatsApp (needs background jobs), QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it),
   stones/diamond detail on pieces,
   reservations of bullion/coins not yet in stock, expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,

@@ -9,6 +9,7 @@
     <p class="mt-1 text-sm text-slate-500">{{ report.description }}</p>
   </div>
   <div class="flex gap-2">
+    <a class="btn btn-secondary" href="?{{ query }}{% if query %}&{% endif %}format=pdf" title="{% translate 'Download as a PDF file' %}" data-pdf-link>{% icon "file-down" "size-4" %}PDF</a>
     <a class="btn btn-secondary" href="?{{ query }}{% if query %}&{% endif %}format=csv">{% icon "list" "size-4" %}{% translate "Excel (CSV)" %}</a>
   </div>
 </div>

@@ -176,12 +176,26 @@ def _statement(request, role, pk):
                           if extra_account else [])
         if extra_sections:
             extras.append({**extra, "sections": extra_sections})
+    if request.GET.get("format") == "pdf":
+        from apps.printing.pdf import pdf_page
+
+        return pdf_page(request, "printing/statement_sheet.html", {
+            "who_name": party.name, "who_line": f"{config['label']} · {party.code}",
+            "sections": sections, "extras": extras, "hint": config["sign_hint"],
+            "date_from": date_from, "date_to": date_to,
+        }, title=_("Statement of account"), filename=_statement_filename(party.name, date_to))
     return render(request, "parties/statement.html", {
         "role": role, "config": config, "party": party, "sections": sections,
         "extras": extras,
         "date_from": date_from, "date_to": date_to, "profile": TenantProfile.objects.first(),
         "edit_url": reverse(config["edit_url"], args=[party.pk]),
     })
+
+
+def _statement_filename(name: str, date_to) -> str:
+    from django.utils import timezone
+
+    return f"{_('Statement')} {name} {(date_to or timezone.localdate()).isoformat()}.pdf"
 
 
 def _balances(party, account_role) -> list[dict]:

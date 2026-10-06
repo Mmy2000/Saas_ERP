@@ -1,0 +1,26 @@
+{% extends "printing/sheet.html" %}
+{% load i18n ui %}
+{% block meta %}
+    {% if params.date %}<p><span class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}</span></p>{% endif %}
+    {% if params.date_from %}<p><bdi dir="ltr"><span class="num">{{ params.date_from|date:"SHORT_DATE_FORMAT" }}</span> → <span class="num">{{ params.date_to|date:"SHORT_DATE_FORMAT" }}</span></bdi></p>{% endif %}
+    <p>{% if params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>
+{% endblock %}
+{% block content %}
+{% for table in tables %}
+<section>
+  {% if table.title %}<h2>{{ table.title }}</h2>{% endif %}
+  {% if table.rows %}
+  <table>
+    <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in table.rows %}<tr class="{{ row.style }}">{% for cell in row.cells %}{% include "reports/_print_cell.html" with indent=forloop.first|yesno:"1,"|default:"" %}{% endfor %}</tr>{% endfor %}
+    </tbody>
+    {% if table.totals %}<tfoot><tr>{% for cell in table.totals %}{% include "reports/_print_cell.html" %}{% endfor %}</tr></tfoot>{% endif %}
+  </table>
+  {% else %}
+  <p class="empty">{% translate "Nothing in this period." %}</p>
+  {% endif %}
+  {% if table.note %}<p class="note">{{ table.note }}</p>{% endif %}
+</section>
+{% endfor %}
+{% endblock %}

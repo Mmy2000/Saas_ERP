@@ -113,6 +113,8 @@ urlpatterns = [
     path("sales/<int:pk>/", sales.invoice_detail, name="sale-detail"),
     path("sales/<int:pk>/print/", sales.invoice_print, name="sale-print"),
     path("print/<str:doc_type>/<int:pk>/", documents.print_document, name="print-document"),
+    path("print/<str:doc_type>/<int:pk>/pdf/", documents.print_document_pdf,
+         name="print-document-pdf"),
     path("sales/returns/<int:pk>/", sales.return_detail, name="sale-return-detail"),
     path("sales/reservations/", sales.reservation_list, name="reservations"),
     path("sales/reservations/new/", sales.reservation_new, name="reservation-new"),

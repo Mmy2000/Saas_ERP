@@ -9,3 +9,4 @@ argon2-cffi==25.1.0
 cryptography==50.0.1
 phonenumbers==9.0.40
 psutil==7.1.0  # server monitoring in the platform console
+playwright==1.63.0  # server-side PDF and E2E tests; then: python -m playwright install chromium

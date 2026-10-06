@@ -115,6 +115,15 @@ def render_document(request, doc: Doc, design: DocumentDesign, *, accent_key: st
                     toolbar: bool = True, custom_html: str | None = None,
                     use_custom: bool | None = None, designer: bool = False) -> HttpResponse:
     """The printable page. `custom_html`/`use_custom` override the saved design (previews)."""
+    return HttpResponse(document_html(request, doc, design, accent_key=accent_key,
+                                      toolbar=toolbar, custom_html=custom_html,
+                                      use_custom=use_custom, designer=designer))
+
+
+def document_html(request, doc: Doc, design: DocumentDesign, *, accent_key: str,
+                  toolbar: bool = True, custom_html: str | None = None,
+                  use_custom: bool | None = None, designer: bool = False,
+                  for_pdf: bool = False) -> str:
     context = _context(doc, design, accent_key)
     html = design.custom_html if custom_html is None else custom_html
     wants_custom = design.use_custom if use_custom is None else use_custom
@@ -133,12 +142,33 @@ def render_document(request, doc: Doc, design: DocumentDesign, *, accent_key: st
 
         blocks = clean_blocks(design.blocks) or preset("classic")
         builder_body = render_blocks(blocks, context, designer=designer)
-    page = render_to_string("printing/documents/page.html", {
-        **context, "custom_body": body, "custom_error": error, "toolbar": toolbar,
-        "builder_body": builder_body, "designer": designer,
-        "auto_print": request.GET.get("print") == "1",
+    return render_to_string("printing/documents/page.html", {
+        **context, "custom_body": body, "custom_error": error,
+        "toolbar": toolbar and not for_pdf, "for_pdf": for_pdf,
+        "builder_body": builder_body, "designer": designer and not for_pdf,
+        "auto_print": request.GET.get("print") == "1" and not for_pdf,
     }, request=request)
-    return HttpResponse(page)
+
+
+def document_pdf(request, doc: Doc, design: DocumentDesign, *, accent_key: str) -> bytes:
+    """The document as a PDF, from the same page the shop prints (see apps.printing.pdf)."""
+    from . import pdf
+
+    _layout, paper = effective(design)
+    _inline_logo(doc)
+    html = document_html(request, doc, design, accent_key=accent_key, for_pdf=True)
+    return pdf.html_to_pdf(html, pdf.Paper(roll=True) if paper == Paper.ROLL80 else pdf.A4)
+
+
+def _inline_logo(doc: Doc) -> None:
+    """A logo kept outside this server (cloud storage) goes into the page itself: the PDF
+    renderer fetches nothing from outside."""
+    if (doc.company or {}).get("logo", "").startswith(("http://", "https://")):
+        from apps.org.models import TenantProfile
+
+        from .pdf import logo_src
+
+        doc.company["logo"] = logo_src(TenantProfile.objects.first())
 
 
 def no_document_type(doc_type: str) -> str:

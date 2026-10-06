@@ -1,0 +1,20 @@
+{% extends "printing/sheet.html" %}
+{% load i18n ui %}
+{% comment %}A ledger statement (apps.ledger.statements) as a PDF: whose it is, the period, then
+one table per currency or metal. Optional `extras`: further titled groups of sections.{% endcomment %}
+{% block meta %}
+    <p><strong>{{ who_name }}</strong></p>
+    {% if who_line %}<p>{{ who_line }}</p>{% endif %}
+    <p><bdi dir="ltr"><span class="num">{% if date_from %}{{ date_from|date:"SHORT_DATE_FORMAT" }}{% else %}…{% endif %}</span> → <span class="num">{% if date_to %}{{ date_to|date:"SHORT_DATE_FORMAT" }}{% else %}{% now "SHORT_DATE_FORMAT" %}{% endif %}</span></bdi></p>
+{% endblock %}
+{% block content %}
+{% if sections or not extras %}
+{% include "printing/_statement_tables.html" %}
+{% if hint %}<p class="note">{{ hint }}</p>{% endif %}
+{% endif %}
+{% for extra in extras %}
+<h1>{{ extra.title }}</h1>
+{% include "printing/_statement_tables.html" with sections=extra.sections %}
+{% if extra.hint %}<p class="note">{{ extra.hint }}</p>{% endif %}
+{% endfor %}
+{% endblock %}
