@@ -468,6 +468,11 @@ npm run watch:css    # while editing templates
   `apps/core/appearance.py`.
 - The sidebar collapses to an icon rail on desktop (top-bar button, cookie `gweb_sidebar`). Mark
   text that hides in the rail with `data-sidebar-label`; the current screen's link uses the accent.
+  Its groups (`NAVIGATION` in `apps/core/context_processors.py`: `NavSection(key, title, icon,
+  items)`) are menus that open and close from their header, with a count of their screens while
+  closed; the open ones are remembered in the cookie `gweb_nav` so the server renders them open,
+  and the current screen's group is always open. A group of one screen (or the Overview) is a
+  plain link. In the icon rail the groups become plain icons with dividers.
 - Ctrl/⌘+K opens the command palette (`static/core/js/cmdk.js`): every screen in the sidebar the
   user may open, searchable in Arabic or English.
 - Icons: `{% load ui %}{% icon "coins" "size-5" %}` (Lucide, bundled into `apps/core/ui_icons.json`

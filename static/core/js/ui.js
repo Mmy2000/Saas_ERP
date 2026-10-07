@@ -88,6 +88,17 @@ function revealActiveLink() {
   if (!shown) menu.scrollTop = Math.max(0, top - (menu.clientHeight - link.offsetHeight) / 2);
 }
 
+// Menu groups open and close from their header; the open ones are remembered in a cookie so
+// the next page arrives the same way (the current page's group is always open).
+function toggleGroup(toggle) {
+  const group = toggle.closest("[data-nav-group]");
+  const open = group.dataset.open !== "true";
+  group.dataset.open = String(open);
+  toggle.setAttribute("aria-expanded", String(open));
+  const keys = [...document.querySelectorAll('[data-nav-group][data-open="true"]')].map((node) => node.dataset.navGroup);
+  document.cookie = `gweb_nav=${keys.join(",")}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 function toggleRail() {
   const root = document.documentElement;
   const collapsed = root.dataset.sidebar !== "collapsed";
@@ -103,6 +114,7 @@ export function initShell() {
     if (event.target.closest("[data-sidebar-open]")) setSidebar(true);
     else if (event.target.closest("[data-sidebar-close], [data-sidebar-backdrop]")) setSidebar(false);
     else if (event.target.closest("[data-sidebar-collapse]")) toggleRail();
+    else if (event.target.closest("[data-nav-toggle]")) toggleGroup(event.target.closest("[data-nav-toggle]"));
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setSidebar(false);

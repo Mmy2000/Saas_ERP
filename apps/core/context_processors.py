@@ -20,11 +20,24 @@ class NavItem:
     also_active_for: tuple[str, ...] = ()
 
 
-NAVIGATION: list[tuple[str, list[NavItem]]] = [
-    (_("Overview"), [
+@dataclass(frozen=True)
+class NavSection:
+    """A group of the sidebar: a header that opens and closes (remembered per user)."""
+
+    key: str
+    title: str
+    icon: str
+    items: list[NavItem]
+
+
+NAV_COOKIE = "gweb_nav"  # the groups the user left open, comma separated
+FLAT = {"overview"}  # shown as plain links, without a header
+
+NAVIGATION: list[NavSection] = [
+    NavSection("overview", _("Overview"), "layout-dashboard", [
         NavItem(_("Dashboard"), "home", "layout-dashboard", "authenticated"),
     ]),
-    (_("Sales"), [
+    NavSection("sales", _("Sales"), "shopping-bag", [
         NavItem(_("New sale"), "sale-new", "scan-barcode", "sales.invoice.create"),
         NavItem(_("Sales"), "sales", "shopping-bag", "sales.invoice.view",
                 ("sale-detail", "sale-return-detail")),
@@ -35,7 +48,7 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Repairs"), "repairs", "wrench", "repairs.order.view",
                 ("repair-new", "repair")),
     ]),
-    (_("Diamonds"), [
+    NavSection("diamonds", _("Diamonds"), "gem", [
         NavItem(_("Diamonds and stones"), "diamonds", "gem", "diamonds.view"),
         NavItem(_("Receive diamonds"), "diamonds-receive-form", "inbox", "diamonds.receive"),
         NavItem(_("Stone setting"), "stone-settings", "sparkles", "diamonds.view",
@@ -44,14 +57,14 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                 ("setting-job-new", "setting-job")),
         NavItem(_("Discount classes"), "discount-classes", "percent", "diamonds.view"),
     ]),
-    (_("Pricing"), [
+    NavSection("pricing", _("Pricing"), "coins", [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),
         NavItem(_("Exchange rates"), "fx-rates", "arrow-left-right", "pricing.fx.view"),
         NavItem(_("Price changes"), "price-changes", "pencil", "inventory.price.change",
                 ("price-change",)),
         NavItem(_("Offers"), "offers", "sparkles", "sales.offer.view", ("offer-new", "offer")),
     ]),
-    (_("Goods"), [
+    NavSection("goods", _("Goods"), "package", [
         NavItem(_("Stock"), "stock", "package", "inventory.stock.view", ("stock-item",)),
         NavItem(_("Transfers"), "stock-transfers", "truck", "inventory.stock.view",
                 ("stock-transfer-new", "stock-transfer")),
@@ -67,7 +80,7 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Production"), "production", "flame", "manufacturing.order.view",
                 ("production-new", "production-order")),
     ]),
-    (_("Customers and suppliers"), [
+    NavSection("parties", _("Customers and suppliers"), "users", [
         NavItem(_("Customers"), "customers", "users", "parties.customer.view",
                 ("customer-new", "customer-edit", "customer-statement")),
         NavItem(_("Suppliers"), "suppliers", "truck", "parties.supplier.view",
@@ -81,14 +94,14 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Receipts & payments"), "settlements", "arrow-left-right", "settlements.view",
                 ("settlement-new", "settlement-view")),
     ]),
-    (_("Team"), [
+    NavSection("team", _("Team"), "user-round", [
         NavItem(_("Employees"), "employees", "users", "hr.employee.view",
                 ("employee-new", "employee", "employee-advance")),
         NavItem(_("Payroll"), "payrolls", "wallet", "hr.payroll.view",
                 ("payroll-new", "payroll")),
         NavItem(_("Commissions"), "commissions", "chart-column", "hr.payroll.view"),
     ]),
-    (_("Treasury"), [
+    NavSection("treasury", _("Treasury"), "wallet", [
         NavItem(_("Cash & banks"), "treasury", "wallet", "treasury.view",
                 ("treasury-documents", "treasury-document-new", "treasury-document",
                  "treasury-holder-new", "treasury-holder-edit", "treasury-holder-statement",
@@ -100,11 +113,11 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Expenses"), "expenses", "receipt-text", "expenses.view",
                 ("expense-new", "expense-categories", "expense-view")),
     ]),
-    (_("Reports"), [
+    NavSection("reports", _("Reports"), "chart-column", [
         NavItem(_("Reports"), "reports", "chart-column", "reports.daily_summary.view",
                 ("report",)),
     ]),
-    (_("Accounting"), [
+    NavSection("accounting", _("Accounting"), "book-open", [
         NavItem(_("Journal"), "journal", "book-open", "ledger.view", ("journal-new",)),
         NavItem(_("Profit and loss"), "profit-loss", "trending-up", "reports.profit_loss.view"),
         NavItem(_("Balance sheet"), "balance-sheet", "landmark", "reports.balance_sheet.view"),
@@ -114,12 +127,12 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Opening balances"), "opening-balances", "inbox", "ledger.opening.view",
                 ("opening-new", "opening-import", "opening-balance")),
     ]),
-    (_("Catalog"), [
+    NavSection("catalog", _("Catalog"), "layers", [
         NavItem(_("Item categories"), "categories", "layers", "catalog.view",
                 ("category-new", "category-edit")),
         NavItem(_("Karats"), "karats", "gem", "catalog.view", ("karat-new", "karat-edit")),
     ]),
-    (_("Settings"), [
+    NavSection("settings", _("Settings"), "settings", [
         NavItem(_("Company"), "company", "settings", "org.settings.manage"),
         NavItem(_("Documents"), "document-designs", "printer", "org.settings.manage",
                 ("document-design",)),
@@ -139,15 +152,24 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
 def _navigation(request):
     actor = request.actor
     current = getattr(request.resolver_match, "url_name", None)
+    remembered = request.COOKIES.get(NAV_COOKIE)
+    opened = set(remembered.split(",")) if remembered else set()
     sections = []
-    for title, items in NAVIGATION:
+    for section in NAVIGATION:
         visible = [
             {"label": item.label, "url": reverse(item.url_name), "icon": item.icon,
              "active": current == item.url_name or current in item.also_active_for}
-            for item in items if actor.can(item.permission)
+            for item in section.items if actor.can(item.permission)
         ]
-        if visible:
-            sections.append({"title": title, "items": visible})
+        if not visible:
+            continue
+        holds_current = any(item["active"] for item in visible)
+        sections.append({"key": section.key, "title": section.title, "icon": section.icon,
+                         # A group of one screen is just a link to it.
+                         "items": visible, "flat": section.key in FLAT or len(visible) == 1,
+                         "current": holds_current,
+                         # The current page's group is always open; others as the user left them.
+                         "open": holds_current or section.key in opened})
     return sections
 
 

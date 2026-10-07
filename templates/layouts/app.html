@@ -24,13 +24,32 @@
     </div>
     <nav class="flex-1 overflow-y-auto px-3 pb-6 [mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)]" aria-label="{% translate 'Main' %}">
       {% for section in nav_sections %}
-        <p class="nav-section">{{ section.title }}</p>
-        <ul class="space-y-0.5">
+        {% if section.flat %}
+        <ul class="mt-1 space-y-0.5">
           {% for item in section.items %}
             <li><a href="{{ item.url }}" class="nav-link"{% if item.active %} aria-current="page"{% endif %}>
               {% icon item.icon "size-[17px]" %}<span class="truncate" data-sidebar-label>{{ item.label }}</span></a></li>
           {% endfor %}
         </ul>
+        {% else %}
+        {# A group: its header opens and closes it (static/core/js/ui.js, remembered in a cookie). #}
+        <div class="nav-group" data-nav-group="{{ section.key }}" data-open="{{ section.open|yesno:'true,false' }}"{% if section.current %} data-current{% endif %}>
+          <button type="button" class="nav-group-toggle" data-nav-toggle aria-expanded="{{ section.open|yesno:'true,false' }}" aria-controls="nav-{{ section.key }}" title="{{ section.title }}">
+            {% icon section.icon "size-[17px]" %}
+            <span class="flex-1 truncate text-start">{{ section.title }}</span>
+            <span class="nav-group-count num" aria-hidden="true">{{ section.items|length }}</span>
+            {% icon "chevron-down" "nav-group-chevron size-4" %}
+          </button>
+          <div class="nav-group-body" id="nav-{{ section.key }}">
+            <ul class="nav-group-list">
+              {% for item in section.items %}
+                <li><a href="{{ item.url }}" class="nav-link"{% if item.active %} aria-current="page"{% endif %}>
+                  {% icon item.icon "size-[17px]" %}<span class="truncate" data-sidebar-label>{{ item.label }}</span></a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
       {% endfor %}
     </nav>
     <div class="border-t border-slate-200/80 p-3">
