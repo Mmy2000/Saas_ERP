@@ -57,6 +57,7 @@ urlpatterns = [
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
     path("settings/activity/", audit.activity, name="activity"),
     path("settings/messages/", messaging.messages_log, name="messages"),
+    path("settings/sale-codes/", sales.sale_code_rules, name="sale-code-settings"),
     path("shared/<str:token>/", messaging.shared, name="shared-document"),
     path("settings/users/", iam.users, name="users"),
     path("settings/users/new/", iam.user_new, name="user-new"),

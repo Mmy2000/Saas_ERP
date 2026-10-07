@@ -6,6 +6,7 @@ import { enhanceSelects, filterOptions } from "../../core/js/selects.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 import { narrowHolders } from "../../treasury/js/holders.js";
 import { addDecimals, formatNumber, percentToRate, rateToPercent } from "../../core/js/money.js";
+import { askForCode } from "./code.js";
 
 const root = document.getElementById("pos");
 
@@ -124,6 +125,11 @@ if (root) {
       .filter((p) => p.code !== "SALES_EMPTY")
       .map((p) => Object.assign(document.createElement("li"), { textContent: p.message })));
     $("[data-complete]").disabled = !quote || !state.lines.length || (quote.problems || []).length > 0;
+    const code = quote?.code || {};
+    $("[data-code-hint]").classList.toggle("hidden", !code.needed);
+    $("[data-code-hint]").classList.toggle("flex", Boolean(code.needed));
+    $("[data-code-reason]").textContent = code.reason || "";
+    $("[data-code-phone]").textContent = code.phone || "";
   }
 
   async function requestQuote() {
@@ -233,8 +239,22 @@ if (root) {
   $("[data-complete]").addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
+    const sale = body();
+    const code = state.quote?.code;
+    if (code?.needed) {
+      // The customer confirms with the code sent to their phone, for this exact amount.
+      const answer = await askForCode({ branch: sale.branch, amount: state.quote.totals.total, customer: sale.customer,
+                                        phone: sale.customer_phone, reason: code.reason, canSkip: code.can_skip });
+      if (!answer) {
+        button.disabled = false;
+        return;
+      }
+      if (answer.code) sale.code = answer.code;
+      if (answer.skip) sale.skip_code = true;
+      state.key = uuid();
+    }
     try {
-      const invoice = await api(root.dataset.postUrl, { method: "POST", body: body(), idempotencyKey: state.key });
+      const invoice = await api(root.dataset.postUrl, { method: "POST", body: sale, idempotencyKey: state.key });
       flash(strings().sale_done || "");
       window.location.assign(root.dataset.receiptUrl.replace("{id}", invoice.id));
     } catch (error) {

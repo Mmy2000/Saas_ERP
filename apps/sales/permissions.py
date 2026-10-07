@@ -25,3 +25,8 @@ register_permissions(_("Wholesale"), [
     ("sales.trade.void", _("Cancel wholesale sales")),
     ("sales.trade.return", _("Take back wholesale goods and cancel those returns")),
 ])
+
+register_permissions(_("Sale codes"), [
+    ("sales.code.manage", _("Choose when a sale needs a code from the customer's phone")),
+    ("sales.code.skip", _("Sell without the customer's code")),
+])

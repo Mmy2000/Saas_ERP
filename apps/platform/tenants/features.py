@@ -51,6 +51,11 @@ FEATURES: list[Feature] = [
             _("Time-limited discounts on making charges and cashback to the customer's account, "
               "applied by the sales screen on their own."),
             SALES, "sparkles", ("sales.offer.",)),
+    Feature("sale_codes", _("Sale confirmation codes"),
+            _("A one-time code to the customer's phone (WhatsApp, else SMS) before a sale on "
+              "account, a reservation pick-up or a large sale. Messages are paid for: off "
+              "unless switched on for the client."),
+            SALES, "shield-check", ("sales.code.",), default=False),
     Feature("wholesale", _("Wholesale and trade accounts"),
             _("Sell and buy by weight with traders; one balance in gold and money."),
             SALES, "scale", ("sales.trade.", "parties.trade_account.")),

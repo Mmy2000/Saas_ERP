@@ -5,7 +5,15 @@ from rest_framework.routers import SimpleRouter
 
 from apps.core.api.idempotency import idempotent
 
-from .models import ConversionDirection, MoneyMethod, PartySide, Settlement, SettlementKind
+from .models import (
+    AdjustmentDirection,
+    BalanceAsset,
+    ConversionDirection,
+    MoneyMethod,
+    PartySide,
+    Settlement,
+    SettlementKind,
+)
 from .services import SettlementInput, post_settlement, void_settlement
 
 
@@ -33,19 +41,26 @@ class SettlementWriteSerializer(serializers.Serializer):
     cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
     bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
     terminal = serializers.IntegerField(required=False, allow_null=True, default=None)
+    asset = serializers.ChoiceField(choices=BalanceAsset.choices, required=False, default="")
+    counter_side = serializers.ChoiceField(choices=PartySide.choices, required=False, default="")
+    counter_party = serializers.IntegerField(required=False, allow_null=True, default=None)
+    adjustment = serializers.ChoiceField(choices=AdjustmentDirection.choices, required=False,
+                                         default="")
 
 
 class SettlementSerializer(serializers.ModelSerializer):
     party_name = serializers.CharField(source="party.name")
     currency = serializers.CharField(source="currency.code", default=None)
+    counter_party_name = serializers.CharField(source="counter_party.name", default=None)
 
     class Meta:
         model = Settlement
         fields = ["id", "number", "status", "kind", "side", "party", "party_name", "branch",
                   "business_date", "method", "currency", "amount", "fx_rate",
                   "functional_amount", "karat", "gross_weight_g", "fine_weight_g", "direction",
-                  "price_per_fine_g", "cash_box", "bank_account", "terminal", "reference",
-                  "note"]
+                  "price_per_fine_g", "cash_box", "bank_account", "terminal", "asset",
+                  "counter_side", "counter_party", "counter_party_name", "adjustment",
+                  "reference", "note"]
 
 
 class VoidSerializer(serializers.Serializer):
@@ -53,7 +68,7 @@ class VoidSerializer(serializers.Serializer):
 
 
 class SettlementViewSet(viewsets.GenericViewSet):
-    queryset = Settlement.objects.select_related("party", "currency")
+    queryset = Settlement.objects.select_related("party", "currency", "counter_party")
     serializer_class = SettlementSerializer
     filterset_fields = {"kind": ["exact"], "side": ["exact"], "party": ["exact"],
                         "status": ["exact"]}
@@ -92,7 +107,8 @@ class SettlementViewSet(viewsets.GenericViewSet):
             fine_weight_g=d["fine_weight_g"] or None, direction=d["direction"],
             price_per_fine_g=d["price_per_fine_g"] or None, reference=d["reference"],
             note=d["note"], cash_box_id=d["cash_box"], bank_account_id=d["bank_account"],
-            terminal_id=d["terminal"],
+            terminal_id=d["terminal"], asset=d["asset"], counter_side=d["counter_side"],
+            counter_party_id=d["counter_party"], adjustment=d["adjustment"],
         ), actor=request.actor)
         return self._respond(settlement, status.HTTP_201_CREATED)
 

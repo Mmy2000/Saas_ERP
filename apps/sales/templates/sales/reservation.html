@@ -79,7 +79,10 @@
   <aside class="space-y-6" data-no-print>
     {% if reservation.state == "open" %}
     {% if can_complete %}
-    <form data-api-form data-shape="reservation-complete" data-method="POST" data-endpoint="{{ endpoint }}complete/" data-success="{% translate 'Sold.' %}" class="card" novalidate>
+    <form data-api-form data-shape="reservation-complete" data-method="POST" data-endpoint="{{ endpoint }}complete/" data-success="{% translate 'Sold.' %}" class="card" novalidate
+          {% if completion.code %}data-code-paid="{{ completion.code.paid|yesno:'1,' }}" data-code-on-account="{{ completion.code.on_account|yesno:'1,' }}"
+          data-code-reason="{{ completion.code.reason }}" data-code-reason-on-account="{{ completion.code.reason_on_account }}"
+          data-code-can-skip="{{ completion.code.can_skip|yesno:'1,' }}" data-branch="{{ reservation.branch_id }}" data-reservation="{{ reservation.pk }}"{% endif %}>
       <div class="card-header"><h2 class="card-title">{% translate "Complete the sale" %}</h2></div>
       {% if completion.problem %}
       <p class="card-body text-sm text-red-700">{{ completion.problem }}</p>
@@ -104,6 +107,7 @@
           {% include "treasury/holder_selects.html" with prefix="c-" %}
         </div>
         {% endif %}
+        {% if completion.code %}<p class="col-span-full flex items-start gap-2 rounded-lg bg-brand-50/60 px-3 py-2 text-xs text-brand-800">{% icon "shield-check" "size-4" %}<span>{% translate "A code will be sent to the customer's phone" %}</span></p>{% endif %}
         <button type="submit" class="btn btn-primary w-full col-span-full">{% icon "check" "size-4" %}{% translate "Complete the sale" %}</button>
       </div>
       {% endif %}
@@ -152,4 +156,5 @@
   </aside>
 </div>
 <span hidden data-branch data-value="{{ reservation.branch_id }}"></span>
+{% if completion.code %}{% include "sales/_code_dialog.html" %}{% endif %}
 {% endblock %}

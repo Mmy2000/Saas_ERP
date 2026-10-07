@@ -68,6 +68,8 @@ class CompleteSerializer(serializers.Serializer):
     payments = PaymentWriteSerializer(many=True, required=False, default=list)
     payment_terms = serializers.ChoiceField(choices=PaymentTerms.choices, required=False,
                                             default=PaymentTerms.CASH)
+    code = serializers.IntegerField(required=False, allow_null=True, default=None)
+    skip_code = serializers.BooleanField(required=False, default=False)
 
 
 class CancelSerializer(serializers.Serializer):
@@ -178,7 +180,8 @@ class ReservationViewSet(viewsets.GenericViewSet):
         d = payload.validated_data
         invoice = service.complete_reservation(
             int(pk), payments=tuple(_payment(p) for p in d["payments"]),
-            payment_terms=d["payment_terms"], actor=request.actor)
+            payment_terms=d["payment_terms"], code_id=d["code"], skip_code=d["skip_code"],
+            actor=request.actor)
         return self._respond(self.get_object(), sale_id=invoice.pk)
 
     @action(detail=True, methods=["post"])

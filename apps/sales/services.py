@@ -57,6 +57,7 @@ from apps.pricing.selectors import current_price_board, fine_gram_value, functio
 from apps.pricing.selectors import fx_rate as rate_in_force
 from apps.treasury.holders import Holder, default_cash_box, resolve_tender
 
+from . import codes
 from .models import (
     PaymentKind,
     PaymentTerms,
@@ -123,6 +124,8 @@ class SaleInput:
     customer_phone: str = ""
     note: str = ""
     reservation_id: int | None = None  # completing a reservation (apps.sales.reservations)
+    code_id: int | None = None  # the verified one-time code (apps.sales.codes)
+    skip_code: bool = False  # sell without the code (permission sales.code.skip)
 
 
 @dataclass
@@ -461,6 +464,13 @@ def _ledger_lines(invoice: SalesInvoice, quote: SaleQuote, lines, trade_ins,
     return result
 
 
+def code_need(quote: SaleQuote, data: SaleInput) -> codes.Need:
+    """Whether this sale needs a one-time code from the customer's phone."""
+    return codes.need(total=quote.total, payment_terms=data.payment_terms,
+                      customer=quote.customer, walk_in_phone=data.customer_phone,
+                      reservation=quote.reservation)
+
+
 def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
     with transaction.atomic():
         quote = quote_sale(data, actor=actor)
@@ -469,6 +479,10 @@ def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
         if quote.problems:
             code = quote.problems[0]
             raise DomainError(PROBLEM_MESSAGES[code](), code=code)
+        sale_code, code_check = codes.settle(
+            need_=code_need(quote, data), code_id=data.code_id, skip=data.skip_code,
+            total=quote.total, customer=quote.customer, reservation=quote.reservation,
+            branch=quote.branch, actor=actor)
 
         today = timezone.localdate()
         customer = quote.customer
@@ -480,9 +494,12 @@ def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
             sold_by=getattr(actor, "user", None), note=data.note.strip(),
             subtotal_amount=quote.subtotal, discount_amount=quote.discount,
             total_amount=quote.total, trade_in_amount=quote.trade_in, paid_amount=quote.paid,
-            change_amount=quote.change, balance_amount=quote.balance,
+            change_amount=quote.change, balance_amount=quote.balance, code_check=code_check,
             created_by=getattr(actor, "user", None),
         )
+        if sale_code is not None:
+            sale_code.invoice = invoice
+            sale_code.save(update_fields=["invoice", "updated_at"])
         doc = DocRef(DOC_TYPE, invoice.pk)
 
         lines = []

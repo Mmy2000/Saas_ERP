@@ -53,6 +53,8 @@ class SaleSerializer(serializers.Serializer):
     customer_phone = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                            default="")
     note = serializers.CharField(required=False, allow_blank=True, default="")
+    code = serializers.IntegerField(required=False, allow_null=True, default=None)
+    skip_code = serializers.BooleanField(required=False, default=False)
 
 
 class VoidSerializer(serializers.Serializer):

@@ -30,52 +30,58 @@
           </select>
         </div>
         <div class="sm:col-span-2">
-          <span class="form-label">{% translate "With" %}</span>
-          <div class="segmented">
-            <label><input type="radio" name="side" value="customer" class="peer sr-only" data-side {% if side == "customer" %}checked{% endif %}>
-              <span class="segment">{% translate "Customer" %}</span></label>
-            <label><input type="radio" name="side" value="supplier" class="peer sr-only" data-side {% if side == "supplier" %}checked{% endif %}>
-              <span class="segment">{% translate "Supplier" %}</span></label>
-            <label><input type="radio" name="side" value="trade_account" class="peer sr-only" data-side {% if side == "trade_account" %}checked{% endif %}>
-              <span class="segment">{% translate "Trade account" %}</span></label>
-            <label><input type="radio" name="side" value="workshop" class="peer sr-only" data-side {% if side == "workshop" %}checked{% endif %}>
-              <span class="segment">{% translate "Workshop" %}</span></label>
-            {% if can_partners %}<label><input type="radio" name="side" value="partner" class="peer sr-only" data-side {% if side == "partner" %}checked{% endif %}>
-              <span class="segment">{% translate "Partner" %}</span></label>{% endif %}
+          <span class="form-label"><span data-label-with>{% translate "With" %}</span><span class="hidden" data-label-from>{% translate "From the account of" %}</span></span>
+          <div class="segmented flex-wrap">
+            {% for value, label, url in sides %}<label><input type="radio" name="side" value="{{ value }}" class="peer sr-only" data-side {% if side == value %}checked{% endif %}>
+              <span class="segment">{{ label }}</span></label>{% endfor %}
           </div>
         </div>
-        <div class="sm:col-span-2 {% if side != 'customer' %}hidden{% endif %}" data-party-for="customer">
-          <select class="form-input" data-party data-remote="{% url 'customer-list' %}" data-label-field="name" aria-label="{% translate 'Customer' %}">
-            {% if party and side == "customer" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+        {% for value, label, url in sides %}
+        <div class="sm:col-span-2 {% if side != value %}hidden{% endif %}" data-party-for="{{ value }}">
+          <select class="form-input" data-party data-remote="{{ url }}" data-label-field="name" aria-label="{{ label }}">
+            {% if party and side == value %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
           </select>
         </div>
-        <div class="sm:col-span-2 {% if side != 'supplier' %}hidden{% endif %}" data-party-for="supplier">
-          <select class="form-input" data-party data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}">
-            {% if party and side == "supplier" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
-          </select>
-        </div>
-        <div class="sm:col-span-2 {% if side != 'trade_account' %}hidden{% endif %}" data-party-for="trade_account">
-          <select class="form-input" data-party data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}">
-            {% if party and side == "trade_account" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
-          </select>
-        </div>
-        <div class="sm:col-span-2 {% if side != 'workshop' %}hidden{% endif %}" data-party-for="workshop">
-          <select class="form-input" data-party data-remote="{% url 'workshop-list' %}" data-label-field="name" aria-label="{% translate 'Workshop' %}">
-            {% if party and side == "workshop" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
-          </select>
-        </div>
-        {% if can_partners %}<div class="sm:col-span-2 {% if side != 'partner' %}hidden{% endif %}" data-party-for="partner">
-          <select class="form-input" data-party data-remote="{% url 'partner-list' %}" data-label-field="name" aria-label="{% translate 'Partner' %}">
-            {% if party and side == "partner" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
-          </select>
-        </div>{% endif %}
+        {% endfor %}
         <p class="form-error sm:col-span-2" data-error-for="party"></p>
+      </div>
+    </section>
+
+    <section class="card hidden" data-only="transfer adjustment">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2" data-only="transfer">
+          <span class="form-label">{% translate "To the account of" %}</span>
+          <div class="segmented flex-wrap">
+            {% for value, label, url in sides %}<label><input type="radio" name="counter_side" value="{{ value }}" class="peer sr-only" data-counter-side {% if forloop.first %}checked{% endif %}>
+              <span class="segment">{{ label }}</span></label>{% endfor %}
+          </div>
+        </div>
+        {% for value, label, url in sides %}
+        <div class="sm:col-span-2 {% if not forloop.first %}hidden{% endif %}" data-only="transfer" data-counter-for="{{ value }}">
+          <select class="form-input" data-counter data-remote="{{ url }}" data-label-field="name" aria-label="{{ label }}"></select>
+        </div>
+        {% endfor %}
+        <p class="form-error sm:col-span-2" data-only="transfer" data-error-for="counter_party"></p>
+        <p class="text-xs text-slate-500 sm:col-span-2" data-only="transfer">{% translate "The amount is taken from the first account (off its credit, or added to what it owes) and given to the second (off what it owes, or added to its credit). No cash moves: for example, a customer's credit pays another customer's debt." %}</p>
+        <div class="sm:col-span-2" data-only="adjustment">
+          <label class="form-label" for="f-adjustment">{% translate "Which way" %}</label>
+          <select id="f-adjustment" name="adjustment" class="form-input">{% for value, label in adjustments %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="adjustment"></p>
+          <p class="mt-1 text-xs text-slate-500">{% translate 'The difference goes to "Balance adjustments" in the profit and loss. Write the reason in the note.' %}</p>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="form-label">{% translate "Money or gold" %}</span>
+          <div class="segmented">
+            <label><input type="radio" name="asset" value="money" class="peer sr-only" data-asset checked><span class="segment">{% translate "Money" %}</span></label>
+            <label><input type="radio" name="asset" value="gold" class="peer sr-only" data-asset><span class="segment">{% translate "Gold" %}</span></label>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="card" data-group="money">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <div><label class="form-label" for="f-method">{% translate "How" %}</label>
+        <div data-payment-only><label class="form-label" for="f-method">{% translate "How" %}</label>
           <select id="f-method" name="method" class="form-input">{% for value, label in methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="method"></p></div>
         <div><label class="form-label" for="f-currency">{% translate "Currency" %}</label>
@@ -95,7 +101,7 @@
         <div><label class="form-label" for="f-gross">{% translate "Weight (g)" %}</label>
           <input id="f-gross" name="gross_weight_g" class="form-input num w-full text-start" inputmode="decimal">
           <p class="form-error" data-error-for="gross_weight_g"></p></div>
-        <p class="text-xs text-slate-500 sm:col-span-2">{% translate "Gold is taken from or added to the branch's scrap gold." %}</p>
+        <p class="text-xs text-slate-500 sm:col-span-2" data-payment-only>{% translate "Gold is taken from or added to the branch's scrap gold." %}</p>
       </div>
     </section>
 
@@ -119,7 +125,7 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div><label class="form-label" for="f-ref">{% translate "Reference" %}</label><input id="f-ref" name="reference" class="form-input" maxlength="60"></div>
-        <div class="sm:col-span-2"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"></div>
+        <div class="sm:col-span-2"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"><p class="form-error" data-error-for="note"></p></div>
       </div>
     </section>
   </div>

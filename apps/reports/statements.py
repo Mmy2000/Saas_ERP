@@ -35,7 +35,8 @@ ZERO = Decimal(0)
 # on their type: income under other income, expenses under operating expenses.
 SALES_ROLES = {"sales_gold", "sales_making", "sales_diamonds", "repair_income"}
 COST_ROLES = {"cogs_gold", "cogs_diamonds", "repair_costs"}
-OTHER_ROLES = {"metal_gain", "fx_gain", "metal_loss", "fx_loss", "rounding"}
+OTHER_ROLES = {"metal_gain", "fx_gain", "metal_loss", "fx_loss", "rounding",
+               "balance_adjustments"}
 
 
 @dataclass

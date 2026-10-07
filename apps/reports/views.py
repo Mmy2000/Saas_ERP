@@ -38,7 +38,9 @@ def _cell(value, places):
 def _shape(table) -> dict:
     """Rows as lists of cells in column order, for the template."""
     def cells(row):
+        urls = row.get("_urls") or {}
         return [{"value": row.get(c.key), "places": c.places, "kind": c.kind,
+                 "url": urls.get(c.key, ""),
                  "negative": c.numeric and (row.get(c.key) or 0) < 0} for c in table.columns]
     return {"title": table.title, "note": table.note, "columns": table.columns,
             "rows": [{"cells": cells(row), "style": row.get("_style", ""),

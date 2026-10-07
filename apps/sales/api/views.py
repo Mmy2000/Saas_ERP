@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.api.idempotency import idempotent
-from apps.sales import services
+from apps.sales import codes, services
 from apps.sales.models import SalesInvoice
 
 from .serializers import InvoiceSerializer, SaleSerializer, VoidSerializer
@@ -31,7 +31,7 @@ def sale_input(data) -> services.SaleInput:
                        for p in data["payments"]),
         payment_terms=data["payment_terms"], customer_id=data["customer"],
         customer_name=data["customer_name"], customer_phone=data["customer_phone"],
-        note=data["note"],
+        note=data["note"], code_id=data.get("code"), skip_code=data.get("skip_code", False),
     )
 
 
@@ -47,8 +47,14 @@ class QuoteView(APIView):
     required_permissions = {"POST": "sales.invoice.create"}
 
     def post(self, request):
-        quote = services.quote_sale(_parse(request), actor=request.actor)
+        data = _parse(request)
+        quote = services.quote_sale(data, actor=request.actor)
+        need = services.code_need(quote, data)
         return Response({
+            "code": {"needed": need.needed, "reason": need.reason,
+                     "phone": codes.masked(need.phone) if need.phone else "",
+                     "can_skip": need.needed and request.actor.can("sales.code.skip",
+                                                                   branch=quote.branch)},
             "board": quote.board.pk,
             "max_discount_rate": request.actor.limit(services.DISCOUNT_LIMIT),
             "max_diamond_discount_rate": request.actor.limit(services.DIAMOND_DISCOUNT_LIMIT),

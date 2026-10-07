@@ -16,6 +16,8 @@ class SettlementKind(models.TextChoices):
     METAL_IN = "metal_in", _("Gold received")
     METAL_OUT = "metal_out", _("Gold given")
     CONVERSION = "conversion", _("Gold balance settled in money")
+    TRANSFER = "transfer", _("Balance moved to another account")
+    ADJUSTMENT = "adjustment", _("Balance adjustment")
 
 
 class PartySide(models.TextChoices):
@@ -37,6 +39,18 @@ class ConversionDirection(models.TextChoices):
 
     WE_OWE_GOLD = "we_owe_gold", _("We owe them gold: pay it in money instead")
     THEY_OWE_GOLD = "they_owe_gold", _("They owe us gold: they pay money instead")
+
+
+class BalanceAsset(models.TextChoices):
+    """What a transfer or an adjustment moves: money in a currency, or gold (fine grams)."""
+
+    MONEY = "money", _("Money")
+    GOLD = "gold", _("Gold")
+
+
+class AdjustmentDirection(models.TextChoices):
+    RAISE = "raise", _("Add to what they owe us")
+    LOWER = "lower", _("Take off what they owe us")
 
 
 class Settlement(Document):
@@ -64,6 +78,14 @@ class Settlement(Document):
     direction = models.CharField(max_length=16, choices=ConversionDirection.choices, blank=True)
     price_per_fine_g = models.DecimalField(max_digits=18, decimal_places=4, null=True,
                                            blank=True)
+    # Transfers: the balance is taken from `party` and given to `counter_party` (legacy GHC29,
+    # GHSS17). Adjustments: `party`'s balance goes up or down against "balance adjustments"
+    # (legacy GHC25, GHSS36, GHP17, GHSHH17).
+    asset = models.CharField(max_length=8, choices=BalanceAsset.choices, blank=True)
+    counter_side = models.CharField(max_length=16, choices=PartySide.choices, blank=True)
+    counter_party = models.ForeignKey("parties.Party", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+    adjustment = models.CharField(max_length=8, choices=AdjustmentDirection.choices, blank=True)
     reference = models.CharField(max_length=60, blank=True)
     journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
                                       on_delete=models.PROTECT, related_name="+")
@@ -72,7 +94,9 @@ class Settlement(Document):
         ordering = ["-business_date", "-id"]
         indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
                                 name="settlement_date_idx"),
-                   models.Index(fields=["tenant", "party"], name="settlement_party_idx")]
+                   models.Index(fields=["tenant", "party"], name="settlement_party_idx"),
+                   models.Index(fields=["tenant", "counter_party"],
+                                name="settlement_counter_idx")]
 
     def __str__(self):
         return self.number or f"#{self.pk}"

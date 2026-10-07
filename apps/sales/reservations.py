@@ -244,7 +244,8 @@ def quote_completion(reservation: Reservation, payments=(), *, actor=None):
 
 
 def complete_reservation(reservation_id: int, *, payments=(),
-                         payment_terms: str = PaymentTerms.CASH, actor=None) -> SalesInvoice:
+                         payment_terms: str = PaymentTerms.CASH, code_id: int | None = None,
+                         skip_code: bool = False, actor=None) -> SalesInvoice:
     with transaction.atomic():
         reservation = _open(reservation_id)
         if actor is not None:
@@ -254,7 +255,7 @@ def complete_reservation(reservation_id: int, *, payments=(),
         invoice = post_sale(SaleInput(
             branch_id=reservation.branch_id, lines=lines, payments=all_payments,
             payment_terms=payment_terms, customer_id=reservation.customer_id,
-            reservation_id=reservation.pk,
+            reservation_id=reservation.pk, code_id=code_id, skip_code=skip_code,
             note=_("Reservation %(number)s") % {"number": reservation.number}), actor=actor)
         leftover = reservation.deposit_amount - applied
         if leftover > 0:  # the price fell below the deposits: the rest is the customer's credit

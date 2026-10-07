@@ -1,0 +1,83 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Sale codes" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sale codes" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Before some sales, a one-time code goes to the customer's phone and the seller types in what the customer reads out. The sale goes through only with the right code, for that amount." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6">
+    {% if not can_send %}
+    <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-800" role="status">{% translate "Sending codes is not set up on the platform yet: sales that need a code can only be completed by someone allowed to skip it." %}</div>
+    {% endif %}
+    <form class="card" data-api-form data-method="PUT" data-endpoint="{% url 'sale-code-rules' %}" data-success="{% translate 'Saved.' %}" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "When a code is needed" %}</h2></div>
+      <div class="card-body space-y-4">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <label class="flex items-start gap-3"><input type="checkbox" name="on_account" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600" {% if rules.on_account %}checked{% endif %}>
+          <span class="text-sm"><span class="font-medium text-slate-900">{% translate "Sales left on the customer's account" %}</span><span class="block text-xs text-slate-500">{% translate "Anything not paid now is owed by the customer: they confirm it." %}</span></span></label>
+        <label class="flex items-start gap-3"><input type="checkbox" name="on_reservations" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600" {% if rules.on_reservations %}checked{% endif %}>
+          <span class="text-sm"><span class="font-medium text-slate-900">{% translate "Completing a reservation" %}</span><span class="block text-xs text-slate-500">{% translate "The person collecting is the customer who paid the deposits." %}</span></span></label>
+        <div><label class="form-label" for="r-above">{% translate "Any sale of at least" %} <span class="font-normal text-slate-400">({{ home_currency }}, {% translate "optional" %})</span></label>
+          <input id="r-above" name="above_amount" class="form-input num w-full text-start" inputmode="decimal" value="{{ rules.above_amount|default_if_none:''|stringformat:'s' }}">
+          <p class="form-error" data-error-for="above_amount"></p></div>
+        <p class="text-xs text-slate-500">{% translate "Codes go by WhatsApp, else SMS, are valid for 5 minutes and allow 5 tries. People with the permission \"Sell without the customer's code\" can skip it; the invoice says so." %}</p>
+      </div>
+      <div class="border-t border-slate-100 px-5 py-4"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button></div>
+    </form>
+  </div>
+
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Recent codes" %}</h2></div>
+      {% if rows %}
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "When" %}</th><th>{% translate "Customer" %}</th><th>{% translate "Phone" %}</th><th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th>{% translate "By" %}</th></tr></thead>
+          <tbody>
+          {% for row in rows %}{% with c=row.code %}
+            <tr>
+              <td class="whitespace-nowrap"><span class="num">{{ c.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+              <td><bdi>{{ c.customer.name|default:"—" }}</bdi><div class="text-xs text-slate-500">{{ c.branch.name }}</div></td>
+              <td><span class="num" dir="ltr">{{ row.phone }}</span>{% if c.channel %}<div class="text-xs text-slate-500">{{ c.channel }}{% if c.sends > 1 %} · ×{{ c.sends }}{% endif %}</div>{% endif %}</td>
+              <td class="text-end"><span class="num">{{ c.amount|num:2 }}</span></td>
+              <td>{% if row.state == "used" %}<a class="badge badge-success" href="{% url 'sale-detail' c.invoice_id %}">{% translate "Sold" %} · <span class="num">{{ c.invoice.number }}</span></a>
+                {% elif row.state == "verified" %}<span class="badge badge-brand">{% translate "Confirmed" %}</span>
+                {% elif row.state == "expired" %}<span class="badge">{% translate "Expired" %}</span>
+                {% else %}<span class="badge badge-warning">{% translate "Waiting" %}</span>{% endif %}
+                {% if c.attempts %}<div class="mt-1 text-xs text-slate-500">{% blocktranslate trimmed count n=c.attempts %}{{ n }} wrong try{% plural %}{{ n }} wrong tries{% endblocktranslate %}</div>{% endif %}</td>
+              <td class="text-sm text-slate-600">{{ c.created_by.display_name|default:"—" }}</td>
+            </tr>
+          {% endwith %}{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        {% translate "No codes sent yet" as empty_title %}
+        {% include "components/empty_state.html" with icon="shield-check" title=empty_title %}
+      {% endif %}
+    </section>
+    {% if skipped %}
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Sold without the code" %}</h2></div>
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Invoice" %}</th><th>{% translate "Customer" %}</th><th class="text-end">{% translate "Total" %}</th><th>{% translate "By" %}</th></tr></thead>
+          <tbody>
+          {% for invoice in skipped %}<tr>
+            <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'sale-detail' invoice.pk %}">{{ invoice.number }}</a><div class="num text-xs text-slate-500">{{ invoice.posted_at|date:"SHORT_DATETIME_FORMAT" }}</div></td>
+            <td><bdi>{{ invoice.buyer|default:"—" }}</bdi></td>
+            <td class="text-end"><span class="num">{{ invoice.total_amount|num:2 }}</span></td>
+            <td class="text-sm text-slate-600">{{ invoice.posted_by.display_name|default:"—" }}</td>
+          </tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

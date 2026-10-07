@@ -9,6 +9,10 @@ suppliers or trade accounts):
 * gold out    Dr party (fine g)        Cr scrap stock      + scrap lot out
 * conversion  the party's gold balance becomes a money balance at an agreed price per fine
               gram; the metal position account carries the metal side (like an FX position).
+* transfer    Dr the "from" party      Cr the "to" party   (money in a currency, or fine g)
+              e.g. a customer's credit pays another customer's debt; no cash moves.
+* adjustment  Dr party / Cr balance adjustments (raise), or the mirror image (lower), with a
+              reason; in money or fine grams.
 """
 
 from __future__ import annotations
@@ -43,7 +47,15 @@ from apps.pricing.selectors import fine_gram_value, functional_currency
 from apps.pricing.selectors import fx_rate as rate_in_force
 from apps.treasury.holders import ensure_cash_available, resolve_tender
 
-from .models import ConversionDirection, MoneyMethod, PartySide, Settlement, SettlementKind
+from .models import (
+    AdjustmentDirection,
+    BalanceAsset,
+    ConversionDirection,
+    MoneyMethod,
+    PartySide,
+    Settlement,
+    SettlementKind,
+)
 
 DOC_TYPE = "settlements.Settlement"
 PERMISSIONS = {
@@ -52,10 +64,13 @@ PERMISSIONS = {
     SettlementKind.METAL_IN: "settlements.metal.post",
     SettlementKind.METAL_OUT: "settlements.metal.post",
     SettlementKind.CONVERSION: "settlements.conversion.post",
+    SettlementKind.TRANSFER: "settlements.transfer.post",
+    SettlementKind.ADJUSTMENT: "settlements.adjust.post",
 }
 PREFIXES = {SettlementKind.RECEIPT: "RC", SettlementKind.PAYMENT: "PY",
             SettlementKind.METAL_IN: "GI", SettlementKind.METAL_OUT: "GO",
-            SettlementKind.CONVERSION: "GC"}
+            SettlementKind.CONVERSION: "GC",
+            SettlementKind.TRANSFER: "BT", SettlementKind.ADJUSTMENT: "BA"}
 PARTY_ACCOUNT = {PartySide.CUSTOMER: "customers", PartySide.SUPPLIER: "suppliers",
                  PartySide.TRADE_ACCOUNT: "trade_accounts", PartySide.WORKSHOP: "workshops",
                  PartySide.PARTNER: "partners_capital"}
@@ -80,6 +95,10 @@ class SettlementInput:
     cash_box_id: int | None = None
     bank_account_id: int | None = None
     terminal_id: int | None = None
+    asset: str = ""
+    counter_side: str = ""
+    counter_party_id: int | None = None
+    adjustment: str = ""
 
 
 def _field_error(field: str, message: str) -> ValidationError:
@@ -148,6 +167,50 @@ def _conversion(settlement: Settlement, data: SettlementInput) -> None:
     settlement.functional_amount = round_money(settlement.amount * settlement.fx_rate)
 
 
+def _balance(settlement: Settlement, data: SettlementInput) -> None:
+    """The amount of a transfer or an adjustment: money in a currency, or gold of a karat by
+    weight (the party's gold balance is in fine grams)."""
+    if data.asset not in BalanceAsset.values:
+        raise _field_error("asset", _("Choose money or gold."))
+    settlement.asset = data.asset
+    if data.asset == BalanceAsset.GOLD:
+        _metal(settlement, data)
+        if settlement.karat.metal.code != "gold":
+            raise _field_error("karat", _("Choose a gold karat."))
+        return
+    currency = Currency.objects.filter(code=data.currency_code, is_active=True).first()
+    if currency is None:
+        raise _field_error("currency", _("Unknown currency."))
+    settlement.currency = currency
+    settlement.amount = _positive(data.amount, Decimal("0.01"), "amount")
+    settlement.fx_rate = (Decimal(1) if currency.code == functional_currency()
+                          else rate_in_force(currency.code))
+    settlement.functional_amount = round_money(settlement.amount * settlement.fx_rate)
+
+
+def _transfer(settlement: Settlement, data: SettlementInput) -> None:
+    if data.counter_side not in PartySide.values:
+        raise _field_error("counter_party", _("Choose the account that receives the balance."))
+    counter = Party.objects.filter(pk=data.counter_party_id, is_active=True,
+                                   roles__role=data.counter_side).first()
+    if counter is None:
+        raise _field_error("counter_party", _("Choose the account that receives the balance."))
+    if counter.pk == settlement.party_id and data.counter_side == settlement.side:
+        raise _field_error("counter_party", _("Choose a different account."))
+    settlement.counter_side = data.counter_side
+    settlement.counter_party = counter
+    _balance(settlement, data)
+
+
+def _adjustment(settlement: Settlement, data: SettlementInput) -> None:
+    if data.adjustment not in AdjustmentDirection.values:
+        raise _field_error("adjustment", _("Choose which way the balance changes."))
+    if not data.note.strip():
+        raise _field_error("note", _("Write why the balance is adjusted."))
+    settlement.adjustment = data.adjustment
+    _balance(settlement, data)
+
+
 def _ledger_lines(settlement: Settlement) -> list[LedgerLine]:
     party_account = account_for(PARTY_ACCOUNT[settlement.side])
     party = settlement.party
@@ -167,6 +230,20 @@ def _ledger_lines(settlement: Settlement) -> list[LedgerLine]:
                          or settlement.terminal).account
         add(money_account, money, sign * settlement.amount, sign * value)
         add(party_account, money, -sign * settlement.amount, -sign * value, with_party=True)
+    elif kind in (SettlementKind.TRANSFER, SettlementKind.ADJUSTMENT):
+        if settlement.asset == BalanceAsset.GOLD:
+            commodity, quantity = metal_commodity("gold"), settlement.fine_weight_g
+        else:
+            commodity, quantity = money_commodity(settlement.currency), settlement.amount
+        if kind == SettlementKind.TRANSFER:
+            add(party_account, commodity, quantity, value, with_party=True)
+            lines.append(LedgerLine(account=account_for(PARTY_ACCOUNT[settlement.counter_side]),
+                                    commodity=commodity, quantity=-quantity,
+                                    functional_amount=-value, party=settlement.counter_party))
+        else:
+            sign = 1 if settlement.adjustment == AdjustmentDirection.RAISE else -1
+            add(party_account, commodity, sign * quantity, sign * value, with_party=True)
+            add(account_for("balance_adjustments"), commodity, -sign * quantity, -sign * value)
     elif kind in (SettlementKind.METAL_IN, SettlementKind.METAL_OUT):
         sign = 1 if kind == SettlementKind.METAL_IN else -1
         metal = metal_commodity(settlement.karat.metal.code)
@@ -211,6 +288,10 @@ def post_settlement(data: SettlementInput, *, actor=None) -> Settlement:
             _money(settlement, data)
         elif data.kind == SettlementKind.CONVERSION:
             _conversion(settlement, data)
+        elif data.kind == SettlementKind.TRANSFER:
+            _transfer(settlement, data)
+        elif data.kind == SettlementKind.ADJUSTMENT:
+            _adjustment(settlement, data)
         else:
             _metal(settlement, data)
         settlement.save()

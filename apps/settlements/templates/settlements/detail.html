@@ -20,8 +20,13 @@
       </div>
     </header>
     <dl class="divide-y divide-slate-100 text-sm">
-      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{{ settlement.get_side_display }}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{{ party_url }}">{{ settlement.party.name }}</a></dd></div>
-      {% if settlement.kind == "receipt" or settlement.kind == "payment" %}
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% if settlement.kind == "transfer" %}{% translate "From" %} · {% endif %}{{ settlement.get_side_display }}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{{ party_url }}">{{ settlement.party.name }}</a></dd></div>
+      {% if settlement.kind == "transfer" %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "To" %} · {{ settlement.get_counter_side_display }}</dt><dd><a class="font-medium text-brand-700 hover:underline" href="{{ counter_url }}">{{ settlement.counter_party.name }}</a></dd></div>{% endif %}
+      {% if settlement.kind == "adjustment" %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Which way" %}</dt><dd>{{ settlement.get_adjustment_display }}</dd></div>{% endif %}
+      {% if settlement.asset == "money" %}
+      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
+      {% if settlement.currency.code != home_currency %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Value" %}</dt><dd class="num">{{ settlement.functional_amount|num:2 }} {{ home_currency }} (× {{ settlement.fx_rate|num:4 }})</dd></div>{% endif %}
+      {% elif settlement.kind == "receipt" or settlement.kind == "payment" %}
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "How" %}</dt><dd>{{ settlement.get_method_display }}</dd></div>
       <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
       {% if settlement.currency.code != home_currency %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Value" %}</dt><dd class="num">{{ settlement.functional_amount|num:2 }} {{ home_currency }} (× {{ settlement.fx_rate|num:4 }})</dd></div>{% endif %}

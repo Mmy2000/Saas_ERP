@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
+from .codes import CodeRequestView, CodeResendView, CodeRulesView, CodeVerifyView
 from .reservations import ReservationViewSet
 from .returns import SalesReturnViewSet
 from .trade import TradeQuoteView, TradeReturnViewSet, TradeSaleViewSet
@@ -16,5 +17,9 @@ router.register("trade-returns", TradeReturnViewSet, basename="trade-return-api"
 urlpatterns = [
     path("quote/", QuoteView.as_view(), name="sales-quote"),
     path("trade/quote/", TradeQuoteView.as_view(), name="trade-quote"),
+    path("codes/", CodeRequestView.as_view(), name="sale-code-request"),
+    path("codes/rules/", CodeRulesView.as_view(), name="sale-code-rules"),
+    path("codes/<int:pk>/resend/", CodeResendView.as_view(), name="sale-code-resend"),
+    path("codes/<int:pk>/verify/", CodeVerifyView.as_view(), name="sale-code-verify"),
     *router.urls,
 ]

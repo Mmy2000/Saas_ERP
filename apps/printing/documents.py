@@ -582,8 +582,20 @@ def build_settlement(s, design, ctx=None):
         side = s.get_side_display()
         method = s.get_method_display() if s.kind in ("receipt", "payment") else ""
         direction = s.get_direction_display() if s.kind == "conversion" else ""
+        adjustment = s.get_adjustment_display() if s.kind == "adjustment" else ""
+        counter_side = s.get_counter_side_display() if s.counter_party_id else ""
     meta, totals = [], []
-    if s.kind in ("receipt", "payment"):
+    party = [(side, s.party.name)]
+    if s.kind == "transfer":
+        party = [(f"{_t(_('From'), design.language)} · {side}", s.party.name),
+                 (f"{_t(_('To'), design.language)} · {counter_side}", s.counter_party.name)]
+    if adjustment:
+        meta.append((_("Which way"), adjustment))
+    if s.asset == "money":
+        totals.append((_("Amount"), f"{_num(s.amount)} {s.currency.code}", True))
+        if s.currency.code != home:
+            totals.append((_("Value"), f"{_num(s.functional_amount)} {home}", False))
+    elif s.kind in ("receipt", "payment"):
         meta.append((_("How"), method))
         totals.append((_("Amount"), f"{_num(s.amount)} {s.currency.code}", True))
         if s.currency.code != home:
@@ -600,7 +612,7 @@ def build_settlement(s, design, ctx=None):
     meta.append((_("Reference"), s.reference))
     return make_doc(TYPES["settlement"], design, title=title,
                     company=_record_company(s.branch), number=s.number, date=_when(s),
-                    status=s.status, meta=meta, party=[(side, s.party.name)], totals=totals,
+                    status=s.status, meta=meta, party=party, totals=totals,
                     currency=home, sections=_note(_("Note"), s.note))
 
 

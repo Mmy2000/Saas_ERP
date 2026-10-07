@@ -13,3 +13,5 @@ if not env("EMAIL_URL", default=""):
     EMAIL_FILE_PATH = BASE_DIR / "var" / "mail"  # noqa: F405
 SITE_SCHEME = env("SITE_SCHEME", default="http")
 SITE_PORT = env("SITE_PORT", default=":8000")
+# One-time codes are logged instead of sent unless a channel is set up.
+CODE_CHANNELS = env.list("CODE_CHANNELS", default=["console"])

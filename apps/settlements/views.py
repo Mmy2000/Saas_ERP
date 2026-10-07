@@ -2,6 +2,7 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Currency, Karat
 from apps.iam.authz import permission_required
@@ -10,12 +11,20 @@ from apps.parties.models import Party
 from apps.pricing.selectors import fine_gram_value, functional_currency
 from apps.treasury.selectors import holder_choices
 
-from .models import ConversionDirection, MoneyMethod, PartySide, Settlement, SettlementKind
+from .models import (
+    AdjustmentDirection,
+    ConversionDirection,
+    MoneyMethod,
+    PartySide,
+    Settlement,
+    SettlementKind,
+)
 from .services import PERMISSIONS
 
 
 def _visible(request):
-    settlements = Settlement.objects.select_related("party", "currency", "karat__metal", "branch")
+    settlements = Settlement.objects.select_related("party", "currency", "karat__metal", "branch",
+                                                    "counter_party")
     branches = request.actor.branch_ids("settlements.view")
     return settlements if branches is None else settlements.filter(branch_id__in=branches)
 
@@ -39,6 +48,17 @@ PARTY_PAGES = {PartySide.PARTNER: "partner-edit",
                PartySide.TRADE_ACCOUNT: "trade-account-edit", PartySide.WORKSHOP: "workshop-edit"}
 
 
+def _sides(actor):
+    """The kinds of account the form offers, with the list each one searches."""
+    sides = [("customer", _("Customer"), "customer-list"),
+             ("supplier", _("Supplier"), "supplier-list"),
+             ("trade_account", _("Trade account"), "trade-account-list"),
+             ("workshop", _("Workshop"), "workshop-list")]
+    if actor.can("parties.partner.view"):
+        sides.append(("partner", _("Partner"), "partner-list"))
+    return [(value, label, reverse(url)) for value, label, url in sides]
+
+
 @permission_required("settlements.view")
 def new_settlement(request):
     actor = request.actor
@@ -58,6 +78,8 @@ def new_settlement(request):
         "side": side, "party": party,
         "branches": branches, "default_branch": request.membership.default_branch_id,
         "methods": MoneyMethod.choices, "directions": ConversionDirection.choices,
+        "adjustments": AdjustmentDirection.choices,
+        "sides": _sides(actor),
         "currencies": Currency.objects.filter(is_active=True),
         "home_currency": functional_currency(),
         "karats": Karat.objects.filter(is_active=True).select_related("metal"),
@@ -78,4 +100,7 @@ def settlement_detail(request, pk):
         "home_currency": functional_currency(),
         "endpoint": reverse("settlement-detail", args=[settlement.pk]),
         "party_url": reverse(PARTY_PAGES[settlement.side], args=[settlement.party_id]),
+        "counter_url": (reverse(PARTY_PAGES[settlement.counter_side],
+                                args=[settlement.counter_party_id])
+                        if settlement.counter_party_id else ""),
     })

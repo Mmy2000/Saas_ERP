@@ -225,6 +225,16 @@ JOBS_POLL_SECONDS = env.float("JOBS_POLL_SECONDS", default=2)
 # get the new price within a minute or so after a change.
 MARKET_POLL_MINUTES = env.int("MARKET_POLL_MINUTES", default=3)
 
+# One-time codes to customers' phones (apps.messaging.codes), tried in this order. The
+# WhatsApp gateway is the one Gweb uses; SMS is any provider taking mobile/message/sender.
+CODE_CHANNELS = env.list("CODE_CHANNELS", default=["whatsapp", "sms"])
+WHATSAPP_GATEWAY_URL = env("WHATSAPP_GATEWAY_URL", default="")
+WHATSAPP_GATEWAY_KEY = env("WHATSAPP_GATEWAY_KEY", default="")
+WHATSAPP_GATEWAY_ENDPOINT = env("WHATSAPP_GATEWAY_ENDPOINT", default="/whatsapp/send-otp/")
+SMS_API_URL = env("SMS_API_URL", default="")
+SMS_API_KEY = env("SMS_API_KEY", default="")
+SMS_SENDER = env("SMS_SENDER", default="")
+
 # E-mail: documents sent to customers and the daily reminders. EMAIL_URL is e.g.
 # smtp+tls://user:password@smtp.example.com:587 (development writes them to var/mail).
 _email = env.email_url("EMAIL_URL", default="smtp://localhost:25")

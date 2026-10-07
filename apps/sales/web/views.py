@@ -193,6 +193,22 @@ def _with_stock(reservation):
                                  and balance.qty >= line.qty)
     return lines
 
+def _completion_code(request, reservation, total):
+    """Whether completing needs the customer's code: paid now, or with the rest left on their
+    account (the shop's rules may differ)."""
+    from apps.sales import codes
+    from apps.sales.models import PaymentTerms
+
+    paid, on_account = (codes.need(total=total, payment_terms=terms,
+                                   customer=reservation.customer, reservation=reservation)
+                        for terms in (PaymentTerms.CASH, PaymentTerms.CREDIT))
+    if not (paid.needed or on_account.needed):
+        return None
+    return {"paid": paid.needed, "on_account": on_account.needed,
+            "reason": paid.reason, "reason_on_account": on_account.reason,
+            "can_skip": request.actor.can("sales.code.skip", branch=reservation.branch)}
+
+
 @permission_required("sales.reservation.view")
 def reservation_detail(request, pk):
     reservation = _visible_reservations(request).select_related("price_board").filter(
@@ -205,7 +221,8 @@ def reservation_detail(request, pk):
             _lines, _payments, applied, probe = quote_completion(reservation, actor=request.actor)
             completion = {"total": probe.total, "applied": applied,
                           "rest": probe.due - applied,
-                          "leftover": reservation.deposit_amount - applied}
+                          "leftover": reservation.deposit_amount - applied,
+                          "code": _completion_code(request, reservation, probe.total)}
         except (DomainError, ValidationError) as exc:
             completion = {"problem": exc.message}
     allowed = request.actor.branch_ids("sales.reservation.view")
@@ -218,4 +235,32 @@ def reservation_detail(request, pk):
         "currencies": Currency.objects.filter(is_active=True),
         "endpoint": reverse("sales-reservation-detail", args=[reservation.pk]),
         **holder_choices(allowed),
+    })
+
+
+@permission_required("sales.code.manage")
+def sale_code_rules(request):
+    from apps.messaging.codes import configured
+    from apps.sales import codes
+    from apps.sales.models import SaleCode
+
+    recent = SaleCode.objects.select_related("customer", "branch", "invoice",
+                                             "created_by").order_by("-created_at")[:30]
+    now = timezone.now()
+    rows = []
+    for code in recent:
+        if code.invoice_id:
+            state = "used"
+        elif code.verified_at:
+            state = "verified"
+        elif code.expires_at < now:
+            state = "expired"
+        else:
+            state = "waiting"
+        rows.append({"code": code, "phone": codes.masked(code.phone), "state": state})
+    return render(request, "sales/code_rules.html", {
+        "rules": codes.rules(), "can_send": configured(), "rows": rows,
+        "home_currency": functional_currency(),
+        "skipped": SalesInvoice.objects.filter(code_check="skipped").select_related(
+            "customer", "branch", "posted_by").order_by("-posted_at")[:10],
     })

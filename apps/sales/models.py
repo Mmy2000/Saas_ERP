@@ -38,6 +38,11 @@ class SalesInvoice(Document):
     balance_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
                                       on_delete=models.PROTECT, related_name="+")
+    # A one-time code sent to the customer's phone confirmed the sale, or someone allowed to
+    # skipped it (apps.sales.codes). Blank: no code was needed.
+    code_check = models.CharField(max_length=10, choices=[("confirmed", _("Code confirmed")),
+                                                          ("skipped", _("Code skipped"))],
+                                  blank=True)
 
     class Meta(Document.Meta):
         ordering = ["-business_date", "-id"]
@@ -421,3 +426,45 @@ class TradeReturnLine(TenantScopedModel):
             models.Index(fields=["tenant", "trade_return"], name="trade_returnline_idx"),
             models.Index(fields=["tenant", "original_line"], name="trade_returnline_orig_idx"),
         ]
+
+
+class SaleCodeRules(TenantScopedModel):
+    """When a sale needs a one-time code from the customer's phone (one row per client;
+    feature "sale_codes"). Legacy: Gweb's single on/off switch for reservation pick-ups."""
+
+    on_account = models.BooleanField(default=True)  # sales left on the customer's account
+    on_reservations = models.BooleanField(default=True)  # completing a reservation
+    above_amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant"], name="sales_code_rules_uniq")]
+
+
+class SaleCode(TenantScopedModel):
+    """A one-time code sent to a customer for one sale of one amount. Only a keyed hash of the
+    code is kept. Verified codes are used by the sale they were sent for, once."""
+
+    branch = models.ForeignKey("org.Branch", on_delete=models.PROTECT, related_name="+")
+    customer = models.ForeignKey("parties.Party", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    reservation = models.ForeignKey(Reservation, null=True, blank=True, on_delete=models.CASCADE,
+                                    related_name="+")
+    phone = models.CharField(max_length=20)  # E.164
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    code_hash = models.CharField(max_length=64)
+    channel = models.CharField(max_length=10, blank=True)
+    sends = models.PositiveSmallIntegerField(default=0)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    last_sent_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(null=True, blank=True)
+    invoice = models.OneToOneField(SalesInvoice, null=True, blank=True, on_delete=models.SET_NULL,
+                                   related_name="sale_code")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        indexes = [models.Index(fields=["tenant", "phone", "-created_at"],
+                                name="sales_code_phone_idx")]

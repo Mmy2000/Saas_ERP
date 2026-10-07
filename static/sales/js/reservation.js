@@ -6,6 +6,7 @@ import { registerShaper } from "../../core/js/forms.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 import { initPaymentBlocks, payment } from "../../treasury/js/payment_block.js";
+import { askForCode } from "./code.js";
 
 const fail = (error) => toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
 
@@ -16,8 +17,33 @@ registerShaper("reservation-complete", (_values, form) => {
   const block = form.querySelector("[data-payment]");
   const onAccount = block.querySelector("[data-on-account]")?.checked;
   const paying = block.querySelector("[data-amount]") && !onAccount;
-  return { payments: paying ? [payment(block)] : [], payment_terms: onAccount ? "credit" : "cash" };
+  const body = { payments: paying ? [payment(block)] : [], payment_terms: onAccount ? "credit" : "cash" };
+  if (form.dataset.codeId) body.code = Number(form.dataset.codeId);
+  if (form.dataset.codeSkip) body.skip_code = true;
+  return body;
 });
+
+// Completing may need the code sent to the customer's phone: ask for it, then submit again.
+const completion = document.querySelector('form[data-shape="reservation-complete"][data-reservation]');
+completion?.addEventListener("submit", async (event) => {
+  const form = completion;
+  const onAccount = form.querySelector("[data-on-account]")?.checked;
+  const needed = onAccount ? form.dataset.codeOnAccount : form.dataset.codePaid;
+  if (!needed || form.dataset.codeId || form.dataset.codeSkip) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const answer = await askForCode({
+    branch: Number(form.dataset.branch), reservation: Number(form.dataset.reservation),
+    reason: onAccount ? form.dataset.codeReasonOnAccount : form.dataset.codeReason,
+    canSkip: Boolean(form.dataset.codeCanSkip),
+  });
+  if (!answer) return;
+  if (answer.code) form.dataset.codeId = answer.code;
+  if (answer.skip) form.dataset.codeSkip = "1";
+  form.requestSubmit(); // the body is shaped right away: a failed sale asks for a new code
+  delete form.dataset.codeId;
+  delete form.dataset.codeSkip;
+}, { capture: true });
 registerShaper("reservation-cancel", (_values, form) => {
   const block = form.querySelector("[data-payment]");
   const chosen = block.querySelector("[data-method]") ? payment(block) : { kind: "customer_credit" };

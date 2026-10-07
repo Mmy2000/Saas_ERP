@@ -7,5 +7,7 @@ register_permissions(_("Settlements"), [
     ("settlements.money.post", _("Record money received from or paid to customers and suppliers")),
     ("settlements.metal.post", _("Record gold received from or given to customers and suppliers")),
     ("settlements.conversion.post", _("Settle gold balances in money")),
+    ("settlements.transfer.post", _("Move a balance from one account to another")),
+    ("settlements.adjust.post", _("Adjust the balances of customers, suppliers and others")),
     ("settlements.void", _("Cancel receipts, payments and settlements")),
 ])

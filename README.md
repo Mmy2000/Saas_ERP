@@ -306,6 +306,43 @@ inventory. A reservation can order bullion or coins by weight even if they are n
 dashboard says when ordered gold is in stock, and completing the reservation sells it from the
 lot.
 
+### Balance transfers, adjustments, unpaid invoices, visits and sale codes
+
+**Receipts & payments** has two more kinds (permissions `settlements.transfer.post`,
+`settlements.adjust.post`):
+
+* **Balance moved to another account** (legacy GHC29, GHSS17): money in any currency, or gold
+  by karat and weight, taken from one account (customer, supplier, trader, workshop or partner)
+  and given to another (Dr the first, Cr the second). No cash moves; e.g. a customer's credit
+  pays another customer's debt, or a customer's balance moves to their supplier account.
+* **Balance adjustment** (legacy GHC25, GHSS36, GHP17, GHSHH17): one screen for every kind of
+  account, in money or gold, raising or lowering what they owe against "Balance adjustments"
+  (5303, other income and losses), with a required reason.
+
+**Reports → Unpaid invoices** (legacy GHC27, done properly): what each customer or trader owes
+is their balance in the books; payments, returns and credits clear the oldest charges first, so
+the open items are the newest invoices (or repairs, opening balances, adjustments) adding up to
+the balance, each with its age and a link, then the balance of every account split into up to
+30, 31–60, 61–90 and over 90 days, on any date. Cancelled documents are left out.
+
+**Reports → Customer visits** (legacy GHC34): built from sales, returns, payments, gold received
+or given, reservations, repairs left and collected, and scrap bought; a visit is one person on
+one day; walk-ins are matched to an account by phone, else kept by phone or name. Shows the
+visits and value per person, new (first visit ever in the period) or returning, every visit
+with a link, and "Not back lately": people who came in the year before but not in the last 90
+days.
+
+**Sale codes** (feature "Sale confirmation codes", off unless switched on for the client;
+legacy GHC16/GHC30 OTP): before a sale left on the customer's account, a reservation pick-up
+or any sale above an amount (Settings → Sale codes, `sales.code.manage`), a 6-digit code goes
+to the customer's phone and the seller types what the customer reads out. The code is for that
+customer, branch and exact total, valid 5 minutes, 5 tries, a new one at most every minute and 3
+sends; only a keyed hash is stored; the sale uses it once. `sales.code.skip` sells without it and
+the invoice says "Code skipped". Codes go out through `CODE_CHANNELS` in order: `whatsapp` (the
+WhatsApp gateway Gweb uses: `WHATSAPP_GATEWAY_URL`, `WHATSAPP_GATEWAY_KEY`,
+`WHATSAPP_GATEWAY_ENDPOINT`), `sms` (`SMS_API_URL`, `SMS_API_KEY`, `SMS_SENDER`) or `console`
+(development and tests: logged, not sent).
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

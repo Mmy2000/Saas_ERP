@@ -73,6 +73,7 @@ CHART = [
     ("5208", "5",   _("Promotions and cashback"),             X, DR, True, NONE, MONEY, "promotions"),
     ("5301", "5",   _("Metal losses"),                        X, DR, True, NONE, ANY, "metal_loss"),
     ("5302", "5",   _("Exchange losses"),                     X, DR, True, NONE, MONEY, "fx_loss"),
+    ("5303", "5",   _("Balance adjustments"),                 X, DR, True, NONE, ANY, "balance_adjustments"),
     ("5401", "5",   _("Rounding differences"),                X, DR, True, NONE, MONEY, "rounding"),
 ]
 

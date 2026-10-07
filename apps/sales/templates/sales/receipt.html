@@ -27,6 +27,7 @@
         <p class="num text-xl font-semibold text-slate-900">{{ invoice.number }}</p>
         <p class="num text-sm text-slate-500">{{ invoice.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
         <div class="mt-1">{% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}</div>
+        {% if invoice.code_check %}<div class="mt-1" data-no-print>{% if invoice.code_check == "confirmed" %}<span class="badge badge-success">{% icon "shield-check" "size-3.5" %}{{ invoice.get_code_check_display }}</span>{% else %}<span class="badge badge-warning">{{ invoice.get_code_check_display }}</span>{% endif %}</div>{% endif %}
       </div>
     </header>
     <div class="flex flex-wrap justify-between gap-4 px-6 py-4 text-sm">

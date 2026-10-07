@@ -136,11 +136,14 @@
       </dl>
       <div class="space-y-3 border-t border-slate-100 p-5">
         <ul class="space-y-1 text-sm text-red-600" data-problems></ul>
+        <p class="hidden items-start gap-2 rounded-lg bg-brand-50/60 px-3 py-2 text-xs text-brand-800" data-code-hint>{% icon "shield-check" "size-4" %}<span>{% translate "A code will be sent to the customer's phone" %} (<span data-code-reason></span>)<span class="num block" dir="ltr" data-code-phone></span></span></p>
         <button type="button" class="btn btn-primary w-full py-3 text-base" data-complete disabled>{% icon "check" "size-5" %}{% translate "Complete sale" %}</button>
       </div>
     </section>
   </aside>
 </div>
+
+{% include "sales/_code_dialog.html" %}
 
 <template id="line-row">
   <tr>
