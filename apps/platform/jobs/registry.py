@@ -47,6 +47,7 @@ class Schedule:
     at: time  # local time: the client's time zone, or the server's for platform tasks
     until: time  # missed by then (no worker running): skipped for that day
     monthday: int | None = None  # only on this day of the month (None: every day)
+    every_minutes: int | None = None  # a repeating task instead of a daily one
 
 
 TASKS: dict[str, Task] = {}
@@ -68,6 +69,15 @@ def daily(task_name: str, *, at: time, until: time | None = None) -> None:
         until = time(min(at.hour + 6, 23), at.minute if at.hour + 6 <= 23 else 59)
     if not any(s.task == task_name for s in SCHEDULES):
         SCHEDULES.append(Schedule(task_name, at, until))
+
+
+def every(task_name: str, *, minutes: int) -> None:
+    """Every `minutes` around the clock, once per interval even with several workers (e.g. the
+    market prices poll). Meant for platform tasks: a client task would run for every client."""
+    if minutes < 1:
+        raise ValueError("At least one minute between runs.")
+    if not any(s.task == task_name for s in SCHEDULES):
+        SCHEDULES.append(Schedule(task_name, time(0, 0), time(23, 59), None, minutes))
 
 
 def monthly(task_name: str, *, day: int, at: time, until: time | None = None) -> None:

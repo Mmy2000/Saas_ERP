@@ -251,6 +251,12 @@ def needs_attention(actor) -> list[Attention]:
             items.append(Attention(_("Issued cheques due this week"), paying,
                                    reverse("cheques") + "?direction=issued&state=open",
                                    "landmark"))
+    if actor.can("pricing.feed.manage"):
+        from apps.pricing.models import PriceFeed
+
+        if PriceFeed.objects.filter(held__isnull=False).exists():
+            items.append(Attention(_("Gold price change waiting for your approval"), 1,
+                                   reverse("gold-prices"), "trending-up"))
     if actor.can("ledger.period.close") and actor.branch_ids("ledger.period.close") is None:
         from apps.ledger.closing import next_to_close
 

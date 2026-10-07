@@ -182,6 +182,15 @@ msgstr[5] ""
 "%(n)s عميل على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها"
 " (إعداداتهم الخاصة تبقى)."
 
+msgid "%(n)s failure in a row"
+msgid_plural "%(n)s failures in a row"
+msgstr[0] "%(n)s فشل متتالٍ"
+msgstr[1] "فشل واحد"
+msgstr[2] "فشلان متتاليان"
+msgstr[3] "%(n)s مرات فشل متتالية"
+msgstr[4] "%(n)s مرة فشل متتالية"
+msgstr[5] "%(n)s مرة فشل متتالية"
+
 msgid "%(n)s new in the last 30 days"
 msgstr "%(n)s جديد في آخر 30 يومًا"
 
@@ -261,6 +270,12 @@ msgstr ""
 msgid "%(size)s/s"
 msgstr "%(size)s/ث"
 
+msgid "%(source)s is not available right now: another source is used."
+msgstr "%(source)s غير متاح الآن: يُستخدم مصدر آخر."
+
+msgid "%(source)s is out of line with the other sources: not used."
+msgstr "%(source)s بعيد عن باقي المصادر: لا يُستخدم."
+
 msgid "%(weight)s g"
 msgstr "%(weight)s جم"
 
@@ -279,8 +294,20 @@ msgstr "ساعة"
 msgid "15 minutes"
 msgstr "15 دقيقة"
 
+msgid "21K buy"
+msgstr "شراء عيار 21"
+
+msgid "21K buy (used)"
+msgstr "شراء عيار 21 (المستخدم)"
+
 msgid "21K equivalent (g)"
 msgstr "المعادل عيار 21 (جم)"
+
+msgid "21K sell"
+msgstr "بيع عيار 21"
+
+msgid "21K sell (used)"
+msgstr "بيع عيار 21 (المستخدم)"
 
 msgid "24 hours"
 msgstr "24 ساعة"
@@ -336,6 +363,10 @@ msgstr "يمكن إقفال الشهر بعد انتهائه."
 
 msgid "A new owner needs a password."
 msgstr "المالك الجديد يحتاج كلمة مرور."
+
+msgid ""
+"A new price is published within minutes of a market move, with your margins."
+msgstr "يُنشر سعر جديد خلال دقائق من تحرك السوق، بهوامشك أنت."
 
 msgid "A piece must weigh more than zero."
 msgstr "يجب أن يكون وزن القطعة أكبر من صفر."
@@ -544,6 +575,9 @@ msgstr "إضافة سطر"
 msgid "Add one to take bank transfers and card payments."
 msgstr "أضف حسابًا لاستقبال التحويلات البنكية ومدفوعات البطاقات."
 
+msgid "Add partners"
+msgstr "إضافة الشركاء"
+
 msgid "Add scrap"
 msgstr "إضافة كسر"
 
@@ -699,6 +733,9 @@ msgstr "المبلغ المباع"
 msgid "An entry needs at least two lines."
 msgstr "يحتاج القيد إلى سطرين على الأقل."
 
+msgid "and"
+msgstr "و"
+
 msgid "and {n} more."
 msgstr "و{n} غيرها."
 
@@ -718,6 +755,9 @@ msgstr "هذا الحساب مرتبط بموظف آخر."
 msgid "Answered with “too many requests”"
 msgstr "رُدّ عليها بـ «طلبات كثيرة جدًا»"
 
+msgid "Answering"
+msgstr "يستجيب"
+
 msgid "Any branch"
 msgstr "أي فرع"
 
@@ -733,6 +773,9 @@ msgstr "تشغيل التطبيق"
 msgid "Appearance"
 msgstr "المظهر"
 
+msgid "Approve and publish"
+msgstr "وافق وانشر"
+
 msgid "Arabic"
 msgstr "العربية"
 
@@ -747,6 +790,9 @@ msgstr "مؤرشف"
 
 msgid "As of"
 msgstr "حتى تاريخ"
+
+msgid "Ask me first above (%%)"
+msgstr "اسألني أولًا فوق (%%)"
 
 msgid "Ask your workspace owner to give your role the needed permission."
 msgstr "اطلب من مالك الحساب منح دورك الصلاحية المطلوبة."
@@ -796,6 +842,9 @@ msgstr "المحاولات"
 
 msgid "Automatic"
 msgstr "تلقائي"
+
+msgid "Automatic gold prices"
+msgstr "أسعار الذهب التلقائية"
 
 msgid "Availability"
 msgstr "الإتاحة"
@@ -1117,6 +1166,9 @@ msgstr "شراء الكسر من الأفراد والعملاء وبيعه لل
 
 msgid "Buy scrap gold"
 msgstr "شراء ذهب كسر"
+
+msgid "Buy: add per gram"
+msgstr "الشراء: أضف للجرام"
 
 msgid "Buyer"
 msgstr "المشتري"
@@ -1781,6 +1833,9 @@ msgstr "كلاسيكي"
 msgid "Clean up old jobs"
 msgstr "تنظيف المهام القديمة"
 
+msgid "Clean up old market prices"
+msgstr "تنظيف أسعار السوق القديمة"
+
 msgid "Clear"
 msgstr "مسح"
 
@@ -2200,6 +2255,9 @@ msgstr "العميل/المورد"
 msgid "Customers"
 msgstr "العملاء"
 
+msgid "Customers and suppliers"
+msgstr "العملاء والموردون"
+
 msgid ""
 "Customers' pieces taken in, their bags, where they are and what is owed."
 msgstr "قطع العملاء المستلمة وأكياسها ومكانها والمستحق عليها."
@@ -2273,6 +2331,9 @@ msgstr "إيقاف"
 
 msgid "Deactivate customers"
 msgstr "إيقاف العملاء"
+
+msgid "Deactivate partners"
+msgstr "إيقاف الشركاء"
 
 msgid "Deactivate suppliers"
 msgstr "إيقاف الموردين"
@@ -2644,6 +2705,9 @@ msgstr "تم حذف النطاق."
 msgid "Done"
 msgstr "تمّت"
 
+msgid "Done."
+msgstr "تم."
+
 msgid "Dotted"
 msgstr "منقط"
 
@@ -2782,6 +2846,12 @@ msgstr "تعديل العملاء"
 msgid "Edit draft"
 msgstr "تعديل المسودة"
 
+msgid "Edit partner"
+msgstr "تعديل شريك"
+
+msgid "Edit partners"
+msgstr "تعديل الشركاء"
+
 msgid "Edit purchase"
 msgstr "تعديل الشراء"
 
@@ -2823,6 +2893,22 @@ msgstr "ساري من"
 
 msgid "Egypt"
 msgstr "مصر"
+
+msgid ""
+"Egyptian gold prices read for every client by the worker. A source silent "
+"for %(minutes)s minutes is not used; one more than %(pct)s%% away from the "
+"others is set aside. Clients that follow the market use the first agreeing "
+"source in this order, or the one they chose."
+msgstr ""
+"أسعار الذهب المصرية يقرأها العامل لكل العملاء. المصدر الذي لا يستجيب "
+"%(minutes)s دقيقة لا يُستخدم، والمصدر الذي يبتعد عن الباقين أكثر من "
+"%(pct)s%% يُستبعد. العملاء الذين يتبعون السوق يستخدمون أول مصدر متفق بهذا "
+"الترتيب، أو المصدر الذي اختاروه."
+
+msgid ""
+"Egyptian market prices for 21K, read every few minutes and checked against "
+"each other."
+msgstr "أسعار السوق المصري لعيار 21، تُقرأ كل بضع دقائق وتُراجَع مع بعضها."
 
 msgid "Egyptian pound"
 msgstr "جنيه مصري"
@@ -3233,6 +3319,15 @@ msgstr ""
 "اتبع مستنداً آخر ليُطبع بتصميمه (التخطيط والألوان والنصوص). الأعمدة "
 "والتفاصيل تبقى خاصة بهذا المستند."
 
+msgid "Follow the market automatically"
+msgstr "اتبع السوق تلقائيًا"
+
+msgid "Follow the market gold price"
+msgstr "اتباع سعر الذهب في السوق"
+
+msgid "Following the market"
+msgstr "يتبع السوق"
+
 msgid "Footer links"
 msgstr "روابط التذييل"
 
@@ -3399,11 +3494,22 @@ msgstr "سعر الذهب"
 msgid "Gold price board"
 msgstr "لوحة أسعار الذهب"
 
+msgid "Gold price change waiting for your approval"
+msgstr "تغيير في سعر الذهب ينتظر موافقتك"
+
 msgid "Gold price/g"
 msgstr "سعر جرام الذهب"
 
 msgid "Gold prices"
 msgstr "أسعار الذهب"
+
+msgid ""
+"Gold prices follow the market (iSagha, Gold Bullion, eDahab) with the shop's"
+" own margins and rounding, checked against each other; big jumps wait for "
+"approval."
+msgstr ""
+"أسعار الذهب تتبع السوق (iSagha وجولد بيليون وeDahab) بهوامش المحل وتقريبه، "
+"مع مراجعة المصادر مع بعضها؛ والقفزات الكبيرة تنتظر الموافقة."
 
 msgid ""
 "Gold prices, stock, sales and balances in grams and money, always in step."
@@ -3811,6 +3917,9 @@ msgstr "العيارات"
 msgid "Keep at least one label template."
 msgstr "يجب الإبقاء على قالب ملصق واحد على الأقل."
 
+msgid "Keep my prices"
+msgstr "أبقِ أسعاري"
+
 msgid "Keep on the customer's account"
 msgstr "إبقاؤه في حساب العميل"
 
@@ -3886,6 +3995,9 @@ msgstr "آخر 7 أيام"
 msgid "Last activity"
 msgstr "آخر نشاط"
 
+msgid "Last check"
+msgstr "آخر فحص"
+
 msgid "Last counted %(day)s"
 msgstr "آخر جرد %(day)s"
 
@@ -3901,11 +4013,17 @@ msgstr "آخر ظهور"
 msgid "Last sign-in"
 msgstr "آخر دخول"
 
+msgid "Last success"
+msgstr "آخر نجاح"
+
 msgid "Late"
 msgstr "متأخر"
 
 msgid "Later months are closed. Reopen them first, starting with the latest."
 msgstr "توجد شهور لاحقة مقفلة. أعد فتحها أولًا بدءًا من الأحدث."
+
+msgid "Latest price moves"
+msgstr "آخر تحركات الأسعار"
 
 msgid "Layers"
 msgstr "الطبقات"
@@ -4202,6 +4320,15 @@ msgstr "جهّز التصليح للتسليم قبل تسليمه."
 msgid "Marked as bounced."
 msgstr "سُجّل كمرتد."
 
+msgid "Market 21K %(sell)s / %(buy)s (%(source)s)"
+msgstr "السوق عيار 21 %(sell)s / %(buy)s (%(source)s)"
+
+msgid "Market price source changed"
+msgstr "تغيير مصدر أسعار السوق"
+
+msgid "Market prices"
+msgstr "أسعار السوق"
+
 msgid "Marquise"
 msgstr "ماركيز"
 
@@ -4281,8 +4408,10 @@ msgstr "حركة الأموال بين خزائنك وحساباتك البنك�
 msgid "Money only"
 msgstr "نقدية فقط"
 
-msgid "Money or gold moving between you and a customer, supplier or trader."
-msgstr "نقدية أو ذهب بينك وبين عميل أو مورد أو تاجر."
+msgid ""
+"Money or gold moving between you and a customer, supplier, trader, workshop "
+"or partner."
+msgstr "نقدية أو ذهب بينك وبين عميل أو مورد أو تاجر أو ورشة أو شريك."
 
 msgid "Money paid"
 msgstr "صرف نقدية"
@@ -4436,6 +4565,13 @@ msgid ""
 " or cancelled."
 msgstr "السالب: مبلغ تحتفظ به للعميل حتى إتمام الحجز أو إلغائه."
 
+msgid ""
+"Negative: what the business owes the partner (money or gold put in). "
+"Positive: what the partner has taken out beyond it."
+msgstr ""
+"السالب: ما على النشاط للشريك (نقدية أو ذهب دفعه). الموجب: ما سحبه الشريك "
+"زيادة عن ذلك."
+
 msgid "Negative: you owe the supplier."
 msgstr "السالب: مستحق للمورد عليك."
 
@@ -4512,6 +4648,9 @@ msgstr "عيار جديد"
 
 msgid "New opening balances"
 msgstr "أرصدة افتتاحية جديدة"
+
+msgid "New partner"
+msgstr "شريك جديد"
 
 msgid "New password"
 msgstr "كلمة المرور الجديدة"
@@ -4675,6 +4814,11 @@ msgstr "لا يوجد حساب مرتبط، فلا تُحتسب مبيعات."
 msgid "No logo"
 msgstr "لا يوجد شعار"
 
+msgid ""
+"No market prices yet: they appear here once the platform has read them (a "
+"few minutes)."
+msgstr "لا توجد أسعار سوق بعد: تظهر هنا بعد أن تقرأها المنصة (بضع دقائق)."
+
 msgid "No matches"
 msgstr "لا توجد نتائج"
 
@@ -4689,6 +4833,9 @@ msgstr "لا توجد حركات للمطابقة حتى هذا التاريخ."
 
 msgid "No opening balances yet"
 msgstr "لا توجد أرصدة افتتاحية بعد"
+
+msgid "No partners yet"
+msgstr "لا يوجد شركاء بعد"
 
 msgid "No payroll paid yet"
 msgstr "لم يُصرف أي مسير رواتب بعد"
@@ -4710,6 +4857,9 @@ msgstr "لا توجد قطع بعد"
 
 msgid "No price set"
 msgstr "بدون سعر"
+
+msgid "No prices read yet"
+msgstr "لم تُقرأ أسعار بعد"
 
 msgid "No problems"
 msgstr "لا توجد مشكلات"
@@ -4737,6 +4887,13 @@ msgstr "لا توجد مبيعات بعد"
 
 msgid "No scrap in stock."
 msgstr "لا يوجد كسر في المخزون."
+
+msgid ""
+"No source has answered recently. Clients that follow the market keep their "
+"last price until one does."
+msgstr ""
+"لم يستجب أي مصدر مؤخرًا. العملاء الذين يتبعون السوق يحتفظون بآخر سعر حتى "
+"يستجيب أحدها."
 
 msgid "No stock yet"
 msgstr "لا يوجد مخزون بعد"
@@ -4808,6 +4965,12 @@ msgstr "لا يوجد بعد"
 msgid "Normal"
 msgstr "طبيعي"
 
+msgid "Not answering"
+msgstr "لا يستجيب"
+
+msgid "not answering"
+msgstr "لا يستجيب"
+
 msgid "Not available at this branch in this currency."
 msgstr "غير متاح في هذا الفرع بهذه العملة."
 
@@ -4828,6 +4991,9 @@ msgstr "المخزون غير كافٍ: المتاح %(available)s جم."
 
 msgid "Not expected here"
 msgstr "غير متوقعة هنا"
+
+msgid "Not following the market"
+msgstr "لا يتبع السوق"
 
 msgid "Not found."
 msgstr "غير موجود."
@@ -4934,6 +5100,9 @@ msgstr "من المصنعية"
 msgid "of the limit"
 msgstr "من الحد"
 
+msgid "Off"
+msgstr "متوقف"
+
 msgid "Offered"
 msgstr "معروضة"
 
@@ -5030,6 +5199,9 @@ msgstr "يمكن إعادة تشغيل المهمة المنتظرة أو الف
 
 msgid "Only an e-mail that was not sent can be sent again."
 msgstr "يمكن إعادة إرسال البريد الذي لم يُرسل فقط."
+
+msgid "Only between"
+msgstr "فقط بين"
 
 msgid "Only cheques received are deposited."
 msgstr "تُودَع الشيكات الواردة فقط."
@@ -5242,6 +5414,11 @@ msgstr "اسم مستخدم المالك"
 msgid "Owners"
 msgstr "الملاك"
 
+msgid ""
+"Owners and investors with a running account in the business, in money and in"
+" gold."
+msgstr "الملاك والمستثمرون الذين لهم حساب جارٍ في النشاط، بالنقدية وبالذهب."
+
 msgid "Padding"
 msgstr "الحشوة الداخلية"
 
@@ -5326,7 +5503,10 @@ msgid "Partner"
 msgstr "شريك"
 
 msgid "Partners"
-msgstr "العملاء والموردون"
+msgstr "الشركاء"
+
+msgid "Partners (owners)"
+msgstr "الشركاء (الملاك)"
 
 msgid "Partners' capital"
 msgstr "رأس مال الشركاء"
@@ -5352,8 +5532,14 @@ msgstr "تجاوزت موعدها"
 msgid "Pause"
 msgstr "إيقاف مؤقت"
 
+msgid "Pause until tomorrow"
+msgstr "أوقف حتى الغد"
+
 msgid "Paused"
 msgstr "متوقف مؤقتًا"
+
+msgid "Paused until %(until)s"
+msgstr "متوقف حتى %(until)s"
 
 msgid "Pay"
 msgstr "صرف"
@@ -5370,6 +5556,9 @@ msgstr "رده بتحويل بنكي"
 
 msgid "Pay back in cash"
 msgstr "رده نقدًا"
+
+msgid "Pay partner"
+msgstr "سداد للشريك"
 
 msgid "Pay supplier"
 msgstr "صرف للمورد"
@@ -5856,6 +6045,9 @@ msgstr "نشر أسعار الذهب"
 msgid "Publish new prices"
 msgstr "نشر أسعار جديدة"
 
+msgid "Publish only if it moves by at least"
+msgstr "انشر فقط إذا تحرك بمقدار"
+
 msgid "Publish prices"
 msgstr "نشر الأسعار"
 
@@ -5926,6 +6118,12 @@ msgstr "إعادة التفعيل"
 
 msgid "Read"
 msgstr "قراءة"
+
+msgid "Read market gold prices"
+msgstr "قراءة أسعار الذهب في السوق"
+
+msgid "Read the sources now"
+msgstr "اقرأ المصادر الآن"
 
 msgid "Read-only access."
 msgstr "صلاحية اطلاع فقط."
@@ -6378,6 +6576,9 @@ msgstr "وردي"
 msgid "Round"
 msgstr "مستدير"
 
+msgid "Round to"
+msgstr "قرّب إلى"
+
 msgid "Rounded corners"
 msgstr "تدوير الحواف"
 
@@ -6593,6 +6794,9 @@ msgstr "شراء كسر"
 msgid "Scrap buy price / g"
 msgstr "سعر شراء الكسر / جم"
 
+msgid "Scrap buy: add per gram"
+msgstr "شراء الكسر: أضف للجرام"
+
 msgid "Scrap buying price"
 msgstr "سعر شراء الكسر"
 
@@ -6710,6 +6914,9 @@ msgstr "بيع جملة له"
 msgid "Sell wholesale to trade accounts"
 msgstr "البيع بالجملة للتجار"
 
+msgid "Sell: add per gram"
+msgstr "البيع: أضف للجرام"
+
 msgid "Seller"
 msgstr "البائع"
 
@@ -6806,6 +7013,12 @@ msgstr "مُركَّب"
 
 msgid "Set a new password"
 msgstr "تعيين كلمة مرور جديدة"
+
+msgid ""
+"Set how gold prices follow the market, update them now, approve big changes"
+msgstr ""
+"ضبط طريقة اتباع أسعار الذهب للسوق، وتحديثها الآن، والموافقة على التغييرات "
+"الكبيرة"
 
 msgid "Set loose stones into a diamond mounting to record it here."
 msgstr "ركّب أحجارًا سائبة في شاتون ألماس لتظهر هنا."
@@ -6925,6 +7138,12 @@ msgstr "التوقيعات"
 msgid "Silver"
 msgstr "فضة"
 
+msgid "silver"
+msgstr "فضة"
+
+msgid "Silver follows the market too"
+msgstr "الفضة تتبع السوق أيضًا"
+
 msgid "Silver owed (fine g)"
 msgstr "فضة مستحقة (جرام صافٍ)"
 
@@ -6985,6 +7204,12 @@ msgstr ""
 
 msgid "Source"
 msgstr "المصدر"
+
+msgid "Sources in agreement"
+msgstr "المصادر المتفقة"
+
+msgid "Sources read: %(n)s price change(s)."
+msgstr "قُرئت المصادر: %(n)s تغيير في السعر."
 
 msgid "Space"
 msgstr "مسافة"
@@ -7185,6 +7410,12 @@ msgstr "موقوف"
 msgid "swap"
 msgstr "ذاكرة التبديل"
 
+msgid "Switch off"
+msgstr "أوقف"
+
+msgid "Switch on"
+msgstr "شغّل"
+
 msgid "Symbol"
 msgstr "الرمز"
 
@@ -7327,6 +7558,9 @@ msgstr "رفضه البنك: يعود المبلغ مستحقًا على الد�
 msgid "The bank refused it: you owe the amount again."
 msgstr "رفضه البنك: يعود المبلغ مستحقًا عليك."
 
+msgid "The best available"
+msgstr "الأفضل المتاح"
+
 msgid "The cheque"
 msgstr "الشيك"
 
@@ -7446,6 +7680,13 @@ msgstr "لا يمكن حذف العنوان الرئيسي."
 
 msgid "The making charge cannot be negative."
 msgstr "لا يمكن أن تكون المصنعية سالبة."
+
+msgid ""
+"The market moved %(pct)s%%: 21K would sell at %(sell)s. Big changes wait for"
+" your approval."
+msgstr ""
+"تحرك السوق %(pct)s%%: سيصبح بيع عيار 21 بسعر %(sell)s. التغييرات الكبيرة "
+"تنتظر موافقتك."
 
 msgid "The month is closed."
 msgstr "تم إقفال الشهر."
@@ -7611,6 +7852,12 @@ msgstr "لا توجد إيرادات أو مصروفات لإقفالها في %
 
 msgid "Thermal slip (80 mm)"
 msgstr "إيصال حراري (80 مم)"
+
+msgid ""
+"They appear when the worker reads the sources (every few minutes), or press "
+"“Read the sources now”."
+msgstr ""
+"تظهر عندما يقرأ العامل المصادر (كل بضع دقائق)، أو اضغط «اقرأ المصادر الآن»."
 
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
@@ -7792,6 +8039,9 @@ msgid ""
 msgstr ""
 "علّم الحركات الظاهرة في كشف البنك. عندما يساوي الرصيد المطابَق رصيد الكشف "
 "تكتمل التسوية."
+
+msgid "Time"
+msgstr "الوقت"
 
 msgid "Time zone"
 msgstr "المنطقة الزمنية"
@@ -8059,6 +8309,12 @@ msgstr "حتى"
 msgid "Update"
 msgstr "تحديث"
 
+msgid "Update now"
+msgstr "حدّث الآن"
+
+msgid "Updated"
+msgstr "التحديث"
+
 msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
 msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
 
@@ -8097,6 +8353,9 @@ msgstr "استخدام لون مساحة العمل (%(name)s)"
 
 msgid "Use this custom design"
 msgstr "استخدام هذا التصميم المخصص"
+
+msgid "Used"
+msgstr "المستخدم"
 
 msgid "Used in another piece"
 msgstr "مستخدمة في قطعة أخرى"
@@ -8179,6 +8438,9 @@ msgstr "عرض أسعار الذهب"
 
 msgid "View karats, currencies and categories"
 msgstr "عرض العيارات والعملات والمجموعات"
+
+msgid "View partners and their accounts"
+msgstr "عرض الشركاء وحساباتهم"
 
 msgid "View payroll and commissions"
 msgstr "عرض الرواتب والعمولات"
@@ -8444,6 +8706,9 @@ msgstr "بشهادة"
 
 msgid "With the country code. Leave it empty to choose the chat in WhatsApp."
 msgstr "مع كود الدولة. اتركه فارغًا لتختار المحادثة في واتساب."
+
+msgid "With your margins and rounding, %(karat)s would be:"
+msgstr "بهوامشك وتقريبك، سيكون %(karat)s:"
 
 msgid "Work"
 msgstr "العمل"

@@ -30,7 +30,39 @@ def gold_prices(request):
         "silver_karats": Karat.objects.select_related("metal")
         .filter(metal__code="silver", is_active=True),
         "home_currency": functional_currency(),
+        "feed": _feed_context(request),
     })
+
+
+def _feed_context(request) -> dict | None:
+    """The market prices card: each source, the price this shop would follow, its settings."""
+    from apps.platform.market.service import FRESH_FOR, deviation_pct, latest_quotes, market_price
+    from apps.platform.market.sources import SOURCES
+    from apps.platform.tenants.features import is_enabled
+
+    from ..feed import feed_settings, propose
+
+    if not is_enabled(request.tenant.pk, "price_feed"):
+        return None
+    feed = feed_settings()
+    market = market_price(feed.source)
+    rows = []
+    for source, quote, fresh in latest_quotes():
+        rows.append({"label": SOURCES[source.key].LABEL if source.key in SOURCES else source.key,
+                     "key": source.key, "quote": quote, "fresh": fresh,
+                     "checked_at": source.last_ok_at,
+                     "chosen": market is not None and market.source.pk == source.pk,
+                     "deviation": deviation_pct(quote.gold21_sell, market.median_sell)
+                     if market else None})
+    return {
+        "settings": feed, "market": market, "rows": rows, "fresh_minutes":
+        int(FRESH_FOR.total_seconds() // 60),
+        "proposal": propose(feed, market) if market else None,
+        "sources": [(key, module.LABEL) for key, module in SOURCES.items()],
+        "paused": bool(feed.paused_until and feed.paused_until > timezone.now()),
+        "rounding_steps": ["0.01", "1", "5", "10", "25"],
+        "rounding": format(feed.rounding.normalize(), "f"),
+    }
 
 
 @permission_required("pricing.fx.view")

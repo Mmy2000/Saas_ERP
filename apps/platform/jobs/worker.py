@@ -12,7 +12,7 @@ import logging
 import os
 import socket
 from contextlib import ExitStack, contextmanager
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
@@ -209,6 +209,9 @@ class Scheduler:
             targets = (self._tenant_zones(now).items() if spec.per_tenant
                        else [(None, settings.TIME_ZONE)])
             for tenant_id, zone in targets:
+                if schedule.every_minutes:
+                    queued += self._interval(schedule, tenant_id, now)
+                    continue
                 local = now.astimezone(_zone(zone))
                 key = (schedule.task, tenant_id, local.date())
                 if key in self._done or not schedule.at <= local.time() < schedule.until:
@@ -220,6 +223,19 @@ class Scheduler:
                     queued += 1
                 self._done.add(key)
         return queued
+
+    def _interval(self, schedule, tenant_id, now) -> int:
+        span = schedule.every_minutes * 60
+        bucket = datetime.fromtimestamp(int(now.timestamp()) // span * span, tz=UTC)
+        key = (schedule.task, tenant_id, bucket)
+        if key in self._done:
+            return 0
+        self._done.add(key)
+        self._done = {k for k in self._done if not isinstance(k[2], datetime)
+                      or k[2] >= bucket - timedelta(hours=1)}  # forget old intervals
+        self._done.add(key)
+        return int(enqueue(schedule.task, tenant_id=tenant_id,
+                           dedupe_key=f"every:{bucket.isoformat()}") is not None)
 
 
 def prune(now=None) -> dict:

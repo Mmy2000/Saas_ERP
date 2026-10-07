@@ -61,7 +61,7 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Production"), "production", "flame", "manufacturing.order.view",
                 ("production-new", "production-order")),
     ]),
-    (_("Partners"), [
+    (_("Customers and suppliers"), [
         NavItem(_("Customers"), "customers", "users", "parties.customer.view",
                 ("customer-new", "customer-edit", "customer-statement")),
         NavItem(_("Suppliers"), "suppliers", "truck", "parties.supplier.view",
@@ -70,6 +70,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                 ("trade-account-new", "trade-account-edit", "trade-account-statement")),
         NavItem(_("Workshops"), "workshops", "store", "parties.workshop.view",
                 ("workshop-new", "workshop-edit", "workshop-statement")),
+        NavItem(_("Partners"), "partners", "key-round", "parties.partner.view",
+                ("partner-new", "partner-edit", "partner-statement")),
         NavItem(_("Receipts & payments"), "settlements", "arrow-left-right", "settlements.view",
                 ("settlement-new", "settlement-view")),
     ]),

@@ -6,7 +6,7 @@
 <div class="mb-8">
   <a href="{% url 'settlements' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Receipts & payments" %}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New settlement" %}</h1>
-  <p class="mt-1 text-sm text-slate-500">{% translate "Money or gold moving between you and a customer, supplier or trader." %}</p>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Money or gold moving between you and a customer, supplier, trader, workshop or partner." %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -40,6 +40,8 @@
               <span class="segment">{% translate "Trade account" %}</span></label>
             <label><input type="radio" name="side" value="workshop" class="peer sr-only" data-side {% if side == "workshop" %}checked{% endif %}>
               <span class="segment">{% translate "Workshop" %}</span></label>
+            {% if can_partners %}<label><input type="radio" name="side" value="partner" class="peer sr-only" data-side {% if side == "partner" %}checked{% endif %}>
+              <span class="segment">{% translate "Partner" %}</span></label>{% endif %}
           </div>
         </div>
         <div class="sm:col-span-2 {% if side != 'customer' %}hidden{% endif %}" data-party-for="customer">
@@ -62,6 +64,11 @@
             {% if party and side == "workshop" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
           </select>
         </div>
+        {% if can_partners %}<div class="sm:col-span-2 {% if side != 'partner' %}hidden{% endif %}" data-party-for="partner">
+          <select class="form-input" data-party data-remote="{% url 'partner-list' %}" data-label-field="name" aria-label="{% translate 'Partner' %}">
+            {% if party and side == "partner" %}<option value="{{ party.pk }}" selected>{{ party.name }}</option>{% endif %}
+          </select>
+        </div>{% endif %}
         <p class="form-error sm:col-span-2" data-error-for="party"></p>
       </div>
     </section>

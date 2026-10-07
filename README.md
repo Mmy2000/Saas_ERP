@@ -250,6 +250,36 @@ one ledger entry of kind "opening" against the Opening balances equity account (
 - Cancelling reverses the entry and takes the pieces and weights back out; it is refused once a
   piece has been sold or moved.
 
+### Automatic gold prices (market feed)
+
+The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold
+Bullion and eDahab (`apps/platform/market/sources/`, stdlib HTTP, parsers ported from Gweb's
+`Cod/gold_sync`) in one background job for every client, instead of each shop scraping on its
+own. Each source keeps its health (last success, failures in a row, last error, time taken); a
+quote is stored only when its prices change, and implausible pages are refused (no 21K, buy
+above sell, karats out of order, a 21K price outside 500–100,000). The price to follow is
+cross-checked: a source silent for 20 minutes is not used, and with three or more answering,
+one more than 1.5% from the median is set aside. Console → **Market prices** shows each source,
+the price in use, the agreement, switches sources off and changes their order.
+
+Each client chooses on **Gold prices → Market prices** (feature "Automatic gold prices",
+permission `pricing.feed.manage`): follow automatically or not, the source (or the best
+available), amounts added per gram to the market's 21K sell, buy and scrap-buy prices, rounding
+(0.01 / 1 / 5 / 10 / 25), the minimum move worth publishing, shop hours, silver following the
+999 price, and the jump (default 3%) above which a new price waits for approval (dashboard
+reminder, Approve and publish / Keep my prices). "Update now" publishes at once; "Pause until
+tomorrow" stops it for the day. Boards published this way are marked "Automatic" with the market
+price and source in their note; other karats are derived by fineness as before.
+
+### Partners (owners and investors)
+
+**Customers and suppliers → Partners** (permissions `parties.partner.*`, legacy GHP11–GHP24): each
+partner has a running account on Partners' capital (3101) in any currency and in gold (fine
+grams). Money put in or taken out, gold brought in or taken out, and a gold balance paid in money
+("settle in gold value", legacy GHP15) all go through **Receipts & payments** with "Partner";
+opening balances through Opening balances; the statement (with PDF, e-mail and WhatsApp) and the
+balances list work as for the other parties. Negative = what the business owes the partner.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

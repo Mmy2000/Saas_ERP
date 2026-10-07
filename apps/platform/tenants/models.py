@@ -203,6 +203,7 @@ EVENT_LABELS = {
     "domain.removed": _("Domain removed"),
     "job.retried": _("Background job run again"),
     "job.cancelled": _("Background job cancelled"),
+    "market.source": _("Market price source changed"),
     "traffic.limit": _("Request limit changed"),
     "platform.settings": _("Platform settings changed"),
     "feature.client": _("Feature changed for a client"),

@@ -205,6 +205,12 @@ class TradeAccountViewSet(_PlainPartyViewSet):
     required_permissions = _permissions("trade_account")
 
 
+class PartnerViewSet(_PlainPartyViewSet):
+    role = PartyRoleType.PARTNER
+    create_service, update_service = "create_partner", "update_partner"
+    required_permissions = _permissions("partner")
+
+
 class WorkshopViewSet(_PlainPartyViewSet):
     role = PartyRoleType.WORKSHOP
     create_service, update_service = "create_workshop", "update_workshop"

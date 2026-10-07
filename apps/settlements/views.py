@@ -34,7 +34,8 @@ def settlements(request):
     })
 
 
-PARTY_PAGES = {PartySide.CUSTOMER: "customer-edit", PartySide.SUPPLIER: "supplier-edit",
+PARTY_PAGES = {PartySide.PARTNER: "partner-edit",
+               PartySide.CUSTOMER: "customer-edit", PartySide.SUPPLIER: "supplier-edit",
                PartySide.TRADE_ACCOUNT: "trade-account-edit", PartySide.WORKSHOP: "workshop-edit"}
 
 
@@ -61,6 +62,7 @@ def new_settlement(request):
         "home_currency": functional_currency(),
         "karats": Karat.objects.filter(is_active=True).select_related("metal"),
         "gold_value": fine_gram_value("gold"),
+        "can_partners": actor.can("parties.partner.view"),
         **holder_choices(allowed),
     })
 

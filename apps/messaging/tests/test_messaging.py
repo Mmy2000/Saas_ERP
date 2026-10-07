@@ -143,7 +143,7 @@ def test_email_a_statement(chromium, owner, tenant_a, sale):  # noqa: F811
     run_pending()
     filename, content, _kind = mail.outbox[0].attachments[0]
     assert content.startswith(b"%PDF-") and supplier.name in filename
-    assert _send(owner, doc_type="statement", role="partner", pk=supplier.pk, channel="email",
+    assert _send(owner, doc_type="statement", role="setter", pk=supplier.pk, channel="email",
                  to="a@b.co").status_code == 404
 
 

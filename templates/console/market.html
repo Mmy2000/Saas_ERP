@@ -1,0 +1,73 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Market prices" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Market prices" %}</h1>
+    <p class="mt-1.5 max-w-3xl text-sm text-slate-500">{% blocktranslate trimmed with minutes=fresh_minutes pct=outlier_pct %}Egyptian gold prices read for every client by the worker. A source silent for {{ minutes }} minutes is not used; one more than {{ pct }}% away from the others is set aside. Clients that follow the market use the first agreeing source in this order, or the one they chose.{% endblocktranslate %}</p>
+  </div>
+  <form method="post" action="{% url 'console-market-poll' %}">{% csrf_token %}<button class="btn btn-secondary">{% icon "repeat" "size-4" %}{% translate "Read the sources now" %}</button></form>
+</div>
+{% endblock %}
+{% block content %}
+{% if best %}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "21K sell (used)" %}</p><p class="mt-2 text-3xl font-semibold text-slate-900"><span class="num">{{ best.sell21|num:2 }}</span></p><p class="mt-1 text-xs text-slate-500">{{ best.quote.currency }} · {{ best_label }}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "21K buy (used)" %}</p><p class="mt-2 text-3xl font-semibold text-slate-900"><span class="num">{{ best.buy21|num:2 }}</span></p></div>
+  <div class="card card-body {% if best.notes %}border-amber-200 bg-amber-50/40{% endif %}"><p class="text-sm text-slate-500">{% translate "Sources in agreement" %}</p><p class="mt-2 text-3xl font-semibold text-slate-900"><span class="num">{{ best.agreeing|length }}</span></p>
+    {% for note in best.notes %}<p class="mt-1 text-xs text-amber-800">{{ note }}</p>{% endfor %}</div>
+</div>
+{% else %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{% icon "triangle-alert" "size-5 shrink-0" %}<p>{% translate "No source has answered recently. Clients that follow the market keep their last price until one does." %}</p></div>
+{% endif %}
+
+<section class="card overflow-hidden">
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Order" %}</th><th>{% translate "Source" %}</th><th>{% translate "Status" %}</th><th class="text-end">{% translate "21K sell" %}</th><th class="text-end">{% translate "21K buy" %}</th>
+        <th class="text-end">{% translate "Difference" %}</th><th>{% translate "Karats" %}</th><th>{% translate "Last success" %}</th><th class="text-end">{% translate "Time" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for row in rows %}{% with s=row.source %}
+        <tr class="{% if row.chosen %}bg-brand-50/40{% endif %}">
+          <td class="whitespace-nowrap">
+            <form method="post" action="{% url 'console-market-source' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="action" value="up"><button class="btn btn-ghost px-1.5 text-xs" aria-label="{% translate 'Move up' %}" {% if forloop.first %}disabled{% endif %}>{% icon "arrow-up" "size-3.5" %}</button></form>
+            <form method="post" action="{% url 'console-market-source' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="action" value="down"><button class="btn btn-ghost px-1.5 text-xs" aria-label="{% translate 'Move down' %}" {% if forloop.last %}disabled{% endif %}>{% icon "arrow-down" "size-3.5" %}</button></form>
+          </td>
+          <td><a class="font-medium text-brand-700 hover:underline" href="{{ row.url }}" target="_blank" rel="noopener noreferrer">{{ row.label }}</a>{% if row.chosen %} <span class="badge badge-brand ms-1">{% translate "Used" %}</span>{% endif %}</td>
+          <td>
+            {% if not s.is_enabled %}<span class="badge">{% translate "Off" %}</span>
+            {% elif row.fresh %}<span class="badge badge-success">{% translate "Answering" %}</span>
+            {% else %}<span class="badge badge-danger">{% translate "Not answering" %}</span>{% endif %}
+            {% if s.failures %}<div class="mt-1 max-w-xs text-xs text-red-600" title="{{ s.last_error }}">{% blocktranslate trimmed count n=s.failures %}{{ n }} failure in a row{% plural %}{{ n }} failures in a row{% endblocktranslate %}: {{ s.last_error|truncatechars:80 }}</div>{% endif %}
+          </td>
+          <td class="text-end">{% if row.quote %}<span class="num">{{ row.quote.gold21_sell|num:2 }}</span>{% endif %}</td>
+          <td class="text-end">{% if row.quote %}<span class="num">{{ row.quote.gold21_buy|num:2 }}</span>{% endif %}</td>
+          <td class="text-end">{% if row.deviation is not None %}<span class="num {% if row.deviation > outlier_pct %}text-red-600{% else %}text-slate-500{% endif %}">{{ row.deviation|num:2 }}%</span>{% endif %}</td>
+          <td class="text-xs text-slate-500">{% for karat, p in row.karats %}<span class="num">{{ karat }}</span>{% if not forloop.last %} · {% endif %}{% endfor %}{% if row.silver %} · {% translate "silver" %}{% endif %}</td>
+          <td class="text-sm text-slate-600">{% if s.last_ok_at %}{% blocktranslate trimmed with age=s.last_ok_at|timesince:now %}{{ age }} ago{% endblocktranslate %}{% else %}—{% endif %}</td>
+          <td class="text-end"><span class="num text-sm text-slate-500">{% if s.last_latency_ms is not None %}{{ s.last_latency_ms }} ms{% endif %}</span></td>
+          <td class="text-end"><form method="post" action="{% url 'console-market-source' s.pk %}">{% csrf_token %}<input type="hidden" name="action" value="{% if s.is_enabled %}disable{% else %}enable{% endif %}"><button class="btn btn-ghost text-xs">{% if s.is_enabled %}{% translate "Switch off" %}{% else %}{% translate "Switch on" %}{% endif %}</button></form></td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Latest price moves" %}</h2></div>
+  {% if recent %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "Source" %}</th><th class="text-end">{% translate "21K sell" %}</th><th class="text-end">{% translate "21K buy" %}</th></tr></thead>
+      <tbody>{% for quote in recent %}<tr><td><span class="num text-sm">{{ quote.fetched_at|date:"SHORT_DATETIME_FORMAT" }}</span></td><td>{{ quote.label }}</td>
+        <td class="text-end"><span class="num">{{ quote.gold21_sell|num:2 }}</span></td><td class="text-end"><span class="num">{{ quote.gold21_buy|num:2 }}</span></td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No prices read yet" as empty_title %}{% translate "They appear when the worker reads the sources (every few minutes), or press “Read the sources now”." as empty_text %}
+    {% include "components/empty_state.html" with icon="trending-up" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

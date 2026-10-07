@@ -1,12 +1,13 @@
 {% extends "layouts/app.html" %}
 {% load i18n static ui authz %}
 {% block title %}{% translate "Gold prices" %}{% endblock %}
-{% block head %}<script type="module" src="{% static 'pricing/js/board.js' %}"></script>{% endblock %}
+{% block head %}<script type="module" src="{% static 'pricing/js/board.js' %}"></script><script type="module" src="{% static 'pricing/js/feed.js' %}"></script>{% endblock %}
 {% block page_header %}
   {% translate "Gold prices" as title %}{% translate "Per-gram prices by karat. Documents keep the price that was in force when they were made." as subtitle %}
   {% include "components/page_header.html" %}
 {% endblock %}
 {% block content %}
+{% if feed %}{% include "pricing/_feed.html" %}{% endif %}
 {% can "pricing.board.publish" as can_publish %}
 <div class="grid grid-cols-1 gap-6 {% if can_publish %}xl:grid-cols-3{% endif %}">
   <section class="card {% if can_publish %}xl:col-span-2{% endif %}">
@@ -114,7 +115,7 @@
           <td>{{ past.reference_karat.label }}</td>
           <td class="text-end"><span class="num">{{ past.reference_line.sell_price_per_g|num:2 }}</span></td>
           <td class="text-end"><span class="num">{{ past.reference_line.buy_price_per_g|num:2 }}</span></td>
-          <td>{{ past.created_by.display_name|default:"—" }}</td>
+          <td>{% if past.source|slice:":5" == "feed:" %}<span class="badge badge-brand">{% translate "Automatic" %}</span>{% else %}{{ past.created_by.display_name|default:"—" }}{% endif %}</td>
           <td class="max-w-xs truncate text-slate-500">{{ past.note|default:"—" }}</td>
         </tr>
       {% endfor %}

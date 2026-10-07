@@ -15,6 +15,8 @@ NOT_TENANT_SCOPED = {
     "monitor.ServerSample",  # server readings for the console (no client data)
     "jobs.Job",  # the job queue for every client: ids only; the worker sets the tenant per job
     "jobs.Worker",  # running worker processes (console)
+    "market.MarketSource",  # public market price sources (no client data)
+    "market.MarketQuote",
     "tenants.TenantTraffic",  # request counters per client, written before tenant resolution
     "tenants.TenantRouteTraffic",
     "tenants.PlatformSettings",  # the platform's own branding (console settings)

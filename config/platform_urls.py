@@ -8,6 +8,7 @@ from django.urls import include, path
 
 from apps.core import media
 from apps.platform.console import jobs as console_jobs
+from apps.platform.console import market as console_market
 from apps.platform.console import views as console
 
 
@@ -37,6 +38,9 @@ urlpatterns = [
     path("clients/<int:pk>/access/", console.tenant_access, name="console-tenant-access"),
     path("server/", console.server, name="console-server"),
     path("jobs/", console_jobs.jobs, name="console-jobs"),
+    path("market/", console_market.market, name="console-market"),
+    path("market/read/", console_market.market_poll, name="console-market-poll"),
+    path("market/<int:pk>/", console_market.market_source, name="console-market-source"),
     path("jobs/<int:pk>/retry/", console_jobs.job_retry, name="console-job-retry"),
     path("jobs/<int:pk>/cancel/", console_jobs.job_cancel, name="console-job-cancel"),
     path("server/live/", console.server_live, name="console-server-live"),

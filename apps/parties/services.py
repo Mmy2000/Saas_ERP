@@ -264,6 +264,29 @@ def update_workshop(party_id: int, data: PartyData, *, actor=None) -> Party:
     return party
 
 
+def create_partner(data: PartyData, *, actor=None) -> Party:
+    """An owner or investor with a running account in the business: money and gold put in or
+    taken out, and gold balances settled in money (legacy `Fbp1`/`Fbp2`, GHP11-GHP24)."""
+    if actor is not None:
+        actor.require("parties.partner.create")
+    with transaction.atomic():
+        party = Party(kind=PartyKind.PERSON)
+        _apply_party(party, data)
+        _save_party(party, actor)
+        _ensure_role(party, PartyRoleType.PARTNER)
+    return party
+
+
+def update_partner(party_id: int, data: PartyData, *, actor=None) -> Party:
+    if actor is not None:
+        actor.require("parties.partner.edit")
+    with transaction.atomic():
+        party = _locked(party_id, PartyRoleType.PARTNER)
+        _apply_party(party, data)
+        _save_party(party, actor)
+    return party
+
+
 def set_party_active(party_id: int, role: str, active: bool, *, actor=None) -> Party:
     if actor is not None:
         actor.require(f"parties.{role}.deactivate")

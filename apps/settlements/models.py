@@ -23,6 +23,7 @@ class PartySide(models.TextChoices):
     SUPPLIER = "supplier", _("Supplier")
     TRADE_ACCOUNT = "trade_account", _("Trade account")
     WORKSHOP = "workshop", _("Workshop")
+    PARTNER = "partner", _("Partner")
 
 
 class MoneyMethod(models.TextChoices):

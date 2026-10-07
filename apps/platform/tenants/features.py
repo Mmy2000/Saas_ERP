@@ -89,6 +89,10 @@ FEATURES: list[Feature] = [
     Feature("reports", _("Reports"),
             _("Daily summary, gold balances, sales analysis and expenses, with export."),
             TOOLS, "chart-column", ("reports.",)),
+    Feature("price_feed", _("Automatic gold prices"),
+            _("Gold prices follow the market (iSagha, Gold Bullion, eDahab) with the shop's own "
+              "margins and rounding, checked against each other; big jumps wait for approval."),
+            MONEY, "trending-up", ("pricing.feed.",)),
     Feature("messaging", _("E-mail and WhatsApp"),
             _("Send invoices and statements as PDFs by e-mail or a WhatsApp link, and the "
               "daily reminders e-mail."),

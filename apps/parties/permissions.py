@@ -21,6 +21,12 @@ register_permissions(_("Trade accounts"), [
     ("parties.trade_account.edit", _("Edit trade accounts")),
     ("parties.trade_account.deactivate", _("Deactivate trade accounts")),
 ])
+register_permissions(_("Partners (owners)"), [
+    ("parties.partner.view", _("View partners and their accounts")),
+    ("parties.partner.create", _("Add partners")),
+    ("parties.partner.edit", _("Edit partners")),
+    ("parties.partner.deactivate", _("Deactivate partners")),
+])
 register_permissions(_("Workshops"), [
     ("parties.workshop.view", _("View workshops")),
     ("parties.workshop.create", _("Add workshops")),

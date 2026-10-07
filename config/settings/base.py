@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.platform.tenants",
     "apps.platform.monitor",
     "apps.platform.jobs",
+    "apps.platform.market",
     "apps.iam",
     "apps.org",
     "apps.catalog",
@@ -219,6 +220,9 @@ def derived_dev_key(secret: str, purpose: str) -> str:
 
 # Background jobs (apps.platform.jobs): `manage.py run_worker` waits this long when idle.
 JOBS_POLL_SECONDS = env.float("JOBS_POLL_SECONDS", default=2)
+# Market gold prices (apps.platform.market) are read this often; shops that follow the market
+# get the new price within a minute or so after a change.
+MARKET_POLL_MINUTES = env.int("MARKET_POLL_MINUTES", default=3)
 
 # E-mail: documents sent to customers and the daily reminders. EMAIL_URL is e.g.
 # smtp+tls://user:password@smtp.example.com:587 (development writes them to var/mail).

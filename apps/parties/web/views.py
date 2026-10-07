@@ -80,6 +80,20 @@ ROLES = {
         "actions": [("work-order-new", "workshop", _("Send gold"), "send",
                      "manufacturing.order.issue")],
     },
+    PartyRoleType.PARTNER: {
+        "title": _("Partners"),
+        "subtitle": _("Owners and investors with a running account in the business, in money "
+                      "and in gold."),
+        "empty": _("No partners yet"),
+        "new_title": _("New partner"),
+        "edit_title": _("Edit partner"),
+        "list_url": "partners", "new_url": "partner-new", "edit_url": "partner-edit",
+        "api": "partner", "account_role": "partners_capital",
+        "label": _("Partner"), "statement_url": "partner-statement",
+        "sign_hint": _("Negative: what the business owes the partner (money or gold put in). "
+                       "Positive: what the partner has taken out beyond it."),
+        "settle_kind": "payment", "settle_label": _("Pay partner"),
+    },
 }
 PROFILES = {PartyRoleType.CUSTOMER: "customer_profile", PartyRoleType.SUPPLIER: "supplier_profile"}
 
@@ -259,6 +273,26 @@ def trade_account_edit(request, pk):
 @permission_required("parties.trade_account.view")
 def trade_account_statement(request, pk):
     return _statement(request, PartyRoleType.TRADE_ACCOUNT, pk)
+
+
+@permission_required("parties.partner.view")
+def partners(request):
+    return _list(request, PartyRoleType.PARTNER)
+
+
+@permission_required("parties.partner.create")
+def partner_new(request):
+    return _form(request, PartyRoleType.PARTNER)
+
+
+@permission_required("parties.partner.edit")
+def partner_edit(request, pk):
+    return _form(request, PartyRoleType.PARTNER, pk)
+
+
+@permission_required("parties.partner.view")
+def partner_statement(request, pk):
+    return _statement(request, PartyRoleType.PARTNER, pk)
 
 
 @permission_required("parties.workshop.view")

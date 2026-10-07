@@ -37,7 +37,7 @@ ISOLATE = "\u2068{}\u2069"
 SHARE_DAYS = 30
 SHARE_SALT = "messaging.share"
 PARTY_FIELDS = ("customer", "trade_account", "supplier", "party")
-STATEMENT_ROLES = ("customer", "supplier", "trade_account", "workshop")
+STATEMENT_ROLES = ("customer", "supplier", "trade_account", "workshop", "partner")
 
 
 # ---- what is being sent --------------------------------------------------------------------

@@ -8,3 +8,7 @@ register_permissions(_("Pricing"), [
     ("pricing.fx.view", _("View exchange rates")),
     ("pricing.fx.publish", _("Publish exchange rates")),
 ])
+register_permissions(_("Automatic gold prices"), [
+    ("pricing.feed.manage", _("Set how gold prices follow the market, update them now, approve "
+                              "big changes")),
+])
