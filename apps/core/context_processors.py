@@ -51,6 +51,8 @@ NAVIGATION: list[NavSection] = [
     NavSection("diamonds", _("Diamonds"), "gem", [
         NavItem(_("Diamonds and stones"), "diamonds", "gem", "diamonds.view"),
         NavItem(_("Receive diamonds"), "diamonds-receive-form", "inbox", "diamonds.receive"),
+        NavItem(_("Buy old diamonds"), "buy-backs", "coins", "diamonds.view",
+                ("buy-back-new", "buy-back")),
         NavItem(_("Stone setting"), "stone-settings", "sparkles", "diamonds.view",
                 ("stone-setting-new", "stone-setting")),
         NavItem(_("Setters"), "setting-jobs", "send", "diamonds.view",

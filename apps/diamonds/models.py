@@ -209,3 +209,46 @@ class CertificateCheck(TenantScopedModel):
 
     def __str__(self):
         return f"{self.lab} {self.report_no}"
+
+
+class BuyBack(Document):
+    """Old diamond jewellery and loose stones bought from a customer or a walk-in (legacy
+    GHD40 "شراء ماس كسر"). Unlike Gweb, each one becomes a barcoded piece in stock: its gold
+    on gold inventory at the gold part of the price, its stones at the rest."""
+
+    seller = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
+                               related_name="+")  # a customer; empty: a walk-in
+    seller_name = models.CharField(max_length=200, blank=True)
+    seller_phone = models.CharField(max_length=30, blank=True)
+    seller_id_encrypted = models.TextField(blank=True)
+    payment = models.CharField(max_length=16)  # cash | bank_transfer | account
+    cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    bank_account = models.ForeignKey("treasury.BankAccount", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    total_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    gold_value = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_buyback_date_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+    @property
+    def seller_label(self) -> str:
+        return self.seller.name if self.seller_id else self.seller_name
+
+
+class BuyBackLine(TenantScopedModel):
+    buy_back = models.ForeignKey(BuyBack, on_delete=models.CASCADE, related_name="lines")
+    item = models.ForeignKey("inventory.Item", on_delete=models.PROTECT, related_name="+")
+    price = models.DecimalField(max_digits=18, decimal_places=2)
+    gold_value = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+
+    class Meta:
+        indexes = [models.Index(fields=["tenant", "buy_back"], name="diamonds_buyback_line_idx")]

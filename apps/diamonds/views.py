@@ -14,6 +14,7 @@ from apps.pricing.selectors import functional_currency
 
 from . import certificates
 from .models import (
+    BuyBack,
     CertificateCheck,
     ItemStone,
     JobLineState,
@@ -285,3 +286,49 @@ def certificate_cards(request):
         return pdf_response(content, "certificates.pdf")
     logo = context["profile"].logo.url if context["profile"] and context["profile"].logo else ""
     return render(request, "diamonds/cards.html", {**context, "logo": logo})
+
+
+# --- buying old diamonds -----------------------------------------------------------------------
+
+@permission_required("diamonds.view")
+def buy_backs(request):
+    queryset = BuyBack.objects.select_related("seller", "branch").annotate(pieces=Count("lines"))
+    scope = request.actor.branch_ids("diamonds.view")
+    if scope is not None:
+        queryset = queryset.filter(branch_id__in=scope)
+    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
+        request.GET.get("page"))
+    return render(request, "diamonds/buy_backs.html", {
+        "page": page, "home_currency": functional_currency()})
+
+
+@permission_required("diamonds.buy_back")
+def buy_back_new(request):
+    from apps.pricing.selectors import current_price_board
+    from apps.treasury.selectors import holder_choices
+
+    allowed = request.actor.branch_ids("diamonds.buy_back")
+    return render(request, "diamonds/buy_back_form.html", {
+        "branches": _branches(request, "diamonds.buy_back"),
+        "default_branch": request.membership.default_branch_id,
+        "categories": ItemCategory.objects.filter(
+            product_family__in=FAMILIES, tracking=Tracking.SERIALIZED, is_active=True)
+        .order_by("code"),
+        "karats": Karat.objects.filter(is_active=True, metal__code="gold").order_by("-code"),
+        "board": current_price_board(), "home_currency": functional_currency(),
+        **holder_choices(allowed),
+    })
+
+
+@permission_required("diamonds.view")
+def buy_back(request, pk):
+    found = (BuyBack.objects.select_related("seller", "branch", "journal_entry", "posted_by",
+                                            "cash_box", "bank_account").filter(pk=pk).first())
+    scope = request.actor.branch_ids("diamonds.view")
+    if found is None or (scope is not None and found.branch_id not in scope):
+        raise Http404
+    return render(request, "diamonds/buy_back.html", {
+        "bought": found, "lines": found.lines.select_related("item__category", "item__karat")
+        .prefetch_related("item__stones"),
+        "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
+    })

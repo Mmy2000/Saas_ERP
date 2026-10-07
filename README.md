@@ -403,6 +403,15 @@ page, printed or as PDF) with the shop, the piece, its gold weight and each ston
 report; from a piece's page, from a sale (with the customer's name) or for the diamond pieces
 shown in stock.
 
+**Diamonds → Buy old diamonds** (legacy GHD40 "شراء ماس كسر", permission `diamonds.buy_back`):
+old diamond jewellery and loose stones bought from a customer (paid in cash, by bank or on
+their account) or a walk-in (name, phone, encrypted national ID; cash or bank). Gweb only noted
+the weights and the price; here each thing becomes a barcoded piece in stock with its stones
+(described now, completed on the piece later), to sell again or to take its stones out. The
+form shows the gold in each piece at today's value as a guide; the price is split into the gold
+(at most that value, on gold inventory through the metal position, like scrap) and the stones
+(the rest, on "diamonds and stones"). Cancellable while every piece is untouched in stock.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

@@ -1,0 +1,69 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ bought.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'buy-backs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Buy old diamonds" %}</a>
+  <div class="flex gap-2">
+    <a class="btn btn-secondary" href="{% url 'certificate-cards' %}?items={% for line in lines %}{{ line.item_id }}{% if not forloop.last %},{% endif %}{% endfor %}" target="_blank" rel="noopener">{% icon "shield-check" "size-4" %}{% translate "Certificate cards" %}</a>
+    <button type="button" class="btn btn-primary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.buy_back" bought.branch as can_buy %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p>
+        <p class="text-sm text-slate-500">{% translate "Old diamonds bought" %} · {{ bought.branch.name }}</p></div>
+      <div class="text-end">
+        <p class="num text-xl font-semibold text-slate-900">{{ bought.number }}</p>
+        <p class="num text-sm text-slate-500">{{ bought.posted_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=bought.status label=bought.get_status_display %}</div>
+      </div>
+    </header>
+    <dl class="grid grid-cols-2 gap-4 border-b border-slate-100 p-6 text-sm sm:grid-cols-3">
+      <div><dt class="text-slate-500">{% translate "Seller" %}</dt><dd class="mt-0.5 font-medium">{% if bought.seller %}<a class="text-brand-700 hover:underline" href="{% url 'customer-edit' bought.seller_id %}">{{ bought.seller.name }}</a>{% else %}{{ bought.seller_name }}{% endif %}</dd>
+        {% if bought.seller_phone %}<dd class="num text-slate-500">{{ bought.seller_phone }}</dd>{% endif %}</div>
+      <div><dt class="text-slate-500">{% translate "Paid" %}</dt><dd class="mt-0.5">{% if bought.payment == "cash" %}{% translate "Cash" %}{% elif bought.payment == "bank_transfer" %}{% translate "Bank transfer" %}{% else %}{% translate "On their account" %}{% endif %}</dd></div>
+      <div><dt class="text-slate-500">{% translate "Gold at today's value" %}</dt><dd class="num mt-0.5">{{ bought.gold_value|num:2 }}</dd></div>
+    </dl>
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Piece" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Stones (ct)" %}</th><th class="text-end">{% translate "Price paid" %}</th></tr></thead>
+        <tbody>
+        {% for line in lines %}
+          <tr>
+            <td><a class="num text-brand-700 hover:underline" href="{% url 'stock-item' line.item_id %}">{{ line.item.barcode }}</a></td>
+            <td>{{ line.item.category.name }}{% if line.item.karat %} <span class="text-xs text-slate-500">{{ line.item.karat.label }}</span>{% endif %}
+              {% for st in line.item.stones.all %}{% if st.note %}<div class="text-xs text-slate-500">{{ st.note }}</div>{% endif %}{% endfor %}</td>
+            <td class="text-end"><span class="num">{{ line.item.gross_weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.item.stone_weight_ct|num:3 }}</span></td>
+            <td class="text-end"><span class="num font-medium">{{ line.price|num:2 }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="border-t-2 border-slate-200 font-semibold"><td class="px-5 py-3" colspan="4">{% translate "Total" %}</td><td class="px-5 py-3 text-end"><span class="num">{{ bought.total_amount|num:2 }}</span> {{ home_currency }}</td></tr></tfoot>
+      </table>
+    </div>
+    {% if bought.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ bought.note }}</p>{% endif %}
+    {% if bought.status == "voided" and bought.void_reason %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ bought.void_reason }}</p>{% endif %}
+    <div class="grid grid-cols-2 gap-10 border-t border-slate-100 px-6 pt-12 pb-6 text-xs text-slate-400">
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "The seller" %}</div>
+      <div class="border-t border-slate-300 pt-2 text-center">{% translate "Received by" %}</div>
+    </div>
+  </article>
+  <aside class="space-y-6" data-no-print>
+    {% if can_buy and bought.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{% url 'diamonds-buy-back-void' bought.pk %}" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Cancel while every piece is still in stock and untouched: the pieces leave stock and the payment is undone." %}</p>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel" %}</button>
+    </form>
+    {% endif %}
+    {% if bought.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ bought.journal_entry.number }}</dd></div></dl></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

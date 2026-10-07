@@ -9,7 +9,7 @@ from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 from apps.inventory.models import Item, ItemStatus
 
-from . import certificates, jobs, services
+from . import buyback, certificates, jobs, services
 from .models import StoneKind, StoneShape
 
 
@@ -339,6 +339,83 @@ class CertificateCheckView(APIView):
             "pdf_url": reverse("certificate-pdf", args=[found.pk]) if found.pdf else ""})
 
 
+class BuyBackPieceSerializer(serializers.Serializer):
+    category = serializers.IntegerField()
+    karat = serializers.IntegerField(required=False, allow_null=True, default=None)
+    gross_weight_g = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                           allow_null=True, default=None)
+    stones_carat = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                         default="0")
+    stones_count = serializers.IntegerField(required=False, min_value=1, default=1)
+    stones_note = serializers.CharField(max_length=200, required=False, allow_blank=True,
+                                        default="")
+    price = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+    label_price = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                        allow_null=True, default=None)
+
+
+def _buy_back_pieces(rows):
+    return tuple(buyback.PieceInput(
+        category_id=row["category"], karat_id=row["karat"], gross_weight_g=row["gross_weight_g"],
+        stones_carat=row["stones_carat"] or "0", stones_count=row["stones_count"],
+        stones_note=row["stones_note"], price=row["price"], label_price=row["label_price"] or None)
+        for row in rows)
+
+
+class BuyBackSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    pieces = BuyBackPieceSerializer(many=True)
+    payment = serializers.CharField(max_length=16)
+    seller = serializers.IntegerField(required=False, allow_null=True, default=None)
+    seller_name = serializers.CharField(max_length=200, required=False, allow_blank=True,
+                                        default="")
+    seller_phone = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                         default="")
+    seller_id_number = serializers.CharField(max_length=40, required=False, allow_blank=True,
+                                             default="")
+    cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class BuyBackView(APIView):
+    """Buy old diamond jewellery or stones from a customer (legacy GHD40)."""
+
+    required_permissions = {"POST": "diamonds.buy_back"}
+
+    @idempotent
+    def post(self, request):
+        payload = BuyBackSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        bought = buyback.buy_back(buyback.BuyBackInput(
+            branch_id=d["branch"], pieces=_buy_back_pieces(d["pieces"]), payment=d["payment"],
+            seller_id=d["seller"], seller_name=d["seller_name"], seller_phone=d["seller_phone"],
+            seller_id_number=d["seller_id_number"], cash_box_id=d["cash_box"],
+            bank_account_id=d["bank_account"], note=d["note"]), actor=request.actor)
+        return Response({"id": bought.pk, "number": bought.number},
+                        status=status.HTTP_201_CREATED)
+
+
+class BuyBackQuoteView(APIView):
+    required_permissions = {"POST": "diamonds.buy_back"}
+
+    def post(self, request):
+        payload = BuyBackPieceSerializer(data=request.data.get("pieces") or [], many=True)
+        payload.is_valid(raise_exception=True)
+        return Response({"pieces": buyback.quote(_buy_back_pieces(payload.validated_data))})
+
+
+class BuyBackVoidView(APIView):
+    required_permissions = {"POST": "diamonds.buy_back"}
+
+    @idempotent
+    def post(self, request, pk):
+        bought = buyback.void_buy_back(pk, reason=str(request.data.get("reason") or ""),
+                                       actor=request.actor)
+        return Response({"id": bought.pk, "status": bought.status})
+
+
 urlpatterns = [
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
@@ -347,6 +424,9 @@ urlpatterns = [
     path("settings/<int:pk>/void/", SettingVoidView.as_view(), name="diamonds-setting-void"),
     path("settings/<int:pk>/remove/", RemovalView.as_view(), name="diamonds-setting-remove"),
     path("jobs/", JobView.as_view(), name="diamonds-jobs"),
+    path("buy-back/", BuyBackView.as_view(), name="diamonds-buy-back"),
+    path("buy-back/quote/", BuyBackQuoteView.as_view(), name="diamonds-buy-back-quote"),
+    path("buy-back/<int:pk>/void/", BuyBackVoidView.as_view(), name="diamonds-buy-back-void"),
     path("certificates/check/", CertificateCheckView.as_view(), name="certificate-check"),
     path("discount-classes/", DiscountClassesView.as_view(), name="diamonds-discount-classes"),
     path("discount-classes/assign/", AssignClassView.as_view(), name="diamonds-class-assign"),

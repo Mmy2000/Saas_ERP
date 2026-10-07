@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Buy old diamonds" %}{% endblock %}
+{% block page_header %}
+{% can "diamonds.buy_back" as can_buy %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Buy old diamonds" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Old diamond jewellery and loose stones bought from customers. Each becomes a barcoded piece in stock, to sell again or to take its stones out." %}</p>
+  </div>
+  {% if can_buy %}<a href="{% url 'buy-back-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Buy" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="relative overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Seller" %}</th><th>{% translate "Branch" %}</th>
+        <th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Paid" %} ({{ home_currency }})</th><th>{% translate "Status" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for b in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ b.number }}</span></td>
+          <td><span class="num">{{ b.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ b.seller_label }}</td>
+          <td>{{ b.branch.name }}</td>
+          <td class="text-end"><span class="num">{{ b.pieces }}</span></td>
+          <td class="text-end"><span class="num">{{ b.total_amount|num:2 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=b.status label=b.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'buy-back' b.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing bought yet" as empty_title %}
+    {% translate "Buy a customer's old diamond ring or loose stones to add them to stock." as empty_text %}
+    {% include "components/empty_state.html" with icon="coins" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

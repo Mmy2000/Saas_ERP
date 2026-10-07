@@ -32,7 +32,7 @@
     </div>
     <form method="get" class="flex flex-col gap-2 sm:flex-row lg:ms-auto">
       <input type="hidden" name="state" value="{{ state }}"><input type="hidden" name="family" value="{{ family }}">
-      <select name="cls" class="form-input sm:w-52" data-native onchange="this.form.requestSubmit()" aria-label="{% translate 'Discount class' %}">
+      <select name="cls" class="form-input sm:w-52" onchange="this.form.requestSubmit()" aria-label="{% translate 'Discount class' %}">
         <option value="">{% translate "Any discount class" %}</option>
         <option value="none" {% if current == "none" %}selected{% endif %}>{% translate "No class" %}</option>
         {% for c in classes %}<option value="{{ c.pk }}" {% if current == c.pk|stringformat:'s' %}selected{% endif %}>{{ c }}</option>{% endfor %}

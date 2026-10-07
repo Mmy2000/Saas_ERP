@@ -9,6 +9,7 @@ register_permissions(_("Diamonds and gemstones"), [
     ("diamonds.manage", _("Edit stone details, certificates and label prices")),
     ("diamonds.receive", _("Receive diamond pieces and loose stones from suppliers")),
     ("diamonds.setting", _("Record stones set into pieces")),
+    ("diamonds.buy_back", _("Buy old diamond jewellery and stones from customers")),
     ("diamonds.sell", _("Sell diamond pieces and loose stones")),
 ])
 register_limit("diamonds.discount.max_rate", _("Maximum discount on diamond pieces"), "0")

@@ -25,6 +25,9 @@ msgid ""
 "customer's account."
 msgstr "%(amount)s من العربون تزيد على السعر وتبقى رصيدًا في حساب العميل."
 
+msgid "%(barcode)s has moved on since: this cannot be cancelled."
+msgstr "%(barcode)s تغيّرت حالتها بعد ذلك: لا يمكن الإلغاء."
+
 msgid "%(barcode)s is not a mounting or a loose stone."
 msgstr "%(barcode)s ليست قطعة للتركيب ولا حجرًا سائبًا."
 
@@ -328,6 +331,9 @@ msgstr "(%(count)s في %(month)s)"
 
 msgid "(hidden)"
 msgstr "(مخفي)"
+
+msgid "(optional)"
+msgstr "(اختياري)"
 
 msgid "1 hour"
 msgstr "ساعة"
@@ -694,6 +700,9 @@ msgstr "إضافة حسابات التجار"
 
 msgid "Add what came back."
 msgstr "أضف ما تم استلامه."
+
+msgid "Add what is being bought."
+msgstr "أضف ما يتم شراؤه."
 
 msgid "Add workshops"
 msgstr "إضافة ورش"
@@ -1371,11 +1380,21 @@ msgstr "نشط هذا الأسبوع"
 msgid "Buy"
 msgstr "شراء"
 
+msgid ""
+"Buy a customer's old diamond ring or loose stones to add them to stock."
+msgstr "اشترِ خاتم ألماس قديمًا أو أحجارًا سائبة من عميل لإضافتها للمخزون."
+
 msgid "Buy and sell coverage"
 msgstr "تغطية البيع والشراء"
 
 msgid "Buy from them"
 msgstr "شراء منه"
+
+msgid "Buy old diamond jewellery and stones from customers"
+msgstr "شراء مشغولات ألماس قديمة وأحجار من العملاء"
+
+msgid "Buy old diamonds"
+msgstr "شراء ماس كسر"
 
 msgid "Buy price / g"
 msgstr "سعر الشراء / جم"
@@ -1529,6 +1548,13 @@ msgstr "إلغاء التحويلات التي في الطريق"
 
 msgid "Cancel treasury documents"
 msgstr "إلغاء مستندات الخزينة"
+
+msgid ""
+"Cancel while every piece is still in stock and untouched: the pieces leave "
+"stock and the payment is undone."
+msgstr ""
+"يمكن الإلغاء ما دامت كل القطع في المخزون ولم تُمس: تخرج القطع من المخزون "
+"ويُلغى الدفع."
 
 msgid "Cancel wholesale sales"
 msgstr "إلغاء مبيعات الجملة"
@@ -2016,6 +2042,9 @@ msgstr "اختر خزينة نشطة."
 msgid "Choose an active customer or supplier."
 msgstr "اختر عميلًا أو موردًا نشطًا."
 
+msgid "Choose an active customer."
+msgstr "اختر عميلًا نشطًا."
+
 msgid "Choose an active discount class."
 msgstr "اختر فئة خصم مفعّلة."
 
@@ -2339,6 +2368,9 @@ msgstr "طي القائمة الجانبية أو توسيعها"
 
 msgid "Colour"
 msgstr "اللون"
+
+msgid "colour, clarity, certificate…"
+msgstr "اللون، النقاء، الشهادة…"
 
 msgid "Column"
 msgstr "العمود"
@@ -3304,6 +3336,13 @@ msgstr ""
 "تكلفة القطعة."
 
 msgid ""
+"Each piece becomes a barcoded piece in stock: its gold at today's value (at "
+"most the price), its stones at the rest of the price."
+msgstr ""
+"تصبح كل قطعة قطعة بباركود في المخزون: ذهبها بقيمة اليوم (بحد أقصى السعر)، "
+"وأحجارها بباقي السعر."
+
+msgid ""
 "Each piece gets a barcode. The supplier invoice is posted at once and can be"
 " cancelled from Purchases while the pieces are untouched."
 msgstr ""
@@ -3970,6 +4009,9 @@ msgstr "الذهب والمخزون"
 
 msgid "Gold at the day's price"
 msgstr "الذهب بسعر اليوم"
+
+msgid "Gold at today's value"
+msgstr "الذهب بقيمة اليوم"
 
 msgid "Gold balance (fine g)"
 msgstr "رصيد الذهب (جم صافي)"
@@ -5779,6 +5821,9 @@ msgstr "الفئة"
 msgid "Notes"
 msgstr "ملاحظات"
 
+msgid "Nothing bought yet"
+msgstr "لم يُشترَ شيء بعد"
+
 msgid "Nothing in this period."
 msgstr "لا يوجد شيء في هذه الفترة."
 
@@ -5862,6 +5907,19 @@ msgstr "العروض"
 
 msgid "Offers and cashback"
 msgstr "العروض والكاش باك"
+
+msgid ""
+"Old diamond jewellery and loose stones bought from customers. Each becomes a"
+" barcoded piece in stock, to sell again or to take its stones out."
+msgstr ""
+"مشغولات ألماس قديمة وأحجار سائبة مشتراة من العملاء. تصبح كل منها قطعة "
+"بباركود في المخزون، للبيع مرة أخرى أو لفك أحجارها."
+
+msgid "Old diamonds bought"
+msgstr "شراء ماس كسر"
+
+msgid "Old diamonds bought %(number)s"
+msgstr "شراء ماس كسر %(number)s"
 
 msgid "Oldest"
 msgstr "الأقدم"
@@ -5957,6 +6015,9 @@ msgstr "المتاح من هذا في %(branch)s هو %(weight)s جم فقط."
 
 msgid "Only %(weight)s g of this scrap at the branch."
 msgstr "المتاح من هذا الكسر في الفرع %(weight)s جم فقط."
+
+msgid "Only a customer can be paid on account."
+msgstr "يمكن الدفع على الحساب لعميل فقط."
 
 msgid "Only a customer or supplier can be paid on account."
 msgstr "التسجيل على الحساب يكون لعميل أو مورد فقط."
@@ -6794,6 +6855,9 @@ msgstr "تغيير الأسعار"
 
 msgid "Price history"
 msgstr "سجل الأسعار"
+
+msgid "Price paid"
+msgstr "السعر المدفوع"
 
 msgid "Price per 21K gram"
 msgstr "السعر لجرام عيار 21"
@@ -8465,6 +8529,9 @@ msgstr "أحجار"
 msgid "Stones (ct)"
 msgstr "الأحجار (قيراط)"
 
+msgid "Stones as told"
+msgstr "وصف الأحجار"
+
 msgid "Stones part"
 msgstr "جزء الأحجار"
 
@@ -9006,6 +9073,9 @@ msgstr "تغيّرت البيعة بعد إرسال الكود. أرسل كود�
 
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
+
+msgid "The seller"
+msgstr "البائع"
 
 msgid ""
 "The shop's own gold on any day: what it holds (stock, scrap, at workshops, "
@@ -9828,6 +9898,14 @@ msgstr "دائن (لهم عندنا)"
 msgid "We owe them gold: pay it in money instead"
 msgstr "الذهب مستحق علينا: نسدده نقدًا"
 
+msgid ""
+"Weigh each piece and agree its price; the gold in it at today's value shows "
+"as a guide. Its stones can be described now and completed on the piece "
+"later."
+msgstr ""
+"زِن كل قطعة واتفق على سعرها؛ وتظهر قيمة ذهبها اليوم كدليل. ويمكن وصف أحجارها"
+" الآن واستكمالها على القطعة لاحقًا."
+
 msgid "Weight"
 msgstr "الوزن"
 
@@ -9914,6 +9992,9 @@ msgstr ""
 
 msgid "What happened"
 msgstr "الحركة"
+
+msgid "What is bought"
+msgstr "ما يتم شراؤه"
 
 msgid ""
 "What is in your branches now: pieces by barcode and bulk gold by weight."

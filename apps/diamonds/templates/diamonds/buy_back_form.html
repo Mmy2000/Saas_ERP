@@ -1,0 +1,90 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Buy old diamonds" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/buyback.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'buy-backs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Buy old diamonds" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Buy old diamonds" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Weigh each piece and agree its price; the gold in it at today's value shows as a guide. Its stones can be described now and completed on the piece later." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not board %}
+<div class="card card-body text-sm text-red-700">{% translate "No gold price has been published yet." %}</div>
+{% else %}
+<div id="buy-back" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-post-url="{% url 'diamonds-buy-back' %}" data-quote-url="{% url 'diamonds-buy-back-quote' %}"
+     data-detail-url="{% url 'buy-backs' %}{id}/" data-saved="{% translate 'Recorded.' %}" data-home-currency="{{ home_currency }}">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <label class="block"><span class="form-label">{% translate "Branch" %}</span>
+          <select class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+        <div><span class="form-label">{% translate "Seller" %}</span>
+          <div class="segmented">
+            <label><input type="radio" name="who" value="walk-in" class="peer sr-only" data-who checked><span class="segment">{% translate "Walk-in" %}</span></label>
+            <label><input type="radio" name="who" value="customer" class="peer sr-only" data-who><span class="segment">{% translate "Customer" %}</span></label>
+          </div></div>
+        <div class="grid grid-cols-1 gap-5 sm:col-span-2 sm:grid-cols-3" data-who-for="walk-in">
+          <label class="block"><span class="form-label">{% translate "Name" %}</span><input class="form-input" data-seller-name maxlength="200"></label>
+          <label class="block"><span class="form-label">{% translate "Phone" %}</span><input class="form-input num w-full text-start" data-seller-phone maxlength="30"></label>
+          <label class="block"><span class="form-label">{% translate "National ID" %}</span><input class="form-input num w-full text-start" data-seller-id autocomplete="off" maxlength="40"></label>
+        </div>
+        <div class="hidden sm:col-span-2" data-who-for="customer">
+          <select class="form-input" data-seller data-remote="{% url 'customer-list' %}" data-label-field="name" aria-label="{% translate 'Customer' %}"></select>
+        </div>
+        <p class="form-error sm:col-span-2" data-error-for="seller_name"></p>
+        <p class="form-error sm:col-span-2" data-error-for="seller"></p>
+      </div>
+    </section>
+
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "What is bought" %}</h2>
+        <button type="button" class="btn btn-ghost text-xs" data-add-piece>{% icon "plus" "size-4" %}{% translate "Add a piece" %}</button></div>
+      <div class="divide-y divide-slate-100" data-pieces></div>
+      <p class="form-error px-5 pb-3" data-error-for="pieces"></p>
+      <template id="buy-back-piece">
+        <div class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4" data-piece>
+          <label class="col-span-2 block"><span class="form-label">{% translate "Category" %}</span>
+            <select class="form-input" data-f="category">{% for c in categories %}<option value="{{ c.pk }}" data-family="{{ c.product_family }}">{{ c.code }} · {{ c.name }}</option>{% endfor %}</select></label>
+          <label class="block" data-gold><span class="form-label">{% translate "Karat" %}</span>
+            <select class="form-input" data-f="karat">{% for k in karats %}<option value="{{ k.pk }}" {% if k.code == 18 %}selected{% endif %}>{{ k.label }}</option>{% endfor %}</select></label>
+          <label class="block" data-gold><span class="form-label">{% translate "Weight (g)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-f="gross_weight_g"></label>
+          <label class="block"><span class="form-label">{% translate "Stones (ct)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-f="stones_carat" placeholder="0"></label>
+          <label class="block"><span class="form-label">{% translate "Number of stones" %}</span><input class="form-input num w-full text-start" inputmode="numeric" data-f="stones_count" value="1"></label>
+          <label class="col-span-2 block"><span class="form-label">{% translate "Stones as told" %}</span><input class="form-input" data-f="stones_note" maxlength="200" placeholder="{% translate 'colour, clarity, certificate…' %}"></label>
+          <label class="block"><span class="form-label">{% translate "Price paid" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-f="price"></label>
+          <label class="block"><span class="form-label">{% translate "Label price" %} <span class="text-xs font-normal text-slate-400">{% translate "(optional)" %}</span></span><input class="form-input num w-full text-start" inputmode="decimal" data-f="label_price"></label>
+          <div class="col-span-2 flex items-center justify-between gap-3 text-sm sm:col-span-2">
+            <span class="text-slate-500">{% translate "Gold at today's value" %}: <span class="num font-medium text-slate-900" data-gold-value>—</span></span>
+            <button type="button" class="btn btn-ghost text-xs text-slate-400" data-remove-piece>{% icon "x" "size-4" %}{% translate "Remove" %}</button>
+          </div>
+          <p class="form-error col-span-full" data-piece-error></p>
+        </div>
+      </template>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="divide-y divide-slate-100 text-sm">
+        <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Gold at today's value" %}</dt><dd class="num" data-total-gold>0.00</dd></div>
+        <div class="flex justify-between px-5 py-4 text-base font-semibold"><dt>{% translate "To pay" %}</dt><dd><span class="num" data-total>0.00</span> {{ home_currency }}</dd></div>
+      </dl>
+    </section>
+    <section class="card">
+      <div class="card-body space-y-4" data-payment>
+        <label class="block"><span class="form-label">{% translate "Paid" %}</span>
+          <select class="form-input" data-method><option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option><option value="account">{% translate "On their account" %}</option></select>
+          <span class="form-error" data-error-for="payment"></span></label>
+        {% include "treasury/holder_selects.html" %}
+        <input class="form-input" data-note placeholder="{% translate 'Note' %}">
+        <p class="form-error" data-error></p>
+        <button type="button" class="btn btn-primary w-full" data-save>{% icon "check" "size-4" %}{% translate "Buy" %}</button>
+        <p class="text-xs text-slate-500">{% translate "Each piece becomes a barcoded piece in stock: its gold at today's value (at most the price), its stones at the rest of the price." %}</p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}
