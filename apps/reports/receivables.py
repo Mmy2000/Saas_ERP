@@ -75,6 +75,7 @@ def _bucket(days: int) -> str:
 @register
 class UnpaidInvoices(Report):
     code = "unpaid_invoices"
+    section = "sales"
     title = gettext_lazy("Unpaid invoices")
     description = gettext_lazy("What customers or traders still owe, invoice by invoice, and "
                                "how old it is. Payments clear the oldest invoices first.")

@@ -35,6 +35,7 @@ class _DiamondReport(Report):
 @register
 class DiamondStock(_DiamondReport):
     code = "diamond_stock"
+    section = "gold"
     title = gettext_lazy("Diamond stock")
     description = gettext_lazy("Diamond pieces and loose stones on hand: carats, what the "
                                "stones cost and the label value, by category and by stone.")
@@ -72,6 +73,7 @@ class DiamondStock(_DiamondReport):
 @register
 class DiamondSales(_DiamondReport):
     code = "diamond_sales"
+    section = "gold"
     title = gettext_lazy("Diamond sales")
     description = gettext_lazy("Diamond pieces and loose stones sold in a period: the gold "
                                "part, the stones part and the margin on the stones.")

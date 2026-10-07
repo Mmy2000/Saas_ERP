@@ -10,7 +10,7 @@ that returns tables. One screen, CSV export and print serve them all.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -71,7 +71,9 @@ class Filter:
     key: str
     kind: str  # date | branch | choice
     label: str = ""
-    choices: tuple[tuple[str, str], ...] = ()
+    # (value, label) pairs, or a function returning them when the report opens (the shop's
+    # own categories, say).
+    choices: tuple[tuple[str, str], ...] | object = ()
     default: str = ""
 
 
@@ -89,11 +91,21 @@ class Params:
         return self.values.get(key, default)
 
 
+SECTIONS = (("sales", _("Sales and customers"), "shopping-bag"),
+            ("gold", _("Gold and stock"), "coins"),
+            ("money", _("Money"), "wallet"))
+
+
 class Report:
     code = ""
     title = ""
     description = ""
+    section = "money"  # where the reports page lists it (SECTIONS)
     filters: tuple[Filter, ...] = ()
+
+    def __init__(self):
+        self.filters = tuple(replace(spec, choices=tuple(spec.choices()))
+                             if callable(spec.choices) else spec for spec in type(self).filters)
 
     @classmethod
     def permission(cls) -> str:

@@ -10,7 +10,7 @@ from django.shortcuts import render
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, TenantProfile
 
-from .registry import REPORTS
+from .registry import REPORTS, SECTIONS
 
 
 def _visible_reports(actor):
@@ -22,7 +22,11 @@ def index(request):
     reports = _visible_reports(request.actor)
     if not reports:
         raise PermissionDenied
-    return render(request, "reports/index.html", {"reports": reports})
+    groups = [{"label": label, "icon": icon,
+               "reports": [r for r in reports if r.section == key]}
+              for key, label, icon in SECTIONS]
+    return render(request, "reports/index.html",
+                  {"groups": [group for group in groups if group["reports"]]})
 
 
 def _cell(value, places):

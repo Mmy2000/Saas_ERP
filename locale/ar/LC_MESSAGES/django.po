@@ -795,6 +795,9 @@ msgstr ""
 msgid "All pages"
 msgstr "كل الصفحات"
 
+msgid "All pieces"
+msgstr "كل القطع"
+
 msgid "All suppliers"
 msgstr "كل الموردين"
 
@@ -935,6 +938,9 @@ msgstr "6 أرقام عشرية كحد أقصى."
 msgid "At the bank"
 msgstr "في البنك"
 
+msgid "At the day's selling price"
+msgstr "بسعر بيع اليوم"
+
 msgid "At the workshop"
 msgstr "لدى الورشة"
 
@@ -959,8 +965,14 @@ msgstr "الإتاحة"
 msgid "Average"
 msgstr "المتوسط"
 
+msgid "Average buy"
+msgstr "متوسط الشراء"
+
 msgid "Average response"
 msgstr "متوسط الاستجابة"
+
+msgid "Average sell"
+msgstr "متوسط البيع"
 
 msgid "Back"
 msgstr "رجوع"
@@ -1007,6 +1019,9 @@ msgstr "البحرين"
 msgid "Balance"
 msgstr "الرصيد"
 
+msgid "Balance (g)"
+msgstr "الرصيد (جم)"
+
 msgid "Balance adjustment"
 msgstr "تسوية رصيد"
 
@@ -1037,6 +1052,9 @@ msgstr "تُحفظ الأرصدة بالجرام الصافي وتُعرض بم�
 
 msgid "Balances at the end of %(day)s."
 msgstr "الأرصدة في نهاية %(day)s."
+
+msgid "Balances between branches"
+msgstr "الأرصدة بين الفروع"
 
 msgid "Bank"
 msgstr "البنك"
@@ -1203,6 +1221,9 @@ msgstr "أسفل"
 msgid "Bought"
 msgstr "المشترى"
 
+msgid "Bought 21K (g)"
+msgstr "المشترى عيار 21 (جم)"
+
 msgid "Bounced"
 msgstr "مرتد"
 
@@ -1220,6 +1241,9 @@ msgstr "الفرع"
 
 msgid "Branch clearing"
 msgstr "حساب جاري الفروع"
+
+msgid "Branch statement"
+msgstr "كشف حساب الفروع"
 
 msgid "Branch transfers"
 msgstr "التحويل بين الفروع"
@@ -1295,6 +1319,9 @@ msgstr "نشط هذا الأسبوع"
 msgid "Buy"
 msgstr "شراء"
 
+msgid "Buy and sell coverage"
+msgstr "تغطية البيع والشراء"
+
 msgid "Buy from them"
 msgstr "شراء منه"
 
@@ -1330,6 +1357,9 @@ msgstr "حسب الصنف"
 
 msgid "By karat"
 msgstr "حسب العيار"
+
+msgid "By kind of movement"
+msgstr "حسب نوع الحركة"
 
 msgid "By memory"
 msgstr "حسب الذاكرة"
@@ -1673,6 +1703,9 @@ msgstr ""
 msgid "Category"
 msgstr "المجموعة"
 
+msgid "Category card"
+msgstr "كارت الصنف"
+
 msgid "Category making charge"
 msgstr "مصنعية الصنف"
 
@@ -1832,6 +1865,11 @@ msgstr "اختر مصروفًا بنكيًا أو فائدة."
 
 msgid "Choose a box in another currency."
 msgstr "اختر خزينة بعملة أخرى."
+
+msgid ""
+"Choose a branch to see its statement. Money is valued in the company "
+"currency."
+msgstr "اختر فرعًا لعرض كشف حسابه. النقدية مقيّمة بعملة الشركة."
 
 msgid "Choose a cash box of this branch or a bank account."
 msgstr "اختر خزينة من هذا الفرع أو حسابًا بنكيًا."
@@ -2151,11 +2189,20 @@ msgstr "الختامي"
 msgid "Closing %(year)s"
 msgstr "إقفال %(year)s"
 
+msgid "Closing (g)"
+msgstr "الرصيد الختامي (جم)"
+
+msgid "Closing 21K (g)"
+msgstr "الختامي عيار 21 (جم)"
+
 msgid "Closing balance"
 msgstr "الرصيد الختامي"
 
 msgid "Closing periods"
 msgstr "إقفال الفترات"
+
+msgid "Closing pieces"
+msgstr "القطع الختامية"
 
 msgid "Closing the year %(year)s"
 msgstr "إقفال السنة المالية %(year)s"
@@ -2322,6 +2369,9 @@ msgstr ""
 "تكلفة المبيعات هي تكلفة البضاعة المباعة. أعمدة الذهب تعرض صافي الجرامات "
 "الصافية المسجلة (مثل الذهب المباع بالتكلفة، أو الهالك في الورش)."
 
+msgid "Cost per 21K gram"
+msgstr "التكلفة لجرام عيار 21"
+
 msgid "Could not load every page. Try again."
 msgstr "تعذّر تحميل كل الصفحات. حاول مرة أخرى."
 
@@ -2395,6 +2445,21 @@ msgstr "الدولة"
 
 msgid "Counts"
 msgstr "عمليات الجرد"
+
+msgid "Coverage"
+msgstr "التغطية"
+
+msgid "Covered (%(pct)s%%)"
+msgstr "المغطى (%(pct)s%%)"
+
+msgid ""
+"Covered: the grams both sold and bought back; its profit is the spread "
+"between the average prices. Open position: bought − sold (negative: sold "
+"more than bought back), valued at the average price of the larger side."
+msgstr ""
+"المغطى: الجرامات المباعة والمشتراة معًا، وربحه هو الفرق بين متوسطي السعرين. "
+"المركز المفتوح: المشترى − المباع (بالسالب: بيع أكثر مما اشتُري)، مقيّمًا "
+"بمتوسط سعر الجانب الأكبر."
 
 msgid "CPU"
 msgstr "المعالج"
@@ -2474,6 +2539,9 @@ msgstr "طلب تصنيع"
 msgid "Customer"
 msgstr "عميل"
 
+msgid "Customer analysis"
+msgstr "تحليل العملاء"
+
 msgid "Customer deposits"
 msgstr "عربون العملاء"
 
@@ -2488,6 +2556,9 @@ msgstr "بيانات العميل"
 
 msgid "Customer return"
 msgstr "مرتجع عميل"
+
+msgid "Customer returns"
+msgstr "مرتجعات العملاء"
 
 msgid "Customer returns (refunded)"
 msgstr "مرتجعات العملاء (المردود)"
@@ -2580,6 +2651,9 @@ msgstr "التاريخ"
 
 msgid "Day"
 msgstr "اليوم"
+
+msgid "Day by day"
+msgstr "يومًا بيوم"
 
 msgid "Day-to-day operations in every module."
 msgstr "العمليات اليومية في كل الأقسام."
@@ -2883,6 +2957,11 @@ msgstr "الفرق"
 
 msgid "Difference with other branches"
 msgstr "فرق مع الفروع الأخرى"
+
+msgid ""
+"Difference: what the gold was worth at the day's selling price for its karat"
+" less what was paid."
+msgstr "الفرق: قيمة الذهب بسعر بيع اليوم لعياره ناقص المدفوع."
 
 msgid "Direction"
 msgstr "الاتجاه"
@@ -3404,6 +3483,14 @@ msgid "Every finished month is closed."
 msgstr "كل الشهور المنتهية مقفلة."
 
 msgid ""
+"Every piece sold with its price per gram, the gold at the day's price, the "
+"making charged and what it cost, and the profit. Show only the pieces sold "
+"at a loss."
+msgstr ""
+"كل قطعة مباعة بسعر الجرام والذهب بسعر اليوم والمصنعية المحصّلة وتكلفتها "
+"والربح. ويمكن عرض القطع المباعة بخسارة فقط."
+
+msgid ""
 "Every posted entry. Entries are never edited: mistakes are corrected with a "
 "reversal."
 msgstr ""
@@ -3645,6 +3732,13 @@ msgstr "من حسابنا البنكي"
 msgid "From the account of"
 msgstr "من حساب"
 
+msgid ""
+"From the books on that day. Owed: positive is owed to you, negative is what "
+"you owe. The total is the gold that is the shop's own."
+msgstr ""
+"من الدفاتر في ذلك اليوم. المستحق: الموجب مستحق لك، والسالب عليك. الإجمالي هو"
+" ذهب المحل الفعلي."
+
 msgid "From the plan"
 msgstr "من الباقة"
 
@@ -3728,17 +3822,32 @@ msgid ""
 msgstr ""
 "الذهب والكسر المصنَّع إلى مشغولات جديدة في ورشتك: ما دخل، وما صُنع، والهالك."
 
+msgid "Gold and stock"
+msgstr "الذهب والمخزون"
+
+msgid "Gold at the day's price"
+msgstr "الذهب بسعر اليوم"
+
+msgid "Gold balance (fine g)"
+msgstr "رصيد الذهب (جم صافي)"
+
 msgid "Gold balance settled in money"
 msgstr "تسوية رصيد الذهب نقدًا"
 
 msgid "Gold balances"
 msgstr "أرصدة الذهب"
 
+msgid "Gold balances settled in money"
+msgstr "تسوية أرصدة ذهب نقدًا"
+
 msgid "Gold by weight"
 msgstr "ذهب بالوزن"
 
 msgid "Gold given"
 msgstr "ذهب مسلَّم"
+
+msgid "Gold in (fine g)"
+msgstr "ذهب وارد (جم صافي)"
 
 msgid "Gold in stock (21K)"
 msgstr "الذهب بالمخزون (عيار 21)"
@@ -3769,6 +3878,9 @@ msgstr ""
 "الذهب الموجود لكل فرع وعيار، والذهب في الطريق بين الفروع، والذهب المستحق مع "
 "العملاء والموردين والتجار."
 
+msgid "Gold out (fine g)"
+msgstr "ذهب صادر (جم صافي)"
+
 msgid "Gold owed (fine g)"
 msgstr "ذهب مستحق (جرام صافٍ)"
 
@@ -3780,6 +3892,9 @@ msgstr "جزء الذهب"
 
 msgid "Gold piece"
 msgstr "قطعة ذهب"
+
+msgid "Gold position"
+msgstr "أرصدة الذهب الفعلية"
 
 msgid "Gold price"
 msgstr "سعر الذهب"
@@ -3825,6 +3940,13 @@ msgid ""
 "Gold sent to workshops, and what came back: new goods, scrap, loss and "
 "labour."
 msgstr "الذهب المرسل للورش وما عاد منها: بضاعة جديدة وكسر وهالك ومصنعية."
+
+msgid ""
+"Gold sold against gold bought back in a period (21K equivalent, gold value "
+"only): average prices, the spread, what is covered and the open position."
+msgstr ""
+"الذهب المباع مقابل الذهب المشترى في فترة (معادل عيار 21، قيمة الذهب فقط): "
+"متوسط الأسعار والفرق والمغطى والمركز المفتوح."
 
 msgid "Gold they hold for you; labour you owe."
 msgstr "ذهبك لديهم، ومصنعية مستحقة لهم."
@@ -3897,6 +4019,9 @@ msgstr "مجمل الربح"
 msgid "Gross weight"
 msgstr "الوزن القائم"
 
+msgid "Group"
+msgstr "المجموعة"
+
 msgid "Group by"
 msgstr "التجميع حسب"
 
@@ -3929,6 +4054,9 @@ msgstr "أثقل الشاشات"
 
 msgid "Height"
 msgstr "الارتفاع"
+
+msgid "Held"
+msgstr "لدينا"
 
 msgid "Hello %(name)s, here is how last month went."
 msgstr "مرحبًا %(name)s، إليك ملخص الشهر الماضي."
@@ -4042,6 +4170,9 @@ msgstr "وارد"
 
 msgid "in %(when)s"
 msgstr "بعد %(when)s"
+
+msgid "In (g)"
+msgstr "وارد (جم)"
 
 msgid "In every cash box"
 msgstr "في كل الخزائن"
@@ -4315,6 +4446,9 @@ msgstr "آخر جرد %(day)s"
 msgid "Last hour"
 msgstr "آخر ساعة"
 
+msgid "Last purchase"
+msgstr "آخر شراء"
+
 msgid "Last scans"
 msgstr "آخر ما تم مسحه"
 
@@ -4550,6 +4684,9 @@ msgstr "المصنعية للجرام تصبح"
 msgid "Making charge sold"
 msgstr "المصنعية المباعة"
 
+msgid "Making charged"
+msgstr "المصنعية المحصّلة"
+
 msgid "Making charges"
 msgstr "المصنعية"
 
@@ -4718,6 +4855,16 @@ msgstr "عصري"
 msgid "Money"
 msgstr "نقدية"
 
+msgid "Money (value)"
+msgstr "النقدية (القيمة)"
+
+msgid ""
+"Money and gold between branches: what each branch is owed by the others, and"
+" a branch's statement with running balances."
+msgstr ""
+"النقدية والذهب بين الفروع: المستحق لكل فرع على الفروع الأخرى، وكشف حساب فرع "
+"بأرصدة متتالية."
+
 msgid ""
 "Money and gold received from or given to customers, suppliers and traders."
 msgstr "النقدية والذهب المستلم من العملاء والموردين والتجار أو المسلَّم لهم."
@@ -4725,8 +4872,14 @@ msgstr "النقدية والذهب المستلم من العملاء والم�
 msgid "Money and metal"
 msgstr "نقدية ومعادن"
 
+msgid "Money balance"
+msgstr "رصيد النقدية"
+
 msgid "Money credited"
 msgstr "المبلغ المخصوم"
+
+msgid "Money in"
+msgstr "نقدية واردة"
 
 msgid "Money moving between your own cash boxes and bank accounts."
 msgstr "حركة الأموال بين خزائنك وحساباتك البنكية."
@@ -4741,6 +4894,9 @@ msgid ""
 "Money or gold moving between you and a customer, supplier, trader, workshop "
 "or partner."
 msgstr "نقدية أو ذهب بينك وبين عميل أو مورد أو تاجر أو ورشة أو شريك."
+
+msgid "Money out"
+msgstr "نقدية صادرة"
 
 msgid "Money paid"
 msgstr "صرف نقدية"
@@ -4913,8 +5069,17 @@ msgstr "السالب: مستحق للمورد عليك."
 msgid "Negative: you owe them."
 msgstr "السالب: أنت مدين لهم."
 
+msgid "Net"
+msgstr "الصافي"
+
 msgid "Net (g)"
 msgstr "الصافي (جم)"
+
+msgid "Net 21K (g)"
+msgstr "الصافي عيار 21 (جم)"
+
+msgid "Net by karat"
+msgstr "الصافي حسب العيار"
 
 msgid "Net loss"
 msgstr "صافي الخسارة"
@@ -4930,6 +5095,9 @@ msgstr "صافي الراتب"
 
 msgid "Net profit"
 msgstr "صافي الربح"
+
+msgid "Net sales"
+msgstr "صافي المبيعات"
 
 msgid "Network"
 msgstr "الشبكة"
@@ -5522,6 +5690,13 @@ msgstr "على حساب العميل"
 msgid "On the label"
 msgstr "على الملصق"
 
+msgid ""
+"On the last day of the period. Positive: the other branches owe this branch "
+"(goods or cash it sent and not yet settled)."
+msgstr ""
+"في آخر يوم من الفترة. الموجب: مستحق لهذا الفرع على الفروع الأخرى (بضاعة أو "
+"نقدية أرسلها ولم تُسوَّ بعد)."
+
 msgid "On the statement"
 msgstr "ظاهر في الكشف"
 
@@ -5637,6 +5812,9 @@ msgstr "فروع محددة"
 msgid "Only the company currency is active"
 msgstr "عملة الشركة هي العملة الوحيدة المفعلة"
 
+msgid "Only the first %(n)s movements are listed."
+msgstr "تُعرض أول %(n)s حركة فقط."
+
 msgid "Only the latest completed reconciliation can be reopened."
 msgstr "يمكن إعادة فتح آخر تسوية مكتملة فقط."
 
@@ -5655,6 +5833,9 @@ msgstr "المصنعية تُحسب فقط للعمل الذي تنفذه ورش
 msgid "Open"
 msgstr "فتح"
 
+msgid "Open (g)"
+msgstr "المفتوح (جم)"
+
 msgid "Open for posting"
 msgstr "مفتوحة للترحيل"
 
@@ -5666,6 +5847,9 @@ msgstr "فتحه"
 
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open position"
+msgstr "المركز المفتوح"
 
 msgid "Open the dashboard"
 msgstr "افتح لوحة التحكم"
@@ -5691,8 +5875,17 @@ msgstr[5] "فُتح %(n)s مرة"
 msgid "Opening"
 msgstr "الافتتاحي"
 
+msgid "Opening (g)"
+msgstr "رصيد أول المدة (جم)"
+
+msgid "Opening and closing"
+msgstr "أول المدة وآخرها"
+
 msgid "Opening balance"
 msgstr "رصيد افتتاحي"
+
+msgid "Opening balance %(g)s g."
+msgstr "رصيد أول المدة %(g)s جم."
 
 msgid "Opening balances"
 msgstr "الأرصدة الافتتاحية"
@@ -5703,8 +5896,18 @@ msgstr "أرصدة افتتاحية %(number)s"
 msgid "Opening balances posted."
 msgstr "سُجّلت الأرصدة الافتتاحية."
 
+msgid "Opening pieces"
+msgstr "قطع أول المدة"
+
 msgid "Opening stock"
 msgstr "مخزون افتتاحي"
+
+msgid ""
+"Opening, what came in and went out by kind, and closing stock per category "
+"and karat (pieces, grams, 21K), with every movement of the period."
+msgstr ""
+"رصيد أول المدة والوارد والصادر حسب النوع ورصيد آخر المدة لكل صنف وعيار (قطع،"
+" جرامات، عيار 21)، مع كل حركات الفترة."
 
 msgid "Operating expenses"
 msgstr "مصروفات تشغيلية"
@@ -5768,6 +5971,9 @@ msgstr "حجر آخر"
 msgid "Out"
 msgstr "منصرف"
 
+msgid "Out (g)"
+msgstr "صادر (جم)"
+
 msgid "Out of range."
 msgstr "خارج النطاق المسموح."
 
@@ -5800,11 +6006,25 @@ msgstr ""
 msgid "Overview"
 msgstr "نظرة عامة"
 
+msgid "Owed"
+msgstr "مستحق"
+
 msgid "Owed in money"
 msgstr "المستحق نقدًا"
 
+msgid "Owes now"
+msgstr "عليه الآن"
+
+msgid ""
+"Owes now: their balance today in the company currency; negative is credit "
+"they have with you."
+msgstr "عليه الآن: رصيده اليوم بعملة الشركة؛ السالب رصيد دائن له لديك."
+
 msgid "Owes us"
 msgstr "مدين لنا"
+
+msgid "Own gold"
+msgstr "ذهب المحل"
 
 msgid "Own name"
 msgstr "اسم خاص"
@@ -5894,6 +6114,9 @@ msgstr "المُودَع في البنك"
 
 msgid "Paid on delivery"
 msgstr "المدفوع عند التسليم"
+
+msgid "Paid per 21K gram"
+msgstr "المدفوع لجرام عيار 21"
 
 msgid "Paid to"
 msgstr "مدفوع إلى"
@@ -6045,6 +6268,9 @@ msgstr "الأفراد والشركات الذين تبيع لهم."
 msgid "People who can sign in to this workspace, and what they may do."
 msgstr "الأشخاص الذين يمكنهم الدخول إلى هذا الحساب، وما يُسمح لهم به."
 
+msgid "Per 21K gram"
+msgstr "لجرام عيار 21"
+
 msgid "per customer/supplier"
 msgstr "لكل عميل/مورد"
 
@@ -6149,9 +6375,21 @@ msgstr "قطع محجوزة للعملاء مقابل عربون."
 msgid "Pieces imported."
 msgstr "استُوردت القطع."
 
+msgid "Pieces in"
+msgstr "قطع واردة"
+
 msgid ""
 "Pieces include reserved ones. Value at today's buy price for pure metal."
 msgstr "القطع تشمل المحجوزة. القيمة بسعر شراء الذهب الخالص اليوم."
+
+msgid "Pieces out"
+msgstr "قطع صادرة"
+
+msgid "Pieces returned"
+msgstr "القطع المرتجعة"
+
+msgid "Pieces sold"
+msgstr "القطع المباعة"
 
 msgid "Pieces weight (g)"
 msgstr "وزن القطع (جم)"
@@ -6222,6 +6460,9 @@ msgid ""
 msgstr ""
 "PNG أو JPEG أو WEBP أو GIF أو ICO، حتى 2 ميجابايت. الأفضل صورة مربعة أو "
 "عريضة بخلفية شفافة."
+
+msgid "Positive: in. Negative: out."
+msgstr "الموجب: وارد. السالب: صادر."
 
 msgid "Positive: the customer owes you."
 msgstr "الموجب: مستحق لك على العميل."
@@ -6330,6 +6571,9 @@ msgstr "تغيير الأسعار"
 msgid "Price history"
 msgstr "سجل الأسعار"
 
+msgid "Price per 21K gram"
+msgstr "السعر لجرام عيار 21"
+
 msgid "Price per fine gram"
 msgstr "سعر الجرام الصافي"
 
@@ -6433,6 +6677,16 @@ msgstr "بدأ الإنتاج."
 msgid "Profit"
 msgstr "الربح"
 
+msgid "Profit %"
+msgstr "نسبة الربح %"
+
+msgid "Profit / g"
+msgstr "الربح / جم"
+
+msgid ""
+"Profit = price − gold at the day's selling price − making and stones cost."
+msgstr "الربح = السعر − الذهب بسعر بيع اليوم − تكلفة المصنعية والأحجار."
+
 msgid "Profit and loss"
 msgstr "قائمة الدخل"
 
@@ -6445,6 +6699,12 @@ msgstr ""
 
 msgid "Profit not yet closed"
 msgstr "أرباح غير مُقفلة"
+
+msgid "Profit per 21K gram"
+msgstr "الربح لجرام عيار 21"
+
+msgid "Profit per piece"
+msgstr "أرباح الذهب"
 
 msgid "Promised"
 msgstr "الموعد"
@@ -6534,6 +6794,9 @@ msgstr "أُضيفت"
 
 msgid "Quiet"
 msgstr "هادئ"
+
+msgid "Rank"
+msgstr "الترتيب"
 
 msgid "Rate"
 msgstr "السعر"
@@ -6962,6 +7225,15 @@ msgstr "مرتجع لمورد %(number)s"
 msgid "Returned"
 msgstr "مردود"
 
+msgid "Returned (g)"
+msgstr "المرتجع (جم)"
+
+msgid "Returned 21K (g)"
+msgstr "المرتجع عيار 21 (جم)"
+
+msgid "Returned in the period"
+msgstr "المرتجع في الفترة"
+
 msgid "Returned or endorsed"
 msgstr "مردودة أو مُظهَّرة"
 
@@ -6979,6 +7251,10 @@ msgstr "عملاء قدامى"
 
 msgid "Returns"
 msgstr "المرتجعات"
+
+msgid ""
+"Returns count against whoever made the sale, on the day they came back."
+msgstr "المرتجعات تُحسب على من قام بالبيع، في يوم رجوعها."
 
 msgid "Returns to suppliers"
 msgstr "المرتجعات للموردين"
@@ -7118,6 +7394,9 @@ msgstr "المبيعات (30 يومًا)"
 msgid "Sales analysis"
 msgstr "تحليل المبيعات"
 
+msgid "Sales and customers"
+msgstr "المبيعات والعملاء"
+
 msgid "Sales commission (%)"
 msgstr "عمولة البيع (%)"
 
@@ -7137,6 +7416,9 @@ msgstr ""
 "المبيعات في فترة حسب اليوم أو البائع أو المجموعة أو العيار أو الفرع، مع هامش"
 " المصنعية."
 
+msgid "Sales per 21K gram"
+msgstr "المبيعات لجرام عيار 21"
+
 msgid "Sales rung up with this login count towards the commission."
 msgstr "المبيعات المسجلة بهذا الحساب تُحتسب في العمولة."
 
@@ -7155,6 +7437,16 @@ msgstr ""
 
 msgid "Sales, last 7 days"
 msgstr "المبيعات، آخر 7 أيام"
+
+msgid "Salespeople"
+msgstr "تقييم الموظفين"
+
+msgid ""
+"Salespeople ranked by net gold sold (21K equivalent): sales, returns, net "
+"sales, profit and profit per gram."
+msgstr ""
+"ترتيب الموظفين حسب صافي الذهب المباع (معادل عيار 21): المبيعات والمرتجعات "
+"وصافي المبيعات والربح والربح للجرام."
 
 msgid "Salesperson"
 msgstr "البائع"
@@ -7249,8 +7541,22 @@ msgstr "النطاق"
 msgid "Scrap (g)"
 msgstr "كسر (جم)"
 
+msgid "Scrap and bullion bought"
+msgstr "شراء كسر وسبائك"
+
+msgid ""
+"Scrap and bullion bought from customers (and taken in on sales), what it "
+"cost per 21K gram against the day's price, scrap sold with its gain, and "
+"scrap on hand per branch."
+msgstr ""
+"الكسر والسبائك المشتراة من العملاء (والمستبدلة في المبيعات) وتكلفتها لجرام "
+"عيار 21 مقابل سعر اليوم، والكسر المباع وربحه، ورصيد الكسر لكل فرع."
+
 msgid "Scrap back"
 msgstr "كسر مرتجع"
+
+msgid "Scrap bought"
+msgstr "كسر مشترى"
 
 msgid "Scrap bought from walk-in sellers and customers, and sold to dealers."
 msgstr "الكسر المشترى من الزبائن والعملاء، والمبيع للتجار."
@@ -7289,6 +7595,9 @@ msgstr ""
 msgid "Scrap on hand"
 msgstr "الكسر الموجود"
 
+msgid "Scrap on hand now"
+msgstr "رصيد الكسر الآن"
+
 msgid "Scrap out"
 msgstr "صرف كسر"
 
@@ -7306,6 +7615,9 @@ msgstr "بيع كسر"
 
 msgid "Scrap sale %(number)s"
 msgstr "بيع كسر %(number)s"
+
+msgid "Scrap sold"
+msgstr "كسر مباع"
 
 msgid "Scrap trade-in"
 msgstr "استبدال الكسر"
@@ -7625,6 +7937,9 @@ msgstr "تُعرض أول %(shown)s من %(total)s قطعة؛ وكلها موج�
 msgid "Shown in every workspace sidebar. Empty: the platform name."
 msgstr "يظهر في القائمة الجانبية لكل مساحة عمل. فارغ: اسم المنصة."
 
+msgid "Side"
+msgstr "الجانب"
+
 msgid "Side margin (mm)"
 msgstr "الهامش الجانبي (مم)"
 
@@ -7685,6 +8000,15 @@ msgstr "الأبطأ: %(n)s مللي ثانية"
 msgid "Sold"
 msgstr "مباع"
 
+msgid "Sold (g)"
+msgstr "المباع (جم)"
+
+msgid "Sold 21K (g)"
+msgstr "المباع عيار 21 (جم)"
+
+msgid "Sold at a loss"
+msgstr "مباعة بخسارة"
+
 msgid "Sold by"
 msgstr "البائع"
 
@@ -7696,6 +8020,13 @@ msgstr "بيعت بهذا العرض"
 
 msgid "Sold without the code"
 msgstr "بيع بدون كود"
+
+msgid ""
+"Sold, returned and net in a period by karat, category, branch, salesperson "
+"or day, in grams, 21K equivalent and money."
+msgstr ""
+"المباع والمرتجع والصافي في فترة حسب العيار أو الصنف أو الفرع أو الموظف أو "
+"اليوم، بالجرام ومعادل عيار 21 والقيمة."
 
 msgid "Sold."
 msgstr "تم البيع."
@@ -7793,6 +8124,9 @@ msgstr "رصيد الكشف"
 
 msgid "Statement date"
 msgstr "تاريخ الكشف"
+
+msgid "Statement of %(branch)s"
+msgstr "كشف حساب %(branch)s"
 
 msgid "Statement of %(day)s"
 msgstr "كشف %(day)s"
@@ -8004,8 +8338,14 @@ msgstr "تُخصم من المسير التالي"
 msgid "Taken in"
 msgstr "تاريخ الاستلام"
 
+msgid "Taken in on sales"
+msgstr "مستبدل في المبيعات"
+
 msgid "Taken in."
 msgstr "تم الاستلام."
+
+msgid "Taken off at the figures of the original sale."
+msgstr "تُخصم بأرقام البيعة الأصلية."
 
 msgid "Taken off the making charge"
 msgstr "المخصوم من المصنعية"
@@ -8348,6 +8688,14 @@ msgstr "تغيّرت البيعة بعد إرسال الكود. أرسل كود�
 
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
+
+msgid ""
+"The shop's own gold on any day: what it holds (stock, scrap, at workshops, "
+"in production, between branches) and what others owe it, less what it owes, "
+"in fine grams and 21K."
+msgstr ""
+"ذهب المحل الفعلي في أي يوم: ما لديه (مخزون، كسر، لدى الورش، في الإنتاج، بين "
+"الفروع) وما له على الغير، ناقص ما عليه، بالجرام الصافي وعيار 21."
 
 msgid ""
 "The stones leave stock as used in this piece. A setter's labour is owed to "
@@ -9199,6 +9547,12 @@ msgstr ""
 "الأقدم أولًا."
 
 msgid ""
+"What each customer bought and returned in a period, their last purchase, and"
+" what they owe now in money and gold."
+msgstr ""
+"ما اشتراه كل عميل وأرجعه في فترة، وآخر شراء له، وما عليه الآن نقدًا وذهبًا."
+
+msgid ""
 "What each one holds, in its own currency. A bank may be negative "
 "(overdrawn)."
 msgstr ""
@@ -9319,6 +9673,9 @@ msgstr ""
 "عند عودة البضاعة افتح الأمر وسجّل ما استلمته، ويُسجَّل الفرق هالكًا أو "
 "زيادة."
 
+msgid "Where the gold came from and went"
+msgstr "من أين جاء الذهب وإلى أين ذهب"
+
 msgid "Which way"
 msgstr "الاتجاه"
 
@@ -9344,6 +9701,9 @@ msgstr "بيع جملة %(number)s"
 
 msgid "Wholesale and trade accounts"
 msgstr "الجملة وحسابات التجار"
+
+msgid "Wholesale for money"
+msgstr "بيع جملة نقدًا"
 
 msgid "Wholesale return"
 msgstr "مرتجع جملة"

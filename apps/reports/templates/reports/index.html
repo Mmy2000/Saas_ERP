@@ -8,15 +8,22 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-  {% for report in reports %}
-  <a href="{% url 'report' report.code %}" class="card card-body group flex items-start gap-4 transition hover:border-brand-300 hover:shadow-md">
-    <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">{% icon "chart-column" "size-5" %}</span>
-    <span>
-      <span class="block font-semibold text-slate-900 group-hover:text-brand-700">{{ report.title }}</span>
-      <span class="mt-1 block text-sm text-slate-500">{{ report.description }}</span>
-    </span>
-  </a>
+<div class="space-y-8">
+  {% for group in groups %}
+  <section>
+    <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">{% icon group.icon "size-4 text-slate-400" %}{{ group.label }}</h2>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+      {% for report in group.reports %}
+      <a href="{% url 'report' report.code %}" class="card card-body group flex items-start gap-4 transition hover:border-brand-300 hover:shadow-md">
+        <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">{% icon group.icon "size-5" %}</span>
+        <span>
+          <span class="block font-semibold text-slate-900 group-hover:text-brand-700">{{ report.title }}</span>
+          <span class="mt-1 block text-sm text-slate-500">{{ report.description }}</span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
   {% endfor %}
 </div>
 {% endblock %}

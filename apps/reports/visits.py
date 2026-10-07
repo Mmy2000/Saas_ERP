@@ -174,6 +174,7 @@ def collect(start: date | None, end: date, scope=None) -> list[Visit]:
 @register
 class CustomerVisits(Report):
     code = "customer_visits"
+    section = "sales"
     title = gettext_lazy("Customer visits")
     description = gettext_lazy("Who came in and why, new and returning customers, and who has "
                                "not been back lately: from sales, payments, returns, "

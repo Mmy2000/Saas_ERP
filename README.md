@@ -48,7 +48,7 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 | Diamonds and gemstones (a platform feature, off unless switched on for the client or its plan in the console): diamond pieces and loose stones as barcoded pieces with stone details (kind, shape, count, carats, colour, clarity, cut, lab and certificate number), a stones' cost and a label price; receiving from suppliers (gold owed in fine grams, making on the metal weight, the stones' cost on "diamonds and stones" inventory); selling at the label price with a diamond discount limit and a floor at cost, the gold part to gold sales and the rest to diamond sales and cost; returns, transfers, stocktakes and supplier returns carry the stones' cost; stone setting (loose stones into a mounting: details and cost move onto the piece, setter's labour owed or absorbed, cancellable); diamond stock and diamond sales reports. Wholesale by weight refuses diamond pieces | `apps/diamonds/` | §7.6, §7.7 |
 | Customer deposits: the customer page and statement show reservation deposits held (their own statement part, from the deposits account), with a link to that customer's reservations; the dashboard shows the total held | `apps/parties/web/views.py` | §7.7 |
 | Customer and supplier statements per currency and metal: opening balance, running balance, links to documents (also for cash boxes, bank accounts, terminals) | `apps/ledger/statements.py` | §7.4, §19 |
-| Reports: a registry of report classes (filters, permission per report, tables) with one screen, print and CSV for Excel: daily summary, gold balances, sales analysis with margin, expenses by category | `apps/reports/` | §7.12, §3.1 |
+| Reports: a registry of report classes (filters, permission per report, tables) with one screen, print, PDF and CSV for Excel, grouped on the reports page (sales and customers, gold and stock, money): daily summary, gold balances, sales analysis with margin, expenses by category, and the pack below | `apps/reports/` | §7.12, §3.1 |
 | Financial statements: profit and loss (sales, cost of sales, gross profit, operating expenses, operating profit, other income and losses, net profit; % of sales and the fine gold booked; against the period before, the same period last year, or month by month) and the balance sheet on any day (assets, liabilities and equity grouped as in the chart, cash boxes and bank accounts rolled up, amounts and fine grams per metal, profit not yet closed as its own equity line). Both per branch, printable and exported to Excel; year-end closing entries are left out of the profit and loss | `apps/reports/statements.py` | §7.10, §7.12 |
 | Treasury: cash boxes per branch and currency (each with its own ledger account; the default box opens with the first cash sale), bank accounts (all or some branches), card terminals with fee rates; every payment records the box / account / terminal it went through | `apps/treasury/` | §7.9, §15 |
 | Treasury movements: transfers and bank deposits/withdrawals, cash sent between branches (in transit through branch clearing until received), currency exchange with gain/loss, card settlements with bank fees; statements per box/account/terminal | `apps/treasury/services.py` | §7.9, §15 |
@@ -342,6 +342,33 @@ the invoice says "Code skipped". Codes go out through `CODE_CHANNELS` in order: 
 WhatsApp gateway Gweb uses: `WHATSAPP_GATEWAY_URL`, `WHATSAPP_GATEWAY_KEY`,
 `WHATSAPP_GATEWAY_ENDPOINT`), `sms` (`SMS_API_URL`, `SMS_API_KEY`, `SMS_SENDER`) or `console`
 (development and tests: logged, not sent).
+
+### Reports pack
+
+Ported from Gweb's report screens, computed from stock movements and the ledger instead of
+daily snapshots. Weights are also shown as 21K equivalent (fine gold ÷ 0.875); returns count on
+the day they came back at the figures of the original sale.
+
+* **Profit per piece** (GHS29, GHS33, GHS87): every piece sold with price per gram, gold at
+  the day's selling price, making charged, making and stones cost and profit; "sold at a loss"
+  only; returns taken off; net by karat with sales per 21K gram.
+* **Net sales** (GHS38, GHS62): sold, returned and net by karat, category, branch,
+  salesperson or day. **Salespeople** (GHS26, GHS27, GHS43, GHS81): ranked by net 21K grams,
+  with returns, net profit, profit % and profit per gram.
+* **Customer analysis** (GHC18, GHC26): what each customer bought and returned, last purchase,
+  and what they owe now in money and gold.
+* **Scrap gold** (GHS48, GHS82): scrap and bullion bought and taken in on sales per karat,
+  paid per 21K gram against the day's selling price; scrap sold with its gain; scrap on hand.
+* **Buy and sell coverage** (GHS83): gold sold for money (retail less returns, wholesale for
+  money, scrap sold, gold balances settled in money) against gold bought back (scrap, bullion,
+  trade-ins, fixings): average prices, spread, covered grams and their profit, open position,
+  per source and day by day.
+* **Gold position** (GHS86): the shop's own gold on any day from the books: stock, scrap, at
+  workshops, in production, between branches, plus what others owe, less what it owes.
+* **Category card** (GHS49, GHED12): opening, in and out and closing per category and karat,
+  totals per kind of movement, and every movement with its document and a running balance.
+* **Branch statement** (GHBR35, GHBR36): money and gold each branch is owed by the others,
+  and a branch's statement with running balances.
 
 ### Background jobs, e-mail and WhatsApp
 

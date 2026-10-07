@@ -44,6 +44,7 @@ def _equivalent_21k(fine: Decimal) -> Decimal:
 @register
 class DailySummary(Report):
     code = "daily_summary"
+    section = "sales"
     title = gettext_lazy("Daily summary")
     description = gettext_lazy("One day at a branch: sales, scrap received, money in and out of "
                                "every cash box and bank account.")
@@ -167,6 +168,7 @@ class DailySummary(Report):
 @register
 class GoldBalances(Report):
     code = "gold_balances"
+    section = "gold"
     title = gettext_lazy("Gold balances")
     description = gettext_lazy("Gold on hand per branch and karat, gold on its way between "
                                "branches, and gold owed with customers, suppliers and traders.")
@@ -263,6 +265,7 @@ GROUPS = (
 @register
 class SalesAnalysis(Report):
     code = "sales"
+    section = "sales"
     title = gettext_lazy("Sales analysis")
     description = gettext_lazy("Sales over a period by day, salesperson, category, karat or "
                                "branch, with the making-charge margin.")
