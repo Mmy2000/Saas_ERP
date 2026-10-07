@@ -1,0 +1,57 @@
+{% load i18n ui %}{% get_current_language as LANG %}{% get_current_language_bidi as RTL %}<!doctype html>
+<html lang="{{ LANG }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:24px 12px;background:#f4f4f5;font-family:Segoe UI,Tahoma,Arial,sans-serif;color:#18181b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;">
+    <tr><td style="padding:22px 24px 6px;">
+      <p style="margin:0;font-size:13px;color:#71717a;">{{ company }}</p>
+      <h1 style="margin:6px 0 0;font-size:20px;font-weight:600;">{% blocktranslate with month=month %}Your report for {{ month }}{% endblocktranslate %}</h1>
+      <p style="margin:6px 0 0;font-size:14px;color:#52525b;">{% blocktranslate with name=name %}Hello {{ name }}, here is how last month went.{% endblocktranslate %}</p>
+    </td></tr>
+    {% if figures %}
+    <tr><td style="padding:16px 24px 4px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="padding:6px 0;font-size:12px;color:#71717a;"></td>
+          <td style="padding:6px 0;font-size:12px;color:#71717a;text-align:{% if RTL %}left{% else %}right{% endif %};">{{ month }}</td>
+          <td style="padding:6px 0;font-size:12px;color:#71717a;text-align:{% if RTL %}left{% else %}right{% endif %};">{{ before_month }}</td>
+          <td style="padding:6px 0;font-size:12px;color:#71717a;text-align:{% if RTL %}left{% else %}right{% endif %};">{% translate "Change" %}</td>
+        </tr>
+        {% for figure in figures %}
+        <tr>
+          <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:14px;font-weight:600;">{{ figure.label }}</td>
+          <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:15px;font-weight:600;text-align:{% if RTL %}left{% else %}right{% endif %};"><span dir="ltr">{{ figure.now|num:2 }}</span></td>
+          <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:14px;color:#52525b;text-align:{% if RTL %}left{% else %}right{% endif %};"><span dir="ltr">{{ figure.before|num:2 }}</span></td>
+          <td style="padding:10px 0;border-top:1px solid #f4f4f5;font-size:13px;font-weight:600;text-align:{% if RTL %}left{% else %}right{% endif %};color:{% if figure.change is None %}#a1a1aa{% elif figure.change >= 0 %}#047857{% else %}#b91c1c{% endif %};"><span dir="ltr">{% if figure.change is None %}—{% elif figure.change >= 0 %}+{{ figure.change|num:1 }}%{% else %}{{ figure.change|num:1 }}%{% endif %}</span></td>
+        </tr>
+        {% endfor %}
+      </table>
+    </td></tr>
+    {% endif %}
+    {% if invoices and invoices.count %}
+    <tr><td style="padding:12px 24px 4px;">
+      <p style="margin:0;padding:12px 14px;background:#fafafa;border-radius:8px;font-size:14px;">{% blocktranslate count count=invoices.count with total=invoices.total|num:2 %}{{ count }} sales invoice, {{ total }} in total.{% plural %}{{ count }} sales invoices, {{ total }} in total.{% endblocktranslate %}{% if previous_invoices %} <span style="color:#71717a;">{% blocktranslate with count=previous_invoices.count month=before_month %}({{ count }} in {{ month }}){% endblocktranslate %}</span>{% endif %}</p>
+    </td></tr>
+    {% endif %}
+    {% if closing %}
+    <tr><td style="padding:12px 24px 4px;">
+      {% if closing.closed %}
+      <p style="margin:0;padding:12px 14px;background:#ecfdf5;border-radius:8px;font-size:14px;color:#065f46;">✓ {% blocktranslate with month=month %}{{ month }} is closed.{% endblocktranslate %}</p>
+      {% else %}
+      <p style="margin:0;padding:12px 14px;background:#fffbeb;border-radius:8px;font-size:14px;color:#92400e;">{% blocktranslate with month=month %}{{ month }} is not closed yet: check it and close it so nobody can change it by mistake.{% endblocktranslate %} <a href="{{ closing.url }}" style="color:#92400e;font-weight:600;">{% translate "Close the month" %}</a></p>
+      {% endif %}
+    </td></tr>
+    {% endif %}
+    {% if reports %}
+    <tr><td style="padding:14px 24px 4px;">
+      <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#52525b;">{% translate "Attached as PDF:" %}</p>
+      <ul style="margin:0;padding-inline-start:20px;font-size:14px;color:#18181b;">{% for title in reports %}<li style="padding:2px 0;">{{ title }}</li>{% endfor %}</ul>
+    </td></tr>
+    {% endif %}
+    <tr><td style="padding:18px 24px 24px;">
+      {% if home %}<a href="{{ home }}" style="display:inline-block;padding:10px 18px;background:#18181b;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">{% translate "Open the dashboard" %}</a>{% endif %}
+    </td></tr>
+  </table>
+  <p style="max-width:600px;margin:12px auto 0;font-size:11px;color:#a1a1aa;text-align:center;">{% translate "You get this e-mail because the owner added you to the monthly report. Ask them to take you off the list." %}</p>
+</body>
+</html>

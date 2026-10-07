@@ -178,7 +178,8 @@ def test_daily_schedules_follow_each_clients_clock(tenant_a, tenant_b, monkeypat
                     (tenant_a.id, "2026-10-07"), (tenant_b.id, "2026-10-07")}
 
 
-def test_run_worker_once(tenant_a, capsys):
+def test_run_worker_once(tenant_a, capsys, monkeypatch):
+    monkeypatch.setattr(registry, "SCHEDULES", [])  # whatever the time of day
     enqueue("test.note", tenant_id=tenant_a.id, text="cli")
     call_command("run_worker", "--once")
     assert "ran 1" in capsys.readouterr().out and SEEN[0][0] == "cli"

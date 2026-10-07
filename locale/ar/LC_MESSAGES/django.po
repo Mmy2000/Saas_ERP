@@ -31,6 +31,15 @@ msgstr "عيار %(code)s"
 msgid "%(cores)s cores · %(threads)s threads"
 msgstr "%(cores)s أنوية · %(threads)s خيوط معالجة"
 
+msgid "%(count)s sales invoice, %(total)s in total."
+msgid_plural "%(count)s sales invoices, %(total)s in total."
+msgstr[0] "لا فواتير بيع."
+msgstr[1] "فاتورة بيع واحدة، الإجمالي %(total)s."
+msgstr[2] "فاتورتا بيع، الإجمالي %(total)s."
+msgstr[3] "%(count)s فواتير بيع، الإجمالي %(total)s."
+msgstr[4] "%(count)s فاتورة بيع، الإجمالي %(total)s."
+msgstr[5] "%(count)s فاتورة بيع، الإجمالي %(total)s."
+
 msgid "%(counter)s label"
 msgid_plural "%(counter)s labels"
 msgstr[0] "%(counter)s ملصق"
@@ -117,6 +126,14 @@ msgstr "%(metal)s %(code)s"
 
 msgid "%(metal)s (fine g)"
 msgstr "%(metal)s (جرام صافٍ)"
+
+msgid "%(month)s is closed."
+msgstr "شهر %(month)s مُقفل."
+
+msgid ""
+"%(month)s is not closed yet: check it and close it so nobody can change it "
+"by mistake."
+msgstr "شهر %(month)s لم يُقفل بعد: راجعه وأقفله حتى لا يعدّله أحد بالخطأ."
 
 msgid "%(ms)s ms on average"
 msgstr "%(ms)s مللي ثانية في المتوسط"
@@ -250,6 +267,9 @@ msgstr "%(weight)s جم"
 msgid "'%(slug)s' is reserved."
 msgstr "الاسم «%(slug)s» محجوز."
 
+msgid "(%(count)s in %(month)s)"
+msgstr "(%(count)s في %(month)s)"
+
 msgid "(hidden)"
 msgstr "(مخفي)"
 
@@ -319,6 +339,9 @@ msgstr "المالك الجديد يحتاج كلمة مرور."
 
 msgid "A piece must weigh more than zero."
 msgstr "يجب أن يكون وزن القطعة أكبر من صفر."
+
+msgid "A piece with this barcode already exists."
+msgstr "توجد قطعة بهذا الباركود بالفعل."
 
 msgid ""
 "A private link to the PDF is added at the end. It works for 30 days, and you"
@@ -482,6 +505,9 @@ msgstr "أضف أولًا صنفًا من فئة الألماس (قطع) أو ا
 msgid "Add and edit employees, their salaries and commissions"
 msgstr "إضافة الموظفين وتعديلهم ورواتبهم وعمولاتهم"
 
+msgid "Add at least one balance."
+msgstr "أضف رصيدًا واحدًا على الأقل."
+
 msgid "Add at least one line."
 msgstr "أضف سطرًا واحدًا على الأقل."
 
@@ -538,6 +564,9 @@ msgstr "أضف ما تم استلامه."
 
 msgid "Add workshops"
 msgstr "إضافة ورش"
+
+msgid "Add your e-mail address to your user first."
+msgstr "أضف عنوان بريدك الإلكتروني إلى مستخدمك أولًا."
 
 msgid "Add your team to pay salaries, advances and sales commissions."
 msgstr "أضف فريقك لصرف الرواتب والسلف وعمولات المبيعات."
@@ -670,6 +699,9 @@ msgstr "المبلغ المباع"
 msgid "An entry needs at least two lines."
 msgstr "يحتاج القيد إلى سطرين على الأقل."
 
+msgid "and {n} more."
+msgstr "و{n} غيرها."
+
 msgid "Anniversary"
 msgstr "ذكرى الزواج"
 
@@ -735,6 +767,15 @@ msgstr "10 أحرف على الأقل. أرسلها للمستخدم بشكل خ
 msgid "At most %(amount)s for %(name)s."
 msgstr "الحد الأقصى %(amount)s لـ %(name)s."
 
+msgid "At most %(n)s balances in one document."
+msgstr "%(n)s رصيد على الأكثر في المستند الواحد."
+
+msgid "At most %(n)s rows in one file."
+msgstr "%(n)s سطر على الأكثر في الملف الواحد."
+
+msgid "At most 32 characters."
+msgstr "32 حرفًا على الأكثر."
+
 msgid "At most 6 decimal places."
 msgstr "6 أرقام عشرية كحد أقصى."
 
@@ -746,6 +787,9 @@ msgstr "لدى الورشة"
 
 msgid "At workshop"
 msgstr "لدى الورشة"
+
+msgid "Attached as PDF:"
+msgstr "مرفق كملفات PDF:"
 
 msgid "Attempts"
 msgstr "المحاولات"
@@ -1007,6 +1051,13 @@ msgstr "العلامة التجارية"
 msgid "Bring back"
 msgstr "استرجاع"
 
+msgid ""
+"Bring your barcoded stock over from another system: one row per piece. "
+"Pieces keep their old barcodes, so labels already printed still scan."
+msgstr ""
+"انقل مخزونك المكوّد من نظام آخر: سطر لكل قطعة. تحتفظ القطع بباركودها القديم،"
+" فتظل التيكتات المطبوعة تعمل."
+
 msgid "Built-in"
 msgstr "أساسي"
 
@@ -1118,6 +1169,9 @@ msgstr "إلغاء مرتجعات العملاء"
 msgid "Cancel expenses"
 msgstr "إلغاء المصروفات"
 
+msgid "Cancel opening balances"
+msgstr "إلغاء الأرصدة الافتتاحية"
+
 msgid "Cancel order"
 msgstr "إلغاء الأمر"
 
@@ -1217,6 +1271,9 @@ msgstr "إلغاء فاتورة المورد %(number)s"
 msgid "Cancelled."
 msgstr "تم الإلغاء."
 
+msgid "Cancelled: %(reason)s"
+msgstr "أُلغي: %(reason)s"
+
 msgid "Cancelling brings the gold back into stock, as if it was never sent."
 msgstr "الإلغاء يعيد الذهب للمخزون كأنه لم يُرسل."
 
@@ -1253,6 +1310,13 @@ msgid ""
 msgstr "الإلغاء يعيد القطع للمخزون، ويُخرج الكسر، ويعكس القيد."
 
 msgid ""
+"Cancelling takes every balance and piece of this document back out. It is "
+"refused once a piece has been sold or moved."
+msgstr ""
+"الإلغاء يُخرج كل الأرصدة والقطع التي أدخلها هذا المستند. ويُرفض إذا بيعت "
+"قطعة منها أو نُقلت."
+
+msgid ""
 "Cancelling takes the goods back out of stock and reverses the amounts owed. "
 "Only possible while every piece is still in stock."
 msgstr ""
@@ -1268,6 +1332,9 @@ msgid ""
 "Cancelling the return counts the pieces as sold again and reverses the "
 "refund."
 msgstr "إلغاء المرتجع يعيد القطع مباعة ويعكس المبلغ المردود."
+
+msgid "Cannot be in the future."
+msgstr "لا يمكن أن يكون في المستقبل."
 
 msgid "Cannot be negative."
 msgstr "لا يمكن أن يكون سالبًا."
@@ -1320,6 +1387,9 @@ msgstr "النقدية والبنوك"
 msgid "Cash box"
 msgstr "الخزينة"
 
+msgid "Cash box or bank"
+msgstr "الخزينة أو البنك"
+
 msgid "Cash box statement"
 msgstr "كشف حساب الخزينة"
 
@@ -1371,6 +1441,9 @@ msgstr "الأصناف"
 
 msgid "Categories"
 msgstr "البنود"
+
+msgid "Categories (code)"
+msgstr "المجموعات (الكود)"
 
 msgid "Categories are at most %(depth)d levels deep."
 msgstr "لا تتجاوز المجموعات %(depth)d مستويات."
@@ -1450,8 +1523,17 @@ msgid ""
 "amount."
 msgstr "راجع كل قسيمة راتب. تُخصم السلف بالكامل ما لم تغيّر المبلغ."
 
+msgid "Check the file"
+msgstr "افحص الملف"
+
+msgid "Check the file first: nothing is saved until every row is correct."
+msgstr "افحص الملف أولًا: لا يُحفظ شيء حتى تصح كل الأسطر."
+
 msgid "Checked by"
 msgstr "راجعه"
+
+msgid "Checking every row…"
+msgstr "جارٍ فحص كل الأسطر…"
 
 msgid "Cheque"
 msgstr "شيك"
@@ -1514,8 +1596,14 @@ msgstr "اختر مصروفًا بنكيًا أو فائدة."
 msgid "Choose a box in another currency."
 msgstr "اختر خزينة بعملة أخرى."
 
+msgid "Choose a cash box of this branch or a bank account."
+msgstr "اختر خزينة من هذا الفرع أو حسابًا بنكيًا."
+
 msgid "Choose a category."
 msgstr "اختر البند."
+
+msgid "Choose a currency."
+msgstr "اختر عملة."
 
 msgid "Choose a diamond or stone category."
 msgstr "اختر صنف ألماس أو أحجار."
@@ -1526,6 +1614,9 @@ msgstr "اختر قطعة ألماس (شاتون) في المخزون."
 msgid "Choose a different destination."
 msgstr "اختر وجهة مختلفة."
 
+msgid "Choose a karat."
+msgstr "اختر العيار."
+
 msgid ""
 "Choose a month and prepare its payroll: you check every payslip before "
 "paying."
@@ -1533,6 +1624,12 @@ msgstr "اختر شهرًا وجهّز مسير رواتبه: تراجع كل ق
 
 msgid "Choose a month."
 msgstr "اختر شهرًا."
+
+msgid "Choose a name from the list."
+msgstr "اختر اسمًا من القائمة."
+
+msgid "Choose a supplier from the list."
+msgstr "اختر موردًا من القائمة."
 
 msgid "Choose a year."
 msgstr "اختر سنة."
@@ -1802,6 +1899,9 @@ msgstr "طي القائمة الجانبية أو توسيعها"
 msgid "Colour"
 msgstr "اللون"
 
+msgid "Column"
+msgstr "العمود"
+
 msgid "Column %(n)s"
 msgstr "العمود %(n)s"
 
@@ -2031,6 +2131,9 @@ msgstr "العملة"
 msgid "Currency exchange"
 msgstr "تحويل عملة"
 
+msgid "Currency or karat"
+msgstr "العملة أو العيار"
+
 msgid "Current"
 msgstr "الحالي"
 
@@ -2088,6 +2191,9 @@ msgstr "حساب العميل"
 msgid "Customer's signature"
 msgstr "توقيع العميل"
 
+msgid "Customer, supplier or partner"
+msgstr "عميل أو مورد أو شريك"
+
 msgid "Customer/supplier"
 msgstr "العميل/المورد"
 
@@ -2098,14 +2204,17 @@ msgid ""
 "Customers' pieces taken in, their bags, where they are and what is owed."
 msgstr "قطع العملاء المستلمة وأكياسها ومكانها والمستحق عليها."
 
+msgid "Customers, suppliers, traders, workshops and partners"
+msgstr "العملاء والموردون والتجار والورش والشركاء"
+
 msgid "Cut"
 msgstr "القطع"
 
+msgid "Daily"
+msgstr "يومي"
+
 msgid "Daily reminders"
 msgstr "التذكيرات اليومية"
-
-msgid "Daily reminders e-mail"
-msgstr "بريد التذكيرات اليومية"
 
 msgid "Daily reminders · %(company)s · %(date)s"
 msgstr "التذكيرات اليومية · %(company)s · %(date)s"
@@ -2116,6 +2225,18 @@ msgstr "ملخص اليوم"
 msgid ""
 "Daily summary, gold balances, sales analysis and expenses, with export."
 msgstr "ملخص اليوم وأرصدة الذهب وتحليل المبيعات والمصروفات، مع التصدير."
+
+msgid ""
+"Daily: every morning at 7:30, the dashboard's reminders (cheques due, months"
+" not closed, repairs ready…) and yesterday's sales. Monthly: on the 1st at "
+"8:00, last month's figures against the month before, with the profit and "
+"loss, balance sheet and sales analysis as PDFs. Each person only sees what "
+"their roles allow."
+msgstr ""
+"اليومي: كل صباح الساعة 7:30، تذكيرات لوحة التحكم (الشيكات المستحقة، الشهور "
+"غير المقفلة، التصليحات الجاهزة…) ومبيعات الأمس. الشهري: يوم 1 الساعة 8:00، "
+"أرقام الشهر الماضي مقارنة بالشهر الذي قبله، مع قائمة الدخل والميزانية "
+"العمومية وتحليل المبيعات كملفات PDF. لا يرى كل شخص إلا ما تسمح به أدواره."
 
 msgid "Dark"
 msgstr "داكن"
@@ -2438,6 +2559,9 @@ msgstr "الفرق"
 msgid "Difference with other branches"
 msgstr "فرق مع الفروع الأخرى"
 
+msgid "Direction"
+msgstr "الاتجاه"
+
 msgid "Disable"
 msgstr "إيقاف"
 
@@ -2529,6 +2653,9 @@ msgstr "مزدوج"
 msgid "Download as a PDF file"
 msgstr "تنزيل كملف PDF"
 
+msgid "Download the template"
+msgstr "حمّل النموذج"
+
 msgid "Draft"
 msgstr "مسودة"
 
@@ -2590,6 +2717,9 @@ msgstr "البريد الإلكتروني وواتساب"
 
 msgid "E-mail documents and statements, and share them on WhatsApp"
 msgstr "إرسال المستندات وكشوف الحساب بالبريد الإلكتروني ومشاركتها على واتساب"
+
+msgid "E-mail me last month's report"
+msgstr "أرسل لي تقرير الشهر الماضي"
 
 msgid ""
 "E-mails and reminders wait in the queue until one starts. Run it as a "
@@ -2808,8 +2938,14 @@ msgstr "أدخل عدد كل فئة."
 msgid "Enter how many."
 msgstr "أدخل العدد."
 
+msgid "Enter opening balances and import opening stock from Excel"
+msgstr "إدخال الأرصدة الافتتاحية واستيراد المخزون الافتتاحي من إكسل"
+
 msgid "Enter the amount counted."
 msgstr "أدخل المبلغ المعدود."
+
+msgid "Enter the balance."
+msgstr "أدخل الرصيد."
 
 msgid "Enter the carats."
 msgstr "أدخل القيراط."
@@ -2898,19 +3034,13 @@ msgid "Every finished month is closed."
 msgstr "كل الشهور المنتهية مقفلة."
 
 msgid ""
-"Every morning at 7:30: cheques due, months not closed, repairs ready and the"
-" other reminders on the dashboard, with yesterday's sales. Each person only "
-"sees what their roles allow."
-msgstr ""
-"كل صباح الساعة 7:30: الشيكات المستحقة، والشهور غير المقفلة، والتصليحات "
-"الجاهزة، وباقي تذكيرات لوحة التحكم، مع مبيعات الأمس. لا يرى كل شخص إلا ما "
-"تسمح به أدواره."
-
-msgid ""
 "Every posted entry. Entries are never edited: mistakes are corrected with a "
 "reversal."
 msgstr ""
 "كل القيود المرحّلة. لا تُعدَّل القيود أبدًا؛ تُصحَّح الأخطاء بقيد عكسي."
+
+msgid "Every row is correct ({n} pieces). You can import the file now."
+msgstr "كل الأسطر صحيحة ({n} قطعة). يمكنك استيراد الملف الآن."
 
 msgid "Every sale, newest first."
 msgstr "كل المبيعات، الأحدث أولًا."
@@ -3014,6 +3144,9 @@ msgid ""
 msgstr ""
 "أرقام مباشرة من الدفاتر لأي يوم أو فترة أو فرع، ويمكن طباعة كل تقرير أو "
 "تنزيله لإكسل."
+
+msgid "File (.xlsx or .csv)"
+msgstr "الملف (.xlsx أو .csv)"
 
 msgid "Filter"
 msgstr "تصفية"
@@ -3347,6 +3480,9 @@ msgstr "بضاعة مبيعة للتجار بالوزن، تُسدَّد ذهب�
 msgid "gram"
 msgstr "جرام"
 
+msgid "grams"
+msgstr "جرام"
+
 msgid "Graphite"
 msgstr "جرافيت"
 
@@ -3394,6 +3530,9 @@ msgstr "أثقل الشاشات"
 
 msgid "Height"
 msgstr "الارتفاع"
+
+msgid "Hello %(name)s, here is how last month went."
+msgstr "مرحبًا %(name)s، إليك ملخص الشهر الماضي."
 
 msgid "Hello %(name)s, here is your %(document)s from %(company)s."
 msgstr "مرحبًا %(name)s، هذه %(document)s من %(company)s."
@@ -3471,6 +3610,9 @@ msgstr "العدد"
 msgid "How many %(home)s one unit of each currency is worth."
 msgstr "قيمة الوحدة من كل عملة بالـ %(home)s."
 
+msgid "How to fill the file"
+msgstr "كيف تملأ الملف"
+
 msgid ""
 "How your invoices, receipts and vouchers look when printed. A document can "
 "have its own design or use another one's."
@@ -3486,6 +3628,15 @@ msgstr "رقم الآيبان"
 
 msgid "Idle a month"
 msgstr "متوقف منذ شهر"
+
+msgid "Import"
+msgstr "استيراد"
+
+msgid "Import pieces from Excel"
+msgstr "استيراد القطع من إكسل"
+
+msgid "Importing…"
+msgstr "جارٍ الاستيراد…"
 
 msgid "In"
 msgstr "وارد"
@@ -3504,6 +3655,9 @@ msgstr "في الخزينة"
 
 msgid "In money"
 msgstr "نقدًا"
+
+msgid "In money, or in gold: grams of a karat. One line per balance."
+msgstr "بالنقدية، أو بالذهب: جرامات من عيار معيّن. سطر لكل رصيد."
 
 msgid "In our own shop"
 msgstr "في ورشتنا"
@@ -4156,6 +4310,12 @@ msgid ""
 msgstr ""
 "الصرف الشهري: الرواتب والعمولات والمكافآت والخصومات، مطروحًا منها السلف."
 
+msgid "Monthly report"
+msgstr "التقرير الشهري"
+
+msgid "Monthly report · %(company)s · %(month)s"
+msgstr "التقرير الشهري · %(company)s · %(month)s"
+
 msgid "Monthly salary"
 msgstr "الراتب الشهري"
 
@@ -4209,6 +4369,13 @@ msgstr "الحركات"
 
 msgid "Movements booked at the branch that day."
 msgstr "الحركات المسجلة على الفرع في ذلك اليوم."
+
+msgid ""
+"Moving over from another system? Start here: enter what each customer, "
+"supplier and box holds, and import your pieces from Excel."
+msgstr ""
+"تنتقل من نظام آخر؟ ابدأ من هنا: أدخل رصيد كل عميل ومورد وخزينة، واستورد قطعك"
+" من إكسل."
 
 msgid "Must be greater than zero."
 msgstr "يجب أن يكون أكبر من صفر."
@@ -4342,6 +4509,9 @@ msgstr "قيد يومية جديد"
 
 msgid "New karat"
 msgstr "عيار جديد"
+
+msgid "New opening balances"
+msgstr "أرصدة افتتاحية جديدة"
 
 msgid "New password"
 msgstr "كلمة المرور الجديدة"
@@ -4516,6 +4686,9 @@ msgstr "لا توجد حركات في هذه الفترة"
 
 msgid "No movements to tick up to this date."
 msgstr "لا توجد حركات للمطابقة حتى هذا التاريخ."
+
+msgid "No opening balances yet"
+msgstr "لا توجد أرصدة افتتاحية بعد"
 
 msgid "No payroll paid yet"
 msgstr "لم يُصرف أي مسير رواتب بعد"
@@ -4951,6 +5124,12 @@ msgstr "رصيد افتتاحي"
 msgid "Opening balances"
 msgstr "الأرصدة الافتتاحية"
 
+msgid "Opening balances %(number)s"
+msgstr "أرصدة افتتاحية %(number)s"
+
+msgid "Opening balances posted."
+msgstr "سُجّلت الأرصدة الافتتاحية."
+
 msgid "Opening stock"
 msgstr "مخزون افتتاحي"
 
@@ -4965,6 +5144,14 @@ msgstr "نظام التشغيل"
 
 msgid "optional"
 msgstr "اختياري"
+
+msgid ""
+"Optional: barcode (left empty, a new one is given), stones in carats, making"
+" cost, making price per gram, stones cost, label price, supplier and model."
+msgstr ""
+"اختياري: الباركود (إن تُرك فارغًا يُعطى باركود جديد)، وزن الأحجار بالقيراط، "
+"تكلفة المصنعية، مصنعية البيع للجرام، تكلفة الأحجار، سعر التيكت، المورد "
+"والموديل."
 
 msgid "Or a name"
 msgstr "أو اسم"
@@ -5030,6 +5217,9 @@ msgstr "نظرة عامة"
 
 msgid "Owed in money"
 msgstr "المستحق نقدًا"
+
+msgid "Owes us"
+msgstr "مدين لنا"
 
 msgid "Own name"
 msgstr "اسم خاص"
@@ -5128,6 +5318,9 @@ msgid ""
 "Part of this advance was already recovered in a payroll. Cancel that payroll"
 " first."
 msgstr "خُصم جزء من هذه السلفة في مسير رواتب. ألغِ ذلك المسير أولًا."
+
+msgid "Parties"
+msgstr "الأطراف"
 
 msgid "Partner"
 msgstr "شريك"
@@ -5299,6 +5492,10 @@ msgstr "رقم العملية"
 msgid "Piece"
 msgstr "القطعة"
 
+msgid ""
+"Piece %(barcode)s has been used since (%(status)s): it cannot be taken out."
+msgstr "القطعة %(barcode)s استُخدمت بعد ذلك (%(status)s): لا يمكن إخراجها."
+
 msgid "Piece %(barcode)s has no karat and cannot be priced by weight."
 msgstr "القطعة %(barcode)s بلا عيار ولا يمكن تسعيرها بالوزن."
 
@@ -5343,6 +5540,9 @@ msgstr "باركود القطع يبدأ به."
 
 msgid "Pieces held for customers against a deposit."
 msgstr "قطع محجوزة للعملاء مقابل عربون."
+
+msgid "Pieces imported."
+msgstr "استُوردت القطع."
 
 msgid ""
 "Pieces include reserved ones. Value at today's buy price for pure metal."
@@ -5439,6 +5639,9 @@ msgstr "ترحيل وعكس القيود اليدوية"
 msgid "Post entry"
 msgstr "ترحيل القيد"
 
+msgid "Post opening balances"
+msgstr "سجّل الأرصدة الافتتاحية"
+
 msgid "Post purchase"
 msgstr "ترحيل الشراء"
 
@@ -5459,6 +5662,13 @@ msgstr "يقبل الترحيل"
 
 msgid "Posted"
 msgstr "مرحّلة"
+
+msgid ""
+"Posted against the Opening balances account. Gold is valued at today's gold "
+"price, other currencies at today's rate."
+msgstr ""
+"تُسجَّل مقابل حساب الأرصدة الافتتاحية. يُقيَّم الذهب بسعر اليوم، والعملات "
+"الأخرى بسعر صرف اليوم."
 
 msgid "Posted by"
 msgstr "رحّله"
@@ -5572,6 +5782,9 @@ msgstr "الطابعة"
 
 msgid "Printing"
 msgstr "الطباعة"
+
+msgid "Problem"
+msgstr "المشكلة"
 
 msgid "Problems"
 msgstr "المشكلات"
@@ -5992,6 +6205,9 @@ msgstr "استبدال التصميم كله بنقطة البداية هذه؟"
 msgid "Replaces the HTML above."
 msgstr "يستبدل الـ HTML أعلاه."
 
+msgid "Report e-mails"
+msgstr "رسائل التقارير"
+
 msgid "Reports"
 msgstr "التقارير"
 
@@ -6020,6 +6236,12 @@ msgstr "مطلوب"
 
 msgid "Required."
 msgstr "مطلوب."
+
+msgid ""
+"Required: category (code or name), karat for gold (21 or 21K) and weight in "
+"grams."
+msgstr ""
+"مطلوب: المجموعة (الكود أو الاسم)، العيار للذهب (21 أو 21K) والوزن بالجرام."
 
 msgid "Reservation"
 msgstr "حجز"
@@ -6164,6 +6386,9 @@ msgstr "تقريب"
 
 msgid "Rounding differences"
 msgstr "فروق التقريب"
+
+msgid "Row"
+msgstr "السطر"
 
 msgid "Row numbers"
 msgstr "أرقام الصفوف"
@@ -6380,6 +6605,9 @@ msgstr "كسر ذهب من العميل"
 msgid "Scrap gold received"
 msgstr "الكسر المستلم"
 
+msgid "Scrap gold, bullion and other categories counted by weight, per karat."
+msgstr "الذهب الكسر والسبائك والمجموعات الأخرى التي تُحسب بالوزن، لكل عيار."
+
 msgid "Scrap on hand"
 msgstr "الكسر الموجود"
 
@@ -6428,6 +6656,9 @@ msgstr "الاطلاع على الأرقام القومية للعملاء"
 msgid "See diamond pieces, loose stones and their certificates"
 msgstr "عرض قطع الألماس والأحجار السائبة وشهاداتها"
 
+msgid "See opening balances"
+msgstr "عرض الأرصدة الافتتاحية"
+
 msgid "See purchase costs"
 msgstr "الاطلاع على تكلفة الشراء"
 
@@ -6439,6 +6670,12 @@ msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
 
 msgid "See the messages sent to customers"
 msgstr "عرض الرسائل المرسلة للعملاء"
+
+msgid ""
+"See what the monthly report looks like: last month's report is e-mailed to "
+"you now."
+msgstr ""
+"اطّلع على شكل التقرير الشهري: يُرسل إليك تقرير الشهر الماضي الآن بالبريد."
 
 msgid "Select all"
 msgstr "تحديد الكل"
@@ -6660,6 +6897,10 @@ msgstr "إظهار البائع"
 msgid "Showing %(start)s–%(end)s of %(total)s"
 msgstr "عرض %(start)s–%(end)s من %(total)s"
 
+msgid ""
+"Showing the first %(shown)s of %(total)s pieces; all of them are in Stock."
+msgstr "تُعرض أول %(shown)s من %(total)s قطعة؛ وكلها موجودة في المخزون."
+
 msgid "Shown in every workspace sidebar. Empty: the platform name."
 msgstr "يظهر في القائمة الجانبية لكل مساحة عمل. فارغ: اسم المنصة."
 
@@ -6828,6 +7069,9 @@ msgstr "المتبقي للدفع"
 
 msgid "Stock"
 msgstr "المخزون"
+
+msgid "Stock by weight"
+msgstr "المخزون بالوزن"
 
 msgid "Stock transfer"
 msgstr "تحويل بضاعة"
@@ -7060,6 +7304,14 @@ msgstr "يدخل المبلغ إلى الحساب البنكي."
 msgid "The amount leaves the bank account."
 msgstr "يخرج المبلغ من الحساب البنكي."
 
+msgid ""
+"The balances and stock a business brings with it when it starts on the "
+"system: customers, suppliers, traders, workshops, partners, cash boxes, "
+"banks, stock by weight and barcoded pieces."
+msgstr ""
+"الأرصدة والمخزون التي يبدأ بها النشاط على النظام: العملاء والموردون والتجار "
+"والورش والشركاء والخزائن والبنوك والمخزون بالوزن والقطع المكوّدة."
+
 msgid "The bank account must stay in the same currency."
 msgstr "يجب أن يبقى الحساب البنكي بنفس العملة."
 
@@ -7118,8 +7370,23 @@ msgstr "تمت استعادة التصميم السابق."
 msgid "The fee must be less than the amount."
 msgstr "يجب أن تكون العمولة أقل من المبلغ."
 
+msgid "The file has no pieces."
+msgstr "الملف لا يحتوي على قطع."
+
+msgid "The file is empty."
+msgstr "الملف فارغ."
+
+msgid "The file is larger than 10 MB."
+msgstr "حجم الملف أكبر من 10 ميجابايت."
+
 msgid "The first person to sign in; can add everyone else."
 msgstr "أول من يسجل الدخول، ويمكنه إضافة الباقين."
+
+msgid "The first row must name the columns. Missing: %(columns)s."
+msgstr "يجب أن يحمل السطر الأول أسماء الأعمدة. الناقص: %(columns)s."
+
+msgid "The first row names the columns, in English or Arabic, in any order."
+msgstr "السطر الأول يحمل أسماء الأعمدة، بالعربية أو الإنجليزية، بأي ترتيب."
 
 msgid "The fold is wider than the label."
 msgstr "الذيل أعرض من الملصق."
@@ -7280,6 +7547,10 @@ msgstr ""
 "يقل رصيد ذهب المورد بقدر الذهب الصافي المردود، ورصيده النقدي بقدر المصنعية "
 "المدفوعة."
 
+msgid ""
+"The template's second sheet lists your categories, karats and suppliers."
+msgstr "الورقة الثانية في النموذج فيها مجموعاتك وعياراتك ومورديك."
+
 msgid "The thermal layout always prints on an 80 mm roll."
 msgstr "التصميم الحراري يُطبع دائماً على رول 80 مم."
 
@@ -7356,12 +7627,21 @@ msgstr "هذا العنوان محجوز."
 msgid "This address is taken."
 msgstr "هذا العنوان مستخدم."
 
+msgid "This barcode is used twice in the list."
+msgstr "هذا الباركود مكرر في القائمة."
+
 msgid "This board has no %(side)s price for %(karat)s."
 msgstr "لا يوجد سعر %(side)s لـ %(karat)s في هذه النشرة."
 
 msgid ""
 "This category already has stock, so its family and tracking cannot change."
 msgstr "على هذه المجموعة بضاعة، لذلك لا يمكن تغيير نوعها أو طريقة تتبعها."
+
+msgid "This category is counted by weight."
+msgstr "هذه المجموعة تُحسب بالوزن."
+
+msgid "This category is counted per piece: enter its pieces instead."
+msgstr "هذه المجموعة تُحسب بالقطعة: أدخل قطعها بدلًا من ذلك."
 
 msgid "This cheque was cancelled."
 msgstr "تم إلغاء هذا الشيك."
@@ -7405,6 +7685,9 @@ msgstr "مفتاح Idempotency-Key هذا استُخدم لطلب آخر."
 
 msgid "This invoice is already posted."
 msgstr "هذه الفاتورة مرحّلة بالفعل."
+
+msgid "This is not an Excel (.xlsx) or CSV file."
+msgstr "هذا ليس ملف إكسل (.xlsx) أو CSV."
 
 msgid "This is the company currency."
 msgstr "هذه عملة الشركة."
@@ -7698,6 +7981,9 @@ msgstr "باركود غير معروف"
 msgid "Unknown branch."
 msgstr "فرع غير معروف."
 
+msgid "Unknown category “%(value)s”."
+msgstr "مجموعة غير معروفة «%(value)s»."
+
 msgid "Unknown category."
 msgstr "مجموعة غير معروفة."
 
@@ -7718,6 +8004,9 @@ msgstr "نوع مستند غير معروف: %(type)s"
 
 msgid "Unknown field."
 msgstr "بيان غير معروف."
+
+msgid "Unknown karat “%(value)s”."
+msgstr "عيار غير معروف «%(value)s»."
 
 msgid "Unknown karat."
 msgstr "عيار غير معروف."
@@ -7751,6 +8040,9 @@ msgstr "حالة غير معروفة."
 
 msgid "Unknown stone."
 msgstr "حجر غير معروف."
+
+msgid "Unknown supplier “%(value)s”."
+msgstr "مورد غير معروف «%(value)s»."
 
 msgid "Unsaved changes"
 msgstr "تغييرات غير محفوظة"
@@ -7951,6 +8243,9 @@ msgstr "عميل نقدي"
 msgid "Watches"
 msgstr "ساعات"
 
+msgid "We owe them"
+msgstr "دائن (لهم عندنا)"
+
 msgid "We owe them gold: pay it in money instead"
 msgstr "الذهب مستحق علينا: نسدده نقدًا"
 
@@ -7997,6 +8292,12 @@ msgid "What came back"
 msgstr "ما تم استلامه"
 
 msgid ""
+"What each one holds, in its own currency. A bank may be negative "
+"(overdrawn)."
+msgstr ""
+"ما في كل واحدة بعملتها. يمكن أن يكون رصيد البنك سالبًا (سحب على المكشوف)."
+
+msgid ""
 "What each plan includes. A client gets its plan's features unless you switch"
 " one on or off on the client's own page. A feature that is off disappears "
 "from the client's menus, pages and API."
@@ -8019,6 +8320,16 @@ msgstr "ما في فروعك الآن: القطع بالباركود والذه�
 
 msgid "What should be made"
 msgstr "المطلوب تصنيعه"
+
+msgid ""
+"What the business brings with it on the day it starts here: what customers, "
+"suppliers, traders, workshops and partners owe or are owed, what the cash "
+"boxes and banks hold, and stock kept by weight. Barcoded pieces come in from"
+" Excel."
+msgstr ""
+"ما يبدأ به النشاط يوم بدايته هنا: ما على العملاء والموردين والتجار والورش "
+"والشركاء أو ما لهم، وما في الخزائن والبنوك، والمخزون بالوزن. والقطع المكوّدة"
+" تُستورد من إكسل."
 
 msgid ""
 "What the business owns and owes on a day, in money and in fine gold: assets,"
@@ -8237,6 +8548,13 @@ msgstr ""
 "تصلك هذه الرسالة لأن المالك أضافك إلى التذكيرات اليومية. اطلب منه إزالتك من "
 "القائمة."
 
+msgid ""
+"You get this e-mail because the owner added you to the monthly report. Ask "
+"them to take you off the list."
+msgstr ""
+"تصلك هذه الرسالة لأن المالك أضافك إلى التقرير الشهري. اطلب منه إزالتك من "
+"القائمة."
+
 msgid "You may not change the scrap gold price."
 msgstr "لا يُسمح لك بتعديل سعر الكسر."
 
@@ -8252,6 +8570,9 @@ msgstr "بياناتك خاصة بشركتك وحدها"
 msgid "Your discount limit: %(max)s%% of the making charge."
 msgstr "حد الخصم المسموح لك: %(max)s%% من المصنعية."
 
+msgid "Your monthly report will arrive in a moment."
+msgstr "سيصلك التقرير الشهري خلال لحظات."
+
 msgid "Your name, logo and colour on every screen."
 msgstr "اسمك وشعارك ولونك على كل الشاشات."
 
@@ -8263,6 +8584,12 @@ msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإض�
 
 msgid "Your plan allows %(limit)s users. Contact us to add more."
 msgstr "باقتك تسمح بـ %(limit)s مستخدمين. تواصل معنا لإضافة المزيد."
+
+msgid "Your report for %(month)s"
+msgstr "تقريرك عن %(month)s"
+
+msgid "Your roles do not include any of the monthly figures."
+msgstr "أدوارك لا تشمل أيًّا من أرقام التقرير الشهري."
 
 msgid "Your shops and offices."
 msgstr "محلاتك ومكاتبك."
@@ -8279,6 +8606,9 @@ msgstr ""
 
 msgid "Zebra (ZPL)"
 msgstr "زيبرا (ZPL)"
+
+msgid "{n} problems to fix in the file:"
+msgstr "{n} مشكلة يجب إصلاحها في الملف:"
 
 msgid "— Top level —"
 msgstr "— المستوى الأعلى —"

@@ -56,7 +56,9 @@ def create_item(*, category, karat, gross_weight_g, branch, business_date: date,
                 supplier=None, stone_weight_ct="0", cost_currency=None, cost_making_rate="0",
                 cost_amount="0", list_making_rate="0", external_code: str = "",
                 movement_type: str = MovementType.PURCHASE_RECEIPT, actor=None,
-                stone_cost_amount="0", label_price=None) -> Item:
+                stone_cost_amount="0", label_price=None, barcode: str | None = None) -> Item:
+    """`barcode`: keep an existing code (pieces carried over from another system) instead of
+    numbering a new one; the caller checks it is free."""
     gross = quantize(gross_weight_g, WEIGHT)
     if gross <= 0:
         raise DomainError(_("A piece must weigh more than zero."), code="INVENTORY_ZERO_WEIGHT")
@@ -65,7 +67,7 @@ def create_item(*, category, karat, gross_weight_g, branch, business_date: date,
     fine = _fine(metal, karat)
     cost = quantize(cost_amount, MONEY)
     item = Item.objects.create(
-        barcode=next_barcode(category), item_type=FAMILY_TO_ITEM_TYPE.get(
+        barcode=barcode or next_barcode(category), item_type=FAMILY_TO_ITEM_TYPE.get(
             category.product_family, ItemType.OTHER),
         category=category, karat=karat, gross_weight_g=gross, metal_weight_g=metal,
         fine_weight_g=fine, stone_weight_ct=to_decimal(stone_weight_ct), supplier=supplier,

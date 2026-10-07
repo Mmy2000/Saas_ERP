@@ -6,6 +6,7 @@
     def send_email(message_id): ...
 
     daily("messaging.daily_digest", at=time(7, 30))   # every client, at 07:30 their time
+    monthly("messaging.monthly_pack", day=1, at=time(8, 0))   # on the 1st, 08:00 their time
 
 and asks for one with `enqueue("messaging.send_email", message_id=5)`, inside the transaction
 of the work that needs it. A client task runs in that client's tenant_context, language and
@@ -45,6 +46,7 @@ class Schedule:
     task: str
     at: time  # local time: the client's time zone, or the server's for platform tasks
     until: time  # missed by then (no worker running): skipped for that day
+    monthday: int | None = None  # only on this day of the month (None: every day)
 
 
 TASKS: dict[str, Task] = {}
@@ -66,6 +68,15 @@ def daily(task_name: str, *, at: time, until: time | None = None) -> None:
         until = time(min(at.hour + 6, 23), at.minute if at.hour + 6 <= 23 else 59)
     if not any(s.task == task_name for s in SCHEDULES):
         SCHEDULES.append(Schedule(task_name, at, until))
+
+
+def monthly(task_name: str, *, day: int, at: time, until: time | None = None) -> None:
+    """Once a month, on `day` (1-28) at `at` in the client's time."""
+    if not 1 <= day <= 28:
+        raise ValueError("A monthly schedule runs on day 1 to 28 (every month has them).")
+    daily(task_name, at=at, until=until)
+    index = next(i for i, s in enumerate(SCHEDULES) if s.task == task_name)
+    SCHEDULES[index] = Schedule(task_name, SCHEDULES[index].at, SCHEDULES[index].until, day)
 
 
 def enqueue(name: str, *, tenant_id: int | None = None, run_at: datetime | None = None,

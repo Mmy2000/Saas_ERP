@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy as _l
 
 from apps.core.models import DocStatus
 from apps.core.tenancy.context import require_current_tenant_id
-from apps.platform.jobs.registry import JobFailed, daily, enqueue, task
+from apps.platform.jobs.registry import JobFailed, daily, enqueue, monthly, task
 
 from .models import Channel, DigestRecipient, MessageKind, MessageStatus, OutboundMessage
 from .services import company_name, message_pdf, sender_address
@@ -43,17 +43,26 @@ def send_email(message_id):
         else None
     mail = EmailMultiAlternatives(message.subject, message.body, sender_address(company),
                                   [message.recipient], reply_to=reply_to)
-    if message.kind == MessageKind.DIGEST:
-        mail.attach_alternative(message.params.get("html", ""), "text/html")
-    else:
-        try:
-            content, filename = message_pdf(message)
-        except LookupError as exc:
-            raise JobFailed(str(exc)) from exc
-        mail.attach(filename, content, "application/pdf")
+    if message.params.get("html"):
+        mail.attach_alternative(message.params["html"], "text/html")
+    try:
+        for content, filename in _attachments(message):
+            mail.attach(filename, content, "application/pdf")
+    except LookupError as exc:
+        raise JobFailed(str(exc)) from exc
     mail.send()
     message.status, message.sent_at, message.error = MessageStatus.SENT, timezone.now(), ""
     message.save(update_fields=["status", "sent_at", "error", "updated_at"])
+
+
+def _attachments(message) -> list[tuple[bytes, str]]:
+    if message.kind == MessageKind.DIGEST:
+        return []
+    if message.kind == MessageKind.MONTHLY:
+        from .monthly import pack_files
+
+        return pack_files(message)
+    return [message_pdf(message)]
 
 
 # ---- the daily reminders e-mail ------------------------------------------------------------
@@ -106,7 +115,7 @@ def daily_digest():
 
     if not is_enabled(require_current_tenant_id(), "messaging"):
         return
-    recipients = DigestRecipient.objects.select_related("membership__user")
+    recipients = DigestRecipient.objects.filter(daily=True).select_related("membership__user")
     for recipient in recipients:
         membership, user = recipient.membership, recipient.membership.user
         if (membership.status != MembershipStatus.ACTIVE or not user.is_active
@@ -126,3 +135,46 @@ def daily_digest():
 
 
 daily("messaging.daily_digest", at=time(7, 30))
+
+
+# ---- the monthly report e-mail -------------------------------------------------------------
+
+def queue_monthly(membership, year: int, month: int, *, user=None) -> OutboundMessage | None:
+    """Queue one person's monthly report (None: no e-mail address, or nothing they may see)."""
+    from .monthly import pack_for
+
+    if not membership.user.email:
+        return None
+    content = pack_for(membership, year, month)
+    if content is None:
+        return None
+    subject = _("Monthly report · %(company)s · %(month)s") % {
+        "company": content["company"], "month": content["month"]}
+    message = OutboundMessage.objects.create(
+        channel=Channel.EMAIL, kind=MessageKind.MONTHLY, recipient=membership.user.email,
+        subject=subject[:300], doc_label=_("Monthly report") + f" · {content['month']}",
+        body=render_to_string("messaging/email/monthly.txt", content), created_by=user,
+        params={"membership": membership.pk, "year": year, "month": month,
+                "html": render_to_string("messaging/email/monthly.html", content)})
+    enqueue("messaging.send_email", message_id=message.pk)
+    return message
+
+
+@task("messaging.monthly_pack", label=_l("Monthly report e-mails"), max_attempts=2)
+def monthly_pack():
+    from apps.iam.models import MembershipStatus
+    from apps.platform.tenants.features import is_enabled
+
+    from .monthly import last_month
+
+    if not is_enabled(require_current_tenant_id(), "messaging"):
+        return
+    year, month = last_month()
+    for recipient in DigestRecipient.objects.filter(monthly=True).select_related(
+            "membership__user"):
+        membership = recipient.membership
+        if membership.status == MembershipStatus.ACTIVE and membership.user.is_active:
+            queue_monthly(membership, year, month)
+
+
+monthly("messaging.monthly_pack", day=1, at=time(8, 0))

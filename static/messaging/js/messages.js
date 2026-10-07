@@ -1,5 +1,5 @@
-// Sent messages: send a failed e-mail again, copy or stop a shared link, and choose who gets
-// the daily reminders.
+// Sent messages: send a failed e-mail again, copy or stop a shared link, choose who gets the
+// daily and monthly report e-mails, and e-mail myself last month's report.
 import { api, ApiError, uuid } from "../../core/js/api.js";
 import { registerShaper } from "../../core/js/forms.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
@@ -36,6 +36,19 @@ if (root) {
   });
 }
 
-registerShaper("digest", (_values, form) => ({
-  members: [...form.querySelectorAll("[data-digest-member]:checked")].map((input) => Number(input.value)),
-}));
+const ticked = (form, name) => [...form.querySelectorAll(`[data-digest-${name}]:checked`)].map((input) => Number(input.value));
+registerShaper("digest", (_values, form) => ({ daily: ticked(form, "daily"), monthly: ticked(form, "monthly") }));
+
+const monthlyNow = document.querySelector("[data-monthly-now]");
+monthlyNow?.querySelector("[data-monthly-go]").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await api(monthlyNow.dataset.url, { method: "POST", idempotencyKey: uuid() });
+    flash(monthlyNow.dataset.queued);
+    window.location.reload();
+  } catch (error) {
+    toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
+    button.disabled = false;
+  }
+});

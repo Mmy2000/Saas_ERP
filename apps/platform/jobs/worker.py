@@ -213,6 +213,8 @@ class Scheduler:
                 key = (schedule.task, tenant_id, local.date())
                 if key in self._done or not schedule.at <= local.time() < schedule.until:
                     continue
+                if schedule.monthday is not None and local.day != schedule.monthday:
+                    continue
                 if enqueue(schedule.task, tenant_id=tenant_id,
                            dedupe_key=local.date().isoformat()) is not None:
                     queued += 1

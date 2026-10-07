@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.diamonds",
     "apps.audit",
     "apps.messaging",
+    "apps.opening",
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,52 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Opening balances" %}{% endblock %}
+{% block page_header %}
+{% can "ledger.opening.post" as can_post %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Opening balances" %}</h1>
+    <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "The balances and stock a business brings with it when it starts on the system: customers, suppliers, traders, workshops, partners, cash boxes, banks, stock by weight and barcoded pieces." %}</p>
+  </div>
+  {% if can_post %}
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'opening-import' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{% translate "Import pieces from Excel" %}</a>
+    <a href="{% url 'opening-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New opening balances" %}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "As of" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Note" %}</th><th>{% translate "By" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for doc in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ doc.number }}</span></td>
+          <td><span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ doc.branch.name }}</td>
+          <td class="max-w-xs truncate text-slate-600">{{ doc.note|default:"—" }}</td>
+          <td class="text-sm text-slate-600">{{ doc.posted_by.display_name|default:"—" }}</td>
+          <td>{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'opening-balance' doc.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-3 text-sm">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-secondary" href="?page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No opening balances yet" as empty_title %}
+    {% translate "Moving over from another system? Start here: enter what each customer, supplier and box holds, and import your pieces from Excel." as empty_text %}
+    {% include "components/empty_state.html" with icon="book-open" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

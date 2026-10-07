@@ -15,6 +15,7 @@ from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
 from apps.messaging import views as messaging
+from apps.opening import views as opening
 from apps.org.web import company
 from apps.org.web import views as org
 from apps.parties.web import views as parties
@@ -178,6 +179,12 @@ urlpatterns = [
     path("purchasing/<int:pk>/", purchasing.invoice_detail, name="invoice-detail"),
     path("purchasing/<int:pk>/edit/", purchasing.invoice_edit, name="invoice-edit"),
     path("accounting/accounts/", ledger.accounts, name="accounts"),
+    path("accounting/opening/", opening.openings, name="opening-balances"),
+    path("accounting/opening/new/", opening.opening_new, name="opening-new"),
+    path("accounting/opening/import/", opening.opening_import, name="opening-import"),
+    path("accounting/opening/import/template.xlsx", opening.import_template,
+         name="opening-import-template"),
+    path("accounting/opening/<int:pk>/", opening.opening, name="opening-balance"),
     path("accounting/journal/", ledger.journal, name="journal"),
     path("accounting/journal/new/", ledger.journal_new, name="journal-new"),
     path("accounting/trial-balance/", ledger.trial_balance_view, name="trial-balance"),

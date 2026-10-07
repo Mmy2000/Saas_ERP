@@ -103,12 +103,15 @@ class StopView(APIView):
 
 
 class DigestSerializer(serializers.Serializer):
-    members = serializers.ListField(child=serializers.IntegerField(min_value=1),
-                                    allow_empty=True, max_length=500)
+    daily = serializers.ListField(child=serializers.IntegerField(min_value=1),
+                                  allow_empty=True, max_length=500)
+    monthly = serializers.ListField(child=serializers.IntegerField(min_value=1),
+                                    allow_empty=True, max_length=500, required=False,
+                                    default=list)
 
 
 class DigestView(APIView):
-    """Who gets the daily reminders e-mail."""
+    """Who gets the daily reminders and the monthly report e-mails."""
 
     required_permissions = {"PUT": "admin.users.manage"}
 
@@ -117,14 +120,42 @@ class DigestView(APIView):
 
         serializer = DigestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        wanted = set(Membership.objects.filter(pk__in=serializer.validated_data["members"])
-                     .values_list("pk", flat=True))
+        data = serializer.validated_data
+        members = set(Membership.objects.filter(pk__in={*data["daily"], *data["monthly"]})
+                      .values_list("pk", flat=True))
+        daily, monthly = members & set(data["daily"]), members & set(data["monthly"])
         with transaction.atomic():
-            DigestRecipient.objects.exclude(membership_id__in=wanted).delete()
-            have = set(DigestRecipient.objects.values_list("membership_id", flat=True))
-            DigestRecipient.objects.bulk_create(
-                [DigestRecipient(membership_id=pk) for pk in sorted(wanted - have)])
-        return Response({"members": sorted(wanted)})
+            DigestRecipient.objects.exclude(membership_id__in=members).delete()
+            rows = {r.membership_id: r for r in DigestRecipient.objects.all()}
+            for pk in sorted(members):
+                row = rows.get(pk) or DigestRecipient(membership_id=pk)
+                row.daily, row.monthly = pk in daily, pk in monthly
+                row.save()
+        return Response({"daily": sorted(daily), "monthly": sorted(monthly)})
+
+
+class MonthlyNowView(APIView):
+    """E-mail me last month's report now (to see what it looks like, or if one went missing)."""
+
+    required_permissions = {"POST": "messaging.send"}
+
+    @idempotent
+    def post(self, request):
+        from django.utils.translation import gettext as _
+
+        from apps.core.errors import DomainError
+
+        from .jobs import queue_monthly
+        from .monthly import last_month
+
+        if not request.user.email:
+            raise DomainError(_("Add your e-mail address to your user first."),
+                              code="MESSAGING_NO_EMAIL")
+        message = queue_monthly(request.membership, *last_month(), user=request.user)
+        if message is None:
+            raise DomainError(_("Your roles do not include any of the monthly figures."),
+                              code="MESSAGING_NOTHING_TO_SEND")
+        return Response({"id": message.pk, "status": message.status}, status=201)
 
 
 urlpatterns = [
@@ -133,4 +164,5 @@ urlpatterns = [
     path("<int:pk>/again/", AgainView.as_view(), name="message-again"),
     path("<int:pk>/stop/", StopView.as_view(), name="message-stop"),
     path("digest/", DigestView.as_view(), name="message-digest"),
+    path("monthly/", MonthlyNowView.as_view(), name="message-monthly"),
 ]

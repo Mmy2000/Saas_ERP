@@ -19,7 +19,6 @@ function escapeHtml(text) {
 }
 
 function remoteOptions(select) {
-  const url = select.dataset.remote;
   const labelField = select.dataset.labelField || "name";
   return {
     valueField: "id",
@@ -28,6 +27,7 @@ function remoteOptions(select) {
     preload: "focus",
     shouldLoad: () => true,
     load(query, callback) {
+      const url = select.dataset.remote; // read each time: a form may point it elsewhere
       const separator = url.includes("?") ? "&" : "?";
       api(`${url}${separator}q=${encodeURIComponent(query)}&page_size=20`)
         .then((data) => callback(data.results || data))

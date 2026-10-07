@@ -1,0 +1,60 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Import pieces from Excel" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'opening/js/import.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'opening-balances' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Opening balances" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Import pieces from Excel" %}</h1>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "Bring your barcoded stock over from another system: one row per piece. Pieces keep their old barcodes, so labels already printed still scan." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <form id="import" class="card card-body space-y-5 xl:col-span-2" novalidate
+        data-url="{% url 'opening-import-api' %}" data-detail-url="{% url 'opening-balances' %}{id}/"
+        data-checking="{% translate 'Checking every row…' %}" data-importing="{% translate 'Importing…' %}"
+        data-clean="{% translate 'Every row is correct ({n} pieces). You can import the file now.' %}"
+        data-problems="{% translate '{n} problems to fix in the file:' %}" data-more="{% translate 'and {n} more.' %}"
+        data-l-line="{% translate 'Row' %}" data-l-column="{% translate 'Column' %}" data-l-problem="{% translate 'Problem' %}"
+        data-l-karat="{% translate 'Karat' %}" data-l-pieces="{% translate 'Pieces' %}" data-l-weight="{% translate 'Weight (g)' %}"
+        data-done="{% translate 'Pieces imported.' %}">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <label><span class="form-label">{% translate "Branch" %}</span>
+        <select name="branch" class="form-input">{% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "As of" %}</span>
+        <input type="date" name="business_date" class="form-input" value="{% now 'Y-m-d' %}" max="{% now 'Y-m-d' %}"></label>
+    </div>
+    <label class="block"><span class="form-label">{% translate "File (.xlsx or .csv)" %}</span>
+      <input type="file" name="file" accept=".xlsx,.csv" class="form-input file:me-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm" required></label>
+    <label class="block"><span class="form-label">{% translate "Note" %}</span><input name="note" class="form-input" maxlength="300"></label>
+
+    <p class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-error role="alert"></p>
+    <div class="hidden rounded-lg border border-emerald-200 bg-emerald-50/70 px-3.5 py-3 text-sm text-emerald-800" data-ok></div>
+    <div class="hidden" data-result>
+      <div class="relative overflow-x-auto rounded-lg border border-slate-200">
+        <table class="table"><thead data-head></thead><tbody data-body></tbody></table>
+      </div>
+      <p class="mt-2 text-xs text-slate-500" data-more></p>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
+      <p class="me-auto text-xs text-slate-500" data-status aria-live="polite"></p>
+      <button type="button" class="btn btn-secondary" data-check>{% icon "clipboard-check" "size-4" %}{% translate "Check the file" %}</button>
+      <button type="button" class="btn btn-primary" data-go disabled>{% icon "check" "size-4" %}{% translate "Import" %}</button>
+    </div>
+  </form>
+
+  <aside class="card card-body space-y-3 self-start text-sm">
+    <h2 class="card-title">{% translate "How to fill the file" %}</h2>
+    <a class="btn btn-secondary w-full" href="{% url 'opening-import-template' %}">{% icon "file-down" "size-4" %}{% translate "Download the template" %}</a>
+    <ul class="list-disc space-y-1.5 ps-5 text-slate-600">
+      <li>{% translate "The first row names the columns, in English or Arabic, in any order." %}</li>
+      <li>{% translate "Required: category (code or name), karat for gold (21 or 21K) and weight in grams." %}</li>
+      <li>{% translate "Optional: barcode (left empty, a new one is given), stones in carats, making cost, making price per gram, stones cost, label price, supplier and model." %}</li>
+      <li>{% translate "The template's second sheet lists your categories, karats and suppliers." %}</li>
+      <li>{% translate "Check the file first: nothing is saved until every row is correct." %}</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}

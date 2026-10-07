@@ -1,0 +1,99 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{{ doc.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'opening-balances' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Opening balances" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <article class="card receipt overflow-hidden xl:col-span-2">
+    <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div><p class="text-lg font-semibold text-slate-900">{{ profile.display_name }}</p><p class="text-sm text-slate-500">{{ doc.branch.name }}</p></div>
+      <div class="text-end">
+        <p class="text-sm text-slate-500">{% translate "Opening balances" %}</p>
+        <p class="num text-xl font-semibold text-slate-900">{{ doc.number }}</p>
+        <p class="text-sm text-slate-500">{% translate "As of" %} <span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></p>
+        <div class="mt-1">{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</div>
+      </div>
+    </header>
+
+    {% if groups.party %}
+    <section class="border-b border-slate-100">
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Customers, suppliers, traders, workshops and partners" %}</h2>
+      <div class="relative overflow-x-auto"><table class="table" data-report="{% translate 'Parties' %}">
+        <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Who" %}</th><th class="text-end">{% translate "Owes us" %}</th><th class="text-end">{% translate "We owe them" %}</th><th class="text-end">{% translate "Value" %} ({{ home_currency }})</th></tr></thead>
+        <tbody>{% for line in groups.party %}
+          <tr><td><bdi>{{ line.party.name }}</bdi></td><td class="text-slate-600">{{ line.get_role_display }}</td>
+            {% if line.karat %}{% with grams=line.weight_g|num:3 %}
+            <td class="text-end">{% if line.fine_weight_g > 0 %}<span class="num">{{ grams }}</span> {% translate "g" %} {{ line.karat }}{% endif %}</td>
+            <td class="text-end">{% if line.fine_weight_g < 0 %}<span class="num">{{ grams }}</span> {% translate "g" %} {{ line.karat }}{% endif %}</td>{% endwith %}
+            {% else %}
+            <td class="text-end">{% if line.amount > 0 %}<span class="num">{{ line.amount|num:2 }}</span> {{ line.currency.code }}{% endif %}</td>
+            <td class="text-end">{% if line.amount < 0 %}<span class="num">{{ line.amount|absolute|num:2 }}</span> {{ line.currency.code }}{% endif %}</td>
+            {% endif %}
+            <td class="text-end"><span class="num">{{ line.functional_amount|num:2 }}</span></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if groups.holder %}
+    <section class="border-b border-slate-100">
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Cash boxes and banks" %}</h2>
+      <div class="relative overflow-x-auto"><table class="table" data-report="{% translate 'Cash boxes and banks' %}">
+        <thead><tr><th>{% translate "Cash box or bank" %}</th><th class="text-end">{% translate "Balance" %}</th><th class="text-end">{% translate "Value" %} ({{ home_currency }})</th></tr></thead>
+        <tbody>{% for line in groups.holder %}
+          <tr><td><bdi>{% if line.cash_box %}{{ line.cash_box.label }} · {{ line.cash_box.branch.name }}{% else %}{{ line.bank_account.label }}{% endif %}</bdi></td>
+            <td class="text-end"><span class="num">{{ line.amount|num:2 }}</span> {{ line.currency.code }}</td>
+            <td class="text-end"><span class="num">{{ line.functional_amount|num:2 }}</span></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if groups.stock %}
+    <section class="border-b border-slate-100">
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Stock by weight" %}</h2>
+      <div class="relative overflow-x-auto"><table class="table" data-report="{% translate 'Stock by weight' %}">
+        <thead><tr><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Making cost" %}</th></tr></thead>
+        <tbody>{% for line in groups.stock %}
+          <tr><td>{{ line.category.name }}</td><td>{{ line.karat|default:"—" }}</td><td class="text-end"><span class="num">{{ line.weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ line.qty }}</span></td><td class="text-end"><span class="num">{{ line.cost_amount|num:2 }}</span></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if piece_count %}
+    <section>
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Pieces" %} · <span class="num">{{ piece_count }}</span> · <span class="num">{{ piece_weight|num:3 }}</span> {% translate "g" %}</h2>
+      <div class="relative overflow-x-auto"><table class="table" data-report="{% translate 'Pieces' %}">
+        <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Making cost" %}</th></tr></thead>
+        <tbody>{% for line in pieces %}
+          <tr><td><a class="num text-brand-700 hover:underline" href="{% url 'stock-item' line.item_id %}">{{ line.item.barcode }}</a></td><td>{{ line.category.name }}</td><td>{{ line.karat|default:"—" }}</td>
+            <td class="text-end"><span class="num">{{ line.weight_g|num:3 }}</span></td><td class="text-end"><span class="num">{{ line.cost_amount|num:2 }}</span></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% if piece_count > pieces|length %}<p class="px-6 py-3 text-xs text-slate-500">{% blocktranslate trimmed with shown=pieces|length total=piece_count %}Showing the first {{ shown }} of {{ total }} pieces; all of them are in Stock.{% endblocktranslate %}</p>{% endif %}
+    </section>
+    {% endif %}
+    {% if doc.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ doc.note }}</p>{% endif %}
+    {% if doc.status == "voided" and doc.void_reason %}<p class="px-6 py-3 text-sm text-red-700">{% translate "Reason" %}: {{ doc.void_reason }}</p>{% endif %}
+  </article>
+
+  <aside class="space-y-6" data-no-print>
+    {% can "ledger.opening.void" doc.branch as can_void %}
+    {% if can_void and doc.status == "posted" %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">
+      <p class="text-sm text-slate-600">{% translate "Cancelling takes every balance and piece of this document back out. It is refused once a piece has been sold or moved." %}</p>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
+      <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel" %}</button>
+    </form>
+    {% endif %}
+    {% if doc.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ doc.journal_entry.number }}</dd></div></dl></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

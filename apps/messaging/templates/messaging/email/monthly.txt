@@ -1,0 +1,15 @@
+{% load i18n ui %}{% autoescape off %}{% blocktranslate with name=name %}Hello {{ name }}, here is how last month went.{% endblocktranslate %}
+
+{% blocktranslate with month=month %}Your report for {{ month }}{% endblocktranslate %}
+{% for figure in figures %}- {{ figure.label }}: {{ figure.now|num:2 }} ({{ before_month }}: {{ figure.before|num:2 }}){% if figure.change is not None %} {% if figure.change >= 0 %}+{% endif %}{{ figure.change|num:1 }}%{% endif %}
+{% endfor %}{% if invoices and invoices.count %}
+{% blocktranslate count count=invoices.count with total=invoices.total|num:2 %}{{ count }} sales invoice, {{ total }} in total.{% plural %}{{ count }} sales invoices, {{ total }} in total.{% endblocktranslate %}
+{% endif %}{% if closing %}
+{% if closing.closed %}{% blocktranslate with month=month %}{{ month }} is closed.{% endblocktranslate %}{% else %}{% blocktranslate with month=month %}{{ month }} is not closed yet: check it and close it so nobody can change it by mistake.{% endblocktranslate %} {{ closing.url }}{% endif %}
+{% endif %}{% if reports %}
+{% translate "Attached as PDF:" %}
+{% for title in reports %}- {{ title }}
+{% endfor %}{% endif %}
+{{ home }}
+
+{{ company }}{% endautoescape %}

@@ -21,12 +21,12 @@ def messages_log(request):
     reminders."""
     from apps.iam.models import Membership, MembershipStatus
 
-    chosen = request.GET.get("show", "all")
-    chosen = chosen if chosen in FILTERS else "all"
+    show = request.GET.get("show", "all")
+    show = show if show in FILTERS else "all"
     messages = OutboundMessage.objects.select_related("created_by", "party")
-    if chosen in (Channel.EMAIL, Channel.WHATSAPP):
-        messages = messages.filter(channel=chosen)
-    elif chosen == "failed":
+    if show in (Channel.EMAIL, Channel.WHATSAPP):
+        messages = messages.filter(channel=show)
+    elif show == "failed":
         messages = messages.filter(status=MessageStatus.FAILED)
     page = Paginator(messages.order_by("-created_at", "-id"), 30).get_page(
         request.GET.get("page"))
@@ -35,12 +35,13 @@ def messages_log(request):
             for m in page.object_list]
     members = None
     if request.actor.can("admin.users.manage"):
-        chosen_members = set(DigestRecipient.objects.values_list("membership_id", flat=True))
-        members = [{"member": m, "on": m.pk in chosen_members}
+        chosen = {r.membership_id: r for r in DigestRecipient.objects.all()}
+        members = [{"member": m, "daily": getattr(chosen.get(m.pk), "daily", False),
+                    "monthly": getattr(chosen.get(m.pk), "monthly", False)}
                    for m in Membership.objects.filter(status=MembershipStatus.ACTIVE)
                    .select_related("user").order_by("username")]
     return render(request, "messaging/messages.html", {
-        "page": page, "rows": rows, "show": chosen, "filters": FILTERS, "members": members,
+        "page": page, "rows": rows, "show": show, "filters": FILTERS, "members": members,
         "failed": OutboundMessage.objects.filter(status=MessageStatus.FAILED).count(),
     })
 

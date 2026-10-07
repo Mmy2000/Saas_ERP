@@ -103,6 +103,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Trial balance"), "trial-balance", "scale", "ledger.view"),
         NavItem(_("Chart of accounts"), "accounts", "list-tree", "ledger.view"),
         NavItem(_("Closing periods"), "periods", "calendar-check", "ledger.view", ("period",)),
+        NavItem(_("Opening balances"), "opening-balances", "inbox", "ledger.opening.view",
+                ("opening-new", "opening-import", "opening-balance")),
     ]),
     (_("Catalog"), [
         NavItem(_("Item categories"), "categories", "layers", "catalog.view",

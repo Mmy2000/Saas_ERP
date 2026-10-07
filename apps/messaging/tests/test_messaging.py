@@ -167,11 +167,11 @@ def test_daily_reminders(tenant_a, make_member, monkeypatch):
     manager = make_member(tenant_a, "manager", "manager")
     make_member(tenant_a, "viewer", "viewer")
     owner_client = login(tenant_a)
-    response = owner_client.put("/api/v1/messages/digest/", {"members": [manager.pk]},
+    response = owner_client.put("/api/v1/messages/digest/", {"daily": [manager.pk]},
                                 content_type="application/json")
     assert response.status_code == 200
     viewer = login(tenant_a, username="viewer")
-    assert viewer.put("/api/v1/messages/digest/", {"members": []},
+    assert viewer.put("/api/v1/messages/digest/", {"daily": []},
                       content_type="application/json").status_code == 403
 
     with tenant_context(tenant_a.id):
@@ -188,3 +188,139 @@ def test_daily_reminders(tenant_a, make_member, monkeypatch):
     with tenant_context(tenant_a.id):
         daily_digest()  # nothing to say: no e-mail
     assert run_pending() == 0 and len(mail.outbox) == 1
+
+
+# ---- the monthly report ----------------------------------------------------------------------
+
+def test_previous_period_is_whole_months_when_the_period_is():
+    from datetime import date
+
+    from apps.reports.statements import previous_period
+
+    assert previous_period(date(2026, 9, 1), date(2026, 9, 30)) == (date(2026, 8, 1),
+                                                                    date(2026, 8, 31))
+    assert previous_period(date(2026, 3, 1), date(2026, 3, 31)) == (date(2026, 2, 1),
+                                                                    date(2026, 2, 28))
+    assert previous_period(date(2026, 1, 1), date(2026, 3, 31)) == (date(2025, 10, 1),
+                                                                    date(2025, 12, 31))
+    assert previous_period(date(2026, 9, 10), date(2026, 9, 19)) == (date(2026, 8, 31),
+                                                                     date(2026, 9, 9))
+
+
+def test_the_summary_matches_the_profit_and_loss(tenant_a, sale):  # noqa: F811
+    from django.utils import timezone, translation
+
+    from apps.org.models import Branch
+    from apps.reports.registry import REPORTS
+    from apps.reports.statements import pnl_summary
+
+    today = timezone.localdate()
+    with tenant_context(tenant_a.id), translation.override("en"):
+        summary = pnl_summary(today.replace(day=1), today, None)
+        report = REPORTS["profit_loss"]()
+        params = report.parse({"columns": "period"}, Branch.objects.all())
+        rows = {row["label"]: row for row in report.run(params, None)[0].rows}
+    assert summary["sales"] == rows["Total sales"]["amount"] > 0
+    assert summary["gross"] == rows["Gross profit"]["amount"]
+    assert summary["net"] == rows["Net profit"]["amount"]
+
+
+def _this_month():
+    from django.utils import timezone
+
+    today = timezone.localdate()
+    return today.year, today.month
+
+
+def test_monthly_report_email(chromium, owner, tenant_a, sale):  # noqa: F811
+    from django.utils import translation
+
+    from apps.iam.models import Membership
+    from apps.messaging.jobs import queue_monthly
+
+    with tenant_context(tenant_a.id), translation.override("en"):
+        membership = Membership.objects.select_related("user").get(username="owner")
+        message = queue_monthly(membership, *_this_month())
+    assert message is not None and message.kind == "monthly"
+    run_pending()
+    sent = mail.outbox[0]
+    assert sent.to == ["owner@alpha.test"] and "Monthly report" in sent.subject
+    html = sent.alternatives[0][0]
+    assert "Net profit" in html and "Gross profit" in html and "Close the month" in html
+    assert "Profit and loss" in sent.body and "1 sales invoice" in sent.body
+    names = [name for name, content, kind in sent.attachments]
+    assert len(names) == 3 and all(n.endswith(".pdf") for n in names)
+    assert names[0].startswith("profit_loss_") and names[1].startswith("balance_sheet_")
+    assert all(content.startswith(b"%PDF-") for _n, content, _k in sent.attachments)
+
+
+def test_monthly_report_follows_each_readers_roles(tenant_a, sale, make_member,  # noqa: F811
+                                                   monkeypatch):
+    from apps.iam.models import Membership
+    from apps.messaging.jobs import queue_monthly
+    from apps.platform.tenants import features
+    from apps.platform.tenants.models import TenantFeature
+
+    TenantFeature.objects.create(tenant=tenant_a, key="reports", enabled=False)
+    features.forget(tenant_a.id)
+    from django.utils import translation
+
+    with tenant_context(tenant_a.id), translation.override("en"):
+        owner_membership = Membership.objects.select_related("user").get(username="owner")
+        message = queue_monthly(owner_membership, *_this_month())
+    run_pending()  # reports switched off: no figures, no PDFs, still the sales count
+    sent = mail.outbox[0]
+    assert sent.attachments == [] and "Net profit" not in sent.alternatives[0][0]
+    assert "1 sales invoice" in sent.body and message is not None
+
+    member = make_member(tenant_a, "nobody", "viewer")
+    with tenant_context(tenant_a.id):
+        from apps.iam.models import MembershipRole
+
+        MembershipRole.objects.filter(membership=member).delete()  # no roles at all
+        member = Membership.objects.select_related("user").get(pk=member.pk)
+        assert queue_monthly(member, *_this_month()) is None
+
+
+def test_monthly_recipients_schedule_and_send_now(tenant_a, make_member, monkeypatch):
+    from datetime import datetime, time
+    from zoneinfo import ZoneInfo
+
+    from apps.messaging import jobs as messaging_jobs
+    from apps.platform.jobs import registry
+    from apps.platform.jobs.worker import Scheduler
+
+    manager = make_member(tenant_a, "manager", "manager")
+    owner_client = login(tenant_a)
+    response = owner_client.put("/api/v1/messages/digest/",
+                                {"daily": [], "monthly": [manager.pk]},
+                                content_type="application/json")
+    assert response.status_code == 200 and response.json()["monthly"] == [manager.pk]
+    with tenant_context(tenant_a.id):
+        row = DigestRecipient.objects.get()
+    assert (row.membership_id, row.daily, row.monthly) == (manager.pk, False, True)
+
+    queued = []
+    monkeypatch.setattr(messaging_jobs, "queue_monthly",
+                        lambda membership, year, month, **kw: queued.append(
+                            (membership.username, year, month)))
+    with tenant_context(tenant_a.id):
+        messaging_jobs.monthly_pack()
+    assert [name for name, _y, _m in queued] == ["manager"]
+
+    schedule = next(s for s in registry.SCHEDULES if s.task == "messaging.monthly_pack")
+    assert (schedule.monthday, schedule.at) == (1, time(8, 0))
+    monkeypatch.setattr(registry, "SCHEDULES", [schedule])
+    cairo = ZoneInfo("Africa/Cairo")
+    assert Scheduler().tick(datetime(2026, 10, 2, 9, 0, tzinfo=cairo)) == 0  # not the 1st
+    assert Scheduler().tick(datetime(2026, 11, 1, 9, 0, tzinfo=cairo)) == 1
+
+    monkeypatch.undo()
+    now = owner_client.post("/api/v1/messages/monthly/", HTTP_IDEMPOTENCY_KEY="monthly-1")
+    assert now.status_code == 201
+    with tenant_context(tenant_a.id):
+        assert OutboundMessage.objects.get(pk=now.json()["id"]).recipient == "owner@alpha.test"
+    viewer = make_member(tenant_a, "viewer", "viewer")
+    assert login(tenant_a, username="viewer").post(
+        "/api/v1/messages/monthly/", HTTP_IDEMPOTENCY_KEY="monthly-2").status_code == 403
+    assert viewer

@@ -17,6 +17,7 @@ class MessageKind(models.TextChoices):
     DOCUMENT = "document", _("Document")
     STATEMENT = "statement", _("Statement")
     DIGEST = "digest", _("Daily reminders")
+    MONTHLY = "monthly", _("Monthly report")
 
 
 class MessageStatus(models.TextChoices):
@@ -60,9 +61,12 @@ class OutboundMessage(TenantScopedModel):
 
 
 class DigestRecipient(TenantScopedModel):
-    """A user who gets the daily reminders e-mail (chosen by the owner on Sent messages)."""
+    """A user who gets the daily reminders and/or the monthly report e-mail (chosen by the
+    owner on Sent messages)."""
 
     membership = models.ForeignKey("iam.Membership", on_delete=models.CASCADE, related_name="+")
+    daily = models.BooleanField(default=True)
+    monthly = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

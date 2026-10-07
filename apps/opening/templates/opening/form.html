@@ -1,0 +1,115 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New opening balances" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'opening/js/form.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <a href="{% url 'opening-balances' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Opening balances" %}</a>
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New opening balances" %}</h1>
+    <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "What the business brings with it on the day it starts here: what customers, suppliers, traders, workshops and partners owe or are owed, what the cash boxes and banks hold, and stock kept by weight. Barcoded pieces come in from Excel." %}</p>
+  </div>
+  <a href="{% url 'opening-import' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{% translate "Import pieces from Excel" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<form id="opening" data-api-form data-shape="opening" data-endpoint="{% url 'opening-create' %}" data-method="POST"
+      data-success="{% translate 'Opening balances posted.' %}" data-redirect="{% url 'opening-balances' %}{id}/"
+      data-parties-url="{% url 'opening-parties' %}" class="space-y-6" novalidate>
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+
+  <section class="card card-body grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <label><span class="form-label">{% translate "Branch" %}</span>
+      <select name="branch" class="form-input" required>{% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
+      <span class="form-error" data-error-for="branch"></span></label>
+    <label><span class="form-label">{% translate "As of" %}</span>
+      <input type="date" name="business_date" class="form-input" value="{% now 'Y-m-d' %}" max="{% now 'Y-m-d' %}">
+      <span class="form-error" data-error-for="business_date"></span></label>
+    <label><span class="form-label">{% translate "Note" %}</span><input name="note" class="form-input" maxlength="300"></label>
+  </section>
+
+  <section class="card">
+    <div class="card-header flex items-center justify-between gap-3">
+      <div><h2 class="card-title">{% translate "Customers, suppliers, traders, workshops and partners" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "In money, or in gold: grams of a karat. One line per balance." %}</p></div>
+      <button type="button" class="btn btn-secondary text-xs" data-add="party">{% icon "plus" "size-4" %}{% translate "Add a line" %}</button>
+    </div>
+    <div class="divide-y divide-slate-100" data-rows="party"></div>
+    <p class="form-error px-5 pb-3" data-error-for="parties"></p>
+  </section>
+
+  <section class="card">
+    <div class="card-header flex items-center justify-between gap-3">
+      <div><h2 class="card-title">{% translate "Cash boxes and banks" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "What each one holds, in its own currency. A bank may be negative (overdrawn)." %}</p></div>
+      <button type="button" class="btn btn-secondary text-xs" data-add="holder">{% icon "plus" "size-4" %}{% translate "Add a line" %}</button>
+    </div>
+    <div class="divide-y divide-slate-100" data-rows="holder"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-header flex items-center justify-between gap-3">
+      <div><h2 class="card-title">{% translate "Stock by weight" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "Scrap gold, bullion and other categories counted by weight, per karat." %}</p></div>
+      <button type="button" class="btn btn-secondary text-xs" data-add="stock">{% icon "plus" "size-4" %}{% translate "Add a line" %}</button>
+    </div>
+    <div class="divide-y divide-slate-100" data-rows="stock"></div>
+  </section>
+
+  <div class="flex items-center justify-end gap-3">
+    <p class="text-xs text-slate-500">{% translate "Posted against the Opening balances account. Gold is valued at today's gold price, other currencies at today's rate." %}</p>
+    <button type="submit" class="btn btn-primary">{% translate "Post opening balances" %}</button>
+  </div>
+</form>
+
+<template id="row-party">
+  <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-row="party">
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Who" %}</span>
+      <select class="form-input" data-f="role" data-native>{% for value, label in roles %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+    <label class="min-w-0 lg:col-span-3"><span class="form-label">{% translate "Name" %}</span>
+      <select class="form-input" data-f="party" data-remote="" data-label-field="name"><option value=""></option></select>
+      <span class="form-error" data-e="party"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Currency or karat" %}</span>
+      <select class="form-input" data-f="unit">
+        {% for c in currencies %}<option value="cur:{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}
+        {% for k in karats %}<option value="karat:{{ k.pk }}">{{ k }} ({% translate "grams" %})</option>{% endfor %}
+      </select><span class="form-error" data-e="currency"></span><span class="form-error" data-e="karat"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Amount" %}</span>
+      <input class="form-input num w-full text-start" data-f="amount" inputmode="decimal"><span class="form-error" data-e="amount"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Direction" %}</span>
+      <select class="form-input" data-f="owes_us" data-native><option value="1">{% translate "Owes us" %}</option><option value="0">{% translate "We owe them" %}</option></select></label>
+    <div class="flex items-end justify-end lg:col-span-1 lg:pt-6"><button type="button" class="btn btn-ghost text-xs text-red-700" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
+  </div>
+</template>
+
+<template id="row-holder">
+  <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-row="holder">
+    <label class="min-w-0 lg:col-span-7"><span class="form-label">{% translate "Cash box or bank" %}</span>
+      <select class="form-input" data-f="holder">
+        {% for box in boxes %}<option value="box:{{ box.pk }}" data-branch="{{ box.branch_id }}">{{ box.label }} · {{ box.branch.name }} · {{ box.currency.code }}</option>{% endfor %}
+        {% for bank in banks %}<option value="bank:{{ bank.pk }}">{{ bank.label }}{% if bank.account_number %} · {{ bank.account_number }}{% endif %} · {{ bank.currency.code }}</option>{% endfor %}
+      </select><span class="form-error" data-e="holder"></span></label>
+    <label class="lg:col-span-4"><span class="form-label">{% translate "Balance" %}</span>
+      <input class="form-input num w-full text-start" data-f="amount" inputmode="decimal"><span class="form-error" data-e="amount"></span></label>
+    <div class="flex items-end justify-end lg:col-span-1 lg:pt-6"><button type="button" class="btn btn-ghost text-xs text-red-700" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
+  </div>
+</template>
+
+<template id="row-stock">
+  <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-row="stock">
+    <label class="min-w-0 lg:col-span-3"><span class="form-label">{% translate "Category" %}</span>
+      <select class="form-input" data-f="category">{% for c in bulk_categories %}<option value="{{ c.pk }}">{{ c.code }} · {{ c.name }}</option>{% endfor %}</select>
+      <span class="form-error" data-e="category"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Karat" %}</span>
+      <select class="form-input" data-f="karat"><option value="">—</option>{% for k in karats %}<option value="{{ k.pk }}" {% if k.is_reference and k.metal.code == "gold" %}selected{% endif %}>{{ k }}</option>{% endfor %}</select>
+      <span class="form-error" data-e="karat"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Weight (g)" %}</span>
+      <input class="form-input num w-full text-start" data-f="gross_weight_g" inputmode="decimal"><span class="form-error" data-e="gross_weight_g"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Pieces" %}</span>
+      <input class="form-input num w-full text-start" data-f="qty" inputmode="numeric" value="0"></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Making cost" %}</span>
+      <input class="form-input num w-full text-start" data-f="cost_amount" inputmode="decimal" value="0"><span class="form-error" data-e="cost_amount"></span></label>
+    <div class="flex items-end justify-end lg:col-span-1 lg:pt-6"><button type="button" class="btn btn-ghost text-xs text-red-700" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
+  </div>
+</template>
+{% endblock %}

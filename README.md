@@ -232,6 +232,24 @@ python manage.py monitor_server --once     # or one sample a minute from cron / 
 Samples older than `MONITOR_RETENTION_DAYS` (7) are deleted automatically. Needs `psutil`
 (in `requirements/base.txt`).
 
+### Opening balances and moving over from another system
+
+**Accounting → Opening balances** (`apps/opening`, permissions `ledger.opening.*`) takes what a
+business brings with it on its first day: one document per branch and cut-over date, posted as
+one ledger entry of kind "opening" against the Opening balances equity account (3301).
+- Customers, suppliers, traders, workshops and partners: owes us / we owe them, in any currency
+  or in gold as grams of a karat (kept in fine grams, valued at the gold board in force).
+- Cash boxes and bank accounts (a bank may be negative), in their own currency.
+- Stock by weight (scrap, bullion, bulk categories) per karat, with its making cost.
+- Barcoded pieces from **Excel or CSV** (Import pieces from Excel): columns found by their
+  English or Arabic header in any order; category by code or name, karat as 21 or 21K, supplier
+  by code or name. Pieces keep their old barcodes (labels already printed still scan). "Check the
+  file" runs the whole posting and rolls it back, listing every problem by row and column;
+  nothing is saved until the file is clean. A template with the shop's own categories, karats
+  and suppliers is downloadable. Up to 5,000 rows per file.
+- Cancelling reverses the entry and takes the pieces and weights back out; it is refused once a
+  piece has been sold or moved.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is
@@ -268,6 +286,16 @@ what is waiting, what failed and why, with Run again / Cancel.
   gets the dashboard's reminders (cheques due, months not closed, repairs ready…) and yesterday's
   sales, within what their own roles let them see; nothing is sent on a day with nothing to say.
   Links use `SITE_SCHEME` and `SITE_PORT` with the client's primary domain.
+- **Monthly report e-mail** (`apps/messaging/monthly.py`): on the 1st at 08:00 local time, each
+  person ticked "Monthly" gets last month's sales, gross profit and net profit against the month
+  before (with the change in %), the number of sales invoices, whether the month is closed (with
+  a link to close it), and the profit and loss, balance sheet and sales analysis attached as PDFs.
+  Figures, PDFs and branches follow that person's own roles; the PDFs are made when the e-mail is
+  sent. "E-mail me last month's report" on Sent messages sends it at once. Monthly schedules are
+  declared with `monthly(task, day=1, at=…)` (days 1-28).
+- The profit and loss "against the period before" compares whole calendar months with the same
+  months before (September with August 1-31, a quarter with the quarter before); other periods
+  with the same number of days.
 
 ## Frontend assets
 

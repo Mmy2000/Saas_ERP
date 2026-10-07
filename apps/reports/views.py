@@ -63,15 +63,40 @@ def _csv(report, tables, params) -> HttpResponse:
     return response
 
 
+def _landscape(tables) -> bool:
+    return max((len(table.columns) for table in tables), default=0) > 6
+
+
+def _filename(report, params, extension: str) -> str:
+    stamp = "_".join(str(v) for v in params.values.values() if isinstance(v, date))
+    return f"{report.code}_{stamp}.{extension}" if stamp else f"{report.code}.{extension}"
+
+
+def report_file(code: str, query: dict, scope) -> tuple[bytes, str]:
+    """A report as PDF bytes and a file name, with no request (background jobs). `scope`: the
+    branch ids the reader may see, or None for all. Raises PdfUnavailable."""
+    from apps.printing.pdf import sheet_pdf
+
+    report = REPORTS[code]()
+    branches = Branch.objects.order_by("code")
+    if scope is not None:
+        branches = branches.filter(pk__in=scope)
+    params = report.parse(query, branches)
+    tables = report.run(params, scope)
+    content = sheet_pdf("reports/print.html", {
+        "report": report, "tables": [_shape(table) for table in tables], "params": params.values,
+    }, title=report.title, landscape=_landscape(tables))
+    return content, _filename(report, params, "pdf")
+
+
 def _pdf(request, report, tables, params) -> HttpResponse:
     """The report as a PDF (A4; sideways when its tables are wide)."""
     from apps.printing.pdf import pdf_page
 
-    stamp = "_".join(str(v) for v in params.values.values() if isinstance(v, date))
     return pdf_page(request, "reports/print.html", {
         "report": report, "tables": [_shape(table) for table in tables], "params": params.values,
-    }, title=report.title, filename=f"{report.code}_{stamp}.pdf" if stamp else f"{report.code}.pdf",
-        landscape=max((len(table.columns) for table in tables), default=0) > 6)
+    }, title=report.title, filename=_filename(report, params, "pdf"),
+        landscape=_landscape(tables))
 
 
 def run_report(request, code):

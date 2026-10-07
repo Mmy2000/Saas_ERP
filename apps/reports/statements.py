@@ -103,6 +103,43 @@ def _month_end(first: date) -> date:
     return date.fromordinal(following.toordinal() - 1)
 
 
+def _whole_months(start: date, end: date) -> int:
+    """How many calendar months the period covers exactly (0 when it is not whole months)."""
+    if start.day != 1 or end != _month_end(end.replace(day=1)):
+        return 0
+    return (end.year - start.year) * 12 + end.month - start.month + 1
+
+
+def _months_back(first: date, months: int) -> date:
+    index = first.year * 12 + first.month - 1 - months
+    return date(index // 12, index % 12 + 1, 1)
+
+
+def previous_period(start: date, end: date) -> tuple[date, date]:
+    """The period just before: the same calendar months before for whole months (September →
+    August, a quarter → the quarter before), else the same number of days."""
+    months = _whole_months(start, end)
+    if months:
+        first = _months_back(start, months)
+        return first, date.fromordinal(start.toordinal() - 1)
+    last = date.fromordinal(start.toordinal() - 1)
+    return date.fromordinal(last.toordinal() - (end - start).days), last
+
+
+def pnl_summary(start: date, end: date, scope) -> dict[str, Decimal]:
+    """Total sales, gross profit and net profit of a period (the profit and loss's totals)."""
+    accounts = Account.objects.filter(type__in=(AccountType.INCOME, AccountType.EXPENSE),
+                                      is_postable=True)
+    data = _balances(start=start, end=end, scope=scope, closing=False,
+                     types=(AccountType.INCOME, AccountType.EXPENSE))
+    sums = {"sales": ZERO, "cost": ZERO, "expenses": ZERO, "other": ZERO}
+    for account in accounts:
+        sums[_pnl_section(account)] -= data.money.get(account.pk, ZERO)
+    gross = sums["sales"] + sums["cost"]
+    return {"sales": sums["sales"], "gross": gross,
+            "net": gross + sums["expenses"] + sums["other"]}
+
+
 def _shift_year(day: date, years: int) -> date:
     try:
         return day.replace(year=day.year + years)
@@ -141,9 +178,8 @@ class ProfitAndLoss(Report):
         else:
             columns = [("amount", _("This period"), period(start, end))]
             if mode == "previous":
-                length = end - start
-                last = date.fromordinal(start.toordinal() - 1)
-                columns.append(("before", _("Period before"), period(last - length, last)))
+                columns.append(("before", _("Period before"), period(*previous_period(start,
+                                                                                     end))))
             elif mode == "last_year":
                 columns.append(("before", _("Same period last year"),
                                 period(_shift_year(start, -1), _shift_year(end, -1))))
