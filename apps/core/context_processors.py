@@ -56,6 +56,7 @@ NAVIGATION: list[NavSection] = [
         NavItem(_("Setters"), "setting-jobs", "send", "diamonds.view",
                 ("setting-job-new", "setting-job")),
         NavItem(_("Discount classes"), "discount-classes", "percent", "diamonds.view"),
+        NavItem(_("Certificates"), "certificates", "shield-check", "diamonds.view"),
     ]),
     NavSection("pricing", _("Pricing"), "coins", [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),

@@ -1,8 +1,9 @@
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
-from django.http import Http404
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
 from apps.core.models import DocStatus
@@ -11,7 +12,17 @@ from apps.inventory.models import DiscountClass, Item, ItemStatus
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 
-from .models import JobLineState, SettingJob, StoneKind, StoneRemoval, StoneSetting, StoneShape
+from . import certificates
+from .models import (
+    CertificateCheck,
+    ItemStone,
+    JobLineState,
+    SettingJob,
+    StoneKind,
+    StoneRemoval,
+    StoneSetting,
+    StoneShape,
+)
 from .services import FAMILIES, stones_summary
 
 STATES = ("in_stock", "sold", "all")
@@ -197,3 +208,80 @@ def discount_classes(request):
         found.usual_pct = f"{(found.usual_rate * 100).normalize():f}"
         found.max_pct = f"{(found.max_rate * 100).normalize():f}"
     return render(request, "diamonds/discount_classes.html", {"classes": classes})
+
+
+# --- certificates --------------------------------------------------------------------------------
+
+@permission_required("diamonds.view")
+def certificates_page(request):
+    term = request.GET.get("q", "").strip()
+    stones = (ItemStone.objects.exclude(certificate_no="")
+              .select_related("item__category", "item__branch"))
+    scope = request.actor.branch_ids("diamonds.view")
+    if scope is not None:
+        stones = stones.filter(item__branch_id__in=scope)
+    if term:
+        stones = stones.filter(Q(certificate_no__icontains=term) | Q(item__barcode=term))
+    else:
+        stones = stones.filter(item__status__in=(ItemStatus.IN_STOCK, ItemStatus.RESERVED))
+    stones = list(stones.order_by("-item__created_at", "-id")[:60])
+    checks = certificates.latest(stone.certificate_no for stone in stones
+                                 if stone.lab.upper() == "IGI")
+    for stone in stones:
+        stone.igi = stone.lab.upper() == "IGI"
+        stone.check = checks.get("".join(ch for ch in stone.certificate_no if ch.isalnum()))
+    return render(request, "diamonds/certificates.html", {"stones": stones, "term": term})
+
+
+@permission_required("diamonds.view")
+def certificate_pdf(request, pk):
+    found = CertificateCheck.objects.filter(pk=pk).first()
+    if found is None or not found.pdf:
+        raise Http404
+    response = FileResponse(found.pdf.open("rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{found.lab}-{found.report_no}.pdf"'
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+@permission_required("diamonds.view")
+def certificate_cards(request):
+    """Credit-card certificates for chosen pieces (?items=1,2), or for the diamond pieces of a
+    sale with the customer's name (?sale=ID). ?format=pdf downloads them."""
+    items = (Item.objects.filter(category__product_family__in=FAMILIES)
+             .select_related("category", "karat").prefetch_related("stones"))
+    scope = request.actor.branch_ids("diamonds.view")
+    if scope is not None:
+        items = items.filter(branch_id__in=scope)
+    customer = ""
+    sale_id = request.GET.get("sale", "")
+    if sale_id.isdigit():
+        from apps.sales.models import SalesInvoice
+
+        sale = SalesInvoice.objects.filter(pk=int(sale_id)).first()
+        if sale is None:
+            raise Http404
+        customer = sale.buyer
+        items = items.filter(pk__in=sale.lines.values("item_id"))
+    else:
+        ids = [int(x) for x in request.GET.get("items", "").split(",") if x.strip().isdigit()]
+        items = items.filter(pk__in=ids)
+    made = certificates.cards(items.order_by("barcode"), customer=customer)
+    if not made:
+        raise Http404
+    context = {"cards": made, "profile": TenantProfile.objects.first(),
+               "today": timezone.localdate()}
+    if request.GET.get("format") == "pdf":
+        from django.template.loader import render_to_string
+
+        from apps.printing.pdf import Paper, PdfUnavailable, html_to_pdf, logo_src, pdf_response
+
+        try:
+            content = html_to_pdf(render_to_string("diamonds/cards.html", {
+                **context, "logo": logo_src(context["profile"]), "for_pdf": True}, request),
+                Paper(width="85.6mm", height="54mm"))
+        except PdfUnavailable:
+            return render(request, "printing/pdf_unavailable.html", status=503)
+        return pdf_response(content, "certificates.pdf")
+    logo = context["profile"].logo.url if context["profile"] and context["profile"].logo else ""
+    return render(request, "diamonds/cards.html", {**context, "logo": logo})

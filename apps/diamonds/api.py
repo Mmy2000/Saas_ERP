@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.translation import gettext as _
 from rest_framework import serializers, status
 from rest_framework.response import Response
@@ -9,7 +9,7 @@ from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 from apps.inventory.models import Item, ItemStatus
 
-from . import jobs, services
+from . import certificates, jobs, services
 from .models import StoneKind, StoneShape
 
 
@@ -315,6 +315,30 @@ class AssignClassView(APIView):
         return Response({"count": count})
 
 
+class CheckSerializer(serializers.Serializer):
+    report_no = serializers.CharField(max_length=80)
+    lab = serializers.CharField(max_length=10, required=False, default="IGI")
+    refresh = serializers.BooleanField(required=False, default=False)
+
+
+class CertificateCheckView(APIView):
+    """Ask the lab about a report (legacy GHD52); the answer and its PDF are kept."""
+
+    required_permissions = {"POST": "diamonds.view"}
+
+    def post(self, request):
+        payload = CheckSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        found = certificates.check(d["report_no"], lab=d["lab"], refresh=d["refresh"],
+                                   actor=request.actor)
+        return Response({
+            "id": found.pk, "lab": found.lab, "report_no": found.report_no,
+            "status": found.status, "status_label": found.get_status_display(),
+            "message": found.message, "checked_at": found.checked_at,
+            "pdf_url": reverse("certificate-pdf", args=[found.pk]) if found.pdf else ""})
+
+
 urlpatterns = [
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
@@ -323,6 +347,7 @@ urlpatterns = [
     path("settings/<int:pk>/void/", SettingVoidView.as_view(), name="diamonds-setting-void"),
     path("settings/<int:pk>/remove/", RemovalView.as_view(), name="diamonds-setting-remove"),
     path("jobs/", JobView.as_view(), name="diamonds-jobs"),
+    path("certificates/check/", CertificateCheckView.as_view(), name="certificate-check"),
     path("discount-classes/", DiscountClassesView.as_view(), name="diamonds-discount-classes"),
     path("discount-classes/assign/", AssignClassView.as_view(), name="diamonds-class-assign"),
     path("discount-classes/<int:pk>/", DiscountClassView.as_view(),

@@ -393,6 +393,16 @@ with no discount entered starts at its label price less the class's usual discou
 may give up to max(usual, min(their own diamond limit, the class's largest)), never below what
 the piece cost. Pieces without a class work as before.
 
+**Diamonds → Certificates** (legacy GHD52, certificate cards GHD15/GHD19/GHD39): stones with a
+lab and a report number, searchable by number or barcode. **Check with IGI** asks the lab for
+the report (the public PDF at `IGI_PDF_URL`, numbers longer than ten characters also cut to
+ten; the data at `IGI_API_URL` with `IGI_API_KEY` when it answers) and keeps the answer and the
+PDF (`CertificateCheck`), so the lab is asked again only on request; any number can be checked
+before buying a stone. **Certificate cards**: credit-card certificates (85.6 × 54 mm, one per
+page, printed or as PDF) with the shop, the piece, its gold weight and each stone with its
+report; from a piece's page, from a sale (with the customer's name) or for the diamond pieces
+shown in stock.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

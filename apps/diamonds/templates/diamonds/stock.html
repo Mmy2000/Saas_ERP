@@ -63,6 +63,10 @@
       </tbody>
     </table>
   </div>
+  <div class="flex justify-end border-t border-slate-100 px-5 py-3">
+    <a class="btn btn-ghost text-xs" target="_blank" rel="noopener"
+       href="{% url 'certificate-cards' %}?items={% for item in page.object_list %}{{ item.pk }}{% if not forloop.last %},{% endif %}{% endfor %}">{% icon "printer" "size-4" %}{% translate "Certificate cards for these pieces" %}</a>
+  </div>
   {% if page.has_other_pages %}
   <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
     <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>

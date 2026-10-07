@@ -96,6 +96,9 @@ def invoice_detail(request, pk):
         "profile": TenantProfile.objects.first(),
         "home_currency": functional_currency(),
         "endpoint": reverse("sales-invoice-detail", args=[invoice.pk]),
+        # Diamond pieces on the sale: their certificate cards, with the customer's name.
+        "has_diamonds": invoice.lines.filter(
+            item__category__product_family__in=("diamond", "stone")).exists(),
     })
 
 

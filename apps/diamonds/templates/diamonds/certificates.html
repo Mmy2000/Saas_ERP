@@ -1,0 +1,59 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Certificates" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/certificates.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Certificates" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Check a stone's IGI report with the lab, open the report, and print certificate cards for diamond pieces." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="certificates" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-check-url="{% url 'certificate-check' %}"
+     data-verified="{% translate 'Found at the lab' %}" data-not-found="{% translate 'Not found at the lab' %}" data-error="{% translate 'Could not check' %}"
+     data-open="{% translate 'Open the report' %}">
+  <section class="card overflow-hidden xl:col-span-2">
+    <form method="get" class="flex gap-2 border-b border-slate-100 p-4">
+      <input name="q" value="{{ term }}" class="form-input flex-1" placeholder="{% translate 'Report number or barcode' %}">
+      <button class="btn btn-secondary" type="submit">{% icon "search" "size-4" %}{% translate "Search" %}</button>
+    </form>
+    {% if stones %}
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Piece" %}</th><th>{% translate "Stone" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Report" %}</th><th>{% translate "At the lab" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody>
+        {% for stone in stones %}
+          <tr data-report-row="{{ stone.certificate_no }}">
+            <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' stone.item_id %}">{{ stone.item.barcode }}</a><div class="text-xs text-slate-500">{{ stone.item.category.name }}</div></td>
+            <td class="text-sm text-slate-600"><bdi>{{ stone.get_kind_display }}</bdi> <span dir="ltr">{{ stone.count }} × {{ stone.carat|num:3 }} ct {{ stone.color }} {{ stone.clarity }}</span></td>
+            <td>{{ stone.lab|default:"—" }}</td>
+            <td><span class="num">{{ stone.certificate_no }}</span></td>
+            <td data-check-status>{% include "diamonds/_check_status.html" with check=stone.check %}</td>
+            <td class="text-end whitespace-nowrap">
+              {% if stone.igi %}<button type="button" class="btn btn-ghost text-xs" data-check="{{ stone.certificate_no }}">{% icon "shield-check" "size-3.5" %}{% translate "Check with IGI" %}</button>{% endif %}
+              <a class="btn btn-ghost text-xs" href="{% url 'certificate-cards' %}?items={{ stone.item_id }}" target="_blank" rel="noopener">{% icon "printer" "size-3.5" %}{% translate "Card" %}</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No certificates here" as empty_title %}
+      {% translate "Stones with a lab and a report number show here; search by the report number or the piece's barcode." as empty_text %}
+      {% include "components/empty_state.html" with icon="shield-check" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Check any IGI report" %}</h2></div>
+      <div class="card-body space-y-3">
+        <p class="text-sm text-slate-500">{% translate "Before buying a stone, check that its report exists at the lab." %}</p>
+        <input class="form-input num" data-any-report placeholder="{% translate 'Report number' %}" dir="ltr">
+        <button type="button" class="btn btn-secondary w-full" data-check-any>{% icon "shield-check" "size-4" %}{% translate "Check with IGI" %}</button>
+        <div class="text-sm" data-any-result></div>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

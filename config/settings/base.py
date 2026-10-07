@@ -235,6 +235,11 @@ SMS_API_URL = env("SMS_API_URL", default="")
 SMS_API_KEY = env("SMS_API_KEY", default="")
 SMS_SENDER = env("SMS_SENDER", default="")
 
+# Gem lab reports (apps.diamonds.igi): the public PDF, and the report's data (optional key).
+IGI_PDF_URL = env("IGI_PDF_URL", default="https://pdf.igi.org/{name}.pdf")
+IGI_API_URL = env("IGI_API_URL", default="https://api.igi.org/ReportDetail.php")
+IGI_API_KEY = env("IGI_API_KEY", default="")
+
 # E-mail: documents sent to customers and the daily reminders. EMAIL_URL is e.g.
 # smtp+tls://user:password@smtp.example.com:587 (development writes them to var/mail).
 _email = env.email_url("EMAIL_URL", default="smtp://localhost:25")

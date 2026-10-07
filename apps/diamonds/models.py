@@ -7,10 +7,12 @@ a parcel of stones sold together, is an Item of family "stone" without a karat.
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.media import TenantUploadPath
 from apps.core.models import Document, TenantScopedModel
 
 
@@ -179,3 +181,31 @@ class StoneRemoval(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+
+class CheckStatus(models.TextChoices):
+    VERIFIED = "verified", _("Found at the lab")
+    NOT_FOUND = "not_found", _("Not found at the lab")
+    ERROR = "error", _("Could not check")
+
+
+class CertificateCheck(TenantScopedModel):
+    """A lab report looked up by its number (legacy GHD52, IgiVerification): what the lab
+    answered, and the report's PDF, kept so it is not fetched again."""
+
+    lab = models.CharField(max_length=10, default="IGI")
+    report_no = models.CharField(max_length=60)
+    status = models.CharField(max_length=10, choices=CheckStatus.choices)
+    message = models.CharField(max_length=300, blank=True)
+    data = models.JSONField(default=dict, blank=True)
+    pdf = models.FileField(upload_to=TenantUploadPath("certificates"), blank=True)
+    checked_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name="+")
+    checked_at = models.DateTimeField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant", "lab", "report_no"],
+                                               name="diamonds_check_report_uniq")]
+
+    def __str__(self):
+        return f"{self.lab} {self.report_no}"

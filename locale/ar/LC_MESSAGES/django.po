@@ -853,6 +853,15 @@ msgstr "يحتاج القيد إلى سطرين على الأقل."
 msgid "and"
 msgstr "و"
 
+msgid "and %(n)s more stone"
+msgid_plural "and %(n)s more stones"
+msgstr[0] "و%(n)s حجر آخر"
+msgstr[1] "وحجر آخر"
+msgstr[2] "وحجران آخران"
+msgstr[3] "و%(n)s أحجار أخرى"
+msgstr[4] "و%(n)s حجرًا آخر"
+msgstr[5] "و%(n)s حجر آخر"
+
 msgid "and {n} more."
 msgstr "و{n} غيرها."
 
@@ -965,6 +974,9 @@ msgstr "في البنك"
 
 msgid "At the day's selling price"
 msgstr "بسعر بيع اليوم"
+
+msgid "At the lab"
+msgstr "لدى المعمل"
 
 msgid "At the workshop"
 msgstr "لدى الورشة"
@@ -1161,6 +1173,9 @@ msgstr "خرز"
 
 msgid "Before"
 msgstr "قبل"
+
+msgid "Before buying a stone, check that its report exists at the lab."
+msgstr "قبل شراء حجر، تحقق من وجود شهادته لدى المعمل."
 
 msgid "Before closing"
 msgstr "قبل الإقفال"
@@ -1613,6 +1628,9 @@ msgstr "لا يمكن أن يكون في المستقبل."
 msgid "Cannot be negative."
 msgstr "لا يمكن أن يكون سالبًا."
 
+msgid "Carat"
+msgstr "القيراط"
+
 msgid "Carats"
 msgstr "القيراط"
 
@@ -1758,8 +1776,23 @@ msgstr "مسافة الخلايا"
 msgid "Centre"
 msgstr "الوسط"
 
+msgid "Certificate"
+msgstr "شهادة"
+
+msgid "Certificate card"
+msgstr "كارت الشهادة"
+
+msgid "Certificate cards"
+msgstr "كروت الشهادات"
+
+msgid "Certificate cards for these pieces"
+msgstr "كروت شهادات لهذه القطع"
+
 msgid "Certificate no."
 msgstr "رقم الشهادة"
+
+msgid "Certificates"
+msgstr "الشهادات"
 
 msgid "Change"
 msgstr "التغير"
@@ -1832,15 +1865,31 @@ msgid "Chart of accounts"
 msgstr "دليل الحسابات"
 
 msgid ""
+"Check a stone's IGI report with the lab, open the report, and print "
+"certificate cards for diamond pieces."
+msgstr ""
+"تحقق من شهادة IGI للحجر لدى المعمل، وافتح الشهادة، واطبع كروت الشهادات لقطع "
+"الألماس."
+
+msgid "Check any IGI report"
+msgstr "التحقق من أي شهادة IGI"
+
+msgid ""
 "Check every payslip. Advances are taken back in full unless you change the "
 "amount."
 msgstr "راجع كل قسيمة راتب. تُخصم السلف بالكامل ما لم تغيّر المبلغ."
+
+msgid "Check reports"
+msgstr "التحقق من الشهادات"
 
 msgid "Check the file"
 msgstr "افحص الملف"
 
 msgid "Check the file first: nothing is saved until every row is correct."
 msgstr "افحص الملف أولًا: لا يُحفظ شيء حتى تصح كل الأسطر."
+
+msgid "Check with IGI"
+msgstr "تحقق لدى IGI"
 
 msgid "Checked by"
 msgstr "راجعه"
@@ -2429,6 +2478,9 @@ msgstr ""
 
 msgid "Cost per 21K gram"
 msgstr "التكلفة لجرام عيار 21"
+
+msgid "Could not check"
+msgstr "تعذّر التحقق"
 
 msgid "Could not load every page. Try again."
 msgstr "تعذّر تحميل كل الصفحات. حاول مرة أخرى."
@@ -3484,6 +3536,9 @@ msgstr "أدخل تاريخ الشيك."
 msgid "Enter the price."
 msgstr "أدخل السعر."
 
+msgid "Enter the report number."
+msgstr "أدخل رقم الشهادة."
+
 msgid "Enter the selling price."
 msgstr "أدخل سعر البيع."
 
@@ -3804,6 +3859,9 @@ msgstr ""
 
 msgid "For the %(name)s team: every client, in one place."
 msgstr "لفريق %(name)s: كل العملاء في مكان واحد."
+
+msgid "Found at the lab"
+msgstr "موجودة لدى المعمل"
 
 msgid "Free space on every drive"
 msgstr "المساحة على كل قرص"
@@ -5378,6 +5436,9 @@ msgstr "لا توجد خزائن بعد"
 msgid "No categories yet"
 msgstr "لا توجد بنود بعد"
 
+msgid "No certificates here"
+msgstr "لا توجد شهادات هنا"
+
 msgid "No changes recorded"
 msgstr "لا توجد تعديلات مسجلة"
 
@@ -5667,6 +5728,9 @@ msgstr "غير متوقعة هنا"
 msgid "Not following the market"
 msgstr "لا يتبع السوق"
 
+msgid "Not found at the lab"
+msgstr "غير موجودة لدى المعمل"
+
 msgid "Not found."
 msgstr "غير موجود."
 
@@ -5768,6 +5832,9 @@ msgstr "الآن"
 
 msgid "Number"
 msgstr "الرقم"
+
+msgid "Number of stones"
+msgstr "عدد الأحجار"
 
 msgid "Number or trade account"
 msgstr "الرقم أو اسم التاجر"
@@ -5924,6 +5991,9 @@ msgstr "تُرد الشيكات الواردة فقط."
 msgid "Only drafts can be edited."
 msgstr "يمكن تعديل المسودات فقط."
 
+msgid "Only IGI reports can be checked here."
+msgstr "يمكن التحقق هنا من شهادات IGI فقط."
+
 msgid "Only loose stones go into a piece."
 msgstr "تُركّب الأحجار السائبة فقط في القطعة."
 
@@ -5998,6 +6068,9 @@ msgstr "افتح لوحة التحكم"
 
 msgid "Open the designer"
 msgstr "فتح المصمم"
+
+msgid "Open the report"
+msgstr "فتح الشهادة"
 
 msgid "Open the workspace"
 msgstr "فتح مساحة العمل"
@@ -7275,8 +7348,17 @@ msgstr "استبدال التصميم كله بنقطة البداية هذه؟"
 msgid "Replaces the HTML above."
 msgstr "يستبدل الـ HTML أعلاه."
 
+msgid "Report"
+msgstr "الشهادة"
+
 msgid "Report e-mails"
 msgstr "رسائل التقارير"
+
+msgid "Report number"
+msgstr "رقم الشهادة"
+
+msgid "Report number or barcode"
+msgstr "رقم الشهادة أو الباركود"
 
 msgid "Reports"
 msgstr "التقارير"
@@ -8407,6 +8489,13 @@ msgstr "تم فك الأحجار."
 msgid ""
 "Stones were taken out of this piece since: this setting cannot be undone."
 msgstr "فُكّت أحجار من هذه القطعة بعد ذلك: لا يمكن إلغاء هذا التركيب."
+
+msgid ""
+"Stones with a lab and a report number show here; search by the report number"
+" or the piece's barcode."
+msgstr ""
+"تظهر هنا الأحجار التي لها معمل ورقم شهادة؛ ابحث برقم الشهادة أو باركود "
+"القطعة."
 
 msgid "Stones' cost"
 msgstr "تكلفة الأحجار"

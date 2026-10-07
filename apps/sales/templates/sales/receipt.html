@@ -8,6 +8,7 @@
   <div class="flex gap-2">
     {% can "sales.invoice.create" as can_sell %}
     {% if can_sell %}<a href="{% url 'sale-new' %}" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "New sale" %}</a>{% endif %}
+    {% if has_diamonds %}{% can "diamonds.view" as can_diamonds %}{% if can_diamonds %}<a href="{% url 'certificate-cards' %}?sale={{ invoice.pk }}" target="_blank" rel="noopener" class="btn btn-secondary">{% icon "shield-check" "size-4" %}{% translate "Certificate cards" %}</a>{% endif %}{% endif %}
     {% include "printing/_pdf_link.html" with doc_type="sales_invoice" pk=invoice.pk %}
     <a href="{% url 'sale-print' invoice.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-primary">{% icon "printer" "size-4" %}{% translate "Print" %}</a>
   </div>

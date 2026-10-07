@@ -3,7 +3,10 @@
 <script type="module" src="{% static 'diamonds/js/item_stones.js' %}"></script>
 <form class="card mt-6 overflow-hidden" {% if can_edit %}data-api-form data-shape="item-stones" data-method="PUT" data-endpoint="{% url 'diamonds-item-stones' item.pk %}" data-success="{% translate 'Saved.' %}"{% endif %} novalidate>
   <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "gem" "size-4 text-slate-400" %}{% translate "Stones" %}</h2>
-    {% if can_edit %}<button type="button" class="btn btn-ghost text-xs" data-add-stone>{% icon "plus" "size-4" %}{% translate "Add a stone" %}</button>{% endif %}</div>
+    <div class="flex gap-1">
+      <a class="btn btn-ghost text-xs" href="{% url 'certificates' %}?q={{ item.barcode }}">{% icon "shield-check" "size-4" %}{% translate "Check reports" %}</a>
+      <a class="btn btn-ghost text-xs" href="{% url 'certificate-cards' %}?items={{ item.pk }}" target="_blank" rel="noopener">{% icon "printer" "size-4" %}{% translate "Certificate card" %}</a>
+      {% if can_edit %}<button type="button" class="btn btn-ghost text-xs" data-add-stone>{% icon "plus" "size-4" %}{% translate "Add a stone" %}</button>{% endif %}</div></div>
   <div class="hidden mx-5 mt-4 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
   <div class="overflow-x-auto">
     <table class="table text-sm">

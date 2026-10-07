@@ -1,0 +1,95 @@
+{% comment %}Credit-card certificates (85.6 × 54 mm), one per page: printed from the browser, or
+made into a PDF of card-sized pages (apps.diamonds.views.certificate_cards).{% endcomment %}{% load i18n static ui %}{% get_current_language as LANG %}{% get_current_language_bidi as RTL %}<!doctype html>
+<html lang="{{ LANG }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% translate "Certificate cards" %}</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 100 900; src: url("{% static 'core/fonts/inter-latin-wght.woff2' %}") format("woff2"); }
+  @font-face { font-family: "Plex Arabic"; font-weight: 400; src: url("{% static 'core/fonts/plex-arabic-400.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: "Plex Arabic"; font-weight: 600; src: url("{% static 'core/fonts/plex-arabic-600.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @page { size: 85.6mm 54mm; margin: 0; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: #18181b; font: 7px/1.35 "Inter", "Plex Arabic", system-ui, sans-serif; background: #e4e4e7; }
+  .num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+  .card { width: 85.6mm; height: 54mm; padding: 3.2mm 3.6mm; background: #fff; display: flex; flex-direction: column;
+          gap: 1.4mm; overflow: hidden; position: relative; break-after: page; page-break-after: always; }
+  .card::before { content: ""; position: absolute; inset-inline: 0; top: 0; height: 1.1mm;
+                  background: linear-gradient(90deg, #a16207, #eab308, #a16207); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 2mm; margin-top: 0.6mm; }
+  header .who { display: flex; align-items: center; gap: 1.6mm; min-width: 0; }
+  header img { max-height: 6.5mm; max-width: 16mm; object-fit: contain; }
+  header .shop { font-size: 8.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header .kind { font-size: 6.5px; letter-spacing: .08em; text-transform: uppercase; color: #a16207; font-weight: 600; text-align: end; }
+  .piece { display: flex; align-items: baseline; justify-content: space-between; gap: 2mm;
+           border-bottom: 0.2mm solid #e4e4e7; padding-bottom: 1mm; }
+  .piece .code { font-size: 10px; font-weight: 700; }
+  .piece .what { color: #52525b; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4mm; }
+  .facts div { background: #fafaf9; border: 0.2mm solid #f0eee9; border-radius: 1mm; padding: 0.8mm 1.2mm; }
+  .facts dt { color: #71717a; font-size: 5.8px; }
+  .facts dd { margin: 0; font-weight: 600; font-size: 7.5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { color: #71717a; font-weight: 500; font-size: 5.8px; text-align: start; padding: 0 0.8mm 0.4mm; }
+  td { padding: 0.35mm 0.8mm; border-top: 0.15mm solid #f4f4f5; white-space: nowrap; }
+  td.lab { color: #52525b; font-size: 6px; }
+  .more { color: #71717a; font-size: 6px; }
+  footer { margin-top: auto; display: flex; justify-content: space-between; color: #71717a; font-size: 6px; }
+  .toolbar { position: sticky; top: 0; display: flex; gap: 8px; justify-content: center; padding: 10px; background: #f4f4f5;
+             font: 13px system-ui, sans-serif; border-bottom: 1px solid #d4d4d8; }
+  .toolbar a, .toolbar button { padding: 6px 12px; border-radius: 8px; border: 1px solid #d4d4d8; background: #fff; color: #18181b;
+                                text-decoration: none; cursor: pointer; font: inherit; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; padding: 16px; }
+  .sheet .card { box-shadow: 0 1px 3px rgb(0 0 0 / .15); border-radius: 3mm; }
+  @media screen { .sheet .card { zoom: 1.6; } }  /* the real size is small to read on screen */
+  @media print { body { background: #fff; } .toolbar { display: none; } .sheet { display: block; padding: 0; }
+                 .sheet .card { box-shadow: none; border-radius: 0; } }
+</style>
+</head>
+<body>
+{% if not for_pdf %}
+<div class="toolbar">
+  <button type="button" onclick="window.print()">{% translate "Print" %}</button>
+  <a href="?{{ request.GET.urlencode }}&amp;format=pdf">PDF</a>
+</div>
+{% endif %}
+<div class="sheet">
+{% for card in cards %}
+  <article class="card">
+    <header>
+      <div class="who">{% if logo %}<img src="{{ logo }}" alt="">{% endif %}<span class="shop">{{ profile.display_name }}</span></div>
+      <div class="kind">{% translate "Certificate" %}</div>
+    </header>
+    <div class="piece">
+      <span class="code num">{{ card.item.barcode }}</span>
+      <span class="what">{{ card.item.category.name }}{% if card.item.karat %} · {{ card.item.karat.label }}{% endif %}</span>
+    </div>
+    <dl class="facts" style="margin:0">
+      <div><dt>{% translate "Gold (g)" %}</dt><dd class="num">{% if card.item.karat %}{{ card.item.metal_weight_g|num:3 }}{% else %}—{% endif %}</dd></div>
+      <div><dt>{% translate "Stones (ct)" %}</dt><dd class="num">{{ card.carats|num:3 }}</dd></div>
+      <div><dt>{% translate "Number of stones" %}</dt><dd class="num">{{ card.count }}</dd></div>
+    </dl>
+    {% if card.stones %}
+    <table>
+      <thead><tr><th>{% translate "Stone" %}</th><th>{% translate "Carat" %}</th><th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th></tr></thead>
+      <tbody>
+      {% for stone in card.stones|slice:":3" %}
+        <tr><td>{{ stone.get_kind_display }}{% if stone.shape %} · {{ stone.get_shape_display }}{% endif %}{% if stone.count > 1 %} ×{{ stone.count }}{% endif %}</td>
+          <td class="num">{{ stone.carat|num:3 }}</td><td>{{ stone.color|default:"—" }}</td><td>{{ stone.clarity|default:"—" }}</td><td>{{ stone.cut|default:"—" }}</td></tr>
+        {% if stone.certificate_no %}<tr><td class="lab" colspan="5">{{ stone.lab|default:"" }} <span class="num">{{ stone.certificate_no }}</span></td></tr>{% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if card.stones|length > 3 %}<p class="more" style="margin:0">{% blocktranslate trimmed count n=card.stones|length|add:"-3" %}and {{ n }} more stone{% plural %}and {{ n }} more stones{% endblocktranslate %}</p>{% endif %}
+    {% endif %}
+    <footer>
+      <span>{% if card.customer %}{% translate "Customer" %}: {{ card.customer }}{% endif %}</span>
+      <span class="num">{{ today|date:"SHORT_DATE_FORMAT" }}</span>
+    </footer>
+  </article>
+{% endfor %}
+</div>
+</body>
+</html>
