@@ -31,7 +31,8 @@ def _payment(d) -> PaymentInput:
 class LineWriteSerializer(serializers.Serializer):
     item = serializers.IntegerField(required=False, allow_null=True, default=None)
     barcode = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
-    discount_rate = serializers.CharField(max_length=20, required=False, default="0")
+    discount_rate = serializers.CharField(max_length=20, required=False, allow_null=True,
+                                          allow_blank=True, default=None)
 
 
 class OrderWriteSerializer(serializers.Serializer):

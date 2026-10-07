@@ -19,6 +19,7 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -29,7 +30,7 @@ from apps.core.models import DocStatus
 from apps.core.numeric import GRAMS_PER_CARAT, MONEY, UNIT_PRICE, WEIGHT, quantize, round_money
 from apps.core.sequences import allocate_number
 from apps.core.tenancy import get_current_tenant_id
-from apps.inventory.models import Item, ItemStatus, MovementType
+from apps.inventory.models import DiscountClass, Item, ItemStatus, MovementType
 from apps.inventory.services import DocRef, change_item_status
 from apps.ledger.models import EntryKind
 from apps.ledger.services import (
@@ -136,8 +137,13 @@ def add_stones(item: Item, stones, *, setting=None, source=None) -> list[ItemSto
     return ItemStone.objects.bulk_create(rows)
 
 
-def update_item(item_id: int, *, stones, label_price=None, actor=None) -> Item:
-    """Replace a piece's stone details and set its label price (stone weight follows)."""
+UNCHANGED = object()
+
+
+def update_item(item_id: int, *, stones, label_price=None, discount_class_id=UNCHANGED,
+                actor=None) -> Item:
+    """Replace a piece's stone details and set its label price and discount class (stone
+    weight follows)."""
     require_enabled()
     with transaction.atomic():
         item = Item.objects.select_for_update().select_related("category", "branch").filter(
@@ -157,10 +163,106 @@ def update_item(item_id: int, *, stones, label_price=None, actor=None) -> Item:
             if price <= 0:
                 raise _field("label_price", _("Must be greater than zero."))
             item.label_price = price
+        if discount_class_id is not UNCHANGED:
+            item.discount_class = (_discount_class(discount_class_id, "discount_class")
+                                   if discount_class_id else None)
         item.stone_weight_ct = sum((s.carat for s in item.stones.all()), ZERO)
         item.updated_by = getattr(actor, "user", None)
         item.save()
     return item
+
+
+# --- discount classes (legacy Offd1, GHD10 / GHD42) ----------------------------------------------
+
+def _discount_class(class_id, field: str) -> DiscountClass:
+    found = DiscountClass.objects.filter(pk=class_id or 0, is_active=True).first()
+    if found is None:
+        raise _field(field, _("Choose an active discount class."))
+    return found
+
+
+def _rate(value, field: str) -> Decimal:
+    """A percentage as typed (15 = 15 %) → a rate (0.15)."""
+    try:
+        percent = Decimal(str(value if value not in (None, "") else "0"))
+    except (InvalidOperation, ValueError):
+        raise _field(field, _("Enter a number.")) from None
+    if percent < 0 or percent > 100:
+        raise _field(field, _("Between 0 and 100%."))
+    return (percent / 100).quantize(Decimal("0.0001"))
+
+
+@dataclass(frozen=True)
+class DiscountClassInput:
+    code: int | str
+    name: str
+    usual_percent: Decimal | str = "0"
+    max_percent: Decimal | str = "0"
+    is_active: bool = True
+
+
+def save_discount_class(data: DiscountClassInput, *, class_id: int | None = None,
+                        actor=None) -> DiscountClass:
+    require_enabled()
+    if actor is not None:
+        actor.require("diamonds.manage")
+    with transaction.atomic():
+        found = (DiscountClass.objects.select_for_update().filter(pk=class_id).first()
+                 if class_id else DiscountClass())
+        if found is None:
+            raise NotFound(_("Not found."))
+        try:
+            code = int(str(data.code).strip())
+        except ValueError:
+            raise _field("code", _("Enter a number.")) from None
+        if code < 1 or code > 999:
+            raise _field("code", _("Between 1 and 999."))
+        if DiscountClass.objects.filter(code=code).exclude(pk=found.pk).exists():
+            raise _field("code", _("Another class has this code."))
+        name = data.name.strip()
+        if not name:
+            raise _field("name", _("This field is required."))
+        usual, largest = _rate(data.usual_percent, "usual_percent"), _rate(data.max_percent,
+                                                                           "max_percent")
+        if largest < usual:
+            raise _field("max_percent", _("The largest discount cannot be below the usual one."))
+        found.code, found.name, found.usual_rate, found.max_rate = code, name[:100], usual, largest
+        found.is_active = data.is_active
+        found.save()
+    return found
+
+
+def assign_discount_class(class_id: int | None, *, family: str = "", term: str = "",
+                          current: str = "", scope=None, actor=None) -> int:
+    """Put every diamond piece in stock that matches the filters into a class (or none), the
+    way Gweb's GHD42 re-classed in bulk. Returns how many pieces changed. Each change is in the
+    pieces' history (the audit trail)."""
+    require_enabled()
+    target = _discount_class(class_id, "discount_class") if class_id else None
+    with transaction.atomic():
+        items = Item.objects.filter(category__product_family__in=FAMILIES,
+                                    status__in=(ItemStatus.IN_STOCK, ItemStatus.RESERVED))
+        if scope is not None:
+            items = items.filter(branch_id__in=scope)
+        if family in FAMILIES:
+            items = items.filter(category__product_family=family)
+        if term:
+            items = items.filter(Q(barcode=term) | Q(stones__certificate_no__icontains=term)
+                                 | Q(category__name__icontains=term))
+        if current == "none":
+            items = items.filter(discount_class__isnull=True)
+        elif current.isdigit():
+            items = items.filter(discount_class_id=int(current))
+        ids = list(items.exclude(discount_class=target).values_list("pk", flat=True).distinct())
+        if actor is not None:
+            branches = set(Item.objects.filter(pk__in=ids).values_list("branch_id", flat=True))
+            for branch_id in branches:
+                actor.require("diamonds.manage", branch=Branch.objects.get(pk=branch_id))
+        for item in Item.objects.select_for_update().filter(pk__in=ids):
+            item.discount_class = target
+            item.updated_by = getattr(actor, "user", None)
+            item.save(update_fields=["discount_class", "updated_by", "updated_at"])
+    return len(ids)
 
 
 def _field(name: str, message: str) -> ValidationError:
@@ -192,6 +294,7 @@ class PieceInput:
     making_cost_rate: Decimal | str = "0"  # per gram of gold, in the invoice currency
     stone_cost: Decimal | str = "0"  # in the invoice currency
     label_price: Decimal | str | None = None  # selling price, company currency
+    discount_class_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -284,7 +387,13 @@ def receive(data: ReceiveInput, *, actor=None) -> SupplierInvoice:
             SupplierInvoicePiece.objects.create(
                 line=line, gross_weight_g=gross, stone_weight_ct=carats, stone_cost=stone_cost,
                 label_price=label, stones=stones)
-    return post_invoice(invoice.pk, actor=actor)
+        classes = {index: _discount_class(piece.discount_class_id, f"pieces.{index}")
+                   for index, piece in enumerate(data.pieces) if piece.discount_class_id}
+        posted = post_invoice(invoice.pk, actor=actor)
+        for line in posted.lines.filter(position__in=list(classes)):
+            Item.objects.filter(pk=line.pieces.get().item_id).update(
+                discount_class=classes[line.position])
+    return posted
 
 
 # --- setting stones into pieces ------------------------------------------------------------------

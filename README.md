@@ -385,6 +385,14 @@ untouched (everything goes back to the setter). On any stone setting, **Take sto
 cost), re-weighs the piece and books an optional fee to the setter; Gweb lost the stones' cost
 and deleted the piece.
 
+**Diamonds → Discount classes** (legacy Offd1, GHD10 / GHD42; `diamonds.manage` to edit):
+each class has a code, a name, a usual discount and a largest discount. A piece gets its class
+when received, on its page, or in bulk from the diamond stock (every piece shown with the
+current filters, including a class filter). On the sales screen and in reservations a piece
+with no discount entered starts at its label price less the class's usual discount; a seller
+may give up to max(usual, min(their own diamond limit, the class's largest)), never below what
+the piece cost. Pieces without a class work as before.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

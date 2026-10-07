@@ -17,6 +17,7 @@ if (form) {
   });
   registerShaper("item-stones", (values) => ({
     label_price: values.label_price || null,
+    discount_class: Number(values.discount_class) || null,
     stones: [...rows.querySelectorAll("[data-stone]")]
       .filter((row) => row.querySelector('[data-s="carat"]').value.trim())
       .map((row) => Object.fromEntries([...row.querySelectorAll("[data-s]")].map(

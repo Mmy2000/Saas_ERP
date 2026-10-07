@@ -646,6 +646,13 @@ msgstr "إضافة ماكينة دفع"
 msgid "Add cash box"
 msgstr "إضافة خزينة"
 
+msgid ""
+"Add classes such as \"Standard 15%%\" or \"Solitaires 5%%\", then give them "
+"to pieces when you receive them or from the diamond stock."
+msgstr ""
+"أضف فئات مثل «عادي 15%%» أو «سوليتير 5%%»، ثم أعطها للقطع عند استلامها أو من"
+" مخزون الألماس."
+
 msgid "Add customers"
 msgstr "إضافة عملاء"
 
@@ -856,6 +863,9 @@ msgid ""
 "Another branch: the cash waits in transit until that branch receives it."
 msgstr "فرع آخر: تبقى النقدية في الطريق حتى يستلمها ذلك الفرع."
 
+msgid "Another class has this code."
+msgstr "توجد فئة أخرى بهذا الكود."
+
 msgid "Another customer already has this phone number."
 msgstr "رقم الهاتف مسجل لعميل آخر."
 
@@ -870,6 +880,9 @@ msgstr "يستجيب"
 
 msgid "Any branch"
 msgstr "أي فرع"
+
+msgid "Any discount class"
+msgstr "أي فئة خصم"
 
 msgid "Any sale of at least"
 msgstr "أي بيع بقيمة لا تقل عن"
@@ -888,6 +901,9 @@ msgstr "تشغيل التطبيق"
 
 msgid "Appearance"
 msgstr "المظهر"
+
+msgid "Apply"
+msgstr "تطبيق"
 
 msgid "Approve and publish"
 msgstr "وافق وانشر"
@@ -1174,6 +1190,9 @@ msgstr "بين 0 و 100%."
 
 msgid "Between 0 and 50%."
 msgstr "بين 0 و 50%."
+
+msgid "Between 1 and 999."
+msgstr "بين 1 و 999."
 
 msgid "Between rows"
 msgstr "بين الصفوف"
@@ -1947,6 +1966,9 @@ msgstr "اختر خزينة نشطة."
 
 msgid "Choose an active customer or supplier."
 msgstr "اختر عميلًا أو موردًا نشطًا."
+
+msgid "Choose an active discount class."
+msgstr "اختر فئة خصم مفعّلة."
 
 msgid "Choose an active employee."
 msgstr "اختر موظفًا نشطًا."
@@ -3030,6 +3052,15 @@ msgstr "الخصم"
 msgid "Discount %%"
 msgstr "الخصم %%"
 
+msgid "Discount class"
+msgstr "فئة الخصم"
+
+msgid "Discount class set."
+msgstr "تم تعيين فئة الخصم."
+
+msgid "Discount classes"
+msgstr "نسب الخصم"
+
 msgid "Discount on the making charge (%)"
 msgstr "خصم على المصنعية (%)"
 
@@ -3212,6 +3243,15 @@ msgid "Each CPU thread"
 msgstr "كل خيط معالجة"
 
 msgid ""
+"Each diamond piece can belong to a class. The sales screen starts it at the "
+"label price less the class's usual discount; a seller may go up to the "
+"largest one (and their own limit), never below what the piece cost."
+msgstr ""
+"لكل قطعة ألماس فئة خصم. تبدأ شاشة البيع بسعر الملصق ناقص الخصم المعتاد "
+"للفئة؛ ويمكن للبائع الوصول إلى الحد الأقصى (وحده الشخصي)، دون النزول عن "
+"تكلفة القطعة."
+
+msgid ""
 "Each piece gets a barcode. The supplier invoice is posted at once and can be"
 " cancelled from Purchases while the pieces are untouched."
 msgstr ""
@@ -3229,6 +3269,9 @@ msgstr "تعديل"
 
 msgid "Edit branch"
 msgstr "تعديل فرع"
+
+msgid "Edit class"
+msgstr "تعديل الفئة"
 
 msgid "Edit customer"
 msgstr "تعديل عميل"
@@ -4484,6 +4527,12 @@ msgstr "المصنعية المستحقة"
 msgid "Language"
 msgstr "اللغة"
 
+msgid "Largest discount"
+msgstr "أقصى خصم"
+
+msgid "Largest discount %%"
+msgstr "أقصى خصم %%"
+
 msgid "Last"
 msgstr "آخر نشاط"
 
@@ -5201,6 +5250,9 @@ msgstr "خزينة جديدة"
 msgid "New category"
 msgstr "بند جديد"
 
+msgid "New class"
+msgstr "فئة جديدة"
+
 msgid "New client"
 msgstr "عميل جديد"
 
@@ -5332,6 +5384,9 @@ msgstr "لا توجد تعديلات مسجلة"
 msgid "No cheques here"
 msgstr "لا توجد شيكات هنا"
 
+msgid "No class"
+msgstr "بدون فئة"
+
 msgid "No client is on this plan."
 msgstr "لا يوجد عملاء على هذه الباقة."
 
@@ -5364,6 +5419,9 @@ msgstr "لا توجد أصناف ألماس بعد"
 
 msgid "No diamonds here"
 msgstr "لا يوجد ألماس هنا"
+
+msgid "No discount classes yet"
+msgstr "لا توجد فئات خصم بعد"
 
 msgid "No e-mail address"
 msgstr "لا يوجد بريد إلكتروني"
@@ -6465,6 +6523,9 @@ msgstr "استُوردت القطع."
 msgid "Pieces in"
 msgstr "قطع واردة"
 
+msgid "Pieces in stock"
+msgstr "القطع بالمخزون"
+
 msgid ""
 "Pieces include reserved ones. Value at today's buy price for pure metal."
 msgstr "القطع تشمل المحجوزة. القيمة بسعر شراء الذهب الخالص اليوم."
@@ -6869,6 +6930,15 @@ msgid ""
 "Purity of each karat. Every weight conversion in the system uses these "
 "values."
 msgstr "نسبة نقاء كل عيار. تعتمد عليها كل تحويلات الأوزان في النظام."
+
+msgid "Put the piece shown in the class"
+msgid_plural "Put the %(n)s pieces shown in the class"
+msgstr[0] "ضع القطع المعروضة (%(n)s) في الفئة"
+msgstr[1] "ضع القطعة المعروضة في الفئة"
+msgstr[2] "ضع القطعتين المعروضتين في الفئة"
+msgstr[3] "ضع القطع المعروضة (%(n)s) في الفئة"
+msgstr[4] "ضع القطع المعروضة (%(n)s) في الفئة"
+msgstr[5] "ضع القطع المعروضة (%(n)s) في الفئة"
 
 msgid ""
 "Put these pieces back to their earlier prices? Pieces changed again since "
@@ -8708,6 +8778,9 @@ msgstr "العيار الذي يُعرض به رصيد الذهب لهذا ال�
 msgid "The labels do not fit on the page."
 msgstr "الملصقات لا تتسع في الصفحة."
 
+msgid "The largest discount cannot be below the usual one."
+msgstr "لا يمكن أن يقل أقصى خصم عن الخصم المعتاد."
+
 msgid "The largest discount you may give is %(max)s%%."
 msgstr "أقصى خصم مسموح لك هو %(max)s%%."
 
@@ -9539,6 +9612,12 @@ msgstr "المستخدمون"
 
 msgid "Users can still pick their own in the appearance menu."
 msgstr "يمكن لكل مستخدم اختيار لونه من قائمة المظهر."
+
+msgid "Usual discount"
+msgstr "الخصم المعتاد"
+
+msgid "Usual discount %%"
+msgstr "الخصم المعتاد %%"
 
 msgid "Value"
 msgstr "القيمة"

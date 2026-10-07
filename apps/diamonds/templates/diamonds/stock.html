@@ -30,8 +30,13 @@
       <a href="?state={{ state }}" class="segment{% if not family %} segment-active{% endif %}">{% translate "Everything" %}</a>
       {% for value, label in families %}<a href="?state={{ state }}&amp;family={{ value }}" class="segment{% if family == value %} segment-active{% endif %}">{{ label }}</a>{% endfor %}
     </div>
-    <form method="get" class="flex gap-2 lg:ms-auto">
+    <form method="get" class="flex flex-col gap-2 sm:flex-row lg:ms-auto">
       <input type="hidden" name="state" value="{{ state }}"><input type="hidden" name="family" value="{{ family }}">
+      <select name="cls" class="form-input sm:w-52" data-native onchange="this.form.requestSubmit()" aria-label="{% translate 'Discount class' %}">
+        <option value="">{% translate "Any discount class" %}</option>
+        <option value="none" {% if current == "none" %}selected{% endif %}>{% translate "No class" %}</option>
+        {% for c in classes %}<option value="{{ c.pk }}" {% if current == c.pk|stringformat:'s' %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
       <input name="q" value="{{ term }}" class="form-input w-full lg:w-72" placeholder="{% translate 'Barcode, certificate or category' %}">
     </form>
   </div>
@@ -40,7 +45,7 @@
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Piece" %}</th><th>{% translate "Stones" %}</th>
         <th class="text-end">{% translate "Gold (g)" %}</th><th class="text-end">{% translate "Carats" %}</th>
-        {% if can_cost %}<th class="text-end">{% translate "Stones' cost" %}</th>{% endif %}<th class="text-end">{% translate "Label price" %}</th><th>{% translate "Status" %}</th></tr></thead>
+        {% if can_cost %}<th class="text-end">{% translate "Stones' cost" %}</th>{% endif %}<th class="text-end">{% translate "Label price" %}</th><th>{% translate "Discount class" %}</th><th>{% translate "Status" %}</th></tr></thead>
       <tbody>
       {% for item in page.object_list %}
         <tr>
@@ -51,6 +56,7 @@
           <td class="text-end"><span class="num">{{ item.stone_weight_ct|num:3 }}</span></td>
           {% if can_cost %}<td class="text-end"><span class="num">{{ item.stone_cost_amount|num:2 }}</span></td>{% endif %}
           <td class="text-end"><span class="num font-semibold text-slate-900">{{ item.label_price|num:2 }}</span></td>
+          <td class="text-sm">{% if item.discount_class %}<span class="badge badge-neutral">{{ item.discount_class.name }}</span>{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
           <td>{% include "inventory/_status.html" with item=item %}</td>
         </tr>
       {% endfor %}
@@ -61,8 +67,8 @@
   <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
     <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
     <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
     </div>
   </nav>
   {% endif %}
@@ -72,4 +78,15 @@
     {% include "components/empty_state.html" with icon="gem" title=empty_title text=empty_text %}
   {% endif %}
 </section>
+{% can "diamonds.manage" as can_manage %}
+{% if can_manage and classes and state == "in_stock" and page.object_list %}
+<form data-api-form data-method="POST" data-endpoint="{% url 'diamonds-class-assign' %}" data-success="{% translate 'Discount class set.' %}"
+      class="card mt-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end" novalidate>
+  <input type="hidden" name="family" value="{{ family }}"><input type="hidden" name="q" value="{{ term }}"><input type="hidden" name="current" value="{{ current }}">
+  <label class="block flex-1"><span class="form-label">{% blocktranslate trimmed count n=page.paginator.count %}Put the piece shown in the class{% plural %}Put the {{ n }} pieces shown in the class{% endblocktranslate %}</span>
+    <select name="discount_class" class="form-input" data-empty="null"><option value="">{% translate "No class" %}</option>{% for c in classes %}{% if c.is_active %}<option value="{{ c.pk }}">{{ c }}</option>{% endif %}{% endfor %}</select>
+    <span class="form-error" data-error-for="discount_class"></span></label>
+  <button type="submit" class="btn btn-secondary">{% icon "percent" "size-4" %}{% translate "Apply" %}</button>
+</form>
+{% endif %}
 {% endblock %}

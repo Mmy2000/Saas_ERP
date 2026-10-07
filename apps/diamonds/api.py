@@ -41,6 +41,7 @@ class PieceSerializer(serializers.Serializer):
     label_price = serializers.CharField(max_length=20, required=False, allow_blank=True,
                                         allow_null=True, default=None)
     stones = StoneSerializer(many=True, required=False, default=list)
+    discount_class = serializers.IntegerField(required=False, allow_null=True, default=None)
 
 
 class ReceiveSerializer(serializers.Serializer):
@@ -68,7 +69,8 @@ class ReceiveView(APIView):
                 category_id=p["category"], karat_id=p["karat"],
                 gross_weight_g=p["gross_weight_g"], making_cost_rate=p["making_cost_rate"] or "0",
                 stone_cost=p["stone_cost"] or "0", label_price=p["label_price"] or None,
-                stones=tuple(p["stones"])) for p in d["pieces"])), actor=request.actor)
+                stones=tuple(p["stones"]), discount_class_id=p["discount_class"])
+                for p in d["pieces"])), actor=request.actor)
         return Response({"id": invoice.pk, "number": invoice.number},
                         status=status.HTTP_201_CREATED)
 
@@ -77,6 +79,7 @@ class ItemStonesSerializer(serializers.Serializer):
     stones = StoneSerializer(many=True)
     label_price = serializers.CharField(max_length=20, required=False, allow_blank=True,
                                         allow_null=True, default=None)
+    discount_class = serializers.IntegerField(required=False, allow_null=True)
 
 
 class ItemStonesView(APIView):
@@ -85,8 +88,10 @@ class ItemStonesView(APIView):
     def put(self, request, pk):
         payload = ItemStonesSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
-        item = services.update_item(pk, stones=payload.validated_data["stones"],
-                                    label_price=payload.validated_data["label_price"],
+        d = payload.validated_data
+        item = services.update_item(pk, stones=d["stones"], label_price=d["label_price"],
+                                    discount_class_id=d.get("discount_class",
+                                                            services.UNCHANGED),
                                     actor=request.actor)
         return Response({"id": item.pk, "label_price": item.label_price,
                          "stone_weight_ct": item.stone_weight_ct})
@@ -251,6 +256,65 @@ class RemovalView(APIView):
                         status=status.HTTP_201_CREATED)
 
 
+class DiscountClassSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=4)
+    name = serializers.CharField(max_length=100, allow_blank=True)
+    usual_percent = serializers.CharField(max_length=10, required=False, allow_blank=True,
+                                          default="0")
+    max_percent = serializers.CharField(max_length=10, required=False, allow_blank=True,
+                                        default="0")
+    is_active = serializers.BooleanField(required=False, default=True)
+
+
+def _class_input(request):
+    payload = DiscountClassSerializer(data=request.data)
+    payload.is_valid(raise_exception=True)
+    d = payload.validated_data
+    return services.DiscountClassInput(code=d["code"], name=d["name"],
+                                       usual_percent=d["usual_percent"],
+                                       max_percent=d["max_percent"], is_active=d["is_active"])
+
+
+class DiscountClassesView(APIView):
+    required_permissions = {"POST": "diamonds.manage"}
+
+    def post(self, request):
+        found = services.save_discount_class(_class_input(request), actor=request.actor)
+        return Response({"id": found.pk}, status=status.HTTP_201_CREATED)
+
+
+class DiscountClassView(APIView):
+    required_permissions = {"PUT": "diamonds.manage"}
+
+    def put(self, request, pk):
+        found = services.save_discount_class(_class_input(request), class_id=pk,
+                                             actor=request.actor)
+        return Response({"id": found.pk})
+
+
+class AssignClassSerializer(serializers.Serializer):
+    discount_class = serializers.IntegerField(allow_null=True)
+    family = serializers.CharField(max_length=16, required=False, allow_blank=True, default="")
+    q = serializers.CharField(max_length=60, required=False, allow_blank=True, default="")
+    current = serializers.CharField(max_length=10, required=False, allow_blank=True, default="")
+
+
+class AssignClassView(APIView):
+    """Put every matching diamond piece in stock into a class (legacy GHD42)."""
+
+    required_permissions = {"POST": "diamonds.manage"}
+
+    @idempotent
+    def post(self, request):
+        payload = AssignClassSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        count = services.assign_discount_class(
+            d["discount_class"], family=d["family"], term=d["q"].strip(), current=d["current"],
+            scope=request.actor.branch_ids("diamonds.manage"), actor=request.actor)
+        return Response({"count": count})
+
+
 urlpatterns = [
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
@@ -259,6 +323,10 @@ urlpatterns = [
     path("settings/<int:pk>/void/", SettingVoidView.as_view(), name="diamonds-setting-void"),
     path("settings/<int:pk>/remove/", RemovalView.as_view(), name="diamonds-setting-remove"),
     path("jobs/", JobView.as_view(), name="diamonds-jobs"),
+    path("discount-classes/", DiscountClassesView.as_view(), name="diamonds-discount-classes"),
+    path("discount-classes/assign/", AssignClassView.as_view(), name="diamonds-class-assign"),
+    path("discount-classes/<int:pk>/", DiscountClassView.as_view(),
+         name="diamonds-discount-class"),
     path("jobs/<int:pk>/return/", JobReturnView.as_view(), name="diamonds-job-return"),
     path("jobs/<int:pk>/set/", JobSetView.as_view(), name="diamonds-job-set"),
 ]

@@ -11,6 +11,7 @@ from apps.core.documents import document_titles, document_url
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.inventory.models import (
+    DiscountClass,
     Item,
     ItemStatus,
     LotBalance,
@@ -81,7 +82,9 @@ def item_detail(request, pk):
     context = {"item": item, "movements": movements, "price": _selling_price(item)}
     if diamonds.is_diamond(item.category) and diamonds.enabled():
         context.update({"diamond": True, "stones": list(item.stones.all()),
-                        "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices})
+                        "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices,
+                        "discount_classes": DiscountClass.objects.filter(
+                            Q(is_active=True) | Q(pk=item.discount_class_id))})
     return render(request, "inventory/item.html", context)
 
 

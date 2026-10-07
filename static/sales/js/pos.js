@@ -79,10 +79,14 @@ if (root) {
         row.querySelector("[data-offer]").classList.remove("hidden");
       }
       const discount = row.querySelector("[data-discount]");
-      discount.value = line.discount_text ?? rateToPercent(line.discount_rate);
+      // Nothing entered: the server's discount shows (a diamond's class gives its usual one).
+      discount.value = line.discount_text ?? (line.discount_rate == null
+        ? (Number(quote.discount_rate || 0) ? rateToPercent(quote.discount_rate) : "")
+        : rateToPercent(line.discount_rate));
       discount.addEventListener("change", () => {
         line.discount_text = discount.value.trim();
-        line.discount_rate = percentToRate(line.discount_text);
+        line.discount_rate = line.discount_text === "" ? null : percentToRate(line.discount_text);
+        if (line.discount_text === "") line.discount_text = undefined;
         requestQuote();
       });
       row.querySelector("[data-remove]").addEventListener("click", () => {
@@ -186,7 +190,7 @@ if (root) {
     input.focus();
     if (!barcode) return;
     if (state.lines.some((line) => line.barcode === barcode)) return toast(barcode, { kind: "error" });
-    state.lines.push({ barcode, discount_rate: "0", fresh: true });
+    state.lines.push({ barcode, discount_rate: null, fresh: true });
     requestQuote();
   });
 

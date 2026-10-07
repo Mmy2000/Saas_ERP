@@ -105,6 +105,7 @@ urlpatterns = [
     path("diamonds/settings/", diamonds.settings_list, name="stone-settings"),
     path("diamonds/settings/new/", diamonds.setting_new, name="stone-setting-new"),
     path("diamonds/settings/<int:pk>/", diamonds.setting, name="stone-setting"),
+    path("diamonds/discount-classes/", diamonds.discount_classes, name="discount-classes"),
     path("diamonds/setters/", diamonds.jobs, name="setting-jobs"),
     path("diamonds/setters/new/", diamonds.job_new, name="setting-job-new"),
     path("diamonds/setters/<int:pk>/", diamonds.job, name="setting-job"),

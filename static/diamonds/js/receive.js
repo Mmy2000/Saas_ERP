@@ -73,6 +73,7 @@ if (root) {
         gross_weight_g: loose ? null : field("gross_weight_g"),
         making_cost_rate: loose ? "0" : field("making_cost_rate") || "0",
         stone_cost: field("stone_cost") || "0", label_price: field("label_price") || null,
+        discount_class: Number(piece.querySelector('[data-field="discount_class"]')?.value) || null,
         stones: [...piece.querySelectorAll("[data-stone]")]
           .filter((row) => row.querySelector('[data-s="carat"]').value.trim())
           .map((row) => Object.fromEntries([...row.querySelectorAll("[data-s]")].map(

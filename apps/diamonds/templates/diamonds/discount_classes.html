@@ -1,0 +1,63 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Discount classes" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/classes.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Discount classes" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Each diamond piece can belong to a class. The sales screen starts it at the label price less the class's usual discount; a seller may go up to the largest one (and their own limit), never below what the piece cost." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.manage" as can_manage %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    {% if classes %}
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Name" %}</th><th class="text-end">{% translate "Usual discount" %}</th>
+          <th class="text-end">{% translate "Largest discount" %}</th><th class="text-end">{% translate "Pieces in stock" %}</th><th>{% translate "Status" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody>
+        {% for c in classes %}
+          <tr>
+            <td><span class="num font-medium text-slate-900">{{ c.code }}</span></td>
+            <td>{{ c.name }}</td>
+            <td class="text-end"><span class="num">{{ c.usual_pct }}%</span></td>
+            <td class="text-end"><span class="num">{{ c.max_pct }}%</span></td>
+            <td class="text-end"><a class="num text-brand-700 hover:underline" href="{% url 'diamonds' %}?cls={{ c.pk }}">{{ c.pieces }}</a></td>
+            <td>{% if c.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Stopped" %}</span>{% endif %}</td>
+            <td class="text-end">{% if can_manage %}<button type="button" class="btn btn-ghost text-xs" data-edit-class="{% url 'diamonds-discount-class' c.pk %}"
+                data-code="{{ c.code }}" data-name="{{ c.name }}" data-usual="{{ c.usual_pct }}" data-max="{{ c.max_pct }}" data-active="{{ c.is_active|yesno:'1,' }}">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</button>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No discount classes yet" as empty_title %}
+      {% translate "Add classes such as \"Standard 15%\" or \"Solitaires 5%\", then give them to pieces when you receive them or from the diamond stock." as empty_text %}
+      {% include "components/empty_state.html" with icon="percent" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+  {% if can_manage %}
+  <form id="class-form" class="card" data-api-form data-shape="discount-class" data-method="POST" data-endpoint="{% url 'diamonds-discount-classes' %}"
+        data-create-url="{% url 'diamonds-discount-classes' %}" data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="card-header"><h2 class="card-title" data-form-title data-new="{% translate 'New class' %}" data-edit="{% translate 'Edit class' %}">{% translate "New class" %}</h2></div>
+    <div class="card-body space-y-4">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <div class="grid grid-cols-3 gap-3">
+        <label class="block"><span class="form-label">{% translate "Code" %}</span><input name="code" class="form-input num w-full text-start" inputmode="numeric"><span class="form-error" data-error-for="code"></span></label>
+        <label class="col-span-2 block"><span class="form-label">{% translate "Name" %}</span><input name="name" class="form-input" maxlength="100"><span class="form-error" data-error-for="name"></span></label>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block"><span class="form-label">{% translate "Usual discount %" %}</span><input name="usual_percent" class="form-input num w-full text-start" inputmode="decimal" placeholder="0"><span class="form-error" data-error-for="usual_percent"></span></label>
+        <label class="block"><span class="form-label">{% translate "Largest discount %" %}</span><input name="max_percent" class="form-input num w-full text-start" inputmode="decimal" placeholder="0"><span class="form-error" data-error-for="max_percent"></span></label>
+      </div>
+      <label class="flex items-center gap-3 text-sm"><input type="checkbox" name="is_active" checked>{% translate "Active" %}</label>
+      <div class="flex gap-2"><button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+        <button type="button" class="btn btn-secondary hidden" data-new-class>{% translate "New class" %}</button></div>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

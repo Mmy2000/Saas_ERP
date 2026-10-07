@@ -7,7 +7,7 @@ from django.urls import reverse
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
-from apps.inventory.models import Item, ItemStatus
+from apps.inventory.models import DiscountClass, Item, ItemStatus
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 
@@ -28,8 +28,10 @@ def stock(request):
     state = request.GET.get("state") if request.GET.get("state") in STATES else "in_stock"
     family = request.GET.get("family", "")
     term = request.GET.get("q", "").strip()
+    current = request.GET.get("cls", "")
     items = (Item.objects.filter(category__product_family__in=FAMILIES)
-             .select_related("category", "karat", "branch").prefetch_related("stones"))
+             .select_related("category", "karat", "branch", "discount_class")
+             .prefetch_related("stones"))
     scope = request.actor.branch_ids("diamonds.view")
     if scope is not None:
         items = items.filter(branch_id__in=scope)
@@ -42,6 +44,10 @@ def stock(request):
     if term:
         items = items.filter(Q(barcode=term) | Q(stones__certificate_no__icontains=term)
                              | Q(category__name__icontains=term)).distinct()
+    if current == "none":
+        items = items.filter(discount_class__isnull=True)
+    elif current.isdigit():
+        items = items.filter(discount_class_id=int(current))
     totals = items.aggregate(n=Count("id", distinct=True), ct=Sum("stone_weight_ct"),
                              cost=Sum("stone_cost_amount"), label=Sum("label_price"))
     page = Paginator(items.order_by("-created_at", "-id"), 30).get_page(request.GET.get("page"))
@@ -49,6 +55,7 @@ def stock(request):
         item.summary = stones_summary(item.stones.all())
     return render(request, "diamonds/stock.html", {
         "page": page, "state": state, "family": family, "term": term, "totals": totals,
+        "current": current, "classes": DiscountClass.objects.all(),
         "families": [(value, label) for value, label in ProductFamily.choices
                      if value in FAMILIES],
         "home_currency": functional_currency(),
@@ -67,6 +74,7 @@ def receive(request):
         "currencies": Currency.objects.filter(is_active=True),
         "home_currency": functional_currency(),
         "kinds": StoneKind.choices, "shapes": StoneShape.choices,
+        "classes": DiscountClass.objects.filter(is_active=True),
     })
 
 
@@ -177,3 +185,15 @@ def stone_removal(request, pk):
     if removal is None:
         raise Http404
     return redirect(f"{reverse('stone-setting', args=[removal])}#removals")
+
+
+@permission_required("diamonds.view")
+def discount_classes(request):
+    classes = DiscountClass.objects.annotate(
+        pieces=Count("items", filter=Q(items__status__in=(ItemStatus.IN_STOCK,
+                                                          ItemStatus.RESERVED))))
+    classes = list(classes)
+    for found in classes:  # shown and edited as percentages (0.125 → "12.5")
+        found.usual_pct = f"{(found.usual_rate * 100).normalize():f}"
+        found.max_pct = f"{(found.max_rate * 100).normalize():f}"
+    return render(request, "diamonds/discount_classes.html", {"classes": classes})

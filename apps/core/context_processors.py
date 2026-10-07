@@ -42,6 +42,7 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
                 ("stone-setting-new", "stone-setting")),
         NavItem(_("Setters"), "setting-jobs", "send", "diamonds.view",
                 ("setting-job-new", "setting-job")),
+        NavItem(_("Discount classes"), "discount-classes", "percent", "diamonds.view"),
     ]),
     (_("Pricing"), [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),

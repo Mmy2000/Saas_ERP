@@ -21,7 +21,9 @@ Offers (apps.merchandising.offers), on gold pieces and bulk gold:
                       per piece; credited to the customer's account when the sale is posted
 
 Diamond piece or loose stone (apps.diamonds), sold at its label price:
-    discount        ≤ the seller's diamond limit, on the whole label price
+    discount        ≤ the seller's diamond limit, on the whole label price; with a discount
+                    class: its usual discount when none is entered, and at most
+                    max(usual, min(the seller's limit, the class's largest))
     gold part       = round2(board sell price × metal weight)          (none for loose stones)
     line total      = max(label × (1 − discount), what it cost)   (gold part + making + stones)
     stones part     = line total − gold part: the stones and the workmanship
@@ -164,6 +166,13 @@ def quote_label_priced(item, board, *, discount_rate, max_discount: Decimal) -> 
     if not item.label_price:
         raise DomainError(_("Piece %(barcode)s has no label price.") % {"barcode": item.barcode},
                           code="PRICING_NO_LABEL_PRICE")
+    # A discount class: the usual discount when none is entered; anyone may give it, and a
+    # seller up to their own limit but never past the class's largest.
+    discount_class = item.discount_class if item.discount_class_id else None
+    if discount_class is not None and discount_class.is_active:
+        max_discount = max(discount_class.usual_rate, min(max_discount, discount_class.max_rate))
+        if discount_rate is None or discount_rate == "":
+            discount_rate = discount_class.usual_rate
     discount = _discount(discount_rate, max_discount)
     label = item.label_price
     metal_price = board.price(item.karat, PriceSide.SELL) if item.karat else ZERO

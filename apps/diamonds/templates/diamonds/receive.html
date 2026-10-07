@@ -69,6 +69,8 @@
         <label data-gold><span class="form-label">{% translate "Making / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="making_cost_rate" placeholder="0"></label>
         <label><span class="form-label">{% translate "Stones' cost" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="stone_cost" placeholder="0"></label>
         <label><span class="form-label">{% translate "Label price" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="label_price"></label>
+        {% if classes %}<label><span class="form-label">{% translate "Discount class" %}</span>
+          <select class="form-input" data-field="discount_class"><option value="">—</option>{% for c in classes %}<option value="{{ c.pk }}">{{ c }}</option>{% endfor %}</select></label>{% endif %}
         <p class="form-error col-span-full" data-piece-error></p>
       </div>
       <div class="border-t border-slate-100">

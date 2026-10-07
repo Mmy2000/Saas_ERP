@@ -44,6 +44,31 @@ class ItemStatus(models.TextChoices):
 ON_HAND = (ItemStatus.IN_STOCK, ItemStatus.RESERVED)
 
 
+class DiscountClass(TenantScopedModel):
+    """A discount class for label-priced pieces (legacy Offd1 "نسب الخصم"): the sales screen
+    starts a piece at its label price less the usual discount; a seller may give up to the
+    largest one (and their own limit), never below what the piece cost."""
+
+    code = models.PositiveSmallIntegerField()
+    name = models.CharField(max_length=100)
+    usual_rate = models.DecimalField(max_digits=7, decimal_places=4, default=0)  # 0.15 = 15 %
+    max_rate = models.DecimalField(max_digits=7, decimal_places=4, default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["code"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "code"],
+                                    name="inventory_discclass_code_uniq"),
+            models.CheckConstraint(condition=Q(usual_rate__gte=0, max_rate__lte=1,
+                                               max_rate__gte=models.F("usual_rate")),
+                                   name="inventory_discclass_rates_check"),
+        ]
+
+    def __str__(self):
+        return f"{self.code} · {self.name}"
+
+
 class Item(TenantScopedModel):
     barcode = models.CharField(max_length=32)
     rfid_epc = models.CharField(max_length=24, blank=True)
@@ -74,6 +99,9 @@ class Item(TenantScopedModel):
     # Sale making charge per gram (company currency) unless a promotion overrides it.
     list_making_rate = models.DecimalField(max_digits=18, decimal_places=4, default=0)
     label_price = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    # Diamond pieces: the usual and the largest discount off the label price (apps.diamonds).
+    discount_class = models.ForeignKey("DiscountClass", null=True, blank=True,
+                                       on_delete=models.SET_NULL, related_name="items")
     attributes = models.JSONField(default=dict, blank=True)
     note = models.CharField(max_length=300, blank=True)
 

@@ -13,9 +13,10 @@ def _amount(places=3, **kw):
 class SaleLineSerializer(serializers.Serializer):
     item = serializers.IntegerField(required=False, allow_null=True, default=None)
     barcode = serializers.CharField(max_length=32, required=False, allow_blank=True, default="")
+    # Empty: none entered (a diamond piece then gets its discount class's usual discount).
     discount_rate = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=Decimal(0),
                                             max_value=Decimal(1), required=False,
-                                            default=Decimal(0))
+                                            allow_null=True, default=None)
     # Bulk gold by weight, instead of a piece.
     category = serializers.IntegerField(required=False, allow_null=True, default=None)
     karat = serializers.IntegerField(required=False, allow_null=True, default=None)

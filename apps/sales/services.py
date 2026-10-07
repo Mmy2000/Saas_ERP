@@ -81,7 +81,7 @@ class SaleLineInput:
 
     item_id: int | None = None
     barcode: str = ""
-    discount_rate: Decimal | str = "0"
+    discount_rate: Decimal | str | None = None  # None: none entered (a class may apply)
     category_id: int | None = None
     karat_id: int | None = None
     gross_weight_g: Decimal | str | None = None

@@ -125,7 +125,7 @@ if (root) {
 
   const body = () => ({
     branch: Number($("select[data-branch]").value),
-    lines: barcodes.map((barcode) => ({ barcode, discount_rate: "0" })),
+    lines: barcodes.map((barcode) => ({ barcode, discount_rate: null })),
     customer: $("[data-customer]").value ? Number($("[data-customer]").value) : null,
     payment_terms: "credit", payments: [], trade_ins: [],
   });
