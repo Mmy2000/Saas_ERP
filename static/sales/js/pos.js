@@ -71,6 +71,11 @@ if (root) {
       }
       set("line_total", formatNumber(quote.line_total));
       row.querySelector("[data-floor]").classList.toggle("hidden", !quote.at_cost_floor);
+      const offers = [quote.offer, quote.cashback_offer].filter(Boolean);
+      if (offers.length) {
+        set("offer", offers.join(" · "));
+        row.querySelector("[data-offer]").classList.remove("hidden");
+      }
       const discount = row.querySelector("[data-discount]");
       discount.value = line.discount_text ?? rateToPercent(line.discount_rate);
       discount.addEventListener("change", () => {
@@ -90,7 +95,7 @@ if (root) {
     const quote = state.quote;
     renderLines();
     const totals = quote?.totals || {};
-    for (const key of ["subtotal", "discount", "trade_in", "due", "paid", "remaining", "change", "balance"]) {
+    for (const key of ["subtotal", "discount", "offer_saving", "trade_in", "due", "paid", "remaining", "change", "balance", "cashback"]) {
       const node = root.querySelector(`[data-total="${key}"]`);
       if (node) node.textContent = formatNumber(totals[key] ?? "0");
     }
@@ -102,6 +107,10 @@ if (root) {
     show("remaining", Number(totals.remaining || 0) > 0);
     show("change", Number(totals.change || 0) > 0);
     show("balance", Number(totals.balance || 0) > 0);
+    show("offer_saving", Number(totals.offer_saving || 0) > 0);
+    show("cashback", Number(totals.cashback || 0) > 0);
+    const offered = (quote?.lines || []).some((line) => Number(line.cashback || 0) > 0);
+    show("cashback_lost", offered && Number(totals.cashback || 0) === 0);
     const trades = quote?.trade_ins || [];
     root.querySelectorAll("[data-trade]").forEach((row) => {
       const filled = row.querySelector('[data-t="gross_weight_g"]').value.trim();

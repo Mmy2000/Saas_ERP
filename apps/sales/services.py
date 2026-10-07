@@ -40,11 +40,14 @@ from apps.ledger.services import (
     post_entry,
     reverse_entry,
 )
+from apps.merchandising.offers import deal_for, running
 from apps.org.models import Branch
 from apps.parties.models import Party, PartyRoleType
 from apps.pricing.engine import (
     ItemQuote,
     TradeInQuote,
+    category_making_rate,
+    list_making_rate,
     quote_bulk,
     quote_item,
     quote_label_priced,
@@ -153,6 +156,18 @@ class SaleQuote:
     remaining: Decimal = ZERO  # still to pay before a cash sale can be posted
     problems: list[str] = field(default_factory=list)
     reservation: object | None = None
+    offer_saving: Decimal = ZERO  # what running offers took off the making charges
+    cashback: Decimal = ZERO  # credited to the customer when posted
+
+
+def _running_offers(branch) -> list:
+    """Offers in force here today, when the client has the Offers feature."""
+    from apps.core.tenancy.context import require_current_tenant_id
+    from apps.platform.tenants.features import is_enabled
+
+    if not is_enabled(require_current_tenant_id(), "offers"):
+        return []
+    return running(timezone.localdate(), branch.pk)
 
 
 def _line_error(group: str, index: int, message: str, code: str) -> ValidationError:
@@ -234,13 +249,18 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
 
     seen = set()
     taken: dict[int, list] = defaultdict(lambda: [ZERO, 0])  # per lot: weight, pieces
+    offers = _running_offers(branch)
     for index, line in enumerate(data.lines):
         try:
             if line.is_bulk:
                 source, balance = _find_lot(line, branch)
+                deal = deal_for(offers, making=category_making_rate(source.category_id, home),
+                                category_id=source.category_id,
+                                karat_id=source.karat_id) if offers else None
                 priced = quote_bulk(source, balance, board, gross_weight_g=line.gross_weight_g,
                                     qty=line.qty, discount_rate=line.discount_rate,
-                                    max_discount=max_discount, functional_currency=home)
+                                    max_discount=max_discount, functional_currency=home,
+                                    deal=deal)
                 used = taken[source.pk]
                 used[0] += priced.gross_weight_g
                 used[1] += line.qty
@@ -260,8 +280,13 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
                     priced = quote_label_priced(source, board, discount_rate=line.discount_rate,
                                                 max_discount=diamond_discount)
                 else:
+                    deal = deal_for(
+                        offers, making=list_making_rate(source, home),
+                        category_id=source.category_id, karat_id=source.karat_id,
+                        supplier_id=source.supplier_id, barcode=source.barcode) if offers else None
                     priced = quote_item(source, board, discount_rate=line.discount_rate,
-                                        max_discount=max_discount, functional_currency=home)
+                                        max_discount=max_discount, functional_currency=home,
+                                        deal=deal)
         except (DomainError, ValidationError) as exc:
             raise _line_error("lines", index, exc.message, exc.code) from exc
         quote.items.append(source)
@@ -303,6 +328,10 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
             source=payment))
 
     quote.total = sum((line.line_total for line in quote.lines), ZERO)
+    quote.offer_saving = sum((line.offer_saving for line in quote.lines), ZERO)
+    # Cashback goes on the customer's account: without a customer there is none to give.
+    quote.cashback = (sum((line.cashback for line in quote.lines), ZERO)
+                      if customer is not None else ZERO)
     quote.discount = sum((line.discount_amount for line in quote.lines), ZERO)
     quote.subtotal = quote.total + quote.discount
     quote.trade_in = sum((t.amount for _k, t in quote.trade_ins), ZERO)
@@ -423,6 +452,12 @@ def _ledger_lines(invoice: SalesInvoice, quote: SaleQuote, lines, trade_ins,
     stones = sum((line.stone_cost_amount for line in lines), ZERO)
     add("cogs_diamonds", home, stones)
     add("inventory_diamonds", home, -stones)
+
+    # Cashback offers: a promotion expense, credited to the customer for a later purchase.
+    cashback = sum((line.cashback_amount for line in lines), ZERO)
+    if cashback and quote.customer is not None:
+        add("promotions", home, cashback)
+        add("customers", home, -cashback, party=quote.customer)
     return result
 
 
@@ -481,6 +516,9 @@ def post_sale(data: SaleInput, *, actor=None) -> SalesInvoice:
                 discount_amount=priced.discount_amount, line_total=priced.line_total,
                 cost_amount=priced.cost_amount, metal_value=value,
                 stones_amount=priced.stones_amount, stone_cost_amount=priced.stone_cost,
+                offer_id=priced.offer_id, offer_saving=priced.offer_saving,
+                cashback_offer_id=priced.cashback_offer_id if customer else None,
+                cashback_amount=priced.cashback if customer else ZERO,
             ))
         lines.sort(key=lambda line: line.position)
         SalesInvoiceLine.objects.bulk_create(lines)

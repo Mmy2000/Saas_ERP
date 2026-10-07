@@ -6,7 +6,7 @@
 <div class="mb-8">
   <a href="{% url 'scrap' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Scrap gold" %}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if mode == "buy" %}{% translate "Buy scrap" %}{% else %}{% translate "Sell scrap" %}{% endif %}</h1>
-  <p class="mt-1 text-sm text-slate-500">{% if mode == "buy" %}{% translate "Priced at today's scrap price per karat, less the loss." %}{% else %}{% translate "Out of the branch's scrap stock, at the price agreed per gram." %}{% endif %}</p>
+  <p class="mt-1 text-sm text-slate-500">{% if mode == "buy" %}{% translate "Scrap is priced at today's scrap price per karat, less the loss; bullion and coins at today's buying price." %}{% else %}{% translate "Out of the branch's scrap stock, at the price agreed per gram." %}{% endif %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -57,7 +57,11 @@
       <div class="divide-y divide-slate-100" data-lines></div>
       <template id="scrap-line">
         <div class="grid grid-cols-2 items-start gap-3 p-4 sm:grid-cols-[1fr_7rem_7rem_8rem_7rem_auto]" data-line>
-          <div class="col-span-2 sm:col-span-1">
+          <div class="col-span-2 space-y-2 sm:col-span-1">
+            {% if mode == "buy" and bullion %}<select class="form-input" data-category data-native aria-label="{% translate 'What' %}">
+              <option value="">{% translate "Scrap gold" %}</option>
+              {% for c in bullion %}<option value="{{ c.pk }}" {% if c.default_karat_id %}data-karat="{{ c.default_karat_id }}"{% endif %}>{{ c.name }}</option>{% endfor %}
+            </select>{% endif %}
             <select class="form-input" data-karat aria-label="{% translate 'Karat' %}">
               {% if mode == "buy" %}{% for k in karats %}<option value="{{ k.pk }}" {% if k.code == 21 %}selected{% endif %}>{{ k.label }}</option>{% endfor %}
               {% else %}{% for balance in stock %}<option value="{{ balance.lot.karat_id }}" data-branch="{{ balance.lot.branch_id }}">{{ balance.lot.karat.label }} — {{ balance.gross_weight_g|num:3 }} {% translate "g" %}</option>{% endfor %}{% endif %}
@@ -65,7 +69,8 @@
             <p class="form-error" data-line-error></p>
           </div>
           <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Weight (g)' %}" data-gross aria-label="{% translate 'Weight (g)' %}">
-          {% if mode == "buy" %}<input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Loss (g)' %}" data-loss aria-label="{% translate 'Loss (g)' %}">
+          {% if mode == "buy" %}<div><input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Loss (g)' %}" data-loss aria-label="{% translate 'Loss (g)' %}">
+            <input class="form-input num hidden w-full text-start" inputmode="numeric" placeholder="{% translate 'Pieces' %}" data-qty aria-label="{% translate 'Pieces' %}"></div>
           {% else %}<span class="hidden sm:block"></span>{% endif %}
           <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'Price / g' %}" data-price aria-label="{% translate 'Price / g' %}" {% if mode == "buy" and not can_override %}readonly{% endif %}>
           <span class="num self-center text-end font-medium text-slate-900" data-amount>—</span>

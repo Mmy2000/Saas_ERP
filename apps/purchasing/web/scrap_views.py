@@ -11,6 +11,7 @@ from apps.org.models import Branch, TenantProfile
 from apps.parties.models import PartyRoleType
 from apps.pricing.selectors import current_price_board, functional_currency
 from apps.purchasing.models import ScrapPurchase, ScrapSale
+from apps.purchasing.scrap import bullion_categories
 from apps.treasury.selectors import holder_choices
 
 
@@ -59,6 +60,7 @@ def scrap_buy(request):
         "board": current_price_board(), "home_currency": functional_currency(),
         "can_override": request.actor.can("purchasing.scrap.override_price"),
         "quote_url": reverse("scrap-quote"), "post_url": reverse("scrap-purchase-api-list"),
+        "bullion": bullion_categories().order_by("code"),
         "detail_url": reverse("scrap") + "bought/{id}/", **holder_choices(allowed),
     })
 
@@ -89,7 +91,8 @@ def _detail(request, model, pk, template, endpoint_name):
         is_customer = party.roles.filter(role=PartyRoleType.CUSTOMER).exists()
         party_url = reverse("customer-edit" if is_customer else "supplier-edit", args=[party.pk])
     return render(request, template, {
-        "doc": doc, "lines": doc.lines.select_related("karat__metal"),
+        "doc": doc, "lines": doc.lines.select_related("karat__metal", "category")
+        if model is ScrapPurchase else doc.lines.select_related("karat__metal"),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
         "endpoint": reverse(endpoint_name, args=[doc.pk]), "party_url": party_url,
         "can_see_id": request.actor.can("parties.customer.view_pii"),

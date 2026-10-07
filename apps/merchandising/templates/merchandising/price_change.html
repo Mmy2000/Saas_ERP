@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Price change" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'merchandising/js/prices.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <a href="{% url 'price-changes' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Price changes" %}</a>
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ change.get_target_display }}: {{ change.get_method_display }} <span class="num">{{ change.value|num:2 }}</span>{% if change.method == "percent" %}%{% endif %}</h1>
+    <p class="mt-1 text-sm text-slate-500"><span class="num">{{ change.created_at|date:"SHORT_DATETIME_FORMAT" }}</span> · {{ change.created_by.display_name|default:"—" }} · {% blocktranslate trimmed count n=change.item_count %}{{ n }} piece{% plural %}{{ n }} pieces{% endblocktranslate %}{% if change.summary %} · {{ change.summary }}{% endif %}</p>
+    {% if change.note %}<p class="mt-1 text-sm text-slate-600">{{ change.note }}</p>{% endif %}
+  </div>
+  {% if change.undone_at %}
+    <p class="badge">{% blocktranslate trimmed with when=change.undone_at|date:"SHORT_DATETIME_FORMAT" n=change.undone_count %}Undone {{ when }}: {{ n }} pieces restored{% endblocktranslate %}</p>
+  {% else %}
+    <button type="button" class="btn btn-secondary" data-undo="{% url 'price-change-undo' change.pk %}" data-confirm="{% translate 'Put these pieces back to their earlier prices? Pieces changed again since are left alone.' %}" data-done="{% translate 'Undone.' %}">{% icon "undo-2" "size-4" %}{% translate "Undo this change" %}</button>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="relative overflow-x-auto">
+    <table class="table" data-report="{% translate 'Price change' %}" data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Before" %}</th><th class="text-end">{% translate "After" %}</th></tr></thead>
+      <tbody>
+      {% for line in page.object_list %}
+        <tr><td><a class="num text-brand-700 hover:underline" href="{% url 'stock-item' line.item_id %}">{{ line.item.barcode }}</a></td><td>{{ line.item.category.name }}</td><td>{{ line.item.karat|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ line.item.gross_weight_g|num:3 }}</span></td>
+          <td class="text-end"><span class="num text-slate-500">{% if line.old_value is None or line.old_value == 0 %}—{% else %}{{ line.old_value|num:2 }}{% endif %}</span></td>
+          <td class="text-end"><span class="num font-medium">{{ line.new_value|num:2 }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-3 text-sm">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-secondary" href="?page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{% translate "“—” before: the piece followed its category's making charge." %}</p>
+</section>
+{% endblock %}

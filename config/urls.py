@@ -14,6 +14,7 @@ from apps.iam.web import views as iam
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
+from apps.merchandising import views as merchandising
 from apps.messaging import views as messaging
 from apps.opening import views as opening
 from apps.org.web import company
@@ -124,6 +125,9 @@ urlpatterns = [
     path("print/<str:doc_type>/<int:pk>/pdf/", documents.print_document_pdf,
          name="print-document-pdf"),
     path("sales/returns/<int:pk>/", sales.return_detail, name="sale-return-detail"),
+    path("sales/offers/", merchandising.offers, name="offers"),
+    path("sales/offers/new/", merchandising.offer_new, name="offer-new"),
+    path("sales/offers/<int:pk>/", merchandising.offer, name="offer"),
     path("sales/reservations/", sales.reservation_list, name="reservations"),
     path("sales/reservations/new/", sales.reservation_new, name="reservation-new"),
     path("sales/reservations/<int:pk>/", sales.reservation_detail, name="reservation"),
@@ -157,6 +161,8 @@ urlpatterns = [
     path("stock/items/<int:pk>/", inventory.item_detail, name="stock-item"),
     path("reports/", reports.index, name="reports"),
     path("reports/<slug:code>/", reports.run_report, name="report"),
+    path("stock/prices/", merchandising.price_changes, name="price-changes"),
+    path("stock/prices/<int:pk>/", merchandising.price_change, name="price-change"),
     path("stock/labels/", printing.labels, name="labels"),
     path("stock/labels/zpl/", printing.labels_zpl, name="labels-zpl"),
     path("settings/labels/", printing.label_templates, name="label-templates"),

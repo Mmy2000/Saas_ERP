@@ -1,0 +1,72 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Price changes" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'merchandising/js/prices.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Price changes" %}</h1>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "Change the making charge of many gold pieces at once (or the label price of diamond pieces). Check the result first; every change is kept and can be undone." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card mb-6" id="price-change" data-preview-url="{% url 'price-change-preview' %}" data-apply-url="{% url 'price-change-create' %}"
+         data-detail-url="{% url 'price-changes' %}{id}/" data-applied="{% translate 'Prices changed.' %}"
+         data-none="{% translate 'No piece matches what you chose.' %}" data-count="{% translate '{n} pieces will change.' %}"
+         data-confirm="{% translate 'Change the price of {n} pieces?' %}">
+  <div class="card-header"><h2 class="card-title">{% translate "New price change" %}</h2></div>
+  <div class="card-body space-y-5">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <label><span class="form-label">{% translate "What to change" %}</span>
+        <select class="form-input" data-field="target">{% for value, label in targets %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "How" %}</span>
+        <select class="form-input" data-field="method">{% for value, label in methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Value" %}</span>
+        <input class="form-input num w-full text-start" data-field="value" inputmode="decimal" placeholder="10">
+        <span class="form-error" data-error-for="value"></span></label>
+    </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {% include "merchandising/_piece_filters.html" with weights=True %}
+    </div>
+    <label class="block"><span class="form-label">{% translate "Note" %}</span><input class="form-input" data-field="note" maxlength="200"></label>
+    <p class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-error role="alert"></p>
+    <div class="hidden" data-result>
+      <p class="mb-2 text-sm font-medium text-slate-900" data-count-text></p>
+      <div class="relative overflow-x-auto rounded-lg border border-slate-200">
+        <table class="table"><thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Now" %}</th><th class="text-end">{% translate "Will be" %}</th></tr></thead>
+          <tbody data-sample></tbody></table>
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+      <button type="button" class="btn btn-secondary" data-preview>{% icon "search" "size-4" %}{% translate "Show the pieces" %}</button>
+      <button type="button" class="btn btn-primary" data-apply disabled>{% icon "check" "size-4" %}{% translate "Change the prices" %}</button>
+    </div>
+  </div>
+</section>
+
+<section class="card overflow-hidden">
+  <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "Earlier changes" %}</h2></div>
+  {% if page.object_list %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "Change" %}</th><th>{% translate "Pieces" %}</th><th class="text-end">{% translate "Count" %}</th><th>{% translate "By" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for change in page.object_list %}
+        <tr>
+          <td class="whitespace-nowrap"><span class="num text-sm">{{ change.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{{ change.get_target_display }}: {{ change.get_method_display }} <span class="num font-medium">{{ change.value|num:2 }}</span>{% if change.method == "percent" %}%{% endif %}</td>
+          <td class="max-w-xs truncate text-sm text-slate-600" title="{{ change.summary }}">{{ change.summary|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ change.item_count }}</span></td>
+          <td class="text-sm text-slate-600">{{ change.created_by.display_name|default:"—" }}</td>
+          <td>{% if change.undone_at %}<span class="badge">{% translate "Undone" %}</span>{% else %}<span class="badge badge-success">{% translate "In force" %}</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'price-change' change.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No price changes yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="pencil" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

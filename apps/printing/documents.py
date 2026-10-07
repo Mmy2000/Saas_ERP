@@ -376,8 +376,12 @@ def build_reservation(res, design, ctx=None):
         rows = [{"piece": line.item.barcode, "description": line.item.category.name,
                  "karat": line.item.karat.label if line.item.karat_id else "",
                  "weight": line.item.gross_weight_g,
-                 "total": line.quoted_total}
-                for line in res.lines.select_related("item__category", "item__karat__metal")]
+                 "total": line.quoted_total} if line.item_id else
+                {"piece": "—", "description": line.category.name,
+                 "karat": line.karat.label if line.karat_id else "",
+                 "weight": line.gross_weight_g, "total": line.quoted_total}
+                for line in res.lines.select_related("item__category", "item__karat__metal",
+                                                     "category", "karat__metal")]
         deposits = [(f"{d.number} · {_day(d.business_date)} · {d.get_kind_display()}",
                      f"{_num(d.amount)} {d.currency.code}")
                     for d in res.deposits.select_related("currency")]

@@ -35,9 +35,16 @@
         <tbody>
         {% for line in lines %}
           <tr>
+            {% if line.item_id %}
             <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' line.item_id %}">{{ line.item.barcode }}</a></td>
             <td><bdi>{{ line.item.category.name }}</bdi> · <bdi>{{ line.item.karat.label }}</bdi></td>
             <td class="text-end"><span class="num">{{ line.item.gross_weight_g|num:3 }}</span></td>
+            {% else %}
+            <td><span class="badge badge-brand">{% translate "Ordered" %}</span>{% if line.qty %} <span class="num text-xs text-slate-500">{{ line.qty }} {% translate "pcs" %}</span>{% endif %}</td>
+            <td><bdi>{{ line.category.name }}</bdi> · <bdi>{{ line.karat.label }}</bdi>
+              {% if reservation.state == "open" %}<div class="text-xs {% if line.in_stock %}text-emerald-700{% else %}text-amber-700{% endif %}">{% if line.in_stock %}{% translate "In stock now: ready to deliver" %}{% else %}{% translate "Not in stock yet" %}{% endif %}</div>{% endif %}</td>
+            <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
+            {% endif %}
             <td class="text-end"><span class="num">{{ line.quoted_total|num:2 }}</span></td>
           </tr>
         {% endfor %}

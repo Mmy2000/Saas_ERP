@@ -1,0 +1,57 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% if offer %}{{ offer.name }}{% else %}{% translate "New offer" %}{% endif %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'merchandising/js/offers.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'offers' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Offers" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if offer %}{{ offer.name }}{% else %}{% translate "New offer" %}{% endif %}</h1>
+    {% if state == "running" %}<span class="badge badge-success">{% translate "Running now" %}</span>{% elif state == "upcoming" %}<span class="badge badge-brand">{% translate "Coming up" %}</span>{% elif state == "ended" %}<span class="badge">{% translate "Ended" %}</span>{% endif %}
+    {% if offer %}<span class="ms-auto">{% include "audit/_history_link.html" with table="merchandising_offer" row=offer.pk %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% can "sales.offer.manage" as can_manage %}
+{% if stats %}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Pieces covered now" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ stats.pieces }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Sold with this offer" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ stats.price.lines|add:stats.cashback.lines }}</span></p>
+    <p class="mt-1 text-xs text-slate-500"><span class="num">{{ stats.price.weight|default:0|num:3 }}</span> {% translate "g" %}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Taken off the making charge" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ stats.price.saving|default:0|num:2 }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Cashback given" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ stats.cashback.amount|default:0|num:2 }}</span></p></div>
+</div>
+{% endif %}
+<form class="card" data-api-form data-shape="offer" novalidate
+      {% if offer %}data-endpoint="{% url 'offer-update' offer.pk %}" data-method="PUT"{% else %}data-endpoint="{% url 'offer-create' %}" data-method="POST" data-redirect="{% url 'offers' %}{id}/"{% endif %}
+      data-success="{% translate 'Saved.' %}">
+  <div class="card-body space-y-5">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <label class="sm:col-span-2"><span class="form-label">{% translate "Name" %}</span>
+        <input name="name" class="form-input" maxlength="120" value="{{ offer.name|default:'' }}" required><span class="form-error" data-error-for="name"></span></label>
+      <label><span class="form-label">{% translate "From" %}</span>
+        <input type="date" name="starts_on" class="form-input" value="{% if offer %}{{ offer.starts_on|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"><span class="form-error" data-error-for="starts_on"></span></label>
+      <label><span class="form-label">{% translate "To" %}</span>
+        <input type="date" name="ends_on" class="form-input" value="{% if offer %}{{ offer.ends_on|date:'Y-m-d' }}{% endif %}"><span class="form-error" data-error-for="ends_on"></span></label>
+      <label class="sm:col-span-2"><span class="form-label">{% translate "What it gives" %}</span>
+        <select name="kind" class="form-input">{% for value, label in kinds %}<option value="{{ value }}" {% if offer.kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Value" %}</span>
+        <input name="value" class="form-input num w-full text-start" inputmode="decimal" value="{% if offer %}{{ offer.value|floatformat:'-4' }}{% endif %}"><span class="form-error" data-error-for="value"></span></label>
+      <label class="flex items-center gap-3 self-end pb-2">
+        <input type="checkbox" name="is_active" class="size-4 rounded border-slate-300 accent-brand-600" {% if not offer or offer.is_active %}checked{% endif %}>
+        <span class="text-sm text-slate-700">{% translate "Switched on" %}</span></label>
+    </div>
+    <p class="text-xs text-slate-500">{% translate "A discount applies to the making charge only (the gold is always at the day's price) and never takes it below what it cost. Cashback goes on the customer's account for their next purchase; a sale without a customer gets none." %}</p>
+    <div class="border-t border-slate-100 pt-5">
+      <p class="mb-3 text-sm font-medium text-slate-900">{% translate "On which pieces" %} <span class="font-normal text-slate-500">({% translate "leave a list empty for all" %})</span></p>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" data-offer-filters>
+        {% include "merchandising/_piece_filters.html" %}
+      </div>
+    </div>
+    <label class="block"><span class="form-label">{% translate "Note" %}</span><input name="note" class="form-input" maxlength="300" value="{{ offer.note|default:'' }}"></label>
+  </div>
+  {% if can_manage %}<div class="flex justify-end border-t border-slate-100 px-5 py-4"><button type="submit" class="btn btn-primary">{% translate "Save" %}</button></div>{% endif %}
+</form>
+{% endblock %}

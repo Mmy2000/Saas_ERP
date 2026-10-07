@@ -44,6 +44,9 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
     (_("Pricing"), [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),
         NavItem(_("Exchange rates"), "fx-rates", "arrow-left-right", "pricing.fx.view"),
+        NavItem(_("Price changes"), "price-changes", "pencil", "inventory.price.change",
+                ("price-change",)),
+        NavItem(_("Offers"), "offers", "sparkles", "sales.offer.view", ("offer-new", "offer")),
     ]),
     (_("Goods"), [
         NavItem(_("Stock"), "stock", "package", "inventory.stock.view", ("stock-item",)),

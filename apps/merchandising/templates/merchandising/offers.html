@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Offers" %}{% endblock %}
+{% block page_header %}
+{% can "sales.offer.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Offers" %}</h1>
+    <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "Discounts on the making charge and cashback for chosen pieces between two dates. The sales screen applies them on its own; when an offer ends, prices are simply back to normal." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'offer-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New offer" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-3">
+    <a href="?show=running" class="tab{% if show == 'running' %} tab-active{% endif %}">{% translate "Running now" %}</a>
+    <a href="?show=upcoming" class="tab{% if show == 'upcoming' %} tab-active{% endif %}">{% translate "Coming up" %}</a>
+    <a href="?show=ended" class="tab{% if show == 'ended' %} tab-active{% endif %}">{% translate "Ended" %}</a>
+  </div>
+  {% if rows %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Offer" %}</th><th>{% translate "What it gives" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th><th>{% translate "On" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for offer in rows %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ offer.name }}{% if not offer.is_active %} <span class="badge ms-1">{% translate "Stopped" %}</span>{% endif %}</td>
+          <td>{{ offer.get_kind_display }}: <span class="num font-medium">{{ offer.value|num:2 }}</span>{% if offer.kind == "making_percent" or offer.kind == "cashback_percent" %}%{% endif %}</td>
+          <td><span class="num">{{ offer.starts_on|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td><span class="num">{{ offer.ends_on|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td class="text-sm text-slate-600">{% if offer.barcodes %}{% blocktranslate trimmed count n=offer.barcodes|length %}{{ n }} chosen piece{% plural %}{{ n }} chosen pieces{% endblocktranslate %}{% elif offer.category_ids or offer.karat_ids or offer.supplier_ids or offer.branch_ids %}{% translate "Chosen pieces" %}{% else %}{% translate "All gold pieces" %}{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'offer' offer.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No offers here" as empty_title %}
+    {% translate "Create one to discount the making charge of chosen pieces, or give cashback, for a few days." as empty_text %}
+    {% include "components/empty_state.html" with icon="sparkles" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

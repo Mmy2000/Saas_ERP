@@ -60,6 +60,8 @@ class QuoteView(APIView):
                 "discount_rate": ln.discount_rate, "making_rate_net": ln.making_rate_net,
                 "line_total": ln.line_total, "at_cost_floor": ln.at_cost_floor,
                 "label_price": ln.label_price, "stones_amount": ln.stones_amount,
+                "offer": ln.offer_name, "offer_saving": ln.offer_saving,
+                "cashback": ln.cashback, "cashback_offer": ln.cashback_name,
             } for ln in quote.lines],
             "trade_ins": [{
                 "karat": t.karat_label, "gross_weight_g": t.gross_weight_g,
@@ -72,7 +74,8 @@ class QuoteView(APIView):
             "totals": {"subtotal": quote.subtotal, "discount": quote.discount,
                        "total": quote.total, "trade_in": quote.trade_in, "due": quote.due,
                        "paid": quote.paid, "remaining": quote.remaining,
-                       "change": quote.change, "balance": quote.balance},
+                       "change": quote.change, "balance": quote.balance,
+                       "offer_saving": quote.offer_saving, "cashback": quote.cashback},
             "problems": [{"code": code, "message": services.PROBLEM_MESSAGES[code]()}
                          for code in quote.problems],
         })

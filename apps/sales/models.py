@@ -83,6 +83,13 @@ class SalesInvoiceLine(TenantScopedModel):
     # not gold (stones and workmanship), and what the stones cost.
     stones_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     stone_cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    # Offers (apps.merchandising) that priced this line: what they took off, and cashback.
+    offer = models.ForeignKey("merchandising.Offer", null=True, blank=True,
+                              on_delete=models.PROTECT, related_name="+")
+    offer_saving = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    cashback_offer = models.ForeignKey("merchandising.Offer", null=True, blank=True,
+                                       on_delete=models.PROTECT, related_name="+")
+    cashback_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
     class Meta:
         ordering = ["position", "id"]
@@ -242,8 +249,19 @@ class Reservation(Document):
 
 
 class ReservationLine(TenantScopedModel):
+    """A reserved piece (item), or an order for a weight of bullion, coins or other gold sold
+    by weight that may not be in stock yet (category, karat, weight, pieces): it is taken from
+    stock when the reservation is completed (legacy GHC30)."""
+
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="lines")
-    item = models.ForeignKey("inventory.Item", on_delete=models.PROTECT, related_name="+")
+    item = models.ForeignKey("inventory.Item", null=True, blank=True, on_delete=models.PROTECT,
+                             related_name="+")
+    category = models.ForeignKey("catalog.ItemCategory", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    karat = models.ForeignKey("catalog.Karat", null=True, blank=True, on_delete=models.PROTECT,
+                              related_name="+")
+    gross_weight_g = models.DecimalField(max_digits=14, decimal_places=3, default=0)
+    qty = models.PositiveIntegerField(default=0)
     discount_rate = models.DecimalField(max_digits=9, decimal_places=6, default=0)
     quoted_total = models.DecimalField(max_digits=18, decimal_places=2)  # when reserved
 

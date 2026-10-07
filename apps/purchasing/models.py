@@ -233,6 +233,10 @@ class ScrapPurchaseLine(TenantScopedModel):
     price_per_g = models.DecimalField(max_digits=18, decimal_places=4)
     price_overridden = models.BooleanField(default=False)
     amount = models.DecimalField(max_digits=18, decimal_places=2)
+    # Bullion or sealed coins bought (a bulk "bullion and coins" category); empty = scrap.
+    category = models.ForeignKey("catalog.ItemCategory", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    qty = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["id"]

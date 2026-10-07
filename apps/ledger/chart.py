@@ -70,6 +70,7 @@ CHART = [
     ("5205", "5",   _("Production labour absorbed"),          X, CR, True, NONE, MONEY, "labour_absorbed"),
     ("5206", "5",   _("Bank charges"),                        X, DR, True, NONE, MONEY, "bank_charges"),
     ("5207", "5",   _("Cash over and short"),                 X, DR, True, NONE, MONEY, "cash_over_short"),
+    ("5208", "5",   _("Promotions and cashback"),             X, DR, True, NONE, MONEY, "promotions"),
     ("5301", "5",   _("Metal losses"),                        X, DR, True, NONE, ANY, "metal_loss"),
     ("5302", "5",   _("Exchange losses"),                     X, DR, True, NONE, MONEY, "fx_loss"),
     ("5401", "5",   _("Rounding differences"),                X, DR, True, NONE, MONEY, "rounding"),

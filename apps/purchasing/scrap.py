@@ -19,6 +19,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.catalog.domain.metal import fine_weight
 from apps.catalog.models import Karat
 from apps.core.crypto import encrypt
 from apps.core.errors import DomainError, NotFound, ValidationError
@@ -61,6 +62,10 @@ class ScrapLineInput:
     gross_weight_g: Decimal | str
     loss_weight_g: Decimal | str = "0"
     price: Decimal | str | None = None  # buying: an override; selling: required, per gram
+    # Buying bullion or sealed coins (a bulk category of the "bullion and coins" family)
+    # instead of scrap: priced at the board's buy price, kept as gold stock (legacy GHS40).
+    category_id: int | None = None
+    qty: int = 0
 
 
 @dataclass(frozen=True)
@@ -126,15 +131,19 @@ def _money_side(data: ScrapInput, branch, party, amount: Decimal, *, paying: boo
                                   "bank_account": holder.bank_account}
 
 
-def _metal_lines(per_metal, *, sign: int, value_key: str) -> list[LedgerLine]:
-    """Scrap stock in (sign 1) or out (-1) against the metal position, per metal."""
+def _metal_lines(per_metal, *, sign: int, value_key: str,
+                 role: str = "inventory_scrap") -> list[LedgerLine]:
+    """Scrap stock (or bullion, on gold inventory) in (sign 1) or out (-1) against the metal
+    position, per metal."""
     home = functional_commodity()
     lines = []
     for metal_code, totals in sorted(per_metal.items()):
         fine, value = totals["fine"], totals[value_key]
+        if not fine and not value:
+            continue
         metal = metal_commodity(metal_code)
         lines += [
-            LedgerLine(account=account_for("inventory_scrap"), commodity=metal,
+            LedgerLine(account=account_for(role), commodity=metal,
                        quantity=sign * fine, functional_amount=sign * value),
             LedgerLine(account=account_for("metal_position"), commodity=metal,
                        quantity=-sign * fine, functional_amount=-sign * value),
@@ -154,19 +163,63 @@ def quote_scrap_purchase(data: ScrapInput, *, actor=None):
     may_override = actor is None or actor.can("purchasing.scrap.override_price")
     karats = {k.pk: k for k in Karat.objects.select_related("metal").filter(
         pk__in=[line.karat_id for line in data.lines], is_active=True)}
+    categories = bullion_categories().in_bulk([ln.category_id for ln in data.lines
+                                               if ln.category_id])
     quotes = []
     for index, line in enumerate(data.lines):
         karat = karats.get(line.karat_id)
         if karat is None:
             raise _line_error(index, _("Unknown karat."))
+        category = categories.get(line.category_id) if line.category_id else None
+        if line.category_id and category is None:
+            raise _line_error(index, _("Choose bullion or coins, or scrap."))
         try:
-            quotes.append((karat, quote_trade_in(
-                karat, board, gross_weight_g=line.gross_weight_g,
-                loss_weight_g=line.loss_weight_g, price_override=line.price,
-                may_override=may_override)))
+            if category is None:
+                quote = quote_trade_in(
+                    karat, board, gross_weight_g=line.gross_weight_g,
+                    loss_weight_g=line.loss_weight_g, price_override=line.price,
+                    may_override=may_override)
+            else:
+                quote = _bullion_quote(karat, board, line, may_override)
         except (DomainError, ValidationError) as exc:
             raise _line_error(index, exc.message) from exc
+        quotes.append((karat, quote, category, max(int(line.qty or 0), 0)))
     return board, quotes
+
+
+def bullion_categories():
+    """Bulk categories of bullion and sealed coins (what "Buy bullion" can take in)."""
+    from apps.catalog.models import ItemCategory, ProductFamily, Tracking
+
+    return ItemCategory.objects.filter(is_active=True, tracking=Tracking.BULK,
+                                       product_family=ProductFamily.BULLION_COIN)
+
+
+def _bullion_quote(karat, board, line, may_override: bool):
+    """Bullion is bought whole (no loss) at the board's buy price for its karat."""
+    from apps.core.numeric import WEIGHT, quantize, round_money
+    from apps.pricing.engine import TradeInQuote
+    from apps.pricing.models import PriceSide
+
+    weight = quantize(line.gross_weight_g, WEIGHT)
+    if weight <= 0:
+        raise ValidationError(_("Enter the weight."))
+    try:
+        price = board.price(karat, PriceSide.BUY)
+    except DomainError:
+        price = board.price(karat, PriceSide.SELL)
+    overridden = False
+    if line.price not in (None, ""):
+        if not may_override:
+            raise DomainError(_("You may not change the buying price."),
+                              code="PURCHASING_PRICE_OVERRIDE")
+        price, overridden = quantize(line.price, Decimal("0.0001")), True
+    if price <= 0:
+        raise ValidationError(_("Enter the price."))
+    return TradeInQuote(karat_id=karat.pk, karat_label=karat.label, gross_weight_g=weight,
+                        loss_weight_g=ZERO, net_weight_g=weight,
+                        fine_weight_g=fine_weight(weight, karat.fineness), price_per_g=price,
+                        amount=round_money(weight * price), price_overridden=overridden)
 
 
 def buy_scrap(data: ScrapInput, *, actor=None) -> ScrapPurchase:
@@ -180,7 +233,7 @@ def buy_scrap(data: ScrapInput, *, actor=None) -> ScrapPurchase:
         if seller is None and not data.seller_name.strip():
             raise _field_error("seller_name", _("Write down who is selling."))
         board, quotes = quote_scrap_purchase(data, actor=actor)
-        total = sum((quote.amount for _k, quote in quotes), ZERO)
+        total = sum((quote.amount for _k, quote, _c, _q in quotes), ZERO)
         account, party, holder = _money_side(data, branch, seller, total, paying=True)
 
         today = timezone.localdate()
@@ -192,22 +245,28 @@ def buy_scrap(data: ScrapInput, *, actor=None) -> ScrapPurchase:
             seller_id_encrypted=encrypt(id_number) if id_number else "",
             price_board=board, payment=data.payment, note=data.note.strip(),
             total_amount=total,
-            total_gross_weight_g=sum((q.gross_weight_g for _k, q in quotes), ZERO),
-            total_fine_weight_g=sum((q.fine_weight_g for _k, q in quotes), ZERO),
+            total_gross_weight_g=sum((q.gross_weight_g for _k, q, _c, _n in quotes), ZERO),
+            total_fine_weight_g=sum((q.fine_weight_g for _k, q, _c, _n in quotes), ZERO),
             created_by=getattr(actor, "user", None), **holder)
         doc = DocRef(BUY_DOC, purchase.pk)
         per_metal = defaultdict(lambda: {"fine": ZERO, "value": ZERO})
-        for karat, quote in quotes:
+        per_bullion = defaultdict(lambda: {"fine": ZERO, "value": ZERO})
+        for karat, quote, category, qty in quotes:
             ScrapPurchaseLine.objects.create(
                 purchase=purchase, karat=karat, gross_weight_g=quote.gross_weight_g,
                 loss_weight_g=quote.loss_weight_g, net_weight_g=quote.net_weight_g,
                 fine_weight_g=quote.fine_weight_g, price_per_g=quote.price_per_g,
-                price_overridden=quote.price_overridden, amount=quote.amount)
-            move_lot(lot_for(scrap_category(), karat, branch), qty=0,
-                     gross_weight_g=quote.net_weight_g, cost_amount=quote.amount,
-                     movement_type=MovementType.SCRAP_IN, business_date=today, doc=doc)
-            per_metal[karat.metal.code]["fine"] += quote.fine_weight_g
-            per_metal[karat.metal.code]["value"] += quote.amount
+                price_overridden=quote.price_overridden, amount=quote.amount,
+                category=category, qty=qty if category else 0)
+            move_lot(lot_for(category or scrap_category(), karat, branch),
+                     qty=qty if category else 0,
+                     gross_weight_g=quote.net_weight_g, cost_amount=ZERO if category
+                     else quote.amount,
+                     movement_type=MovementType.PURCHASE_RECEIPT if category
+                     else MovementType.SCRAP_IN, business_date=today, doc=doc)
+            target = per_bullion if category else per_metal
+            target[karat.metal.code]["fine"] += quote.fine_weight_g
+            target[karat.metal.code]["value"] += quote.amount
 
         purchase.number = allocate_number("SB", branch=branch, fiscal_year=today.year)
         purchase.journal_entry = post_entry(
@@ -215,6 +274,8 @@ def buy_scrap(data: ScrapInput, *, actor=None) -> ScrapPurchase:
             source_id=purchase.pk,
             memo=_("Scrap purchase %(number)s") % {"number": purchase.number},
             lines=[*_metal_lines(per_metal, sign=1, value_key="value"),
+                   *_metal_lines(per_bullion, sign=1, value_key="value",
+                                 role="inventory_gold"),
                    LedgerLine(account=account, commodity=functional_commodity(), quantity=-total,
                               party=party)])
         _post(purchase, actor)
@@ -322,6 +383,12 @@ def void_scrap(model, doc_id: int, *, reason: str = "", actor=None):
             weight = line.net_weight_g if buying else line.gross_weight_g
             cost = line.amount if buying else line.cost_amount
             sign = -1 if buying else 1
+            category = getattr(line, "category", None)
+            if category is not None:  # bullion bought: out of its own lot
+                move_lot(lot_for(category, line.karat, doc.branch), qty=-line.qty,
+                         gross_weight_g=-weight, cost_amount=ZERO,
+                         movement_type=MovementType.PURCHASE_VOID, business_date=today, doc=ref)
+                continue
             move_lot(lot_for(scrap_category(), line.karat, doc.branch), qty=0,
                      gross_weight_g=sign * weight, cost_amount=sign * cost,
                      movement_type=MovementType.SCRAP_OUT if buying else MovementType.SCRAP_IN,

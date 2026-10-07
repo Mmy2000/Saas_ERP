@@ -22,6 +22,12 @@ if (root) {
     const line = { karat: Number(row.querySelector("[data-karat]").value), gross_weight_g: gross,
                    price: row.querySelector("[data-price]").value.trim() };
     if (buying) line.loss_weight_g = row.querySelector("[data-loss]").value.trim() || "0";
+    const category = row.querySelector("[data-category]")?.value;
+    if (category) {
+      line.category = Number(category);
+      line.loss_weight_g = "0";
+      line.qty = Number(row.querySelector("[data-qty]").value) || 0;
+    }
     return [line];
   });
 
@@ -104,6 +110,20 @@ if (root) {
     });
     $("[data-lines]").append(row);
     enhanceSelects(row);
+    const what = row.querySelector("[data-category]");
+    what?.addEventListener("change", () => {
+      // Bullion: no loss, but a number of pieces; its usual karat is picked for you.
+      const bullion = Boolean(what.value);
+      row.querySelector("[data-loss]").classList.toggle("hidden", bullion);
+      row.querySelector("[data-qty]").classList.toggle("hidden", !bullion);
+      const karat = what.selectedOptions[0]?.dataset.karat;
+      const picker = row.querySelector("[data-karat]");
+      if (bullion && karat) {
+        if (picker.tomselect) picker.tomselect.setValue(karat);
+        else picker.value = karat;
+      }
+      schedule();
+    });
     if (!buying) {
       filterOptions(row.querySelector("[data-karat]"),
                     (option) => option.dataset.branch === $("select[data-branch]").value);

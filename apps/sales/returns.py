@@ -84,6 +84,12 @@ def _ledger_lines(sales_return: SalesReturn, lines) -> list[LedgerLine]:
     stones = sum((line.stone_cost_amount for line in lines), ZERO)
     add("inventory_diamonds", home, stones)
     add("cogs_diamonds", home, -stones)
+    # The cashback the returned pieces earned is taken back from the customer's account.
+    cashback = sum((line.cashback_amount for line in lines), ZERO)
+    sale = sales_return.original_invoice
+    if cashback and sale.customer_id:
+        add("customers", home, cashback, party=sale.customer)
+        add("promotions", home, -cashback)
     return result
 
 

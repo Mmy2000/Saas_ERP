@@ -163,9 +163,35 @@ def reservation_new(request):
         "currencies": Currency.objects.filter(is_active=True),
         "home_currency": functional_currency(), "board": current_price_board(),
         "quote_url": reverse("sales-quote"), "post_url": reverse("sales-reservation-list"),
+        "orders_url": reverse("sales-reservation-orders-quote"),
+        "order_categories": _order_categories(),
+        "karats": Karat.objects.filter(is_active=True).select_related("metal").order_by(
+            "metal", "-code"),
         **holder_choices(allowed),
     })
 
+
+def _order_categories():
+    from apps.sales.reservations import order_categories
+
+    return order_categories().order_by("code")
+
+
+def _with_stock(reservation):
+    """The reservation's lines; an order (gold by weight, not a piece) says whether the branch
+    now has enough of it to deliver."""
+    from apps.inventory.models import LotBalance
+
+    lines = list(reservation.lines.select_related("item__category", "item__karat__metal",
+                                                  "category", "karat"))
+    for line in lines:
+        if line.item_id is None:
+            balance = LotBalance.objects.filter(
+                lot__category_id=line.category_id, lot__karat_id=line.karat_id,
+                lot__branch_id=reservation.branch_id).first()
+            line.in_stock = bool(balance and balance.gross_weight_g >= line.gross_weight_g
+                                 and balance.qty >= line.qty)
+    return lines
 
 @permission_required("sales.reservation.view")
 def reservation_detail(request, pk):
@@ -185,7 +211,7 @@ def reservation_detail(request, pk):
     allowed = request.actor.branch_ids("sales.reservation.view")
     return render(request, "sales/reservation.html", {
         "reservation": reservation, "completion": completion,
-        "lines": reservation.lines.select_related("item__category", "item__karat__metal"),
+        "lines": _with_stock(reservation),
         "deposits": reservation.deposits.select_related("currency", "cash_box", "bank_account",
                                                         "terminal"),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),

@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.audit",
     "apps.messaging",
     "apps.opening",
+    "apps.merchandising",
 ]
 
 MIDDLEWARE = [

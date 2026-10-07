@@ -47,6 +47,10 @@ FEATURES: list[Feature] = [
     Feature("reservations", _("Reservations"),
             _("Hold pieces for customers, with deposits and a price lock."),
             SALES, "bookmark", ("sales.reservation.",)),
+    Feature("offers", _("Offers and cashback"),
+            _("Time-limited discounts on making charges and cashback to the customer's account, "
+              "applied by the sales screen on their own."),
+            SALES, "sparkles", ("sales.offer.",)),
     Feature("wholesale", _("Wholesale and trade accounts"),
             _("Sell and buy by weight with traders; one balance in gold and money."),
             SALES, "scale", ("sales.trade.", "parties.trade_account.")),

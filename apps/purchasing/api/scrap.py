@@ -15,6 +15,8 @@ class LineSerializer(serializers.Serializer):
     loss_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                           default="0")
     price = serializers.CharField(max_length=30, required=False, allow_blank=True, default="")
+    category = serializers.IntegerField(required=False, allow_null=True, default=None)
+    qty = serializers.IntegerField(required=False, min_value=0, default=0)
 
 
 class ScrapWriteSerializer(serializers.Serializer):
@@ -46,7 +48,9 @@ def _input(request) -> scrap.ScrapInput:
         lines=tuple(scrap.ScrapLineInput(karat_id=ln["karat"],
                                          gross_weight_g=ln["gross_weight_g"],
                                          loss_weight_g=ln["loss_weight_g"] or "0",
-                                         price=ln["price"] or None) for ln in d["lines"]))
+                                         price=ln["price"] or None,
+                                         category_id=ln["category"], qty=ln["qty"])
+                    for ln in d["lines"]))
 
 
 class QuoteView(APIView):
@@ -60,8 +64,9 @@ class QuoteView(APIView):
             "lines": [{"karat": q.karat_label, "gross_weight_g": q.gross_weight_g,
                        "loss_weight_g": q.loss_weight_g, "net_weight_g": q.net_weight_g,
                        "fine_weight_g": q.fine_weight_g, "price_per_g": q.price_per_g,
-                       "amount": q.amount} for _k, q in quotes],
-            "total": sum((q.amount for _k, q in quotes), 0),
+                       "amount": q.amount, "category": c.name if c else ""}
+                      for _k, q, c, _n in quotes],
+            "total": sum((q.amount for _k, q, _c, _n in quotes), 0),
         })
 
 

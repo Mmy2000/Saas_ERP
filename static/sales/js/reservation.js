@@ -1,5 +1,6 @@
 // Reservations: the new-reservation screen (scan pieces, priced by the server's sales quote)
 // and the payment forms on a reservation (deposit, completion, cancellation).
+import { enhanceSelects } from "../../core/js/selects.js";
 import { api, ApiError, uuid } from "../../core/js/api.js";
 import { registerShaper } from "../../core/js/forms.js";
 import { formatNumber } from "../../core/js/money.js";
@@ -34,6 +35,63 @@ if (root) {
   const barcodes = [];
   const key = uuid();
   let quote = null;
+  let ordersQuote = null;
+  let ordersTimer;
+
+  // Orders by weight (bullion, coins…): priced by the server as they are typed.
+  const orderRows = () => [...root.querySelectorAll("[data-order]")];
+  const orders = () => orderRows().flatMap((row) => {
+    const weight = row.querySelector('[data-o="gross_weight_g"]').value.trim();
+    if (!weight) return [];
+    return [{ category: Number(row.querySelector('[data-o="category"]').value),
+              karat: Number(row.querySelector('[data-o="karat"]').value), gross_weight_g: weight,
+              qty: Number(row.querySelector('[data-o="qty"]').value) || 0, discount_rate: "0" }];
+  });
+  const priceOrders = async () => {
+    const wanted = orders();
+    const error = root.querySelector("[data-orders-error]");
+    if (error) error.textContent = "";
+    if (!wanted.length) {
+      ordersQuote = null;
+      return render();
+    }
+    try {
+      ordersQuote = await api(root.dataset.ordersUrl, { method: "POST",
+        body: { branch: Number($("select[data-branch]").value), orders: wanted } });
+    } catch (failure) {
+      ordersQuote = null;
+      if (error) error.textContent = failure.message || "";
+    }
+    render();
+  };
+  const scheduleOrders = () => {
+    clearTimeout(ordersTimer);
+    ordersTimer = setTimeout(priceOrders, 300);
+  };
+  root.querySelector("[data-add-order]")?.addEventListener("click", () => {
+    const row = document.getElementById("order-line").content.firstElementChild.cloneNode(true);
+    root.querySelector("[data-orders]").append(row);
+    const category = row.querySelector('[data-o="category"]');
+    const pickKarat = () => {
+      const karat = category.selectedOptions[0]?.dataset.karat;
+      if (karat) row.querySelector('[data-o="karat"]').value = karat;
+    };
+    pickKarat();
+    enhanceSelects(row);
+    category.addEventListener("change", () => {
+      const karat = category.selectedOptions[0]?.dataset.karat;
+      const picker = row.querySelector('[data-o="karat"]');
+      if (karat && picker.tomselect) picker.tomselect.setValue(karat);
+      scheduleOrders();
+    });
+    row.addEventListener("input", scheduleOrders);
+    row.addEventListener("change", scheduleOrders);
+    row.querySelector("[data-remove-order]").addEventListener("click", () => {
+      row.remove();
+      scheduleOrders();
+    });
+    row.querySelector('[data-o="gross_weight_g"]').focus();
+  });
 
   const body = () => ({
     branch: Number($("select[data-branch]").value),
@@ -60,8 +118,14 @@ if (root) {
       tbody.append(row);
     });
     $("[data-lines-empty]").classList.toggle("hidden", barcodes.length > 0);
-    $("[data-count]").textContent = barcodes.length;
-    $("[data-total]").textContent = formatNumber(quote?.totals?.total || "0");
+    $("[data-count]").textContent = barcodes.length + orders().length;
+    const priced = ordersQuote?.lines || [];
+    orderRows().filter((row) => row.querySelector('[data-o="gross_weight_g"]').value.trim())
+      .forEach((row, index) => {
+        row.querySelector("[data-o-total]").textContent = priced[index] ? formatNumber(priced[index].line_total) : "—";
+      });
+    const total = Number(quote?.totals?.total || 0) + Number(ordersQuote?.total || 0);
+    $("[data-total]").textContent = formatNumber(total);
   };
 
   const refresh = async () => {
@@ -98,7 +162,7 @@ if (root) {
   $("[data-save]").addEventListener("click", async (event) => {
     const button = event.currentTarget;
     const deposit = payment($("[data-payment]"));
-    const data = { ...body(), price_locked: $("[data-locked]").checked, note: $("[data-note]").value.trim(),
+    const data = { ...body(), orders: orders(), price_locked: $("[data-locked]").checked, note: $("[data-note]").value.trim(),
                    expires_on: $("[data-expires]").value || null, deposit: deposit.amount ? deposit : null };
     delete data.payment_terms;
     delete data.payments;

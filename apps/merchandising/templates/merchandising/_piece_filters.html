@@ -1,0 +1,20 @@
+{% load i18n %}{% comment %}Which pieces: branches, categories, karats, suppliers (empty = all), and barcodes.
+`selected` holds the chosen ids (an offer being edited), `weights` adds a weight range.{% endcomment %}
+<label class="min-w-0"><span class="form-label">{% translate "Branches" %}</span>
+  <select multiple class="form-input" data-filter="branch_ids" data-placeholder="{% translate 'All branches' %}">
+    {% for b in branches %}<option value="{{ b.pk }}" {% if b.pk in selected.branch_ids %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+<label class="min-w-0"><span class="form-label">{% translate "Item categories" %}</span>
+  <select multiple class="form-input" data-filter="category_ids" data-placeholder="{% translate 'All item categories' %}">
+    {% for c in categories %}<option value="{{ c.pk }}" {% if c.pk in selected.category_ids %}selected{% endif %}>{{ c.code }} · {{ c.name }}</option>{% endfor %}</select></label>
+<label class="min-w-0"><span class="form-label">{% translate "Karats" %}</span>
+  <select multiple class="form-input" data-filter="karat_ids" data-placeholder="{% translate 'All karats' %}">
+    {% for k in karats %}<option value="{{ k.pk }}" {% if k.pk in selected.karat_ids %}selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+<label class="min-w-0"><span class="form-label">{% translate "Suppliers" %}</span>
+  <select multiple class="form-input" data-filter="supplier_ids" data-placeholder="{% translate 'All suppliers' %}">
+    {% for s in suppliers %}<option value="{{ s.pk }}" {% if s.pk in selected.supplier_ids %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></label>
+{% if weights %}
+<label><span class="form-label">{% translate "Weight from (g)" %}</span><input class="form-input num w-full text-start" data-filter="min_weight" inputmode="decimal"></label>
+<label><span class="form-label">{% translate "Weight to (g)" %}</span><input class="form-input num w-full text-start" data-filter="max_weight" inputmode="decimal"></label>
+{% endif %}
+<label class="sm:col-span-2"><span class="form-label">{% translate "Only these barcodes" %} <span class="font-normal text-slate-400">({% translate "one per line, optional" %})</span></span>
+  <textarea class="form-input num" rows="3" data-filter="barcodes" dir="ltr">{{ selected.barcodes_text }}</textarea></label>

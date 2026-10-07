@@ -34,10 +34,30 @@ class LineWriteSerializer(serializers.Serializer):
     discount_rate = serializers.CharField(max_length=20, required=False, default="0")
 
 
+class OrderWriteSerializer(serializers.Serializer):
+    category = serializers.IntegerField()
+    karat = serializers.IntegerField()
+    gross_weight_g = serializers.CharField(max_length=30)
+    qty = serializers.IntegerField(required=False, min_value=0, default=0)
+    discount_rate = serializers.CharField(max_length=20, required=False, default="0")
+
+
+def _orders(rows) -> tuple:
+    return tuple(service.OrderInput(category_id=o["category"], karat_id=o["karat"],
+                                    gross_weight_g=o["gross_weight_g"], qty=o["qty"],
+                                    discount_rate=o["discount_rate"]) for o in rows)
+
+
+class OrdersQuoteSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    orders = OrderWriteSerializer(many=True)
+
+
 class ReservationWriteSerializer(serializers.Serializer):
     branch = serializers.IntegerField()
     customer = serializers.IntegerField(allow_null=True)
-    lines = LineWriteSerializer(many=True)
+    lines = LineWriteSerializer(many=True, required=False, default=list)
+    orders = OrderWriteSerializer(many=True, required=False, default=list)
     price_locked = serializers.BooleanField(required=False, default=False)
     expires_on = serializers.DateField(required=False, allow_null=True, default=None)
     deposit = PaymentWriteSerializer(required=False, allow_null=True, default=None)
@@ -69,7 +89,9 @@ class ReservationSerializer(serializers.ModelSerializer):
                   "deposit_amount", "sale", "note", "lines"]
 
     def get_lines(self, reservation):
-        return [{"item": ln.item_id, "barcode": ln.item.barcode,
+        return [{"item": ln.item_id, "barcode": ln.item.barcode if ln.item_id else "",
+                 "category": ln.category_id, "karat": ln.karat_id,
+                 "gross_weight_g": str(ln.gross_weight_g), "qty": ln.qty,
                  "quoted_total": str(ln.quoted_total)} for ln in reservation.lines.all()]
 
 
@@ -81,6 +103,7 @@ class ReservationViewSet(viewsets.GenericViewSet):
         "list": "sales.reservation.view",
         "retrieve": "sales.reservation.view",
         "create": "sales.reservation.create",
+        "orders_quote": "sales.reservation.create",
         "deposit": "sales.reservation.create",
         "complete": "sales.reservation.complete",
         "cancel": "sales.reservation.cancel",
@@ -113,8 +136,31 @@ class ReservationViewSet(viewsets.GenericViewSet):
             deposit=_payment(d["deposit"]) if d["deposit"] and d["deposit"]["amount"] else None,
             lines=tuple(SaleLineInput(item_id=ln["item"], barcode=ln["barcode"],
                                       discount_rate=ln["discount_rate"]) for ln in d["lines"]),
+            orders=_orders(d["orders"]),
         ), actor=request.actor)
         return self._respond(reservation, status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["post"], url_path="orders-quote")
+    def orders_quote(self, request):
+        """Live prices of gold ordered by weight (the new reservation screen). Never writes."""
+        from apps.core.errors import DomainError
+        from apps.org.models import Branch
+        from apps.pricing.selectors import current_price_board
+
+        payload = OrdersQuoteSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        branch = Branch.objects.filter(pk=d["branch"], is_active=True).first()
+        board = current_price_board()
+        if branch is None or board is None:
+            raise DomainError("No gold price has been published yet.", code="PRICING_NO_BOARD")
+        priced = service.price_orders(_orders(d["orders"]), branch, board, actor=request.actor)
+        return Response({"lines": [{
+            "description": p.description, "karat": p.karat_label,
+            "gross_weight_g": str(p.gross_weight_g), "qty": p.qty,
+            "line_total": str(p.line_total), "offer": p.offer_name,
+        } for _o, _c, _k, p in priced], "total": str(sum((p.line_total for *_r, p in priced),
+                                                         0))})
 
     @action(detail=True, methods=["post"])
     @idempotent

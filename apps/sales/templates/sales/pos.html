@@ -94,6 +94,7 @@
       <dl class="divide-y divide-slate-100 text-sm">
         <div class="flex justify-between px-5 py-2.5"><dt class="text-slate-500">{% translate "Subtotal" %}</dt><dd class="num" data-total="subtotal">0.00</dd></div>
         <div class="flex justify-between px-5 py-2.5"><dt class="text-slate-500">{% translate "Discount" %}</dt><dd class="num text-emerald-700" data-total="discount">0.00</dd></div>
+        <div class="hidden justify-between px-5 py-2.5" data-row="offer_saving"><dt class="text-slate-500">{% translate "Offers" %}</dt><dd class="num text-emerald-700" data-total="offer_saving">0.00</dd></div>
         <div class="flex justify-between px-5 py-2.5"><dt class="text-slate-500">{% translate "Scrap trade-in" %}</dt><dd class="num text-emerald-700" data-total="trade_in">0.00</dd></div>
         <div class="flex items-baseline justify-between px-5 py-4"><dt class="font-semibold text-slate-900">{% translate "To pay" %}</dt>
           <dd class="text-2xl font-semibold text-slate-900"><span class="num" data-total="due">0.00</span> <span class="text-sm text-slate-500">{{ home_currency }}</span></dd></div>
@@ -129,6 +130,8 @@
         <div class="flex justify-between px-5 py-2.5"><dt class="text-slate-500">{% translate "Paid" %}</dt><dd class="num" data-total="paid">0.00</dd></div>
         <div class="flex justify-between px-5 py-2.5 font-semibold text-amber-700" data-row="remaining"><dt>{% translate "Remaining" %}</dt><dd class="num" data-total="remaining">0.00</dd></div>
         <div class="hidden justify-between px-5 py-2.5 font-semibold text-emerald-700" data-row="change"><dt>{% translate "Change to give" %}</dt><dd class="num" data-total="change">0.00</dd></div>
+        <div class="hidden justify-between px-5 py-2.5 text-emerald-700" data-row="cashback"><dt>{% translate "Cashback to the customer's account" %}</dt><dd class="num" data-total="cashback">0.00</dd></div>
+        <div class="hidden justify-between px-5 py-2.5 text-xs text-amber-700" data-row="cashback_lost"><dt>{% translate "Choose the customer to give the cashback" %}</dt><dd></dd></div>
         <div class="hidden justify-between px-5 py-2.5 font-semibold text-slate-700" data-row="balance"><dt>{% translate "On the customer's account" %}</dt><dd class="num" data-total="balance">0.00</dd></div>
       </dl>
       <div class="space-y-3 border-t border-slate-100 p-5">
@@ -141,7 +144,8 @@
 
 <template id="line-row">
   <tr>
-    <td><div class="num font-medium text-slate-900" data-f="barcode"></div><div class="text-xs text-slate-500"><bdi data-f="description"></bdi> · <bdi data-f="karat"></bdi></div></td>
+    <td><div class="num font-medium text-slate-900" data-f="barcode"></div><div class="text-xs text-slate-500"><bdi data-f="description"></bdi> · <bdi data-f="karat"></bdi></div>
+      <div class="mt-0.5 hidden text-xs font-medium text-emerald-700" data-offer>{% icon "sparkles" "size-3 inline" %} <bdi data-f="offer"></bdi></div></td>
     <td class="text-end"><span class="num" data-f="gross_weight_g"></span></td>
     <td class="text-end"><span class="num" data-f="metal_price_per_g"></span></td>
     <td class="text-end"><span class="num" data-f="making_rate_net"></span><div class="hidden text-xs text-amber-700" data-floor>{% translate "at cost" %}</div></td>

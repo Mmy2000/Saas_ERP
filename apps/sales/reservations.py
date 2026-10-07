@@ -53,10 +53,22 @@ class RefundMethod:
 
 
 @dataclass(frozen=True)
+class OrderInput:
+    """Gold sold by weight, ordered for later: a bulk category (bullion, coins…) and karat."""
+
+    category_id: int
+    karat_id: int
+    gross_weight_g: Decimal | str
+    qty: int = 0
+    discount_rate: Decimal | str = "0"
+
+
+@dataclass(frozen=True)
 class ReservationInput:
     branch_id: int
     customer_id: int | None
     lines: tuple[SaleLineInput, ...]
+    orders: tuple[OrderInput, ...] = ()
     price_locked: bool = False
     expires_on: date | None = None
     deposit: PaymentInput | None = None
@@ -116,17 +128,59 @@ def _take_deposit(reservation: Reservation, payment: PaymentInput, *, sign: int 
     return deposit
 
 
+def order_categories():
+    """What can be ordered by weight: bulk categories other than scrap."""
+    from apps.catalog.models import ItemCategory, Tracking
+    from apps.inventory.services import SCRAP_CATEGORY_CODE
+
+    return ItemCategory.objects.filter(is_active=True, tracking=Tracking.BULK).exclude(
+        code=SCRAP_CATEGORY_CODE)
+
+
+def price_orders(orders, branch, board, *, actor=None) -> list:
+    """[(order, category, karat, ItemQuote)] at today's (or the locked) board."""
+    from apps.catalog.models import Karat
+    from apps.merchandising.offers import deal_for
+    from apps.pricing.engine import category_making_rate, quote_order
+
+    from .services import DISCOUNT_LIMIT, _line_error, _running_offers
+
+    home = functional_currency()
+    max_discount = actor.limit(DISCOUNT_LIMIT) if actor is not None else Decimal(1)
+    categories = order_categories().in_bulk([o.category_id for o in orders])
+    karats = Karat.objects.select_related("metal").in_bulk([o.karat_id for o in orders])
+    offers = _running_offers(branch) if orders else []
+    priced = []
+    for index, order in enumerate(orders):
+        category, karat = categories.get(order.category_id), karats.get(order.karat_id)
+        try:
+            if category is None:
+                raise ValidationError(_("Choose what to order."), code="SALES_ORDER_CATEGORY")
+            if karat is None:
+                raise ValidationError(_("Choose a karat."), code="SALES_ORDER_KARAT")
+            deal = deal_for(offers, making=category_making_rate(category.pk, home),
+                            category_id=category.pk, karat_id=karat.pk) if offers else None
+            priced.append((order, category, karat, quote_order(
+                category, karat, board, gross_weight_g=order.gross_weight_g,
+                qty=max(int(order.qty or 0), 0), discount_rate=order.discount_rate,
+                max_discount=max_discount, functional_currency=home, deal=deal)))
+        except (DomainError, ValidationError) as exc:
+            raise _line_error("orders", index, exc.message, exc.code) from exc
+    return priced
+
+
 def create_reservation(data: ReservationInput, *, actor=None) -> Reservation:
     with transaction.atomic():
         if not data.customer_id:
             raise ValidationError(_("A reservation needs a customer."),
                                   fields={"customer": [_("Required.")]})
-        if not data.lines:
+        if not data.lines and not data.orders:
             raise ValidationError(_("Add at least one piece."),
                                   fields={"lines": [_("Add at least one piece.")]})
         quote = quote_sale(SaleInput(branch_id=data.branch_id, lines=data.lines,
                                      customer_id=data.customer_id,
                                      payment_terms=PaymentTerms.CREDIT), actor=actor)
+        orders = price_orders(data.orders, quote.branch, quote.board, actor=actor)
         if actor is not None:
             actor.require("sales.reservation.create", branch=quote.branch)
         today = timezone.localdate()
@@ -136,7 +190,8 @@ def create_reservation(data: ReservationInput, *, actor=None) -> Reservation:
         reservation = Reservation.objects.create(
             branch=quote.branch, business_date=today, customer=quote.customer,
             price_locked=data.price_locked, price_board=quote.board, expires_on=data.expires_on,
-            quoted_total=quote.total, note=data.note.strip(),
+            quoted_total=quote.total + sum((p.line_total for *_rest, p in orders), ZERO),
+            note=data.note.strip(),
             created_by=getattr(actor, "user", None))
         for item, priced in sorted(zip(quote.items, quote.lines, strict=True),
                                    key=lambda pair: pair[0].pk):
@@ -144,6 +199,11 @@ def create_reservation(data: ReservationInput, *, actor=None) -> Reservation:
             ReservationLine.objects.create(reservation=reservation, item=item,
                                            discount_rate=priced.discount_rate,
                                            quoted_total=priced.line_total)
+        for _order, category, karat, priced in orders:
+            ReservationLine.objects.create(
+                reservation=reservation, category=category, karat=karat,
+                gross_weight_g=priced.gross_weight_g, qty=priced.qty,
+                discount_rate=priced.discount_rate, quoted_total=priced.line_total)
         reservation.number = allocate_number("RS", branch=quote.branch, fiscal_year=today.year)
         if data.deposit is not None and data.deposit.amount not in (None, "", "0"):
             _take_deposit(reservation, data.deposit, actor=actor)
@@ -167,8 +227,12 @@ def add_deposit(reservation_id: int, payment: PaymentInput, *, actor=None) -> Re
 def quote_completion(reservation: Reservation, payments=(), *, actor=None):
     """The sale that completing would post: the reserved pieces (at the locked board if the
     price is locked), the deposits first, then `payments` for the rest."""
-    lines = tuple(SaleLineInput(item_id=line.item_id, discount_rate=line.discount_rate)
-                  for line in reservation.lines.all())
+    lines = tuple(
+        SaleLineInput(item_id=line.item_id, discount_rate=line.discount_rate) if line.item_id
+        else SaleLineInput(category_id=line.category_id, karat_id=line.karat_id,
+                           gross_weight_g=line.gross_weight_g, qty=line.qty,
+                           discount_rate=line.discount_rate)
+        for line in reservation.lines.all())
     probe = quote_sale(SaleInput(branch_id=reservation.branch_id, lines=lines,
                                  customer_id=reservation.customer_id,
                                  payment_terms=PaymentTerms.CREDIT,
@@ -224,7 +288,7 @@ def cancel_reservation(reservation_id: int, *, refund_method: str = RefundMethod
         reservation = _open(reservation_id)
         if actor is not None:
             actor.require("sales.reservation.cancel", branch=reservation.branch)
-        for line in reservation.lines.order_by("item_id"):
+        for line in reservation.lines.exclude(item=None).order_by("item_id"):
             set_reserved(line.item_id, False, branch=reservation.branch)
         held = reservation.deposit_amount
         if held > 0:

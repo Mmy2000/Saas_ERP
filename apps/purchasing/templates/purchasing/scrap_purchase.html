@@ -32,7 +32,7 @@
         <tbody>
         {% for line in lines %}
           <tr>
-            <td>{{ line.karat.label }}</td>
+            <td>{% if line.category %}<span class="font-medium">{{ line.category.name }}</span>{% if line.qty %} · <span class="num">{{ line.qty }}</span> {% translate "pcs" %}{% endif %} · {% endif %}{{ line.karat.label }}</td>
             <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
             <td class="text-end"><span class="num">{{ line.loss_weight_g|num:3 }}</span></td>
             <td class="text-end"><span class="num">{{ line.net_weight_g|num:3 }}</span></td>

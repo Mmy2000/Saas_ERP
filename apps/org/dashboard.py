@@ -172,6 +172,32 @@ class Attention:
     icon: str
 
 
+def _orders_in_stock(branches) -> int:
+    """Open reservations whose ordered gold (by weight) the branch now has enough of."""
+    from apps.inventory.models import LotBalance
+    from apps.sales.models import ReservationLine
+
+    lines = _scoped(ReservationLine.objects.filter(
+        item__isnull=True, reservation__status=DocStatus.POSTED,
+        reservation__sale__isnull=True), branches, "reservation__branch_id")
+    wanted: dict[int, dict] = {}
+    for line in lines.values("reservation_id", "reservation__branch_id", "category_id",
+                             "karat_id", "gross_weight_g", "qty"):
+        wanted.setdefault(line["reservation_id"], {})[
+            (line["reservation__branch_id"], line["category_id"], line["karat_id"])] = line
+    if not wanted:
+        return 0
+    stock = {(b["lot__branch_id"], b["lot__category_id"], b["lot__karat_id"]): b
+             for b in LotBalance.objects.values("lot__branch_id", "lot__category_id",
+                                                "lot__karat_id", "gross_weight_g", "qty")}
+    ready = 0
+    for needs in wanted.values():
+        if all(key in stock and stock[key]["gross_weight_g"] >= line["gross_weight_g"]
+               and stock[key]["qty"] >= line["qty"] for key, line in needs.items()):
+            ready += 1
+    return ready
+
+
 def needs_attention(actor) -> list[Attention]:
     today = timezone.localdate()
     items = []
@@ -196,6 +222,10 @@ def needs_attention(actor) -> list[Attention]:
             actor.branch_ids("sales.reservation.view")).count()
         if overdue:
             items.append(Attention(_("Reservations past their date"), overdue,
+                                   reverse("reservations"), "bookmark"))
+        ready = _orders_in_stock(actor.branch_ids("sales.reservation.view"))
+        if ready:
+            items.append(Attention(_("Ordered gold now in stock: call the customer"), ready,
                                    reverse("reservations"), "bookmark"))
     if actor.can("repairs.order.view"):
         from apps.repairs.models import RepairOrder

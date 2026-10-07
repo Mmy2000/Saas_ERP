@@ -1,0 +1,37 @@
+{% load i18n static ui authz %}{% can "inventory.price.change" item.branch as can_price %}
+{% comment %}A diamond piece's label price is edited with its stones; here it only shows offers and earlier changes.{% endcomment %}
+{% if not price.is_label or price.deal or price.history %}
+<section class="card" id="selling-price">
+  <div class="card-header"><h2 class="card-title">{% translate "Selling price" %}</h2></div>
+  <dl class="divide-y divide-slate-100 text-sm">
+    {% if not price.is_label %}
+    <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making charge / g" %}</dt>
+      <dd class="text-end"><span class="num font-semibold">{{ price.rate|num:2 }}</span>
+        <span class="block text-xs text-slate-400">{% if price.own %}{% translate "this piece's own" %}{% else %}{% translate "the category's" %}{% endif %}</span></dd></div>
+    {% endif %}
+    {% if price.deal %}
+    <div class="flex justify-between bg-emerald-50/50 px-5 py-3"><dt class="text-emerald-800">{% icon "sparkles" "size-4 inline" %} {% translate "On offer today" %}</dt>
+      <dd class="text-end text-emerald-900">{% if price.deal.making_rate is not None %}<span class="num font-semibold">{{ price.deal.making_rate|num:2 }}</span> / {% translate "g" %}<span class="block text-xs">{{ price.deal.offer_name }}</span>{% endif %}
+        {% for offer_id, name, kind, value in price.deal.cashbacks %}<span class="block text-xs">{% translate "Cashback" %}: {{ name }}</span>{% endfor %}</dd></div>
+    {% endif %}
+  </dl>
+  {% if can_price and price.on_hand and not price.is_label %}
+  <form class="flex items-end gap-2 border-t border-slate-100 px-5 py-4" data-api-form data-shape="piece-price"
+        data-endpoint="{% url 'piece-price' item.pk %}" data-method="PUT" data-success="{% translate 'Price saved.' %}" novalidate>
+    <input type="hidden" name="target" value="making">
+    <label class="min-w-0 flex-1"><span class="form-label">{% translate "New making charge / g" %}</span>
+      <input name="value" class="form-input num w-full text-start" inputmode="decimal" required><span class="form-error" data-error-for="value"></span></label>
+    <button type="submit" class="btn btn-secondary">{% translate "Save" %}</button>
+  </form>
+  {% endif %}
+  {% if price.history %}
+  <div class="border-t border-slate-100 px-5 py-3">
+    <p class="mb-2 text-xs font-medium text-slate-500">{% translate "Earlier changes" %}</p>
+    <ul class="space-y-1 text-xs text-slate-600">
+      {% for line in price.history %}<li class="flex justify-between gap-3"><a class="hover:underline" href="{% url 'price-change' line.change_id %}"><span class="num">{{ line.change.created_at|date:"SHORT_DATE_FORMAT" }}</span> · {{ line.change.created_by.display_name|default:"—" }}</a>
+        <span class="num">{% if line.old_value %}{{ line.old_value|num:2 }}{% else %}—{% endif %} → {{ line.new_value|num:2 }}{% if line.change.undone_at %} ({% translate "undone" %}){% endif %}</span></li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endif %}

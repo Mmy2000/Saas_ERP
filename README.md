@@ -280,6 +280,32 @@ grams). Money put in or taken out, gold brought in or taken out, and a gold bala
 opening balances through Opening balances; the statement (with PDF, e-mail and WhatsApp) and the
 balances list work as for the other parties. Negative = what the business owes the partner.
 
+### Selling prices, offers and cashback, bullion
+
+**Pricing → Price changes** (permission `inventory.price.change`): change the making charge per
+gram of many gold pieces at once (or the label price of diamond pieces): choose branches,
+item categories, karats, suppliers, a weight range or a list of barcodes, then set a value, add
+an amount or change by a percentage. "Show the pieces" previews the count and a sample; nothing
+is saved until "Change the prices" (up to 20,000 pieces, idempotent). Every change keeps each
+piece's old and new value; "Undo this change" puts them back, leaving alone pieces changed again
+since. A single piece's making charge is edited on its stock page, which shows its offer and its
+earlier changes.
+
+**Pricing → Offers** (feature "Offers and cashback", permissions `sales.offer.*`): between two
+dates, on chosen pieces (same filters), either a discount on the making charge (a percentage or a
+rate per gram) or cashback (an amount per piece or a percentage of the price). The sales screen
+applies them on its own (the lowest making wins, never under the making cost); cashback goes on
+the customer's account (Dr Promotions and cashback 5208, Cr customers) and is taken back by a
+return; a sale without a customer gets none. Each offer shows what it gave (lines, weight,
+saving, cashback).
+
+**Bullion and coins**: "Buy scrap" also buys bullion and sealed coins (bulk categories of the
+bullion/coin family) at today's buying price, without loss, into their own lot and gold
+inventory. A reservation can order bullion or coins by weight even if they are not in stock
+("Order by weight", priced like the reserved pieces, with offers, and locked when the price is locked); the
+dashboard says when ordered gold is in stock, and completing the reservation sells it from the
+lot.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is
@@ -422,7 +448,7 @@ These are Phase 2 spikes or later phases in the plan:
 - The tenant-prefixed cache wrapper; WhatsApp Business API (messages sent by the platform
   itself), SMS, scheduled report e-mails.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
-- QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it), reservations of bullion/coins not yet in stock, expiry reminders, partial receipt of a
+- QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it), expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
   RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
   (repairs), receiving in several batches, labour paid in gold, stones issued to setters;

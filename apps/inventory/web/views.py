@@ -78,11 +78,38 @@ def item_detail(request, pk):
     from apps.diamonds import services as diamonds
     from apps.diamonds.models import StoneKind, StoneShape
 
-    context = {"item": item, "movements": movements}
+    context = {"item": item, "movements": movements, "price": _selling_price(item)}
     if diamonds.is_diamond(item.category) and diamonds.enabled():
         context.update({"diamond": True, "stones": list(item.stones.all()),
                         "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices})
     return render(request, "inventory/item.html", context)
+
+
+def _selling_price(item) -> dict:
+    """The piece's making charge (its own or its category's), any offer on it today, and its
+    earlier price changes (apps.merchandising)."""
+    from django.utils import timezone
+
+    from apps.inventory.models import ON_HAND
+    from apps.merchandising.models import PriceChangeLine
+    from apps.merchandising.offers import deal_for, running
+    from apps.pricing.engine import category_making_rate
+    from apps.pricing.selectors import functional_currency
+
+    category_rate = category_making_rate(item.category_id, functional_currency())
+    rate = item.list_making_rate or category_rate
+    deal = None
+    if item.status in ON_HAND and item.karat_id:
+        deal = deal_for(running(timezone.localdate(), item.branch_id), making=rate,
+                        category_id=item.category_id, karat_id=item.karat_id,
+                        supplier_id=item.supplier_id, barcode=item.barcode)
+    history = (PriceChangeLine.objects.filter(item=item).select_related("change__created_by")
+               .order_by("-change__created_at")[:10])
+    return {"rate": rate, "own": bool(item.list_making_rate), "category_rate": category_rate,
+            "deal": deal if deal and (deal.making_rate is not None or deal.cashbacks) else None,
+            "history": list(history), "on_hand": item.status in ON_HAND,
+            "is_label": item.label_price is not None and not item.karat_id
+            or item.category.product_family in ("diamond", "stone")}
 
 
 # --- transfers --------------------------------------------------------------------------------

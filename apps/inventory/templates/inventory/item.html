@@ -17,13 +17,13 @@
 {% block content %}
 {% can "inventory.item.view_cost" as can_cost %}
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6">
   <section class="card">
     <div class="card-header"><h2 class="card-title">{% translate "Piece" %}</h2></div>
     <dl class="divide-y divide-slate-100 text-sm">
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Gross weight" %}</dt><dd class="num font-semibold">{{ item.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Metal weight" %}</dt><dd class="num">{{ item.metal_weight_g|num:3 }} {% translate "g" %}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Fine weight" %}</dt><dd class="num">{{ item.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
-      <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Sale making / g" %}</dt><dd class="num">{{ item.list_making_rate|num:2 }}</dd></div>
       {% if can_cost %}
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost / g" %}</dt><dd class="num">{{ item.cost_making_rate|num:2 }} {{ item.cost_currency.code }}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost" %}</dt><dd class="num">{{ item.cost_amount|num:2 }}</dd></div>
@@ -34,6 +34,8 @@
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Supplier" %}</dt><dd>{{ item.supplier.name|default:"—" }}</dd></div>
     </dl>
   </section>
+  {% include "inventory/_selling_price.html" %}
+  </div>
 
   <section class="card overflow-hidden xl:col-span-2">
     <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "history" "size-4 text-slate-400" %}{% translate "History" %}</h2></div>

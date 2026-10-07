@@ -13,6 +13,13 @@ Gold piece (retail):
 Bulk gold by weight: the same, with the category's making rate and the lot's average making
 cost per gram as the floor.
 
+Offers (apps.merchandising.offers), on gold pieces and bulk gold:
+    making/g        = the offer's rate when one runs (a % off, or a set rate per gram)
+    the seller's discount then applies to it; the cost floor is the list rate's, so an offer
+    never sells below what the making cost; the saving is (list − offer rate) × weight
+    cashback        = the largest matching cashback offer: a % of the line total, or an amount
+                      per piece; credited to the customer's account when the sale is posted
+
 Diamond piece or loose stone (apps.diamonds), sold at its label price:
     discount        ≤ the seller's diamond limit, on the whole label price
     gold part       = round2(board sell price × metal weight)          (none for loose stones)
@@ -67,6 +74,12 @@ class ItemQuote:
     stones_amount: Decimal = ZERO  # label-priced pieces: the price beyond the gold
     stone_cost: Decimal = ZERO
     label_price: Decimal | None = None
+    offer_id: int | None = None
+    offer_name: str = ""
+    offer_saving: Decimal = ZERO
+    cashback: Decimal = ZERO
+    cashback_offer_id: int | None = None
+    cashback_name: str = ""
 
 
 @dataclass(frozen=True)
@@ -106,31 +119,43 @@ def _discount(discount_rate, max_discount: Decimal) -> Decimal:
 
 
 def _priced(*, karat, board, weight: Decimal, making: Decimal, cost_amount: Decimal,
-            discount: Decimal, **identity) -> ItemQuote:
+            discount: Decimal, deal=None, pieces: int = 1, **identity) -> ItemQuote:
     """The one gold formula, for a piece or a weight of bulk gold."""
     metal_price = board.price(karat, PriceSide.SELL)
     cost_per_g = quantize(cost_amount / weight, UNIT_PRICE) if weight else ZERO
+    list_making = making
+    offer = {}
+    if deal is not None and deal.making_rate is not None and deal.making_rate < making:
+        making = deal.making_rate
+        offer = {"offer_id": deal.offer_id, "offer_name": deal.offer_name}
     discounted = quantize(making * (1 - discount), UNIT_PRICE)
-    making_net = max(discounted, min(cost_per_g, making))
+    making_net = max(discounted, min(cost_per_g, list_making))
     total = round_money((metal_price + making_net) * weight)
     metal_amount = round_money(metal_price * weight)
+    if offer:
+        offer["offer_saving"] = round_money((list_making - max(making, min(
+            cost_per_g, list_making))) * weight)
+    if deal is not None:
+        amount, offer_id, name = deal.cashback(total, pieces)
+        if amount:
+            offer.update(cashback=amount, cashback_offer_id=offer_id, cashback_name=name)
     return ItemQuote(
         karat_label=karat.label, gross_weight_g=weight, metal_price_per_g=metal_price,
         making_rate=making, discount_rate=discount, making_rate_net=making_net,
         metal_amount=metal_amount, making_amount=total - metal_amount, line_total=total,
         discount_amount=round_money((metal_price + making) * weight) - total,
-        cost_amount=cost_amount, at_cost_floor=making_net > discounted, **identity)
+        cost_amount=cost_amount, at_cost_floor=making_net > discounted, **offer, **identity)
 
 
 def quote_item(item, board, *, discount_rate, max_discount: Decimal,
-               functional_currency: str) -> ItemQuote:
+               functional_currency: str, deal=None) -> ItemQuote:
     if item.karat is None:
         raise DomainError(_("Piece %(barcode)s has no karat and cannot be priced by weight.")
                           % {"barcode": item.barcode}, code="PRICING_NO_KARAT")
     return _priced(
         karat=item.karat, board=board, weight=item.gross_weight_g,
         making=list_making_rate(item, functional_currency), cost_amount=item.cost_amount,
-        discount=_discount(discount_rate, max_discount), item_id=item.pk,
+        discount=_discount(discount_rate, max_discount), item_id=item.pk, deal=deal,
         barcode=item.barcode, description=item.category.name, fine_weight_g=item.fine_weight_g)
 
 
@@ -158,7 +183,7 @@ def quote_label_priced(item, board, *, discount_rate, max_discount: Decimal) -> 
 
 
 def quote_bulk(lot, balance, board, *, gross_weight_g, qty: int = 0, discount_rate,
-               max_discount: Decimal, functional_currency: str) -> ItemQuote:
+               max_discount: Decimal, functional_currency: str, deal=None) -> ItemQuote:
     """A weight of bulk gold (chain by the gram, bullion…) from a lot. Its making cost is the
     lot's average per gram."""
     weight = quantize(gross_weight_g, WEIGHT)
@@ -170,8 +195,24 @@ def quote_bulk(lot, balance, board, *, gross_weight_g, qty: int = 0, discount_ra
         karat=lot.karat, board=board, weight=weight,
         making=category_making_rate(lot.category_id, functional_currency), cost_amount=cost,
         discount=_discount(discount_rate, max_discount), item_id=None, lot_id=lot.pk, qty=qty,
+        deal=deal, pieces=qty,
         barcode="", description=lot.category.name,
         fine_weight_g=fine_weight(weight, lot.karat.fineness))
+
+
+def quote_order(category, karat, board, *, gross_weight_g, qty: int = 0, discount_rate,
+                max_discount: Decimal, functional_currency: str, deal=None) -> ItemQuote:
+    """A weight of gold ordered for later (bullion, coins…), priced like bulk gold but with no
+    stock to take its making cost from: today's gold price plus the category's making charge."""
+    weight = quantize(gross_weight_g, WEIGHT)
+    if weight <= 0:
+        raise ValidationError(_("Enter the weight."), code="SALES_BULK_WEIGHT")
+    return _priced(
+        karat=karat, board=board, weight=weight,
+        making=category_making_rate(category.pk, functional_currency), cost_amount=ZERO,
+        discount=_discount(discount_rate, max_discount), item_id=None, lot_id=None, qty=qty,
+        deal=deal, pieces=qty, barcode="", description=category.name,
+        fine_weight_g=fine_weight(weight, karat.fineness))
 
 
 def quote_trade_in(karat, board, *, gross_weight_g, loss_weight_g="0", price_override=None,
