@@ -25,6 +25,12 @@ msgid ""
 "customer's account."
 msgstr "%(amount)s من العربون تزيد على السعر وتبقى رصيدًا في حساب العميل."
 
+msgid "%(barcode)s is not a mounting or a loose stone."
+msgstr "%(barcode)s ليست قطعة للتركيب ولا حجرًا سائبًا."
+
+msgid "%(barcode)s is not in stock here."
+msgstr "%(barcode)s ليست في مخزون هذا الفرع."
+
 msgid "%(code)sK"
 msgstr "عيار %(code)s"
 
@@ -667,6 +673,9 @@ msgstr "إضافة موردين"
 msgid "Add the gold you are sending."
 msgstr "أضف الذهب الذي ترسله."
 
+msgid "Add the pieces and stones to hand over."
+msgstr "أضف القطع والأحجار المراد تسليمها."
+
 msgid "Add the stones to set."
 msgstr "أضف الأحجار المراد تركيبها."
 
@@ -977,11 +986,20 @@ msgstr "متوسط البيع"
 msgid "Back"
 msgstr "رجوع"
 
+msgid "Back from %(setter)s unused"
+msgstr "رجوع من %(setter)s بدون تركيب"
+
 msgid "Back from workshop"
 msgstr "عودة من الورشة"
 
 msgid "Back in stock"
 msgstr "عادت للمخزون"
+
+msgid "Back in stock."
+msgstr "رجعت للمخزون."
+
+msgid "Back to stock"
+msgstr "رجوع للمخزون"
 
 msgid "Back to the current statement"
 msgstr "العودة إلى الكشف الحالي"
@@ -1378,6 +1396,12 @@ msgstr "بالوزن (جم)"
 
 msgid "Calculated"
 msgstr "محسوب"
+
+msgid "Came back set"
+msgstr "رجعت مركّبة"
+
+msgid "Came back unused"
+msgstr "رجعت بدون تركيب"
 
 msgid "Came in during the year before but not in the last %(n)s days."
 msgstr "حضر خلال السنة السابقة ولم يحضر في آخر %(n)s يومًا."
@@ -1990,6 +2014,9 @@ msgstr "اختر تصليح أو طلب تصنيع."
 msgid "Choose someone other than the drawer."
 msgstr "اختر شخصًا غير الساحب."
 
+msgid "Choose stones that are still in the piece."
+msgstr "اختر أحجارًا ما زالت في القطعة."
+
 msgid "Choose the account that receives the balance."
 msgstr "اختر الحساب الذي يستلم الرصيد."
 
@@ -2011,6 +2038,9 @@ msgstr "اختر العميل أو اكتب اسمه."
 msgid "Choose the customer to give the cashback"
 msgstr "اختر العميل ليحصل على الكاش باك"
 
+msgid "Choose the diamond category the piece becomes."
+msgstr "اختر صنف الألماس الذي تصبح عليه القطعة."
+
 msgid "Choose the karat."
 msgstr "اختر العيار."
 
@@ -2019,6 +2049,9 @@ msgstr "اختر نوع الحجر."
 
 msgid "Choose the kind of work."
 msgstr "اختر نوع العمل."
+
+msgid "Choose the piece the stones go into."
+msgstr "اختر القطعة التي تُركّب فيها الأحجار."
 
 msgid "Choose the pieces being returned."
 msgstr "اختر القطع المرتجعة."
@@ -2043,6 +2076,9 @@ msgstr "اختر نوع العملية."
 
 msgid "Choose what is being settled."
 msgstr "اختر نوع التسوية."
+
+msgid "Choose what is still with the setter."
+msgstr "اختر ما زال لدى المركباتي."
 
 msgid "Choose what to change and how."
 msgstr "اختر ما تريد تغييره وكيف."
@@ -3422,6 +3458,9 @@ msgstr "أدخل الوزن الإجمالي."
 msgid "Enter the weight after setting."
 msgstr "أدخل الوزن بعد التركيب."
 
+msgid "Enter the weight after taking the stones out."
+msgstr "أدخل الوزن بعد فك الأحجار."
+
 msgid "Enter the weight of each piece."
 msgstr "أدخل وزن كل قطعة."
 
@@ -3597,6 +3636,9 @@ msgstr "الخصائص"
 
 msgid "Fee"
 msgstr "العمولة"
+
+msgid "Fee for the work"
+msgstr "أجرة الفك"
 
 msgid "Female"
 msgstr "أنثى"
@@ -4031,11 +4073,34 @@ msgstr "مجموعات الأصناف مع العيار والمصنعية ال�
 msgid "Hand it back"
 msgstr "رد الشيك"
 
+msgid ""
+"Hand mountings and loose stones to a setter to follow them here until they "
+"come back."
+msgstr "سلّم القطع والأحجار السائبة للمركباتي لمتابعتها هنا حتى ترجع."
+
+msgid "Hand over"
+msgstr "تسليم"
+
+msgid "Hand to a setter"
+msgstr "تسليم إلى المركباتي"
+
 msgid "Handed back."
 msgstr "تم رد الشيك."
 
+msgid "Handed over"
+msgstr "المُسلَّم"
+
 msgid "Handed over by"
 msgstr "توقيع المُسلِّم"
+
+msgid "Handed over."
+msgstr "تم التسليم."
+
+msgid "Handed to %(setter)s for setting"
+msgstr "تسليم إلى %(setter)s للتركيب"
+
+msgid "Handed to a setter"
+msgstr "تسليم إلى المركباتي"
 
 msgid "Head office"
 msgstr "الفرع الرئيسي"
@@ -4296,6 +4361,9 @@ msgstr "شيكات صادرة تستحق هذا الأسبوع"
 
 msgid "Issued, not paid yet"
 msgstr "صادرة لم تُصرف بعد"
+
+msgid "It becomes a diamond piece of"
+msgstr "تصبح قطعة ألماس من صنف"
 
 msgid ""
 "It starts from the design of %(name)s and, once saved, becomes this "
@@ -4963,6 +5031,13 @@ msgstr "أقصى عدد فروع"
 msgid "Most users"
 msgstr "أقصى عدد مستخدمين"
 
+msgid ""
+"Mountings and loose stones handed to setters: what each one still holds, "
+"what came back set into pieces, and what came back unused."
+msgstr ""
+"القطع والأحجار المسلّمة للمركباتية: ما زال لدى كل منهم، وما رجع مركّبًا في "
+"قطع، وما رجع بدون تركيب."
+
 msgid "Move a balance from one account to another"
 msgstr "تحويل رصيد من حساب إلى آخر"
 
@@ -5624,6 +5699,9 @@ msgstr "لا شيء في الانتظار"
 msgid "Nothing was posted in this year."
 msgstr "لم يُرحّل شيء في هذه السنة."
 
+msgid "Nothing with a setter"
+msgstr "لا شيء لدى المركباتية"
+
 msgid "Nothing yet"
 msgstr "لا شيء بعد"
 
@@ -5787,6 +5865,9 @@ msgstr "تُرد الشيكات الواردة فقط."
 
 msgid "Only drafts can be edited."
 msgstr "يمكن تعديل المسودات فقط."
+
+msgid "Only loose stones go into a piece."
+msgstr "تُركّب الأحجار السائبة فقط في القطعة."
 
 msgid "Only orders still at the workshop can be cancelled."
 msgstr "لا يمكن إلغاء إلا الأوامر التي ما زالت لدى الورشة."
@@ -6366,6 +6447,9 @@ msgstr "القطع (جم)"
 msgid "Pieces and bulk gold sent between branches."
 msgstr "القطع والذهب بالوزن المُرسل بين الفروع."
 
+msgid "Pieces and stones"
+msgstr "القطع والأحجار"
+
 msgid "Pieces covered now"
 msgstr "القطع المشمولة الآن"
 
@@ -6384,6 +6468,9 @@ msgstr "قطع واردة"
 msgid ""
 "Pieces include reserved ones. Value at today's buy price for pure metal."
 msgstr "القطع تشمل المحجوزة. القيمة بسعر شراء الذهب الخالص اليوم."
+
+msgid "Pieces made"
+msgstr "القطع الناتجة"
 
 msgid "Pieces out"
 msgstr "قطع صادرة"
@@ -6900,6 +6987,9 @@ msgstr "المستلم من الورشة"
 msgid "Received by"
 msgstr "توقيع المستلم"
 
+msgid "Received by the setter"
+msgstr "استلام المركباتي"
+
 msgid "Received cheques"
 msgstr "شيكات واردة"
 
@@ -6978,6 +7068,9 @@ msgstr "تسجيل الشيك"
 
 msgid "Record the goods"
 msgstr "تسجيل المشغولات"
+
+msgid "Record the piece"
+msgstr "تسجيل القطعة"
 
 msgid "Record what came back"
 msgstr "سجّل ما تم استلامه"
@@ -7505,6 +7598,9 @@ msgstr "اذكر سبب إعادة فتح الشهر."
 msgid "Say why the year is reopened."
 msgstr "اذكر سبب إعادة فتح السنة."
 
+msgid "Scan a barcode or type a certificate number"
+msgstr "امسح الباركود أو اكتب رقم الشهادة"
+
 msgid "Scan a piece to start."
 msgstr "امسح قطعة للبدء."
 
@@ -7530,6 +7626,13 @@ msgid ""
 "Scan the mounting and the loose stones set into it, then weigh the finished "
 "piece."
 msgstr "امسح الشاتون والأحجار السائبة المركبة فيه، ثم زِن القطعة النهائية."
+
+msgid ""
+"Scan the mountings (gold or diamond pieces) and the loose stones the setter "
+"takes. They leave stock until they come back."
+msgstr ""
+"امسح القطع (ذهب أو ألماس) والأحجار السائبة التي يستلمها المركباتي. تخرج من "
+"المخزون حتى ترجع."
 
 msgid "Scan the pieces going back and add any bulk gold by weight."
 msgstr "امسح القطع المردودة وأضف الذهب بالوزن إن وُجد."
@@ -7828,6 +7931,9 @@ msgstr "الخادم"
 msgid "set"
 msgstr "مُركَّب"
 
+msgid "Set"
+msgstr "مركّبة"
+
 msgid "Set a new password"
 msgstr "تعيين كلمة مرور جديدة"
 
@@ -7857,6 +7963,12 @@ msgstr "إعداد الخزائن والحسابات البنكية وماكين
 
 msgid "Setter"
 msgstr "المُركِّب"
+
+msgid "Setter job"
+msgstr "أمر تركيب"
+
+msgid "Setters"
+msgstr "المركباتية"
 
 msgid "Settings"
 msgstr "الإعدادات"
@@ -8149,6 +8261,9 @@ msgstr "المتبقي"
 msgid "Still to pay"
 msgstr "المتبقي للدفع"
 
+msgid "Still with the setter"
+msgstr "ما زال لدى المركباتي"
+
 msgid "Stock"
 msgstr "المخزون"
 
@@ -8204,8 +8319,24 @@ msgstr "جزء الأحجار"
 msgid "Stones set in %(barcode)s"
 msgstr "تركيب أحجار في %(barcode)s"
 
+msgid "Stones set in it"
+msgstr "الأحجار المركّبة فيها"
+
 msgid "Stones set."
 msgstr "تم تركيب الأحجار."
+
+msgid "Stones taken out"
+msgstr "فك أحجار"
+
+msgid "Stones taken out of %(barcode)s"
+msgstr "فك أحجار من %(barcode)s"
+
+msgid "Stones taken out."
+msgstr "تم فك الأحجار."
+
+msgid ""
+"Stones were taken out of this piece since: this setting cannot be undone."
+msgstr "فُكّت أحجار من هذه القطعة بعد ذلك: لا يمكن إلغاء هذا التركيب."
 
 msgid "Stones' cost"
 msgstr "تكلفة الأحجار"
@@ -8332,6 +8463,12 @@ msgstr "استلام التصليحات وطلبات التصنيع وعرابي
 msgid "Take off what they owe us"
 msgstr "تخفيض ما عليه لنا"
 
+msgid "Take stones out"
+msgstr "فك أحجار"
+
+msgid "Take them out"
+msgstr "فكّها"
+
 msgid "Taken back from the employee's next payroll."
 msgstr "تُخصم من مسير الرواتب التالي للموظف."
 
@@ -8352,6 +8489,12 @@ msgstr "تُخصم بأرقام البيعة الأصلية."
 
 msgid "Taken off the making charge"
 msgstr "المخصوم من المصنعية"
+
+msgid "Taken out"
+msgstr "مفكوكة"
+
+msgid "Taken out of a piece"
+msgstr "مفكوك من قطعة"
 
 msgid "Takes"
 msgstr "يقبل"
@@ -8644,6 +8787,16 @@ msgstr "الفترة %(period)s مقفلة."
 msgid "The person collecting is the customer who paid the deposits."
 msgstr "من يستلم هو العميل الذي دفع العربون."
 
+msgid "The piece"
+msgstr "القطعة"
+
+msgid ""
+"The piece comes back to stock with the stones' details and cost; the labour "
+"is owed to the setter and added to its cost."
+msgstr ""
+"ترجع القطعة للمخزون ببيانات الأحجار وتكلفتها؛ والمصنعية مستحقة للمركباتي "
+"وتُضاف لتكلفتها."
+
 msgid "The piece has moved on since: this setting cannot be undone."
 msgstr "تغيّرت القطعة منذ ذلك الحين: لا يمكن التراجع عن هذا التركيب."
 
@@ -8699,6 +8852,13 @@ msgid ""
 msgstr ""
 "ذهب المحل الفعلي في أي يوم: ما لديه (مخزون، كسر، لدى الورش، في الإنتاج، بين "
 "الفروع) وما له على الغير، ناقص ما عليه، بالجرام الصافي وعيار 21."
+
+msgid ""
+"The stones come back to stock as the same loose stones, with their barcode, "
+"details and cost. A fee adds to the piece's cost and is owed to the setter."
+msgstr ""
+"ترجع الأحجار للمخزون كنفس الأحجار السائبة بباركودها وبياناتها وتكلفتها. "
+"والأجرة تُضاف لتكلفة القطعة وتُستحق للمركباتي."
 
 msgid ""
 "The stones leave stock as used in this piece. A setter's labour is owed to "
@@ -8876,6 +9036,9 @@ msgstr "هذه عملة الشركة."
 
 msgid "This is the reference karat."
 msgstr "هذا هو العيار المرجعي."
+
+msgid "This job is cancelled."
+msgstr "هذا الأمر ملغى."
 
 msgid "This karat already exists."
 msgstr "هذا العيار موجود بالفعل."
@@ -9253,6 +9416,9 @@ msgstr "طريقة دفع غير معروفة."
 msgid "Unknown permissions."
 msgstr "صلاحيات غير معروفة."
 
+msgid "Unknown piece."
+msgstr "قطعة غير معروفة."
+
 msgid "Unknown role."
 msgstr "دور غير معروف."
 
@@ -9500,6 +9666,9 @@ msgstr "الوزن"
 msgid "Weight (g)"
 msgstr "الوزن (جم)"
 
+msgid "Weight after (g)"
+msgstr "الوزن بعد (جم)"
+
 msgid "Weight after setting (g)"
 msgstr "الوزن بعد التركيب (جم)"
 
@@ -9682,6 +9851,11 @@ msgstr "من أين جاء الذهب وإلى أين ذهب"
 msgid "Which way"
 msgstr "الاتجاه"
 
+msgid ""
+"While with the setter they are not for sale and their value shows as goods "
+"at workshops."
+msgstr "أثناء وجودها لدى المركباتي لا تُباع، وتظهر قيمتها كبضاعة لدى الورش."
+
 msgid "Who"
 msgstr "من"
 
@@ -9734,6 +9908,9 @@ msgstr "بشهادة"
 
 msgid "With the country code. Leave it empty to choose the chat in WhatsApp."
 msgstr "مع كود الدولة. اتركه فارغًا لتختار المحادثة في واتساب."
+
+msgid "With the setter"
+msgstr "لدى المركباتي"
 
 msgid "With your margins and rounding, %(karat)s would be:"
 msgstr "بهوامشك وتقريبك، سيكون %(karat)s:"

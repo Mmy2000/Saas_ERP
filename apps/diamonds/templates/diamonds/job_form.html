@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Hand to a setter" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/jobs.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'setting-jobs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Setters" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Hand to a setter" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Scan the mountings (gold or diamond pieces) and the loose stones the setter takes. They leave stock until they come back." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div id="job-new" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-lookup-url="{% url 'diamonds-lookup' %}"
+     data-post-url="{% url 'diamonds-jobs' %}" data-detail-url="{% url 'setting-jobs' %}{id}/" data-saved="{% translate 'Handed over.' %}">
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header"><h2 class="card-title">{% translate "Pieces and stones" %}</h2>
+      <span class="text-sm text-slate-500"><span class="num" data-count>0</span> · <span class="num" data-carats>0.000</span> {% translate "ct" %}</span></div>
+    <form class="flex gap-2 border-b border-slate-100 p-4" data-scan><input class="form-input num flex-1" placeholder="{% translate 'Scan a barcode or type a certificate number' %}" autocomplete="off" autofocus><button class="btn btn-secondary" type="submit">{% icon "plus" "size-4" %}{% translate "Add" %}</button></form>
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Barcode" %}</th><th>{% translate "Category" %}</th><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th>{% translate "Stones" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody data-items></tbody>
+      </table>
+    </div>
+    <p class="px-5 py-8 text-center text-sm text-slate-400" data-items-empty>{% translate "Nothing yet" %}</p>
+    <p class="form-error px-5 pb-3" data-error-for="items"></p>
+  </section>
+  <aside class="space-y-6">
+    <section class="card card-body space-y-4">
+      <label class="block"><span class="form-label">{% translate "Branch" %}</span>
+        <select class="form-input" data-branch>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+      <label class="block"><span class="form-label">{% translate "Setter" %}</span>
+        <select class="form-input" data-setter data-remote="{% url 'workshop-list' %}" data-label-field="name"><option value=""></option></select>
+        <span class="form-error" data-error-for="setter"></span></label>
+      <input class="form-input" data-note placeholder="{% translate 'Note' %}">
+      <p class="form-error" data-error></p>
+      <button type="button" class="btn btn-primary w-full" data-save>{% icon "send" "size-4" %}{% translate "Hand over" %}</button>
+      <p class="text-xs text-slate-500">{% translate "While with the setter they are not for sale and their value shows as goods at workshops." %}</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

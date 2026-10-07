@@ -154,6 +154,7 @@ class MovementType(models.TextChoices):
     LOSS = "loss", _("Loss")
     GAIN = "gain", _("Gain")
     OPENING = "opening", _("Opening stock")
+    STONES_REMOVED = "stones_removed", _("Taken out of a piece")
 
 
 class StockMovement(TenantScopedModel):

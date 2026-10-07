@@ -370,6 +370,21 @@ the day they came back at the figures of the original sale.
 * **Branch statement** (GHBR35, GHBR36): money and gold each branch is owed by the others,
   and a branch's statement with running balances.
 
+### Setters (diamonds)
+
+**Diamonds → Setters** (legacy Install GHN1–GHN4, permission `diamonds.setting`): hand
+mountings (gold or diamond pieces) and loose stones to a setter (a workshop). They leave stock
+("at workshop") and their value moves to "Goods at workshops" at the gold value of that day,
+so they come back at the same value. Back from the setter: **set** (a mounting and stones of
+the job become one piece: the stones' details and cost move onto it, it is re-weighed, the
+labour is owed to the setter and added to its cost; a gold mounting becomes a diamond piece of
+the chosen category, with a label price) or **unused** (back to stock unchanged). A job closes
+when nothing is left with the setter. A setting from a job can be cancelled while the piece is
+untouched (everything goes back to the setter). On any stone setting, **Take stones out**
+(GHN4 "فك") puts chosen stones back in stock as the same loose stones (barcode, details and
+cost), re-weighs the piece and books an optional fee to the setter; Gweb lost the stones' cost
+and deleted the piece.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

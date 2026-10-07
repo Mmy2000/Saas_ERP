@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
@@ -11,7 +11,7 @@ from apps.inventory.models import Item, ItemStatus
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 
-from .models import StoneKind, StoneSetting, StoneShape
+from .models import JobLineState, SettingJob, StoneKind, StoneRemoval, StoneSetting, StoneShape
 from .services import FAMILIES, stones_summary
 
 STATES = ("in_stock", "sold", "all")
@@ -93,16 +93,87 @@ def setting_new(request):
 
 @permission_required("diamonds.view")
 def setting(request, pk):
-    item = (StoneSetting.objects.select_related("piece__category", "piece__karat", "setter",
+    item = (StoneSetting.objects.select_related("piece__category", "piece__karat", "setter", "job",
                                                 "branch", "journal_entry", "posted_by")
             .filter(pk=pk).first())
     scope = request.actor.branch_ids("diamonds.view")
     if item is None or (scope is not None and item.branch_id not in scope):
         raise Http404
+    rows = list(item.stones.select_related("stone__category", "removal")
+                .prefetch_related("stone__stones"))
     return render(request, "diamonds/setting.html", {
-        "setting": item, "rows": item.stones.select_related("stone__category")
-        .prefetch_related("stone__stones"),
+        "setting": item, "rows": rows,
+        "still_in": [row for row in rows if row.removal_id is None],
+        "removals": item.removals.filter(status=DocStatus.POSTED).select_related("setter"),
+        "remove_url": reverse("diamonds-setting-remove", args=[item.pk]),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
         "void_url": reverse("diamonds-setting-void", args=[item.pk]),
         "can_cancel": item.status == DocStatus.POSTED,
     })
+
+
+# --- setter jobs ---------------------------------------------------------------------------------
+
+JOB_TABS = ("open", "closed", "all")
+
+
+@permission_required("diamonds.view")
+def jobs(request):
+    tab = request.GET.get("tab") if request.GET.get("tab") in JOB_TABS else "open"
+    queryset = (SettingJob.objects.filter(status=DocStatus.POSTED)
+                .select_related("setter", "branch")
+                .annotate(total=Count("lines"),
+                          out=Count("lines", filter=Q(lines__state=JobLineState.OUT)),
+                          set_count=Count("lines", filter=Q(lines__state=JobLineState.SET))))
+    scope = request.actor.branch_ids("diamonds.view")
+    if scope is not None:
+        queryset = queryset.filter(branch_id__in=scope)
+    if tab == "open":
+        queryset = queryset.filter(closed_at__isnull=True)
+    elif tab == "closed":
+        queryset = queryset.filter(closed_at__isnull=False)
+    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
+        request.GET.get("page"))
+    return render(request, "diamonds/jobs.html", {"page": page, "tab": tab})
+
+
+@permission_required("diamonds.setting")
+def job_new(request):
+    return render(request, "diamonds/job_form.html", {
+        "branches": _branches(request, "diamonds.setting"),
+        "default_branch": request.membership.default_branch_id,
+    })
+
+
+@permission_required("diamonds.view")
+def job(request, pk):
+    item = (SettingJob.objects.select_related("setter", "branch", "journal_entry", "posted_by")
+            .filter(pk=pk).first())
+    scope = request.actor.branch_ids("diamonds.view")
+    if item is None or (scope is not None and item.branch_id not in scope):
+        raise Http404
+    lines = list(item.lines.select_related("item__category", "item__karat", "setting")
+                 .prefetch_related("item__stones").order_by("state", "item__barcode"))
+    for line in lines:
+        line.summary = stones_summary(line.item.stones.all())
+        line.family = line.item.category.product_family
+    out = [line for line in lines if line.state == JobLineState.OUT]
+    return render(request, "diamonds/job.html", {
+        "job": item, "lines": lines,
+        "mountings": [line for line in out if line.family in ("gold", "diamond")],
+        "stones": [line for line in out if line.family == "stone"],
+        "out": out,
+        "diamond_categories": ItemCategory.objects.filter(
+            product_family=ProductFamily.DIAMOND, tracking=Tracking.SERIALIZED,
+            is_active=True).order_by("code"),
+        "settings": item.settings.filter(status=DocStatus.POSTED).select_related("piece"),
+        "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
+    })
+
+
+@permission_required("diamonds.view")
+def stone_removal(request, pk):
+    removal = StoneRemoval.objects.filter(pk=pk).values_list("setting_id", flat=True).first()
+    if removal is None:
+        raise Http404
+    return redirect(f"{reverse('stone-setting', args=[removal])}#removals")

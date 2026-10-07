@@ -9,7 +9,7 @@ from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 from apps.inventory.models import Item, ItemStatus
 
-from . import services
+from . import jobs, services
 from .models import StoneKind, StoneShape
 
 
@@ -101,8 +101,11 @@ class LookupView(APIView):
         services.require_enabled()
         family = request.query_params.get("family", "stone")
         term = request.query_params.get("q", "").strip()
+        # "job": anything a setter can be handed (gold or diamond mountings, loose stones).
+        families = (("gold", "diamond", "stone") if family == "job" else (family,))
         items = (Item.objects.select_related("category", "karat", "branch")
-                 .filter(status=ItemStatus.IN_STOCK, category__product_family=family)
+                 .filter(status=ItemStatus.IN_STOCK, category__product_family__in=families,
+                         category__tracking="serialized")
                  .prefetch_related("stones"))
         branch = request.query_params.get("branch", "")
         if branch.isdigit():
@@ -113,7 +116,7 @@ class LookupView(APIView):
         if term and not found:
             raise NotFound(_("No piece with barcode %(barcode)s.") % {"barcode": term})
         return Response({"results": [{
-            "id": item.pk, "barcode": item.barcode,
+            "id": item.pk, "barcode": item.barcode, "family": item.category.product_family,
             "name": f"{item.barcode} · {item.category.name}",
             "category": item.category.name, "karat": item.karat.label if item.karat else "",
             "gross_weight_g": item.gross_weight_g, "stone_weight_ct": item.stone_weight_ct,
@@ -157,10 +160,105 @@ class SettingVoidView(APIView):
         return Response({"id": setting.pk, "status": setting.status})
 
 
+class JobSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    setter = serializers.IntegerField(required=False, allow_null=True, default=None)
+    items = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class JobView(APIView):
+    """Hand pieces and loose stones to a setter."""
+
+    required_permissions = {"POST": "diamonds.setting"}
+
+    @idempotent
+    def post(self, request):
+        payload = JobSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        job = jobs.hand_over(jobs.JobInput(branch_id=d["branch"], setter_id=d["setter"] or 0,
+                                           item_ids=tuple(d["items"]), note=d["note"]),
+                             actor=request.actor)
+        return Response({"id": job.pk, "number": job.number}, status=status.HTTP_201_CREATED)
+
+
+class JobReturnView(APIView):
+    required_permissions = {"POST": "diamonds.setting"}
+
+    @idempotent
+    def post(self, request, pk):
+        lines = [int(x) for x in request.data.get("lines") or [] if str(x).isdigit()]
+        job = jobs.return_items(pk, lines, actor=request.actor)
+        return Response({"id": job.pk, "closed": job.closed_at is not None})
+
+
+class JobSetSerializer(serializers.Serializer):
+    mounting = serializers.IntegerField()
+    stones = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
+    gross_after_g = serializers.CharField(max_length=20, allow_blank=True)
+    labour_amount = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                          default="0")
+    category = serializers.IntegerField(required=False, allow_null=True, default=None)
+    label_price = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                        default="")
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class JobSetView(APIView):
+    """A mounting and stones of a job come back set as one piece."""
+
+    required_permissions = {"POST": "diamonds.setting"}
+
+    @idempotent
+    def post(self, request, pk):
+        payload = JobSetSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        setting = jobs.set_from_job(pk, jobs.SetInput(
+            mounting_line_id=d["mounting"], stone_line_ids=tuple(d["stones"]),
+            gross_after_g=d["gross_after_g"], labour_amount=d["labour_amount"] or "0",
+            category_id=d["category"], label_price=d["label_price"] or None, note=d["note"]),
+            actor=request.actor)
+        return Response({"id": setting.pk, "number": setting.number},
+                        status=status.HTTP_201_CREATED)
+
+
+class RemovalSerializer(serializers.Serializer):
+    stones = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
+    gross_after_g = serializers.CharField(max_length=20, allow_blank=True)
+    fee_amount = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                       default="0")
+    setter = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class RemovalView(APIView):
+    """Take stones set here out of the piece again."""
+
+    required_permissions = {"POST": "diamonds.setting"}
+
+    @idempotent
+    def post(self, request, pk):
+        payload = RemovalSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        removal = jobs.remove_stones(jobs.RemovalInput(
+            setting_id=pk, stone_ids=tuple(d["stones"]), gross_after_g=d["gross_after_g"],
+            fee_amount=d["fee_amount"] or "0", setter_id=d["setter"], note=d["note"]),
+            actor=request.actor)
+        return Response({"id": removal.pk, "number": removal.number},
+                        status=status.HTTP_201_CREATED)
+
+
 urlpatterns = [
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
     path("lookup/", LookupView.as_view(), name="diamonds-lookup"),
     path("settings/", SettingView.as_view(), name="diamonds-settings"),
     path("settings/<int:pk>/void/", SettingVoidView.as_view(), name="diamonds-setting-void"),
+    path("settings/<int:pk>/remove/", RemovalView.as_view(), name="diamonds-setting-remove"),
+    path("jobs/", JobView.as_view(), name="diamonds-jobs"),
+    path("jobs/<int:pk>/return/", JobReturnView.as_view(), name="diamonds-job-return"),
+    path("jobs/<int:pk>/set/", JobSetView.as_view(), name="diamonds-job-set"),
 ]

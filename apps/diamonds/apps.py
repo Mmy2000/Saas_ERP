@@ -11,3 +11,5 @@ class DiamondsConfig(AppConfig):
         from apps.core.documents import register_document
 
         register_document("diamonds.StoneSetting", "stone-setting", _("Stone setting"))
+        register_document("diamonds.SettingJob", "setting-job", _("Setter job"))
+        register_document("diamonds.StoneRemoval", "stone-removal", _("Stones taken out"))

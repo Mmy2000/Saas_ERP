@@ -1,6 +1,7 @@
 {% extends "layouts/app.html" %}
 {% load i18n ui authz %}
 {% block title %}{{ setting.number }}{% endblock %}
+{% block head %}{% load static %}<script type="module" src="{% static 'diamonds/js/jobs.js' %}"></script>{% endblock %}
 {% block page_header %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
   <a href="{% url 'stone-settings' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Stone setting" %}</a>
@@ -22,7 +23,7 @@
     </header>
     <dl class="grid grid-cols-2 gap-4 border-b border-slate-100 p-6 text-sm sm:grid-cols-4">
       <div><dt class="text-slate-500">{% translate "Piece" %}</dt><dd class="mt-0.5"><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' setting.piece_id %}">{{ setting.piece.barcode }}</a></dd></div>
-      <div><dt class="text-slate-500">{% translate "Setter" %}</dt><dd class="mt-0.5">{% if setting.setter %}{{ setting.setter.name }}{% else %}{% translate "In our own shop" %}{% endif %}</dd></div>
+      <div><dt class="text-slate-500">{% translate "Setter" %}</dt><dd class="mt-0.5">{% if setting.setter %}{{ setting.setter.name }}{% else %}{% translate "In our own shop" %}{% endif %}{% if setting.job %}<a class="block num text-xs text-brand-700 hover:underline" href="{% url 'setting-job' setting.job_id %}">{{ setting.job.number }}</a>{% endif %}</dd></div>
       <div><dt class="text-slate-500">{% translate "Weight" %}</dt><dd class="num mt-0.5"><bdi dir="ltr">{{ setting.gross_before_g|num:3 }} → {{ setting.gross_after_g|num:3 }} g</bdi></dd></div>
       <div><dt class="text-slate-500">{% translate "Labour" %}</dt><dd class="num mt-0.5">{{ setting.labour_amount|num:2 }} <span class="text-xs text-slate-400">{{ home_currency }}</span></dd></div>
     </dl>
@@ -33,7 +34,7 @@
         {% for row in rows %}
           <tr><td><a class="num text-brand-700 hover:underline" href="{% url 'stock-item' row.stone_id %}">{{ row.stone.barcode }}</a></td>
             <td class="text-sm text-slate-600">{% for st in row.stone.stones.all %}<div><bdi>{{ st.get_kind_display }}</bdi> <span dir="ltr">{{ st.count }} × {{ st.carat|num:3 }} ct {{ st.color }} {{ st.clarity }}</span>{% if st.lab %} · {{ st.lab }} {{ st.certificate_no }}{% endif %}</div>{% endfor %}</td>
-            <td class="text-end"><span class="num">{{ row.carat|num:3 }}</span></td></tr>
+            <td class="text-end"><span class="num">{{ row.carat|num:3 }}</span>{% if row.removal_id %}<a class="mt-1 block text-xs text-amber-700 hover:underline" href="#removals">{% translate "Taken out" %}</a>{% endif %}</td></tr>
         {% endfor %}
         </tbody>
         <tfoot><tr class="border-t-2 border-slate-200 font-semibold"><td class="px-5 py-3" colspan="2">{% translate "Total" %}</td><td class="px-5 py-3 text-end"><span class="num">{{ setting.stones_carat|num:3 }}</span></td></tr></tfoot>
@@ -50,6 +51,37 @@
       <input name="reason" class="form-input" placeholder="{% translate 'Reason' %}" maxlength="300">
       <button type="submit" class="btn btn-secondary w-full">{% translate "Cancel the setting" %}</button>
     </form>
+    {% endif %}
+    {% if can_set and setting.status == "posted" and still_in %}
+    <form data-api-form data-shape="stone-removal" data-method="POST" data-endpoint="{{ remove_url }}" data-success="{% translate 'Stones taken out.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Take stones out" %}</h2></div>
+      <div class="card-body space-y-4">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <fieldset class="space-y-2">
+          <legend class="form-label">{% translate "Stones" %}</legend>
+          {% for row in still_in %}<label class="flex items-center gap-3 text-sm"><input type="checkbox" value="{{ row.stone_id }}" data-remove-stone><span class="num">{{ row.stone.barcode }}</span><span class="ms-auto num text-slate-500">{{ row.carat|num:3 }} ct</span></label>{% endfor %}
+          <p class="form-error" data-error-for="stones"></p>
+        </fieldset>
+        <label class="block"><span class="form-label">{% translate "Weight after (g)" %}</span>
+          <input name="gross_after_g" class="form-input num w-full text-start" inputmode="decimal"><span class="form-error" data-error-for="gross_after_g"></span></label>
+        <label class="block"><span class="form-label">{% translate "Setter" %}</span>
+          <select name="setter" class="form-input" data-remote="{% url 'workshop-list' %}" data-label-field="name"><option value="">{% translate "In our own shop" %}</option>{% if setting.setter %}<option value="{{ setting.setter_id }}" selected>{{ setting.setter.name }}</option>{% endif %}</select></label>
+        <label class="block"><span class="form-label">{% translate "Fee for the work" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></span>
+          <input name="fee_amount" class="form-input num w-full text-start" inputmode="decimal" placeholder="0"><span class="form-error" data-error-for="fee_amount"></span></label>
+        <input name="note" class="form-input" placeholder="{% translate 'Note' %}">
+        <p class="text-xs text-slate-500">{% translate "The stones come back to stock as the same loose stones, with their barcode, details and cost. A fee adds to the piece's cost and is owed to the setter." %}</p>
+        <button type="submit" class="btn btn-secondary w-full">{% icon "undo-2" "size-4" %}{% translate "Take them out" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if removals %}
+    <section class="card" id="removals">
+      <div class="card-header"><h2 class="card-title">{% translate "Stones taken out" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for r in removals %}<li class="px-5 py-3"><div class="flex justify-between"><span class="num font-medium">{{ r.number }}</span><span class="num text-slate-500">{{ r.business_date|date:"SHORT_DATE_FORMAT" }}</span></div>
+          <div class="mt-1 text-slate-600"><span class="num">{{ r.stones_carat|num:3 }}</span> ct · <span class="num" dir="ltr">{{ r.gross_before_g|num:3 }} → {{ r.gross_after_g|num:3 }} g</span>{% if r.fee_amount %} · {% translate "Fee" %} <span class="num">{{ r.fee_amount|num:2 }}</span>{% endif %}{% if r.setter %} · {{ r.setter.name }}{% endif %}</div></li>{% endfor %}
+      </ul>
+    </section>
     {% endif %}
     {% if setting.journal_entry %}<section class="card"><dl class="text-sm"><div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Journal entry" %}</dt><dd class="num">{{ setting.journal_entry.number }}</dd></div></dl></section>{% endif %}
   </aside>

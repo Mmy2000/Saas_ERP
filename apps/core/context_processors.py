@@ -40,6 +40,8 @@ NAVIGATION: list[tuple[str, list[NavItem]]] = [
         NavItem(_("Receive diamonds"), "diamonds-receive-form", "inbox", "diamonds.receive"),
         NavItem(_("Stone setting"), "stone-settings", "sparkles", "diamonds.view",
                 ("stone-setting-new", "stone-setting")),
+        NavItem(_("Setters"), "setting-jobs", "send", "diamonds.view",
+                ("setting-job-new", "setting-job")),
     ]),
     (_("Pricing"), [
         NavItem(_("Gold prices"), "gold-prices", "coins", "pricing.board.view"),

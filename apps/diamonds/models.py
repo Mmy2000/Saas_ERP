@@ -53,6 +53,9 @@ class ItemStone(TenantScopedModel):
     # Set from a loose stone by a stone setting (cancelling the setting removes it).
     setting = models.ForeignKey("StoneSetting", null=True, blank=True, on_delete=models.CASCADE,
                                 related_name="+")
+    # …and the loose stone it came from, so taking that stone out again removes these rows.
+    source = models.ForeignKey("inventory.Item", null=True, blank=True, on_delete=models.SET_NULL,
+                               related_name="+")
 
     class Meta:
         ordering = ["-carat", "id"]
@@ -78,6 +81,9 @@ class StoneSetting(Document):
     labour_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
                                       on_delete=models.PROTECT, related_name="+")
+    # Done from a setting job: the piece and stones were with the setter (SettingJob).
+    job = models.ForeignKey("SettingJob", null=True, blank=True, on_delete=models.PROTECT,
+                            related_name="settings")
 
     class Meta(Document.Meta):
         ordering = ["-business_date", "-id"]
@@ -93,7 +99,83 @@ class StoneSettingStone(TenantScopedModel):
     stone = models.ForeignKey("inventory.Item", on_delete=models.PROTECT, related_name="+")
     carat = models.DecimalField(max_digits=12, decimal_places=3)
     cost = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    removal = models.ForeignKey("StoneRemoval", null=True, blank=True, on_delete=models.SET_NULL,
+                                related_name="stones")  # taken out of the piece again
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["tenant", "setting", "stone"],
                                                name="diamonds_setting_stone_uniq")]
+
+
+class SettingJob(Document):
+    """Pieces and loose stones handed to a setter (legacy Install, GHN1–GHN4). While with the
+    setter they are out of stock ("at workshop") and their value sits on "goods at
+    workshops". Each comes back set into a piece (a StoneSetting of this job) or unchanged."""
+
+    setter = models.ForeignKey("parties.Party", on_delete=models.PROTECT, related_name="+")
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+    closed_at = models.DateTimeField(null=True, blank=True)  # nothing left with the setter
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_job_date_idx"),
+                   models.Index(fields=["tenant", "setter"], name="diamonds_job_setter_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+
+class JobLineState(models.TextChoices):
+    OUT = "out", _("With the setter")
+    SET = "set", _("Set")
+    RETURNED = "returned", _("Returned")
+
+
+class SettingJobLine(TenantScopedModel):
+    job = models.ForeignKey(SettingJob, on_delete=models.CASCADE, related_name="lines")
+    item = models.ForeignKey("inventory.Item", on_delete=models.PROTECT, related_name="+")
+    state = models.CharField(max_length=10, choices=JobLineState.choices,
+                             default=JobLineState.OUT)
+    metal_value = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # when handed
+    # Its category when handed over: a gold mounting set with stones becomes a diamond piece,
+    # and goes back to this if the setting is cancelled.
+    category = models.ForeignKey("catalog.ItemCategory", null=True, on_delete=models.PROTECT,
+                                 related_name="+")
+    setting = models.ForeignKey(StoneSetting, null=True, blank=True, on_delete=models.SET_NULL,
+                                related_name="+")
+    return_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    returned_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant", "job", "item"],
+                                               name="diamonds_job_item_uniq")]
+        indexes = [models.Index(fields=["tenant", "item"], name="diamonds_jobline_item_idx")]
+
+
+class StoneRemoval(Document):
+    """Stones taken out of a piece again (legacy GHN4 "فك"): the loose stones come back to
+    stock with their own barcodes and cost, the piece is re-weighed, and a fee for the work
+    may go to the setter."""
+
+    piece = models.ForeignKey("inventory.Item", on_delete=models.PROTECT, related_name="+")
+    setting = models.ForeignKey(StoneSetting, on_delete=models.PROTECT, related_name="removals")
+    setter = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
+                               related_name="+")
+    gross_before_g = models.DecimalField(max_digits=14, decimal_places=3)
+    gross_after_g = models.DecimalField(max_digits=14, decimal_places=3)
+    stones_carat = models.DecimalField(max_digits=12, decimal_places=3, default=0)
+    stones_cost = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    fee_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_removal_date_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"

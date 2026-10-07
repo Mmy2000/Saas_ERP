@@ -127,8 +127,8 @@ def clean_stones(stones, field_name: str = "stones") -> list[dict]:
     return cleaned
 
 
-def add_stones(item: Item, stones, *, setting=None) -> list[ItemStone]:
-    rows = [ItemStone(item=item, setting=setting, kind=s["kind"], shape=s["shape"],
+def add_stones(item: Item, stones, *, setting=None, source=None) -> list[ItemStone]:
+    rows = [ItemStone(item=item, setting=setting, source=source, kind=s["kind"], shape=s["shape"],
                       count=s["count"], carat=Decimal(s["carat"]), color=s["color"],
                       clarity=s["clarity"], cut=s["cut"], lab=s["lab"],
                       certificate_no=s["certificate_no"], note=s["note"])
@@ -339,50 +339,71 @@ def set_stones(data: SettingInput, *, actor=None) -> StoneSetting:
         if labour < 0:
             raise _field("labour_amount", _("Must not be negative."))
 
-        today = timezone.localdate()
-        carats = sum((s.stone_weight_ct for s in stones), ZERO)
-        cost = sum((s.stone_cost_amount for s in stones), ZERO)
-        setting = StoneSetting.objects.create(
-            branch=branch, business_date=today, piece=piece, setter=setter,
-            gross_before_g=piece.gross_weight_g, gross_after_g=after, stones_carat=carats,
-            stones_cost=cost, labour_amount=labour, note=data.note.strip(),
-            created_by=getattr(actor, "user", None))
-        doc = DocRef(SETTING_DOC, setting.pk)
-        for stone in stones:
+        return apply_setting(piece=piece, stones=stones, after=after, labour=labour,
+                             setter=setter, branch=branch, note=data.note, actor=actor)
+
+
+def apply_setting(*, piece: Item, stones: list[Item], after: Decimal, labour: Decimal, setter,
+                  branch, note: str = "", actor=None, job=None, extra_lines=()) -> StoneSetting:
+    """Record checked stones going into a checked piece. Stones in stock leave it ("used in
+    another piece"); stones already out with the setter (a job) just change state. `extra_lines`
+    join the labour entry (a job brings the piece back from the setter in the same entry)."""
+    today = timezone.localdate()
+    carats = sum((s.stone_weight_ct for s in stones), ZERO)
+    cost = sum((s.stone_cost_amount for s in stones), ZERO)
+    setting = StoneSetting.objects.create(
+        branch=branch, business_date=today, piece=piece, setter=setter, job=job,
+        gross_before_g=piece.gross_weight_g, gross_after_g=after, stones_carat=carats,
+        stones_cost=cost, labour_amount=labour, note=note.strip(),
+        created_by=getattr(actor, "user", None))
+    doc = DocRef(SETTING_DOC, setting.pk)
+    for stone in stones:
+        if stone.status == ItemStatus.IN_STOCK:
             change_item_status(stone.pk, to=ItemStatus.CONSUMED,
                                allowed_from=(ItemStatus.IN_STOCK,),
                                movement_type=MovementType.PRODUCTION_CONSUME,
                                business_date=today, doc=doc, branch=branch)
-            StoneSettingStone.objects.create(setting=setting, stone=stone,
-                                             carat=stone.stone_weight_ct,
-                                             cost=stone.stone_cost_amount)
-            add_stones(piece, [_as_dict(row) for row in stone.stones.all()], setting=setting)
-        # The gold is unchanged; the piece now carries the stones and the labour.
-        piece.gross_weight_g = after
-        piece.stone_weight_ct += carats
-        piece.stone_cost_amount += cost
-        piece.cost_amount += labour
-        piece.updated_by = getattr(actor, "user", None)
-        piece.save()
+        else:  # with the setter: it already left stock when it was handed over
+            Item.objects.filter(pk=stone.pk).update(status=ItemStatus.CONSUMED)
+        StoneSettingStone.objects.create(setting=setting, stone=stone,
+                                         carat=stone.stone_weight_ct,
+                                         cost=stone.stone_cost_amount)
+        add_stones(piece, [_as_dict(row) for row in stone.stones.all()], setting=setting,
+                   source=stone)
+    # The gold is unchanged; the piece now carries the stones and the labour.
+    piece.gross_weight_g = after
+    piece.stone_weight_ct += carats
+    piece.stone_cost_amount += cost
+    piece.cost_amount += labour
+    piece.updated_by = getattr(actor, "user", None)
+    piece.save()
 
-        setting.number = allocate_number("SS", branch=branch, fiscal_year=today.year)
-        if labour:
-            home = functional_commodity()
-            credit = (LineInput(account=account_for("workshops"), commodity=home,
-                                quantity=-labour, party=setter) if setter
-                      else LineInput(account=account_for("labour_absorbed"), commodity=home,
-                                     quantity=-labour))
-            setting.journal_entry = post_entry(
-                branch=branch, business_date=today, kind=EntryKind.AUTO,
-                source_type=SETTING_DOC, source_id=setting.pk,
-                memo=_("Stones set in %(barcode)s") % {"barcode": piece.barcode},
-                lines=[LineInput(account=account_for("inventory_gold"), commodity=home,
-                                 quantity=labour), credit])
-        setting.status = DocStatus.POSTED
-        setting.posted_at = timezone.now()
-        setting.posted_by = getattr(actor, "user", None)
-        setting.save()
+    setting.number = allocate_number("SS", branch=branch, fiscal_year=today.year)
+    lines = list(extra_lines) + labour_lines(labour, setter)
+    if lines:
+        setting.journal_entry = post_entry(
+            branch=branch, business_date=today, kind=EntryKind.AUTO,
+            source_type=SETTING_DOC, source_id=setting.pk,
+            memo=_("Stones set in %(barcode)s") % {"barcode": piece.barcode}, lines=lines)
+    setting.status = DocStatus.POSTED
+    setting.posted_at = timezone.now()
+    setting.posted_by = getattr(actor, "user", None)
+    setting.save()
     return setting
+
+
+def labour_lines(amount: Decimal, setter) -> list[LineInput]:
+    """Work on a piece adds to its cost: Dr gold inventory (money), Cr the setter's workshop
+    account, or production labour absorbed when it was done in our own shop."""
+    if not amount:
+        return []
+    home = functional_commodity()
+    credit = (LineInput(account=account_for("workshops"), commodity=home, quantity=-amount,
+                        party=setter) if setter
+              else LineInput(account=account_for("labour_absorbed"), commodity=home,
+                             quantity=-amount))
+    return [LineInput(account=account_for("inventory_gold"), commodity=home, quantity=amount),
+            credit]
 
 
 def _as_dict(stone: ItemStone) -> dict:
@@ -404,6 +425,13 @@ def cancel_setting(setting_id: int, *, reason: str = "", actor=None) -> StoneSet
             actor.require("diamonds.setting", branch=setting.branch)
         if setting.status != DocStatus.POSTED:
             raise DomainError(_("Only posted documents can be cancelled."), code="DOC_NOT_POSTED")
+        if setting.removals.filter(status=DocStatus.POSTED).exists():
+            raise DomainError(_("Stones were taken out of this piece since: this setting cannot "
+                                "be undone."), code="DIAMONDS_SETTING_LOCKED")
+        if setting.job_id:
+            from .jobs import undo_job_setting
+
+            return undo_job_setting(setting, reason=reason, actor=actor)
         piece = Item.objects.select_for_update().get(pk=setting.piece_id)
         later = StoneSetting.objects.filter(piece=piece, status=DocStatus.POSTED,
                                             pk__gt=setting.pk).exists()

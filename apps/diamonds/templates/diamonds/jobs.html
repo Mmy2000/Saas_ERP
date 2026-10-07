@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Setters" %}{% endblock %}
+{% block page_header %}
+{% can "diamonds.setting" as can_set %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Setters" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Mountings and loose stones handed to setters: what each one still holds, what came back set into pieces, and what came back unused." %}</p>
+  </div>
+  {% if can_set %}<a href="{% url 'setting-job-new' %}" class="btn btn-primary">{% icon "send" "size-4" %}{% translate "Hand to a setter" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-3">
+    <a href="?tab=open" class="tab{% if tab == 'open' %} tab-active{% endif %}">{% translate "With the setter" %}</a>
+    <a href="?tab=closed" class="tab{% if tab == 'closed' %} tab-active{% endif %}">{% translate "Closed" %}</a>
+    <a href="?tab=all" class="tab{% if tab == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
+  </div>
+  {% if page.object_list %}
+  <div class="relative overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Setter" %}</th><th>{% translate "Branch" %}</th>
+        <th class="text-end">{% translate "Handed over" %}</th><th class="text-end">{% translate "Set" %}</th><th class="text-end">{% translate "Still with the setter" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for job in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ job.number }}</span></td>
+          <td><span class="num">{{ job.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{{ job.setter.name }}</td>
+          <td>{{ job.branch.name }}</td>
+          <td class="text-end"><span class="num">{{ job.total }}</span></td>
+          <td class="text-end"><span class="num">{{ job.set_count }}</span></td>
+          <td class="text-end">{% if job.out %}<span class="badge badge-warning num">{{ job.out }}</span>{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'setting-job' job.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nothing with a setter" as empty_title %}
+    {% translate "Hand mountings and loose stones to a setter to follow them here until they come back." as empty_text %}
+    {% include "components/empty_state.html" with icon="send" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}
