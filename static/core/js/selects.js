@@ -56,7 +56,7 @@ export function enhanceSelects(root = document) {
       placeholder: select.dataset.placeholder || "",
       render: {
         no_results: () => `<div class="no-results">${escapeHtml(ui.no_results || "No results")}</div>`,
-        loading: () => `<div class="loading">${escapeHtml(ui.loading || "…")}</div>`,
+        loading: () => `<div class="loading flex items-center gap-2"><span class="busy-spinner size-3.5" aria-hidden="true"></span>${escapeHtml(ui.loading || "…")}</div>`,
       },
       onInitialize() {
         const input = this.dropdown.querySelector(".dropdown-input");

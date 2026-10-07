@@ -7,6 +7,7 @@ import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 import { initPaymentBlocks, payment } from "../../treasury/js/payment_block.js";
 import { askForCode } from "./code.js";
+import { later, refreshing } from "../../core/js/loading.js";
 
 const fail = (error) => toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
 
@@ -81,12 +82,15 @@ if (root) {
       ordersQuote = null;
       return render();
     }
+    const settled = later(() => refreshing([...root.querySelectorAll("[data-orders], [data-total]")]));
     try {
-      ordersQuote = await api(root.dataset.ordersUrl, { method: "POST",
+      ordersQuote = await api(root.dataset.ordersUrl, { method: "POST", quiet: true,
         body: { branch: Number($("select[data-branch]").value), orders: wanted } });
     } catch (failure) {
       ordersQuote = null;
       if (error) error.textContent = failure.message || "";
+    } finally {
+      settled();
     }
     render();
   };
@@ -159,13 +163,16 @@ if (root) {
       quote = null;
       return render();
     }
+    const settled = later(() => refreshing([...root.querySelectorAll("[data-lines], [data-total]")]));
     try {
-      quote = await api(root.dataset.quoteUrl, { method: "POST", body: body() });
+      quote = await api(root.dataset.quoteUrl, { method: "POST", body: body(), quiet: true });
     } catch (error) {
       fail(error);
       barcodes.pop(); // the last scan was refused
-      if (barcodes.length) quote = await api(root.dataset.quoteUrl, { method: "POST", body: body() }).catch(() => null);
+      if (barcodes.length) quote = await api(root.dataset.quoteUrl, { method: "POST", body: body(), quiet: true }).catch(() => null);
       else quote = null;
+    } finally {
+      settled();
     }
     render();
   };

@@ -454,6 +454,17 @@ npm run watch:css    # while editing templates
   out; `data-remote="/api/v1/…"` searches the API instead of listing options.
 - Forms post JSON to the API: `<form data-api-form data-endpoint=… data-method=POST|PATCH>`,
   errors appear in `[data-error-for="field"]`. The browser never does pricing arithmetic.
+- Loading (`static/core/js/loading.js`), nothing to add per page: a thin accent bar at the top
+  while another page or an `api()` request takes more than a moment; on the same page with other
+  filters, a tab or a page number, tables keep their headings and their rows turn into a
+  skeleton (empty states too); going to another page, the content becomes a page skeleton; the
+  button that started a save shows a spinner (forms with `data-api-form`, and any button whose
+  click sends a request). Back from the browser cache undoes it all; downloads, print/PDF links,
+  new tabs and anything inside `[data-no-loading]` are left alone. For a page's own figures:
+  `api(url, { quiet: true })` with `later(() => refreshing(nodes))` dims them while they are
+  worked out again, `skeletonRows(table, n)` gives placeholder rows, `busy(button)` a spinner,
+  `startNavigation(url)` before a `window.location.assign`. Classes: `.skeleton`,
+  `.busy-spinner`, `.is-refreshing`.
 
 ## Translations
 

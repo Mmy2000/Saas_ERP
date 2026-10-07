@@ -162,6 +162,7 @@ def shell(request):
             "loading": gettext("Searching…"),
             "clear": gettext("Clear"),
             "sale_done": gettext("Sale completed."),
+            "page_loading": gettext("Loading…"),
         },
         "nav_sections": SimpleLazyObject(lambda: _navigation(request)),
         "tenant_profile": SimpleLazyObject(lambda: TenantProfile.objects.first()),

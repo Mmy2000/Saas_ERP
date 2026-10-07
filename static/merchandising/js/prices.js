@@ -1,6 +1,7 @@
 // Price changes: "Show the pieces" previews what would change (nothing saved), "Change the
 // prices" applies it; on a change's page, "Undo this change".
 import { api, ApiError, uuid } from "../../core/js/api.js";
+import { later, skeletonRows } from "../../core/js/loading.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 
@@ -58,6 +59,12 @@ if (root) {
   $("[data-preview]").addEventListener("click", async () => {
     showError("");
     root.querySelector('[data-error-for="value"]').textContent = "";
+    // The sample table fills with placeholder rows while the pieces are looked up.
+    const sample = $("[data-sample]");
+    const settled = later(() => {
+      sample.replaceChildren(...skeletonRows(sample.closest("table"), 5).rows);
+      $("[data-result]").classList.remove("hidden");
+    });
     try {
       const result = await api(root.dataset.previewUrl, { method: "POST", body: body(), idempotencyKey: uuid() });
       count = result.count;
@@ -68,8 +75,12 @@ if (root) {
       $("[data-result]").classList.remove("hidden");
       $("[data-apply]").disabled = !count;
     } catch (error) {
+      sample.replaceChildren();
+      $("[data-result]").classList.add("hidden");
       if (error instanceof ApiError && error.fields?.value) root.querySelector('[data-error-for="value"]').textContent = [].concat(error.fields.value).join(" ");
       else showError(error instanceof ApiError ? error.message : strings().network);
+    } finally {
+      settled();
     }
   });
 

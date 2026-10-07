@@ -45,6 +45,12 @@ if (opener && dialog) {
     showError("");
     key = uuid();
     dialog.showModal();
+    // Until the draft arrives: the message box shimmers and Send waits.
+    const message = $("[data-send-message]");
+    const go = $("[data-send-go]");
+    message.value = "";
+    message.classList.add("skeleton");
+    go.disabled = true;
     try {
       const params = new URLSearchParams(
         Object.entries(target()).filter(([, value]) => value !== null && value !== undefined));
@@ -58,6 +64,9 @@ if (opener && dialog) {
       (channel === "email" ? $("[data-send-email]") : $("[data-send-phone]")).focus();
     } catch (error) {
       showError(error instanceof ApiError ? error.message : strings().network);
+    } finally {
+      message.classList.remove("skeleton");
+      go.disabled = false;
     }
   });
 

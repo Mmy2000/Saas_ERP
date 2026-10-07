@@ -5,6 +5,7 @@ import { enhanceSelects, filterOptions } from "../../core/js/selects.js";
 import { addDecimals, formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 import { narrowHolders } from "../../treasury/js/holders.js";
+import { later, refreshing } from "../../core/js/loading.js";
 
 const root = document.getElementById("scrap");
 
@@ -79,8 +80,9 @@ if (root) {
     }
     const filled = rows().filter((row) => row.querySelector("[data-gross]").value.trim());
     if (!filled.length) return totals([]);
+    const settled = later(() => refreshing([...root.querySelectorAll("aside dl")]));
     try {
-      const quote = await api(root.dataset.quoteUrl, { method: "POST", body: {
+      const quote = await api(root.dataset.quoteUrl, { method: "POST", quiet: true, body: {
         branch: Number($("select[data-branch]").value), lines: lines() } });
       showErrors(null);
       const amounts = rows().map((row) => {
@@ -94,6 +96,8 @@ if (root) {
       totals(amounts);
     } catch (error) {
       if (error instanceof ApiError) showErrors(error);
+    } finally {
+      settled();
     }
   };
 

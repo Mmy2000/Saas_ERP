@@ -4577,6 +4577,9 @@ msgstr "الحمل"
 msgid "Loading pages…"
 msgstr "جارٍ تحميل الصفحات…"
 
+msgid "Loading…"
+msgstr "جارٍ التحميل…"
+
 msgid "Lock today's gold price"
 msgstr "تثبيت سعر الذهب اليوم"
 

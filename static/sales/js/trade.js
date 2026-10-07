@@ -4,6 +4,7 @@ import { api, ApiError, uuid } from "../../core/js/api.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
 import { goodsPicker } from "../../inventory/js/goods_picker.js";
+import { later, refreshing } from "../../core/js/loading.js";
 
 const root = document.getElementById("trade-sale");
 
@@ -83,11 +84,14 @@ if (root) {
     if (!payload.lines.length) {
       return renderQuote({ lines: [], categories: [], totals: { qty: 0, gross_weight_g: 0, fine_weight_g: 0, metal_amount: 0, making_amount: 0, money_amount: 0 } });
     }
+    const settled = later(() => refreshing([...root.querySelectorAll("aside dl")]));
     try {
-      const quote = await api(root.dataset.quoteUrl, { method: "POST", body: payload });
+      const quote = await api(root.dataset.quoteUrl, { method: "POST", body: payload, quiet: true });
       if (ticket === asked) renderQuote(quote);
     } catch (error) {
       if (ticket === asked) toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
+    } finally {
+      settled();
     }
   };
 

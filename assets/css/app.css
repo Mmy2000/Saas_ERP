@@ -425,6 +425,48 @@
   }
 }
 
+/* Loading (static/core/js/loading.js): a spinner where something is being done (a button, a
+   search box, a dialog), a skeleton where content is on its way (table rows, a page), a thin bar
+   at the top while another page or a request is loading. Reduced motion: they stand still. */
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+@keyframes loading-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@layer components {
+  .busy-spinner {
+    display: inline-block; flex-shrink: 0; width: 1rem; height: 1rem; vertical-align: -0.125em;
+    border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 9999px;
+    animation: loading-spin 0.7s linear infinite;
+  }
+  .busy-spinner.busy-spinner-lg { width: 1.5rem; height: 1.5rem; border-width: 2.5px; }
+  .skeleton {
+    display: block; border-radius: 0.375rem; min-height: 0.75rem;
+    background: linear-gradient(90deg, var(--color-slate-100) 30%, var(--color-slate-200) 50%,
+                var(--color-slate-100) 70%);
+    background-size: 300% 100%;
+    animation: loading-shimmer 1.4s ease-in-out infinite;
+  }
+  [dir="rtl"] .skeleton { animation-direction: reverse; }
+  /* Figures being worked out again: still readable, clearly not final. */
+  .is-refreshing { opacity: 0.55; transition: opacity 200ms; }
+  .loading-bar {
+    position: fixed; inset-inline: 0; top: 0; z-index: 80; height: 2.5px; pointer-events: none;
+    opacity: 0; transition: opacity 250ms;
+  }
+  .loading-bar.is-active { opacity: 1; }
+  .loading-bar > span {
+    display: block; height: 100%; width: 0; border-radius: 0 9999px 9999px 0;
+    background: var(--color-brand-500); box-shadow: 0 0 10px var(--color-brand-400);
+    transition: width 400ms ease;
+  }
+  [dir="rtl"] .loading-bar > span { border-radius: 9999px 0 0 9999px; }
+  /* A remote search box looking things up: the caret becomes a spinner. */
+  .ts-wrapper.loading.single .ts-control::after {
+    width: 0.85rem; height: 0.85rem; margin-top: -0.425rem; transform: none;
+    border: 2px solid var(--color-slate-400); border-inline-end-color: transparent;
+    border-radius: 9999px; animation: loading-spin 0.7s linear infinite;
+  }
+}
+@media print { .loading-bar, [data-skeleton] { display: none !important; } }
+
 /* Every checkbox is a switch: the knob is a background circle that slides to the inline end when
    checked. Outside the layers so it beats size-4 / rounded / accent-* left on older markup. */
 input[type="checkbox"] {

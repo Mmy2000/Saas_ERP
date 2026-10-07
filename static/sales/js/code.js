@@ -3,6 +3,7 @@
 // { code: id } once it is right, { skip: true } when someone allowed sells without it, or
 // null when the dialog is closed.
 import { api, ApiError, uuid } from "../../core/js/api.js";
+import { spinner } from "../../core/js/loading.js";
 import { strings } from "../../core/js/ui.js";
 
 // A number inside a sentence of the other script keeps its own order (LRI ... PDI).
@@ -89,7 +90,7 @@ export function askForCode({ branch, amount, customer = null, phone = "", reserv
     $("[data-code-confirm]").disabled = true;
     $("[data-code-resend]").disabled = true;
     $("[data-code-skip]").classList.add("hidden");
-    status.textContent = status.dataset.sending;
+    status.replaceChildren(spinner("me-2 text-brand-600"), status.dataset.sending);
     dialog.showModal();
     api(dialog.dataset.requestUrl, {
       method: "POST", idempotencyKey: uuid(),

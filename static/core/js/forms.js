@@ -5,6 +5,7 @@
 // Empty inputs: data-empty="omit" leaves the field out, "null" sends null, default sends "".
 
 import { api, ApiError } from "./api.js";
+import { busy, startNavigation } from "./loading.js";
 import { flash, strings, toast } from "./ui.js";
 
 const shapers = new Map();
@@ -93,21 +94,19 @@ async function submit(form) {
   const body = shaper ? shaper(values, form) : values;
 
   clearErrors(form);
-  button?.setAttribute("disabled", "");
+  const done = busy(button); // stays busy while the next page loads after a success
   try {
     const data = await api(form.dataset.endpoint, { method: form.dataset.method || "POST", body });
     const redirect = form.dataset.redirect;
-    if (redirect) {
-      flash(form.dataset.success || "");
-      window.location.assign(redirect.replace("{id}", data && data.id));
-    } else {
-      flash(form.dataset.success || "");
-      window.location.reload();
-    }
+    flash(form.dataset.success || "");
+    const next = redirect ? redirect.replace("{id}", data && data.id) : window.location.href;
+    startNavigation(next);
+    if (redirect) window.location.assign(next);
+    else window.location.reload();
   } catch (error) {
     if (error instanceof ApiError) showErrors(form, error);
     else toast(ui.network, { kind: "error" });
-    button?.removeAttribute("disabled");
+    done();
   }
 }
 

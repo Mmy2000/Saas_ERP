@@ -7,6 +7,7 @@ import { flash, strings, toast } from "../../core/js/ui.js";
 import { narrowHolders } from "../../treasury/js/holders.js";
 import { addDecimals, formatNumber, percentToRate, rateToPercent } from "../../core/js/money.js";
 import { askForCode } from "./code.js";
+import { busy, later, refreshing, skeletonRows } from "../../core/js/loading.js";
 
 const root = document.getElementById("pos");
 
@@ -136,8 +137,20 @@ if (root) {
     clearTimeout(timer);
     timer = setTimeout(async () => {
       const seq = ++state.seq;
+      // While the server works the figures out again (no top bar: this runs as you type), the
+      // totals dim and a piece just scanned shows as a placeholder row until it is priced.
+      const settled = later(() => {
+        const fresh = state.lines.filter((line) => line.fresh).length;
+        const body = $("[data-lines]");
+        if (fresh && body.rows.length < state.lines.length) {
+          body.append(...skeletonRows(body.closest("table"), fresh).rows);
+          $("[data-lines-empty]").classList.add("hidden");
+        }
+        return refreshing([...root.querySelectorAll("aside section")]
+          .filter((section) => section.querySelector("[data-total]")));
+      });
       try {
-        const quote = await api(root.dataset.quoteUrl, { method: "POST", body: body() });
+        const quote = await api(root.dataset.quoteUrl, { method: "POST", body: body(), quiet: true });
         if (seq !== state.seq) return;
         state.quote = quote;
       } catch (error) {
@@ -157,6 +170,8 @@ if (root) {
           return requestQuote();
         }
         if (!badTrades.length) state.quote = null;
+      } finally {
+        settled();
       }
       state.lines.forEach((line) => (line.fresh = false));
       render();
@@ -238,7 +253,7 @@ if (root) {
 
   $("[data-complete]").addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    button.disabled = true;
+    const done = busy(button);
     const sale = body();
     const code = state.quote?.code;
     if (code?.needed) {
@@ -246,7 +261,7 @@ if (root) {
       const answer = await askForCode({ branch: sale.branch, amount: state.quote.totals.total, customer: sale.customer,
                                         phone: sale.customer_phone, reason: code.reason, canSkip: code.can_skip });
       if (!answer) {
-        button.disabled = false;
+        done();
         return;
       }
       if (answer.code) sale.code = answer.code;
@@ -259,7 +274,7 @@ if (root) {
       window.location.assign(root.dataset.receiptUrl.replace("{id}", invoice.id));
     } catch (error) {
       toast(error instanceof ApiError ? error.message : strings().network, { kind: "error" });
-      button.disabled = false;
+      done();
       if (error instanceof ApiError) state.key = uuid(); // a rejected sale may be corrected and retried
     }
   });
