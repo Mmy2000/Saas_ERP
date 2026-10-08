@@ -2141,6 +2141,9 @@ msgstr "اختر الحساب البنكي."
 msgid "Choose the branch receiving the goods."
 msgstr "اختر الفرع المستلِم."
 
+msgid "Choose the branch."
+msgstr "اختر الفرع."
+
 msgid "Choose the card terminal."
 msgstr "اختر ماكينة الدفع."
 
@@ -2179,6 +2182,9 @@ msgstr "اختر ورشة المُركِّب."
 
 msgid "Choose the shape."
 msgstr "اختر الشكل."
+
+msgid "Choose the stage (start or end) and the format (pdf or xlsx)."
+msgstr "اختر المرحلة (start أو end) والصيغة (pdf أو xlsx)."
 
 msgid "Choose the supplier."
 msgstr "اختر المورد."
@@ -2477,6 +2483,9 @@ msgstr "أكِّد وصول كل ما في هذه القائمة إلى %(branch
 msgid "Confirm the cash arrived in %(box)s at %(branch)s."
 msgstr "أكِّد وصول النقدية إلى %(box)s في %(branch)s."
 
+msgid "Confirm to start the stocktake."
+msgstr "أكّد لبدء الجرد."
+
 msgid "Confirmed"
 msgstr "مؤكد"
 
@@ -2593,6 +2602,9 @@ msgstr "الوزن الفعلي (جم)"
 
 msgid "Counted by"
 msgstr "جرده"
+
+msgid "Counted weight (g)"
+msgstr "الوزن المجرود (جم)"
 
 msgid "Counted wrong? Cancel the count and count again: the difference it booked is undone."
 msgstr "أخطأت في العد؟ ألغِ الجرد وأعد العد: يُلغى الفرق الذي سُجّل."
@@ -3083,6 +3095,9 @@ msgstr "الألماس والأحجار"
 msgid "Difference"
 msgstr "الفرق"
 
+msgid "Difference (g)"
+msgstr "الفرق (جم)"
+
 msgid "Difference with other branches"
 msgstr "فرق مع الفروع الأخرى"
 
@@ -3505,6 +3520,9 @@ msgstr "أدخل المبلغ المعدود."
 
 msgid "Enter the balance."
 msgstr "أدخل الرصيد."
+
+msgid "Enter the branch and the stocktake number."
+msgstr "يرجى إدخال الفرع ورقم الجرد."
 
 msgid "Enter the carats."
 msgstr "أدخل القيراط."
@@ -4631,6 +4649,9 @@ msgstr "آخر نجاح"
 msgid "Last time"
 msgstr "آخر مرة"
 
+msgid "Last used"
+msgstr "آخر استخدام"
+
 msgid "Last visit"
 msgstr "آخر زيارة"
 
@@ -5038,6 +5059,12 @@ msgstr "مفقود"
 
 msgid "mm"
 msgstr "مم"
+
+msgid "Mobile app"
+msgstr "تطبيق الموبايل"
+
+msgid "Mobile devices"
+msgstr "أجهزة الموبايل"
 
 msgid "Modern"
 msgstr "عصري"
@@ -5582,6 +5609,9 @@ msgstr "لا يوجد شركاء بعد"
 msgid "No payroll paid yet"
 msgstr "لم يُصرف أي مسير رواتب بعد"
 
+msgid "No phones signed in"
+msgstr "لا توجد هواتف مسجّلة الدخول"
+
 msgid "no piece has this barcode"
 msgstr "لا توجد قطعة بهذا الباركود"
 
@@ -5590,6 +5620,9 @@ msgstr "لا توجد قطعة تطابق اختيارك."
 
 msgid "No piece with barcode %(barcode)s."
 msgstr "لا توجد قطعة بالباركود %(barcode)s."
+
+msgid "No piece with this code."
+msgstr "كود غير صحيح."
 
 msgid "No pieces chosen"
 msgstr "لم تُختر أي قطع"
@@ -5644,6 +5677,9 @@ msgstr "لم يستجب أي مصدر مؤخرًا. العملاء الذين ي
 
 msgid "No stock yet"
 msgstr "لا يوجد مخزون بعد"
+
+msgid "No stocktake with this number at this branch."
+msgstr "لا يوجد جرد بهذا الرقم في هذا الفرع."
 
 msgid "No stocktakes yet"
 msgstr "لا توجد عمليات جرد بعد"
@@ -6437,6 +6473,9 @@ msgstr "عميل/مورد"
 msgid "Password"
 msgstr "كلمة المرور"
 
+msgid "Password changed."
+msgstr "تم تغيير كلمة المرور."
+
 msgid "Password changed. The user was signed out everywhere."
 msgstr "تم تغيير كلمة المرور وتسجيل خروج المستخدم من كل الأجهزة."
 
@@ -6536,6 +6575,9 @@ msgstr "قسائم الرواتب"
 msgid "pcs"
 msgstr "قطعة"
 
+msgid "PDF files cannot be made on this server right now."
+msgstr "لا يمكن إنشاء ملفات PDF على هذا الخادم الآن."
+
 msgid "PDF not available"
 msgstr "ملف PDF غير متاح"
 
@@ -6598,6 +6640,9 @@ msgstr "فرد"
 
 msgid "Phone"
 msgstr "الهاتف"
+
+msgid "Phones signed in to the stock app. A lost or replaced phone can be signed out here; it stops working at once."
+msgstr "الهواتف المسجّلة الدخول في تطبيق المخزون. يمكن تسجيل خروج هاتف مفقود أو مستبدل من هنا؛ يتوقف عن العمل فورًا."
 
 msgid "Pick pieces on the stock page, or open this from a purchase or a transfer."
 msgstr "اختر القطع من صفحة المخزون، أو افتح هذه الصفحة من فاتورة شراء أو تحويل."
@@ -7964,6 +8009,9 @@ msgstr "الاطلاع على الأرقام القومية للعملاء"
 msgid "See diamond pieces, loose stones and their certificates"
 msgstr "عرض قطع الألماس والأحجار السائبة وشهاداتها"
 
+msgid "See everyone's signed-in phones and sign them out"
+msgstr "رؤية هواتف الجميع المسجّلة الدخول وتسجيل خروجها"
+
 msgid "See offers and what they gave"
 msgstr "عرض العروض وما منحته"
 
@@ -8324,8 +8372,20 @@ msgstr "الهامش الجانبي (مم)"
 msgid "Sign in"
 msgstr "تسجيل الدخول"
 
+msgid "Sign in first."
+msgstr "سجّل الدخول أولًا."
+
+msgid "Sign in to the mobile app (stock and stocktake)"
+msgstr "الدخول إلى تطبيق الموبايل (المخزون والجرد)"
+
 msgid "Sign in to your workspace"
 msgstr "تسجيل الدخول إلى حسابك"
+
+msgid "Sign out"
+msgstr "تسجيل الخروج"
+
+msgid "Sign this phone out?"
+msgstr "تسجيل خروج هذا الهاتف؟"
 
 msgid "Sign-ins"
 msgstr "سجل الدخول"
@@ -8569,6 +8629,12 @@ msgstr "الجرد"
 
 msgid "Stocktake %(number)s"
 msgstr "جرد %(number)s"
+
+msgid "Stocktake %(number)s at the start"
+msgstr "الجرد %(number)s عند البدء"
+
+msgid "Stocktake %(number)s, counted and not counted"
+msgstr "الجرد %(number)s، المجرود وغير المجرود"
 
 msgid "Stocktake adjustment"
 msgstr "تسوية جرد"
@@ -8945,6 +9011,9 @@ msgstr "تخرج التكلفة بمتوسط البرتيتة للقيراط."
 msgid "The currency parameter is required."
 msgstr "يجب تحديد العملة."
 
+msgid "The current password is not right."
+msgstr "كلمة المرور الحالية غير صحيحة."
+
 msgid "The custom design has an error, so the standard layout is shown: %(error)s"
 msgstr "التصميم المخصص به خطأ، لذلك يظهر التصميم القياسي: %(error)s"
 
@@ -9071,6 +9140,9 @@ msgstr "تحرك السوق %(pct)s%%: سيصبح بيع عيار 21 بسعر %(
 msgid "The message"
 msgstr "الرسالة"
 
+msgid "The mobile app is not available for this account."
+msgstr "تطبيق الموبايل غير متاح لهذا الحساب."
+
 msgid "The month is closed."
 msgstr "تم إقفال الشهر."
 
@@ -9079,6 +9151,9 @@ msgstr "أُعيد فتح الشهر."
 
 msgid "The mounting"
 msgstr "الشاتون"
+
+msgid "The new password is the same as the current one."
+msgstr "كلمة المرور الجديدة مطابقة للحالية."
 
 msgid "The Owner role cannot be changed."
 msgstr "لا يمكن تعديل دور المالك."
@@ -9112,6 +9187,9 @@ msgstr "من يستلم هو العميل الذي دفع العربون."
 
 msgid "The phone stays the shop's: WhatsApp keeps working on it as usual."
 msgstr "يبقى الهاتف للمحل: يستمر واتساب في العمل عليه كالمعتاد."
+
+msgid "The phone was signed out."
+msgstr "تم تسجيل خروج الهاتف."
 
 msgid "The piece"
 msgstr "القطعة"
@@ -9187,6 +9265,9 @@ msgstr "رقم واتساب المحل غير مربوط. اربطه مجددً�
 
 msgid "The shop’s parcels"
 msgstr "برتيتات المحل"
+
+msgid "The stock and stocktake phone app: sign in, look pieces up, see stock by karat, and count a branch by scanning. Off unless switched on for the client."
+msgstr "تطبيق الهاتف للمخزون والجرد: الدخول، والبحث عن القطع، ورؤية المخزون حسب العيار، وجرد الفرع بالمسح. متوقف إلا إذا فُعّل للعميل."
 
 msgid "The stones come back to stock as the same loose stones, with their barcode, details and cost. A fee adds to the piece's cost and is owed to the setter."
 msgstr "ترجع الأحجار للمخزون كنفس الأحجار السائبة بباركودها وبياناتها وتكلفتها. والأجرة تُضاف لتكلفة القطعة وتُستحق للمركباتي."
@@ -9449,8 +9530,26 @@ msgstr "هذه البرتيتة موقوفة."
 msgid "This period"
 msgstr "هذه الفترة"
 
+msgid "This piece belongs to another branch."
+msgstr "هذه القطعة تابعة لفرع آخر."
+
 msgid "This piece is not in stock."
 msgstr "هذه القطعة ليست في المخزون."
+
+msgid "This piece is not part of this stocktake."
+msgstr "هذه القطعة ليست ضمن هذا الجرد."
+
+msgid "This piece is on its way and was not received yet."
+msgstr "هذه القطعة في الطريق ولم تُستلم بعد."
+
+msgid "This piece was already counted."
+msgstr "تم جرد هذه القطعة من قبل."
+
+msgid "This piece was returned to the supplier."
+msgstr "هذه القطعة مرتجعة للمورد."
+
+msgid "This piece was sold."
+msgstr "هذه القطعة مباعة."
 
 msgid "this piece's own"
 msgstr "خاصة بهذه القطعة"
@@ -9472,6 +9571,9 @@ msgstr "هذه البيعة تحتاج الكود المرسل إلى هاتف �
 
 msgid "This screen cannot be pinned."
 msgstr "لا يمكن تثبيت هذه الشاشة."
+
+msgid "This sign-in belongs to someone else."
+msgstr "هذا الدخول يخص مستخدمًا آخر."
 
 msgid "This stocktake is closed."
 msgstr "هذا الجرد مغلق."
@@ -9764,11 +9866,17 @@ msgstr "نوع مستند غير معروف: %(type)s"
 msgid "Unknown field."
 msgstr "بيان غير معروف."
 
+msgid "Unknown group."
+msgstr "مجموعة غير معروفة."
+
 msgid "Unknown karat “%(value)s”."
 msgstr "عيار غير معروف «%(value)s»."
 
 msgid "Unknown karat."
 msgstr "عيار غير معروف."
+
+msgid "Unknown main group."
+msgstr "مجموعة رئيسية غير معروفة."
 
 msgid "Unknown metal."
 msgstr "معدن غير معروف."
@@ -10214,6 +10322,9 @@ msgstr "عندما تُرسل بضاعة أو نقدية إلى فرعك، أو 
 msgid "When off, the layout and options below are used. A design with an error falls back to them when printing."
 msgstr "عند إيقافه تُستخدم التصميمات والخيارات أدناه. التصميم الذي به خطأ يرجع إليها عند الطباعة."
 
+msgid "When someone signs in to the stock app, their phone shows here."
+msgstr "عندما يسجّل أحد الدخول في تطبيق المخزون يظهر هاتفه هنا."
+
 msgid "When the count is finished: pieces not counted become missing, missing pieces found here come back into stock, and bulk gold is set to the weight entered."
 msgstr "عند انتهاء الجرد: القطع التي لم تُعدّ تُسجَّل عجزًا، والقطع المفقودة التي وُجدت هنا تعود للمخزون، ويُضبط الذهب بالوزن على الوزن المُدخل."
 
@@ -10370,6 +10481,9 @@ msgstr "تنزيل كفاقد"
 msgid "Wrong name or password"
 msgstr "اسم أو كلمة مرور خاطئة"
 
+msgid "Wrong name or password."
+msgstr "بيانات الاعتماد غير صحيحة."
+
 msgid "Year"
 msgstr "السنة"
 
@@ -10418,6 +10532,9 @@ msgstr "ليست لديك صلاحية إقفال الشهور."
 msgid "You do not have permission to do this."
 msgstr "ليست لديك صلاحية لتنفيذ هذا الإجراء."
 
+msgid "You do not have permission to use the mobile app."
+msgstr "ليس لديك صلاحية استخدام تطبيق الموبايل."
+
 msgid "You don't have access to this page"
 msgstr "ليست لديك صلاحية لفتح هذه الصفحة"
 
@@ -10438,6 +10555,9 @@ msgstr "لا يمكنك تغيير سعر الشراء."
 
 msgid "You may not change the scrap gold price."
 msgstr "لا يُسمح لك بتعديل سعر الكسر."
+
+msgid "You may not count stock at this branch."
+msgstr "ليس لديك إذن للوصول إلى هذا الفرع."
 
 msgid "You may not sell diamond pieces."
 msgstr "لا يُسمح لك ببيع قطع الألماس."
@@ -10486,6 +10606,9 @@ msgstr "محلاتك ومكاتبك."
 
 msgid "Your shortcuts"
 msgstr "اختصاراتك"
+
+msgid "Your sign-in has expired or is not valid."
+msgstr "انتهت صلاحية الدخول أو أنه غير صالح."
 
 msgid "Your team, their salaries, commissions and advances."
 msgstr "فريقك ورواتبهم وعمولاتهم وسلفهم."

@@ -16,6 +16,8 @@ from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
 from apps.merchandising import views as merchandising
 from apps.messaging import views as messaging
+from apps.mobile import urls as mobile
+from apps.mobile import views as mobile_views
 from apps.notifications import views as notifications
 from apps.opening import views as opening
 from apps.org.web import company
@@ -58,6 +60,9 @@ urlpatterns = [
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
     path("settings/activity/", audit.activity, name="activity"),
     path("settings/sign-ins/", iam.sign_ins, name="sign-ins"),
+    path("settings/mobile-devices/", mobile_views.devices, name="mobile-devices"),
+    path("settings/mobile-devices/<int:pk>/sign-out/", mobile_views.sign_out_device,
+         name="mobile-device-sign-out"),
     path("notifications/", notifications.notifications, name="notifications"),
     path("settings/messages/", messaging.messages_log, name="messages"),
     path("settings/whatsapp/", messaging.whatsapp_settings, name="whatsapp-settings"),
@@ -232,4 +237,8 @@ urlpatterns = [
     path("accounting/periods/<int:year>/<int:month>/", ledger.period, name="period"),
 
     path("api/v1/", include("config.api_urls")),
+    # The mobile app (D:\work\Gold-inventory) at Gweb's own addresses: apps/mobile.
+    path("api/auth/", include(mobile.auth)),
+    path("Sup/api/", include(mobile.inventory)),
+    path("Sup1/api/", include(mobile.stocktake)),
 ]

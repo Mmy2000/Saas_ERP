@@ -460,6 +460,30 @@ the last entry of `X-Forwarded-For` (set `SIGNIN_IP_HEADER` for another proxy he
 screens, up to 12, appear under Dashboard in the sidebar and as tiles on the dashboard (× to
 remove), and only while the member may still open them.
 
+### Mobile app (stock and stocktake)
+
+The existing phone app (`D:\work\Gold-inventory`, Expo / React Native, made for Gweb) works
+against this platform **unchanged**: `apps/mobile` answers at Gweb's own addresses and in Gweb's
+field names, on each client's own domain (the app asks for the domain). Feature "Mobile app"
+(off unless switched on), permission `mobile.signin` (Managers have it; Viewers do not).
+
+| The app calls | Here |
+|---|---|
+| `POST /api/auth/login/` `refresh/` `logout/`, `GET me/`, `POST change-password/` | Bearer tokens: a 7-minute JWT access token (`exp` read by the app; carries the client and the device) and a 30-day refresh token that rotates; one row per phone (`MobileDevice`) |
+| `GET /Sup/api/inventory/` (`search`, `karat`, `branch`, `page`, `page_size`), `summary/`, `branches/`, `<barcode>/` | Pieces on hand in the branches the member may see; cost fields only with "See purchase costs" (left out, not null, as in Gweb) |
+| `GET /Sup1/api/ghu11/lookups/`, `GET /Sup1/api/ghu11/`, `POST scan/`, `POST start/`, `GET report/` (`fmt=pdf\|xlsx`, `stage=start\|end`) | This platform's stocktake (`xo1` = its id, `brna` = branch code); started and counted from the phone or the web, posted on the web |
+
+Names: `mco` = barcode, `com_mco` = supplier's code, `co` = karat (silver = 1), `gco`/`gdis` = category,
+`ssco`/`ssdis` = its top group, `br`/`brna` = branch code and name. Errors keep Gweb's shape
+(`{"detail": …}` or `{"field": [message]}`), in the shop's language. A barcode the count does not
+expect is turned down with Gweb's reasons (`not_found`, `sold`, `other_branch`, `not_received`,
+`returned_to_factory`, `not_in_stocktake`, `already_counted`) and nothing is recorded. Starting a
+count for a top group now includes its sub-categories (web too). **Settings → Mobile devices** lists
+the signed-in phones and signs one out at once. The contract was checked by running the app's own
+parsers (`src/api/mappers.ts`) against this server's answers. Not carried over: CORS (the app is
+native) and Gweb's `/Sup/api/fn6/by-mco/`, `/Dim/api/…`, `/Stone/api/…` look-ups used by its
+e-commerce site.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

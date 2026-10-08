@@ -150,6 +150,7 @@ NAVIGATION: list[NavSection] = [
         NavItem(_("Roles"), "roles", "shield-check", "admin.users.view", ("role-new", "role-edit")),
         NavItem(_("Activity"), "activity", "history", "admin.audit.history"),
         NavItem(_("Sign-ins"), "sign-ins", "log-in", "admin.signins.history"),
+        NavItem(_("Mobile devices"), "mobile-devices", "scan-barcode", "mobile.devices.manage"),
         NavItem(_("Sent messages"), "messages", "send", "messaging.view"),
         NavItem(_("WhatsApp"), "whatsapp-settings", "send", "messaging.whatsapp.link"),
         NavItem(_("Sale codes"), "sale-code-settings", "shield-check", "sales.code.manage"),

@@ -59,6 +59,15 @@ def _open(stocktake_id: int, *, lock: bool = False) -> Stocktake:
     return stocktake
 
 
+def _with_children(category: ItemCategory) -> set[int]:
+    found, layer = {category.pk}, {category.pk}
+    while layer:
+        layer = set(ItemCategory.objects.filter(parent_id__in=layer).values_list("pk", flat=True))
+        layer -= found
+        found |= layer
+    return found
+
+
 def start_stocktake(branch_id: int, *, category_id: int | None = None,
                     karat_id: int | None = None, note: str = "", actor=None) -> Stocktake:
     branch = Branch.objects.filter(pk=branch_id, is_active=True).first()
@@ -78,8 +87,10 @@ def start_stocktake(branch_id: int, *, category_id: int | None = None,
             items = Item.objects.filter(branch=branch, status__in=ON_HAND)
             lots = LotBalance.objects.filter(lot__branch=branch).filter(
                 Q(gross_weight_g__gt=0) | Q(qty__gt=0)).select_related("lot")
-            if category is not None:
-                items, lots = items.filter(category=category), lots.filter(lot__category=category)
+            if category is not None:  # the category and the ones under it
+                within = _with_children(category)
+                items = items.filter(category_id__in=within)
+                lots = lots.filter(lot__category_id__in=within)
             if karat is not None:
                 items, lots = items.filter(karat=karat), lots.filter(lot__karat=karat)
             StocktakeLine.objects.bulk_create([

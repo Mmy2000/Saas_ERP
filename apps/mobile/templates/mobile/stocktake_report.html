@@ -1,0 +1,30 @@
+{% extends "printing/sheet.html" %}
+{% load i18n ui %}
+{% block meta %}
+    <p>{{ stocktake.branch.name }} · <span class="num">{{ stocktake.business_date|date:"SHORT_DATE_FORMAT" }}</span></p>
+    {% if stocktake.category %}<p>{{ stocktake.category.name }}</p>{% endif %}
+{% endblock %}
+{% block content %}
+<section>
+  <h2>{% translate "By karat" %}</h2>
+  <table>
+    <thead><tr><th>{% translate "Karat" %}</th><th class="end">{% translate "Pieces" %}</th><th class="end">{% translate "Weight (g)" %}</th>
+      {% if stage == "end" %}<th class="end">{% translate "Counted" %}</th><th class="end">{% translate "Counted weight (g)" %}</th><th class="end">{% translate "Difference (g)" %}</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for k in summary.karats %}{% if k.start_count %}
+      <tr><td>{% if k.karat == 1 %}{% translate "Silver" %}{% else %}{{ k.karat }}K{% endif %}</td><td class="end num">{{ k.start_count }}</td><td class="end num">{{ k.start_weight }}</td>
+        {% if stage == "end" %}<td class="end num">{{ k.end_count }}</td><td class="end num">{{ k.end_weight }}</td><td class="end num">{{ k.diff_weight }}</td>{% endif %}</tr>
+    {% endif %}{% endfor %}
+    </tbody>
+  </table>
+</section>
+<section>
+  <h2>{% translate "Pieces" %}</h2>
+  <table>
+    <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Group" %}</th><th>{% translate "Karat" %}</th><th class="end">{% translate "Weight (g)" %}</th>{% if stage == "end" %}<th>{% translate "Counted" %}</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for row in rows %}<tr><td class="num">{{ row.code }}</td><td>{{ row.group }}</td><td>{{ row.karat }}</td><td class="end num">{{ row.weight }}</td>{% if stage == "end" %}<td>{{ row.state }}</td>{% endif %}</tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

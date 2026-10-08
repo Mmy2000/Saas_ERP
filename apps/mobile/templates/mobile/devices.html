@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Mobile devices" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Mobile devices" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Phones signed in to the stock app. A lost or replaced phone can be signed out here; it stops working at once." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if devices %}
+  <div class="relative overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Who" %}</th><th>{% translate "Phone" %}</th><th>{% translate "Address" %}</th>
+        <th>{% translate "Signed in" %}</th><th>{% translate "Last used" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for d in devices %}
+        <tr>
+          <td><span class="font-medium text-slate-900">{{ d.membership.user.display_name }}</span> <span class="num text-xs text-slate-500">@{{ d.membership.username }}</span></td>
+          <td class="text-sm text-slate-600" title="{{ d.user_agent }}">{{ d.described|default:"—" }}</td>
+          <td><span class="num text-slate-600" dir="ltr">{{ d.ip|default:"—" }}</span></td>
+          <td><span class="num text-slate-600">{{ d.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td><span class="num text-slate-600">{{ d.last_seen_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td class="text-end">
+            {% translate "Sign this phone out?" as ask %}
+            <form method="post" action="{% url 'mobile-device-sign-out' d.pk %}" onsubmit="return confirm('{{ ask|escapejs }}')">
+              {% csrf_token %}<button type="submit" class="btn btn-ghost text-xs text-red-700">{% icon "log-out" "size-3.5" %}{% translate "Sign out" %}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No phones signed in" as empty_title %}
+    {% translate "When someone signs in to the stock app, their phone shows here." as empty_text %}
+    {% include "components/empty_state.html" with icon="scan-barcode" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -117,6 +117,10 @@ FEATURES: list[Feature] = [
               "the client."),
             TOOLS, "send", ("messaging.whatsapp.own", "messaging.whatsapp.link",
                             "messaging.campaign."), default=False),
+    Feature("mobile_app", _("Mobile app"),
+            _("The stock and stocktake phone app: sign in, look pieces up, see stock by karat, "
+              "and count a branch by scanning. Off unless switched on for the client."),
+            TOOLS, "scan-barcode", ("mobile.",), default=False),
     Feature("diamonds", _("Diamonds and gemstones"),
             _("Stone details and certificates, label-price selling, loose stones, stone "
               "setting and diamond reports. Off unless switched on for the client."),
