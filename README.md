@@ -412,6 +412,15 @@ form shows the gold in each piece at today's value as a guide; the price is spli
 (at most that value, on gold inventory through the metal position, like scrap) and the stones
 (the rest, on "diamonds and stones"). Cancellable while every piece is untouched in stock.
 
+**Diamonds → Stone parcels** (legacy برتيتات: Ft1/GHZ11, GHZ16, GHZ71): small stones kept by
+weight without a barcode each. A parcel (code, branch, kind, shape, size, colour, clarity, sale
+price per carat) holds carats, a count and their cost; the average cost per carat is what leaves
+it (Gweb had none). Bought into from a supplier (on account, cash or bank: Dr diamonds and
+stones), sold by the carat to a customer or a walk-in (diamond sales; cost of diamonds sold at
+the average), and taken into a piece in a stone setting or when a piece comes back from the
+setter (the cost moves onto the piece, the same account). Every change is a movement; a
+cancelled sale or setting puts back exactly what left.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is

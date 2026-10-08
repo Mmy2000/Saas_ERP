@@ -48,6 +48,7 @@ from .models import (
     StoneRemoval,
     StoneSetting,
 )
+from .parcels import give_back, price_uses
 from .services import _field, apply_setting, labour_lines, require_enabled
 
 JOB_DOC = "diamonds.SettingJob"
@@ -211,6 +212,7 @@ class SetInput:
     category_id: int | None = None  # a gold mounting becomes a piece of this diamond category
     label_price: Decimal | str | None = None
     note: str = ""
+    parcel_uses: tuple = ()  # small stones from the shop's parcels, by the carat
 
 
 def set_from_job(job_id: int, data: SetInput, *, actor=None) -> StoneSetting:
@@ -222,7 +224,8 @@ def set_from_job(job_id: int, data: SetInput, *, actor=None) -> StoneSetting:
             "category", "karat__metal").get(pk=mounting_line.item_id)
         if piece.category.product_family not in MOUNTINGS:
             raise _field("mounting", _("Choose the piece the stones go into."))
-        stone_lines_ = _out_lines(job, data.stone_line_ids, "stones")
+        stone_lines_ = (_out_lines(job, data.stone_line_ids, "stones")
+                        if data.stone_line_ids or not data.parcel_uses else [])
         stones = list(Item.objects.select_for_update(of=("self",)).select_related("category")
                       .prefetch_related("stones").filter(pk__in=[ln.item_id for ln in stone_lines_])
                       .order_by("pk"))
@@ -251,7 +254,8 @@ def set_from_job(job_id: int, data: SetInput, *, actor=None) -> StoneSetting:
             sign=1, counter_role=HOLDING, branch=job.branch, values=[mounting_line.metal_value])
         setting = apply_setting(piece=piece, stones=stones, after=after, labour=labour,
                                 setter=job.setter, branch=job.branch, note=data.note,
-                                actor=actor, job=job, extra_lines=back)
+                                actor=actor, job=job, extra_lines=back,
+                                parcels=price_uses(data.parcel_uses, job.branch))
         change_item_status(piece.pk, to=ItemStatus.IN_STOCK, allowed_from=(ItemStatus.AT_WORKSHOP,),
                            movement_type=MovementType.WORKSHOP_RECEIPT,
                            business_date=setting.business_date, doc=DocRef(JOB_DOC, job.pk),
@@ -281,6 +285,7 @@ def undo_job_setting(setting: StoneSetting, *, reason: str = "", actor=None) -> 
     stone_ids = list(setting.stones.values_list("stone_id", flat=True))
     Item.objects.filter(pk__in=stone_ids).update(status=ItemStatus.AT_WORKSHOP)
     ItemStone.objects.filter(item=piece, setting=setting).delete()
+    give_back(doc_type="diamonds.StoneSetting", doc_id=setting.pk, day=today)
     piece.refresh_from_db()
     piece.gross_weight_g = setting.gross_before_g
     piece.stone_weight_ct -= setting.stones_carat

@@ -1,0 +1,74 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Stone parcels" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/parcels.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stone parcels" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Small stones kept by weight, without a barcode each: bought into a parcel, sold by the carat, or set into pieces at the parcel's average cost." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.manage" as can_manage %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    {% if parcels %}
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Stones" %}</th><th>{% translate "Branch" %}</th>
+          <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Count" %}</th>
+          <th class="text-end">{% translate "Cost / ct" %}</th><th class="text-end">{% translate "Cost" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody>
+        {% for p in parcels %}
+          <tr>
+            <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'parcel' p.pk %}">{{ p.code }}</a>{% if not p.is_active %} <span class="badge badge-neutral">{% translate "Stopped" %}</span>{% endif %}</td>
+            <td class="min-w-40 text-sm">{{ p.get_kind_display }}{% if p.shape %} · {{ p.get_shape_display }}{% endif %}{% if p.size %} · <span dir="ltr">{{ p.size }}</span>{% endif %}
+              {% if p.color or p.clarity %}<div class="text-xs text-slate-500" dir="ltr">{{ p.color }} {{ p.clarity }}</div>{% endif %}</td>
+            <td>{{ p.branch.name }}</td>
+            <td class="text-end"><span class="num">{{ p.carats|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ p.count }}</span></td>
+            <td class="text-end"><span class="num">{{ p.cost_per_ct|num:2|default:"—" }}</span></td>
+            <td class="text-end"><span class="num">{{ p.cost_amount|num:2 }}</span></td>
+            <td class="text-end whitespace-nowrap">{% if can_manage %}<button type="button" class="btn btn-ghost text-xs" data-edit-parcel="{% url 'diamonds-parcel' p.pk %}"
+                data-code="{{ p.code }}" data-branch="{{ p.branch_id }}" data-kind="{{ p.kind }}" data-shape="{{ p.shape }}" data-size="{{ p.size }}"
+                data-color="{{ p.color }}" data-clarity="{{ p.clarity }}" data-note="{{ p.note }}" data-sale="{{ p.sale_price_per_ct|default_if_none:''|stringformat:'s' }}"
+                data-active="{{ p.is_active|yesno:'1,' }}">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</button>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No parcels yet" as empty_title %}
+      {% translate "Add a parcel for each kind of small stone you keep, then buy stones into it." as empty_text %}
+      {% include "components/empty_state.html" with icon="layers" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+  {% if can_manage %}
+  <form id="parcel-form" class="card" data-api-form data-shape="parcel" data-method="POST" data-endpoint="{% url 'diamonds-parcels' %}"
+        data-create-url="{% url 'diamonds-parcels' %}" data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="card-header"><h2 class="card-title" data-form-title data-new="{% translate 'New parcel' %}" data-edit="{% translate 'Edit parcel' %}">{% translate "New parcel" %}</h2></div>
+    <div class="card-body space-y-4">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block"><span class="form-label">{% translate "Code" %}</span><input name="code" class="form-input num w-full text-start" maxlength="20"><span class="form-error" data-error-for="code"></span></label>
+        <label class="block"><span class="form-label">{% translate "Branch" %}</span>
+          <select name="branch" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == default_branch %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+        <label class="block"><span class="form-label">{% translate "Kind" %}</span>
+          <select name="kind" class="form-input">{% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label class="block"><span class="form-label">{% translate "Shape" %}</span>
+          <select name="shape" class="form-input"><option value="">—</option>{% for value, label in shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label class="block"><span class="form-label">{% translate "Size" %}</span><input name="size" class="form-input" maxlength="40" placeholder="0.01–0.03 ct" dir="ltr"></label>
+        <label class="block"><span class="form-label">{% translate "Sale price / ct" %}</span><input name="sale_price_per_ct" class="form-input num w-full text-start" inputmode="decimal"><span class="form-error" data-error-for="sale_price_per_ct"></span></label>
+        <label class="block"><span class="form-label">{% translate "Colour" %}</span><input name="color" class="form-input" maxlength="20" dir="ltr"></label>
+        <label class="block"><span class="form-label">{% translate "Clarity" %}</span><input name="clarity" class="form-input" maxlength="20" dir="ltr"></label>
+      </div>
+      <input name="note" class="form-input" placeholder="{% translate 'Note' %}" maxlength="200">
+      <label class="flex items-center gap-3 text-sm"><input type="checkbox" name="is_active" checked>{% translate "Active" %}</label>
+      <div class="flex gap-2"><button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+        <button type="button" class="btn btn-secondary hidden" data-new-parcel>{% translate "New parcel" %}</button></div>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

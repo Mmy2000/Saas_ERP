@@ -7,6 +7,8 @@ a parcel of stones sold together, is an Item of family "stone" without a karat.
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
@@ -252,3 +254,100 @@ class BuyBackLine(TenantScopedModel):
 
     class Meta:
         indexes = [models.Index(fields=["tenant", "buy_back"], name="diamonds_buyback_line_idx")]
+
+
+class StoneParcel(TenantScopedModel):
+    """A parcel of small stones kept by weight (legacy "برتيتات", Ft1 / GHZ11): no barcode per
+    stone; a balance of carats, stones and their cost, bought into, sold and set by the carat.
+    The average cost per carat is cost ÷ carats (Gweb had none)."""
+
+    code = models.CharField(max_length=20)
+    branch = models.ForeignKey("org.Branch", on_delete=models.PROTECT, related_name="+")
+    kind = models.CharField(max_length=12, choices=StoneKind.choices, default=StoneKind.DIAMOND)
+    shape = models.CharField(max_length=12, choices=StoneShape.choices, blank=True)
+    size = models.CharField(max_length=40, blank=True)  # "0.01–0.03 ct", "1.3 mm"
+    color = models.CharField(max_length=20, blank=True)
+    clarity = models.CharField(max_length=20, blank=True)
+    note = models.CharField(max_length=200, blank=True)
+    carats = models.DecimalField(max_digits=12, decimal_places=3, default=0)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    sale_price_per_ct = models.DecimalField(max_digits=18, decimal_places=2, null=True,
+                                            blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["code"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "code"], name="diamonds_parcel_code_uniq"),
+            models.CheckConstraint(condition=Q(carats__gte=0, count__gte=0, cost_amount__gte=0),
+                                   name="diamonds_parcel_balance_check"),
+        ]
+
+    def __str__(self):
+        return self.code
+
+    @property
+    def cost_per_ct(self):
+        if not self.carats:
+            return None
+        return (self.cost_amount / self.carats).quantize(Decimal("0.01"))
+
+
+class ParcelMovementKind(models.TextChoices):
+    BUY = "buy", _("Bought")
+    SELL = "sell", _("Sold")
+    SET = "set", _("Set in a piece")
+    UNSET = "unset", _("Back from a piece")
+    VOID = "void", _("Cancelled")
+
+
+class ParcelMovement(TenantScopedModel):
+    """Every change to a parcel's balance, signed (in > 0, out < 0)."""
+
+    parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="movements")
+    kind = models.CharField(max_length=8, choices=ParcelMovementKind.choices)
+    carats = models.DecimalField(max_digits=12, decimal_places=3)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2)
+    document_type = models.CharField(max_length=60, blank=True)
+    document_id = models.BigIntegerField(null=True, blank=True)
+    business_date = models.DateField()
+
+    class Meta:
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "parcel", "-business_date"],
+                                name="diamonds_parcel_move_idx"),
+                   models.Index(fields=["tenant", "document_type", "document_id"],
+                                name="diamonds_parcel_move_doc_idx")]
+
+
+class ParcelDeal(Document):
+    """Stones bought into a parcel from a supplier, or sold from it to a customer, by the carat
+    (legacy GHZ16 small stones bought, GHZ71 small stones sold)."""
+
+    parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="deals")
+    kind = models.CharField(max_length=8, choices=[("buy", _("Bought")), ("sell", _("Sold"))])
+    party = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
+                              related_name="+")
+    party_name = models.CharField(max_length=200, blank=True)  # a walk-in buyer
+    payment = models.CharField(max_length=16)  # cash | bank_transfer | account
+    cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    bank_account = models.ForeignKey("treasury.BankAccount", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    carats = models.DecimalField(max_digits=12, decimal_places=3)
+    count = models.IntegerField(default=0)
+    price_per_ct = models.DecimalField(max_digits=18, decimal_places=2)
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # sold: at cost
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_parcel_deal_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"

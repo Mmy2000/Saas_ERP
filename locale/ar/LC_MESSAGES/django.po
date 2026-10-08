@@ -451,6 +451,9 @@ msgstr ""
 "كود لمرة واحدة إلى هاتف العميل (واتساب، وإلا رسالة نصية) قبل البيع الآجل أو "
 "استلام حجز أو بيع كبير. الرسائل مدفوعة: متوقف ما لم يُفعَّل للعميل."
 
+msgid "A parcel with stones in it stays in its branch."
+msgstr "البرتيتة التي بها أحجار تبقى في فرعها."
+
 msgid "A piece must weigh more than zero."
 msgstr "يجب أن يكون وزن القطعة أكبر من صفر."
 
@@ -601,6 +604,10 @@ msgstr "إضافة سطر"
 
 msgid "Add a line."
 msgstr "أضف سطرًا."
+
+msgid ""
+"Add a parcel for each kind of small stone you keep, then buy stones into it."
+msgstr "أضف برتيتة لكل نوع من الأحجار الصغيرة لديك، ثم اشترِ أحجارًا فيها."
 
 msgid "Add a piece"
 msgstr "إضافة قطعة"
@@ -890,6 +897,9 @@ msgstr "رقم الهاتف مسجل لعميل آخر."
 msgid "Another employee already uses this login."
 msgstr "هذا الحساب مرتبط بموظف آخر."
 
+msgid "Another parcel has this code."
+msgstr "توجد برتيتة أخرى بهذا الكود."
+
 msgid "Answered with “too many requests”"
 msgstr "رُدّ عليها بـ «طلبات كثيرة جدًا»"
 
@@ -1011,6 +1021,9 @@ msgstr "الإتاحة"
 msgid "Average"
 msgstr "المتوسط"
 
+msgid "average"
+msgstr "المتوسط"
+
 msgid "Average buy"
 msgstr "متوسط الشراء"
 
@@ -1025,6 +1038,9 @@ msgstr "رجوع"
 
 msgid "Back from %(setter)s unused"
 msgstr "رجوع من %(setter)s بدون تركيب"
+
+msgid "Back from a piece"
+msgstr "رجوع من قطعة"
 
 msgid "Back from workshop"
 msgstr "عودة من الورشة"
@@ -1285,6 +1301,9 @@ msgstr "المشترى"
 msgid "Bought 21K (g)"
 msgstr "المشترى عيار 21 (جم)"
 
+msgid "Bought and sold"
+msgstr "المشتريات والمبيعات"
+
 msgid "Bounced"
 msgstr "مرتد"
 
@@ -1407,6 +1426,9 @@ msgstr "شراء الكسر من الأفراد والعملاء وبيعه لل
 
 msgid "Buy scrap gold"
 msgstr "شراء ذهب كسر"
+
+msgid "Buy stones into it"
+msgstr "شراء أحجار فيها"
 
 msgid "Buy: add per gram"
 msgstr "الشراء: أضف للجرام"
@@ -1536,6 +1558,9 @@ msgstr "ألغِ مرتجعات هذه الفاتورة أولًا."
 
 msgid "Cancel the setting"
 msgstr "إلغاء التركيب"
+
+msgid "Cancel this?"
+msgstr "إلغاء هذا؟"
 
 msgid "Cancel today's sales"
 msgstr "إلغاء مبيعات اليوم"
@@ -2027,6 +2052,9 @@ msgstr "اختر شهرًا."
 msgid "Choose a name from the list."
 msgstr "اختر اسمًا من القائمة."
 
+msgid "Choose a parcel of this branch."
+msgstr "اختر برتيتة من هذا الفرع."
+
 msgid "Choose a supplier from the list."
 msgstr "اختر موردًا من القائمة."
 
@@ -2080,6 +2108,9 @@ msgstr "اختر مكافأة أو خصمًا."
 
 msgid "Choose bullion or coins, or scrap."
 msgstr "اختر سبائك أو جنيهات، أو كسر."
+
+msgid "Choose buy or sell."
+msgstr "اختر شراء أو بيع."
 
 msgid "Choose cash or bank transfer."
 msgstr "اختر نقدًا أو تحويلًا بنكيًا."
@@ -2485,6 +2516,9 @@ msgstr "الحواف"
 
 msgid "Cost"
 msgstr "التكلفة"
+
+msgid "Cost / ct"
+msgstr "التكلفة / قيراط"
 
 msgid "Cost making charge / g"
 msgstr "تكلفة المصنعية / جم"
@@ -3373,6 +3407,9 @@ msgstr "تعديل العملاء"
 msgid "Edit draft"
 msgstr "تعديل المسودة"
 
+msgid "Edit parcel"
+msgstr "تعديل البرتيتة"
+
 msgid "Edit partner"
 msgstr "تعديل شريك"
 
@@ -3910,6 +3947,9 @@ msgstr "من"
 
 msgid "From our bank account"
 msgstr "من حسابنا البنكي"
+
+msgid "From parcel %(code)s"
+msgstr "من البرتيتة %(code)s"
 
 msgid "From the account of"
 msgstr "من حساب"
@@ -5394,6 +5434,9 @@ msgstr "عرض جديد"
 msgid "New opening balances"
 msgstr "أرصدة افتتاحية جديدة"
 
+msgid "New parcel"
+msgstr "برتيتة جديدة"
+
 msgid "New partner"
 msgstr "شريك جديد"
 
@@ -5596,6 +5639,9 @@ msgstr "لا توجد عروض هنا"
 
 msgid "No opening balances yet"
 msgstr "لا توجد أرصدة افتتاحية بعد"
+
+msgid "No parcels yet"
+msgstr "لا توجد برتيتات بعد"
 
 msgid "No partners yet"
 msgstr "لا يوجد شركاء بعد"
@@ -5824,6 +5870,9 @@ msgstr "ملاحظات"
 msgid "Nothing bought yet"
 msgstr "لم يُشترَ شيء بعد"
 
+msgid "Nothing in this parcel yet"
+msgstr "لا شيء في هذه البرتيتة بعد"
+
 msgid "Nothing in this period."
 msgstr "لا يوجد شيء في هذه الفترة."
 
@@ -6021,6 +6070,9 @@ msgstr "يمكن الدفع على الحساب لعميل فقط."
 
 msgid "Only a customer or supplier can be paid on account."
 msgstr "التسجيل على الحساب يكون لعميل أو مورد فقط."
+
+msgid "Only a registered customer can buy on account."
+msgstr "يمكن البيع على الحساب لعميل مسجّل فقط."
 
 msgid "Only a registered customer can pay later."
 msgstr "التأجيل متاح للعميل المسجّل فقط."
@@ -6399,6 +6451,15 @@ msgstr "مدفوع إلى"
 
 msgid "Paper"
 msgstr "الورق"
+
+msgid "Parcel"
+msgstr "البرتيتة"
+
+msgid "Parcel %(code)s has only %(carats)s ct (%(count)s stones)."
+msgstr "البرتيتة %(code)s بها %(carats)s قيراط فقط (%(count)s حجر)."
+
+msgid "Parcel stones"
+msgstr "أحجار البرتيتة"
 
 msgid "Parent"
 msgstr "الأصل"
@@ -6840,6 +6901,9 @@ msgstr "السعر"
 
 msgid "Price (locked)"
 msgstr "السعر (مثبّت)"
+
+msgid "Price / ct"
+msgstr "السعر / قيراط"
 
 msgid "Price / g"
 msgstr "السعر / جم"
@@ -7694,6 +7758,9 @@ msgstr "أكواد تأكيد البيع"
 msgid "Sale making / g"
 msgstr "مصنعية البيع / جم"
 
+msgid "Sale price / ct"
+msgstr "سعر البيع / قيراط"
+
 msgid "Sale recorded."
 msgstr "تم تسجيل البيع."
 
@@ -8007,6 +8074,9 @@ msgstr "البيع (إنشاء وترحيل فواتير البيع)"
 msgid "Sell and buy by weight with traders; one balance in gold and money."
 msgstr "البيع والشراء بالوزن مع التجار، برصيد واحد ذهباً ونقداً."
 
+msgid "Sell by the carat"
+msgstr "بيع بالقيراط"
+
 msgid "Sell diamond pieces and loose stones"
 msgstr "بيع قطع الألماس والأحجار السائبة"
 
@@ -8158,6 +8228,9 @@ msgid ""
 msgstr ""
 "ضبط طريقة اتباع أسعار الذهب للسوق، وتحديثها الآن، والموافقة على التغييرات "
 "الكبيرة"
+
+msgid "Set in a piece"
+msgstr "تركيب في قطعة"
 
 msgid "Set loose stones into a diamond mounting to record it here."
 msgstr "ركّب أحجارًا سائبة في شاتون ألماس لتظهر هنا."
@@ -8327,6 +8400,16 @@ msgstr "الأبطأ"
 
 msgid "Slowest: %(n)s ms"
 msgstr "الأبطأ: %(n)s مللي ثانية"
+
+msgid "Small stones from a parcel"
+msgstr "أحجار صغيرة من برتيتة"
+
+msgid ""
+"Small stones kept by weight, without a barcode each: bought into a parcel, "
+"sold by the carat, or set into pieces at the parcel's average cost."
+msgstr ""
+"أحجار صغيرة بالوزن بدون باركود لكل حجر: تُشترى في برتيتة، وتُباع بالقيراط، "
+"أو تُركّب في القطع بمتوسط تكلفة البرتيتة."
 
 msgid "Sold"
 msgstr "مباع"
@@ -8517,6 +8600,9 @@ msgstr ""
 "بيانات الأحجار والشهادات، والبيع بسعر الملصق، والأحجار السائبة، وتركيب "
 "الأحجار، وتقارير الألماس. غير مفعّل إلا إذا فُعّل للعميل."
 
+msgid "Stone parcels"
+msgstr "البرتيتات"
+
 msgid "Stone setter"
 msgstr "مركّب أحجار"
 
@@ -8532,6 +8618,9 @@ msgstr "الأحجار (قيراط)"
 msgid "Stones as told"
 msgstr "وصف الأحجار"
 
+msgid "Stones bought into %(code)s"
+msgstr "شراء أحجار في %(code)s"
+
 msgid "Stones part"
 msgstr "جزء الأحجار"
 
@@ -8543,6 +8632,9 @@ msgstr "الأحجار المركّبة فيها"
 
 msgid "Stones set."
 msgstr "تم تركيب الأحجار."
+
+msgid "Stones sold from %(code)s"
+msgstr "بيع أحجار من %(code)s"
 
 msgid "Stones taken out"
 msgstr "فك أحجار"
@@ -8835,6 +8927,9 @@ msgstr "الكود لم يعد صالحًا. أرسل كودًا جديدًا."
 
 msgid "The company currency always has a rate of 1."
 msgstr "سعر عملة الشركة دائمًا 1."
+
+msgid "The cost leaves at the parcel's average per carat."
+msgstr "تخرج التكلفة بمتوسط البرتيتة للقيراط."
 
 msgid "The currency parameter is required."
 msgstr "يجب تحديد العملة."
@@ -9179,6 +9274,9 @@ msgid ""
 "“Read the sources now”."
 msgstr ""
 "تظهر عندما يقرأ العامل المصادر (كل بضع دقائق)، أو اضغط «اقرأ المصادر الآن»."
+
+msgid "They go onto the piece at the parcel's average cost per carat."
+msgstr "تُضاف للقطعة بمتوسط تكلفة البرتيتة للقيراط."
 
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
@@ -9889,6 +9987,9 @@ msgstr "زبون"
 msgid "Walk-in customer"
 msgstr "عميل نقدي"
 
+msgid "Walk-in name"
+msgstr "اسم الزبون"
+
 msgid "Watches"
 msgstr "ساعات"
 
@@ -10205,6 +10306,9 @@ msgstr "الورش التي تصنع أو تصلح البضاعة من ذهبك.
 
 msgid "Workspace"
 msgstr "الحساب"
+
+msgid "Write down who is buying."
+msgstr "اكتب اسم المشتري."
 
 msgid "Write down who is selling."
 msgstr "اكتب اسم البائع."

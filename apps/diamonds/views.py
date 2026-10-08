@@ -18,8 +18,10 @@ from .models import (
     CertificateCheck,
     ItemStone,
     JobLineState,
+    ParcelDeal,
     SettingJob,
     StoneKind,
+    StoneParcel,
     StoneRemoval,
     StoneSetting,
     StoneShape,
@@ -104,8 +106,10 @@ def settings_list(request):
 
 @permission_required("diamonds.setting")
 def setting_new(request):
+    branches = _branches(request, "diamonds.setting")
     return render(request, "diamonds/setting_form.html", {
-        "branches": _branches(request, "diamonds.setting"),
+        "branches": branches,
+        "parcels": StoneParcel.objects.filter(is_active=True, carats__gt=0, branch__in=branches),
         "default_branch": request.membership.default_branch_id,
         "home_currency": functional_currency(),
     })
@@ -187,6 +191,7 @@ def job(request, pk):
             product_family=ProductFamily.DIAMOND, tracking=Tracking.SERIALIZED,
             is_active=True).order_by("code"),
         "settings": item.settings.filter(status=DocStatus.POSTED).select_related("piece"),
+        "parcels": StoneParcel.objects.filter(is_active=True, carats__gt=0, branch=item.branch),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
     })
 
@@ -332,3 +337,50 @@ def buy_back(request, pk):
         .prefetch_related("item__stones"),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
     })
+
+
+# --- stone parcels --------------------------------------------------------------------------------
+
+@permission_required("diamonds.view")
+def parcels_page(request):
+    found = StoneParcel.objects.select_related("branch")
+    scope = request.actor.branch_ids("diamonds.view")
+    if scope is not None:
+        found = found.filter(branch_id__in=scope)
+    return render(request, "diamonds/parcels.html", {
+        "parcels": found.order_by("code"), "branches": _branches(request, "diamonds.manage"),
+        "default_branch": request.membership.default_branch_id,
+        "kinds": StoneKind.choices, "shapes": StoneShape.choices,
+        "home_currency": functional_currency(),
+    })
+
+
+@permission_required("diamonds.view")
+def parcel(request, pk):
+    from apps.core.documents import document_titles, document_url
+    from apps.treasury.selectors import holder_choices
+
+    found = StoneParcel.objects.select_related("branch").filter(pk=pk).first()
+    scope = request.actor.branch_ids("diamonds.view")
+    if found is None or (scope is not None and found.branch_id not in scope):
+        raise Http404
+    moves = list(found.movements.order_by("-business_date", "-id")[:200])
+    titles = document_titles((m.document_type, m.document_id) for m in moves)
+    for move in moves:
+        label, number = titles.get((move.document_type, move.document_id), ("", ""))
+        move.document = f"{label} {number}".strip()
+        move.url = document_url(move.document_type, move.document_id)
+    return render(request, "diamonds/parcel.html", {
+        "parcel": found, "moves": moves,
+        "deals": found.deals.select_related("party").order_by("-business_date", "-id")[:50],
+        "home_currency": functional_currency(),
+        **holder_choices([found.branch_id]),
+    })
+
+
+@permission_required("diamonds.view")
+def parcel_deal(request, pk):
+    parcel_id = ParcelDeal.objects.filter(pk=pk).values_list("parcel_id", flat=True).first()
+    if parcel_id is None:
+        raise Http404
+    return redirect(f"{reverse('parcel', args=[parcel_id])}#deals")

@@ -5,6 +5,7 @@ import { registerShaper } from "../../core/js/forms.js";
 import { startNavigation } from "../../core/js/loading.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
+import { readParcelUses } from "./parcel_lines.js";
 
 const checked = (form, selector) => [...form.querySelectorAll(`${selector}:checked`)].map((input) => Number(input.value));
 
@@ -15,7 +16,7 @@ registerShaper("job-set", (values, form) => {
     mounting: mounting ? Number(mounting.value) : 0, stones: checked(form, "[data-job-stone]"),
     gross_after_g: values.gross_after_g || "", labour_amount: values.labour_amount || "0",
     label_price: values.label_price || "", category: gold ? Number(values.category) || null : null,
-    note: values.note || "",
+    note: values.note || "", parcels: readParcelUses(form),
   };
 });
 registerShaper("job-return", (_values, form) => ({ lines: checked(form, "[data-job-return]") }));

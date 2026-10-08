@@ -27,6 +27,7 @@
       <table class="table"><tbody data-stones></tbody></table>
       <p class="px-5 py-6 text-center text-sm text-slate-400" data-stones-empty>{% translate "No stones yet" %}</p>
       <p class="form-error px-5 pb-3" data-error-for="stones"></p>
+      {% if parcels %}<div class="border-t border-slate-100 p-4">{% include "diamonds/_parcel_lines.html" %}</div>{% endif %}
     </section>
   </div>
   <aside class="space-y-6">

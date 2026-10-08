@@ -9,8 +9,8 @@ from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 from apps.inventory.models import Item, ItemStatus
 
-from . import buyback, certificates, jobs, services
-from .models import StoneKind, StoneShape
+from . import buyback, certificates, jobs, parcels, services
+from .models import StoneKind, StoneParcel, StoneShape
 
 
 class StoneSerializer(serializers.Serializer):
@@ -129,7 +129,19 @@ class LookupView(APIView):
             "label_price": item.label_price} for item in found]})
 
 
+class ParcelUseSerializer(serializers.Serializer):
+    parcel = serializers.IntegerField()
+    carats = serializers.CharField(max_length=20)
+    count = serializers.IntegerField(required=False, min_value=0, default=0)
+
+
+def _uses(rows):
+    return tuple(parcels.ParcelUse(parcel_id=row["parcel"], carats=row["carats"],
+                                   count=row["count"]) for row in rows)
+
+
 class SettingSerializer(serializers.Serializer):
+    parcels = ParcelUseSerializer(many=True, required=False, default=list)
     piece = serializers.IntegerField()
     stones = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     gross_after_g = serializers.CharField(max_length=20, allow_blank=True)
@@ -149,8 +161,8 @@ class SettingView(APIView):
         d = payload.validated_data
         setting = services.set_stones(services.SettingInput(
             piece_id=d["piece"], stone_ids=tuple(d["stones"]), gross_after_g=d["gross_after_g"],
-            setter_id=d["setter"], labour_amount=d["labour_amount"] or "0", note=d["note"]),
-            actor=request.actor)
+            setter_id=d["setter"], labour_amount=d["labour_amount"] or "0", note=d["note"],
+            parcel_uses=_uses(d["parcels"])), actor=request.actor)
         return Response({"id": setting.pk, "number": setting.number},
                         status=status.HTTP_201_CREATED)
 
@@ -199,6 +211,7 @@ class JobReturnView(APIView):
 
 
 class JobSetSerializer(serializers.Serializer):
+    parcels = ParcelUseSerializer(many=True, required=False, default=list)
     mounting = serializers.IntegerField()
     stones = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     gross_after_g = serializers.CharField(max_length=20, allow_blank=True)
@@ -223,8 +236,8 @@ class JobSetView(APIView):
         setting = jobs.set_from_job(pk, jobs.SetInput(
             mounting_line_id=d["mounting"], stone_line_ids=tuple(d["stones"]),
             gross_after_g=d["gross_after_g"], labour_amount=d["labour_amount"] or "0",
-            category_id=d["category"], label_price=d["label_price"] or None, note=d["note"]),
-            actor=request.actor)
+            category_id=d["category"], label_price=d["label_price"] or None, note=d["note"],
+            parcel_uses=_uses(d["parcels"])), actor=request.actor)
         return Response({"id": setting.pk, "number": setting.number},
                         status=status.HTTP_201_CREATED)
 
@@ -416,6 +429,104 @@ class BuyBackVoidView(APIView):
         return Response({"id": bought.pk, "status": bought.status})
 
 
+class ParcelSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=20, allow_blank=True)
+    branch = serializers.IntegerField()
+    kind = serializers.CharField(max_length=12, required=False, default="diamond")
+    shape = serializers.CharField(max_length=12, required=False, allow_blank=True, default="")
+    size = serializers.CharField(max_length=40, required=False, allow_blank=True, default="")
+    color = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+    clarity = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+    note = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    sale_price_per_ct = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                              allow_null=True, default=None)
+    is_active = serializers.BooleanField(required=False, default=True)
+
+
+def _parcel_input(request):
+    payload = ParcelSerializer(data=request.data)
+    payload.is_valid(raise_exception=True)
+    d = payload.validated_data
+    return parcels.ParcelInput(code=d["code"], branch_id=d["branch"], kind=d["kind"],
+                               shape=d["shape"], size=d["size"], color=d["color"],
+                               clarity=d["clarity"], note=d["note"],
+                               sale_price_per_ct=d["sale_price_per_ct"] or None,
+                               is_active=d["is_active"])
+
+
+class ParcelsView(APIView):
+    """A branch's parcels with their balance (the setting forms pick from them), or a new one."""
+
+    required_permissions = {"GET": "diamonds.view", "POST": "diamonds.manage"}
+
+    def get(self, request):
+        services.require_enabled()
+        found = StoneParcel.objects.filter(is_active=True)
+        branch = request.query_params.get("branch", "")
+        if branch.isdigit():
+            found = found.filter(branch_id=int(branch))
+        return Response({"results": [{
+            "id": parcel.pk, "code": parcel.code, "carats": parcel.carats,
+            "count": parcel.count, "cost_per_ct": parcel.cost_per_ct,
+            "name": f"{parcel.code} · {parcel.get_kind_display()} {parcel.size}".strip()}
+            for parcel in found.order_by("code")]})
+
+    def post(self, request):
+        parcel = parcels.save_parcel(_parcel_input(request), actor=request.actor)
+        return Response({"id": parcel.pk}, status=status.HTTP_201_CREATED)
+
+
+class ParcelView(APIView):
+    required_permissions = {"PUT": "diamonds.manage"}
+
+    def put(self, request, pk):
+        parcel = parcels.save_parcel(_parcel_input(request), parcel_id=pk, actor=request.actor)
+        return Response({"id": parcel.pk})
+
+
+class DealSerializer(serializers.Serializer):
+    parcel = serializers.IntegerField()
+    kind = serializers.ChoiceField(choices=[("buy", "buy"), ("sell", "sell")])
+    carats = serializers.CharField(max_length=20, allow_blank=True)
+    count = serializers.IntegerField(required=False, min_value=0, default=0)
+    price_per_ct = serializers.CharField(max_length=20, allow_blank=True)
+    payment = serializers.CharField(max_length=16)
+    party = serializers.IntegerField(required=False, allow_null=True, default=None)
+    party_name = serializers.CharField(max_length=200, required=False, allow_blank=True,
+                                       default="")
+    cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class DealView(APIView):
+    """Stones bought into a parcel, or sold from it, by the carat."""
+
+    required_permissions = {"POST": "diamonds.view"}  # the service checks buy / sell
+
+    @idempotent
+    def post(self, request):
+        payload = DealSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        made = parcels.deal(parcels.DealInput(
+            parcel_id=d["parcel"], kind=d["kind"], carats=d["carats"], count=d["count"],
+            price_per_ct=d["price_per_ct"], payment=d["payment"], party_id=d["party"],
+            party_name=d["party_name"], cash_box_id=d["cash_box"],
+            bank_account_id=d["bank_account"], note=d["note"]), actor=request.actor)
+        return Response({"id": made.pk, "number": made.number}, status=status.HTTP_201_CREATED)
+
+
+class DealVoidView(APIView):
+    required_permissions = {"POST": "diamonds.view"}
+
+    @idempotent
+    def post(self, request, pk):
+        made = parcels.void_deal(pk, reason=str(request.data.get("reason") or ""),
+                                 actor=request.actor)
+        return Response({"id": made.pk, "status": made.status})
+
+
 urlpatterns = [
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
@@ -424,6 +535,11 @@ urlpatterns = [
     path("settings/<int:pk>/void/", SettingVoidView.as_view(), name="diamonds-setting-void"),
     path("settings/<int:pk>/remove/", RemovalView.as_view(), name="diamonds-setting-remove"),
     path("jobs/", JobView.as_view(), name="diamonds-jobs"),
+    path("parcels/", ParcelsView.as_view(), name="diamonds-parcels"),
+    path("parcels/<int:pk>/", ParcelView.as_view(), name="diamonds-parcel"),
+    path("parcels/deals/", DealView.as_view(), name="diamonds-parcel-deals"),
+    path("parcels/deals/<int:pk>/void/", DealVoidView.as_view(),
+         name="diamonds-parcel-deal-void"),
     path("buy-back/", BuyBackView.as_view(), name="diamonds-buy-back"),
     path("buy-back/quote/", BuyBackQuoteView.as_view(), name="diamonds-buy-back-quote"),
     path("buy-back/<int:pk>/void/", BuyBackVoidView.as_view(), name="diamonds-buy-back-void"),

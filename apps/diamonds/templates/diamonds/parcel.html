@@ -1,0 +1,107 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ parcel.code }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/parcels.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <a href="{% url 'parcels' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Stone parcels" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{{ parcel.code }}</span></h1>
+  <p class="mt-1 text-sm text-slate-500">{{ parcel.get_kind_display }}{% if parcel.shape %} · {{ parcel.get_shape_display }}{% endif %}{% if parcel.size %} · <span dir="ltr">{{ parcel.size }}</span>{% endif %}{% if parcel.color or parcel.clarity %} · <span dir="ltr">{{ parcel.color }} {{ parcel.clarity }}</span>{% endif %} · {{ parcel.branch.name }}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.receive" parcel.branch as can_buy %}{% can "diamonds.sell" parcel.branch as can_sell %}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Carats" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.carats|num:3 }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Stones" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.count }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Cost / ct" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.cost_per_ct|num:2|default:"—" }}</span></p><p class="mt-0.5 text-xs text-slate-500">{% translate "average" %}</p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Cost" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.cost_amount|num:2 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{{ home_currency }}</p></div>
+</div>
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Movements" %}</h2></div>
+      {% if moves %}
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Movement" %}</th><th>{% translate "Document" %}</th>
+            <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Count" %}</th><th class="text-end">{% translate "Cost" %}</th></tr></thead>
+          <tbody>
+          {% for m in moves %}
+            <tr>
+              <td><span class="num">{{ m.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+              <td>{{ m.get_kind_display }}</td>
+              <td>{% if m.url %}<a class="text-brand-700 hover:underline" href="{{ m.url }}">{{ m.document }}</a>{% else %}{{ m.document|default:"—" }}{% endif %}</td>
+              <td class="text-end"><span class="num {% if m.carats < 0 %}text-red-600{% endif %}">{{ m.carats|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ m.count }}</span></td>
+              <td class="text-end"><span class="num">{{ m.cost_amount|num:2 }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        {% translate "Nothing in this parcel yet" as empty_title %}
+        {% include "components/empty_state.html" with icon="layers" title=empty_title %}
+      {% endif %}
+    </section>
+    {% if deals %}
+    <section class="card overflow-hidden" id="deals">
+      <div class="card-header"><h2 class="card-title">{% translate "Bought and sold" %}</h2></div>
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "With" %}</th><th class="text-end">{% translate "Carats" %}</th>
+            <th class="text-end">{% translate "Price / ct" %}</th><th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+          <tbody>
+          {% for d in deals %}
+            <tr>
+              <td><span class="num font-medium">{{ d.number }}</span><div class="text-xs text-slate-500">{{ d.get_kind_display }}</div></td>
+              <td><span class="num">{{ d.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+              <td>{% if d.party %}{{ d.party.name }}{% else %}{{ d.party_name }}{% endif %}</td>
+              <td class="text-end"><span class="num">{{ d.carats|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ d.price_per_ct|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ d.amount|num:2 }}</span></td>
+              <td>{% include "components/doc_status.html" with status=d.status label=d.get_status_display %}</td>
+              <td class="text-end">{% if d.status == "posted" %}{% if d.kind == "buy" and can_buy or d.kind == "sell" and can_sell %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-void-deal="{% url 'diamonds-parcel-deal-void' d.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel" %}</button>{% endif %}{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+  <aside class="space-y-6">
+    {% if parcel.is_active and can_buy %}
+    <form class="card" data-api-form data-shape="parcel-deal" data-method="POST" data-endpoint="{% url 'diamonds-parcel-deals' %}" data-success="{% translate 'Recorded.' %}" novalidate>
+      <input type="hidden" name="parcel" value="{{ parcel.pk }}"><input type="hidden" name="kind" value="buy">
+      <div class="card-header"><h2 class="card-title">{% translate "Buy stones into it" %}</h2></div>
+      <div class="card-body space-y-3" data-deal>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <label class="block"><span class="form-label">{% translate "Supplier" %}</span>
+          <select name="party" class="form-input" data-remote="{% url 'supplier-list' %}" data-label-field="name"><option value=""></option></select>
+          <span class="form-error" data-error-for="party"></span></label>
+        {% include "diamonds/_deal_fields.html" with prefix="b-" %}
+        <button type="submit" class="btn btn-primary w-full">{% icon "plus" "size-4" %}{% translate "Buy" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if parcel.is_active and can_sell and parcel.carats %}
+    <form class="card" data-api-form data-shape="parcel-deal" data-method="POST" data-endpoint="{% url 'diamonds-parcel-deals' %}" data-success="{% translate 'Recorded.' %}" novalidate>
+      <input type="hidden" name="parcel" value="{{ parcel.pk }}"><input type="hidden" name="kind" value="sell">
+      <div class="card-header"><h2 class="card-title">{% translate "Sell by the carat" %}</h2></div>
+      <div class="card-body space-y-3" data-deal>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <label class="block"><span class="form-label">{% translate "Customer" %}</span>
+          <select name="party" class="form-input" data-remote="{% url 'customer-list' %}" data-label-field="name"><option value="">{% translate "Walk-in" %}</option></select>
+          <span class="form-error" data-error-for="party"></span></label>
+        <input name="party_name" class="form-input" placeholder="{% translate 'Walk-in name' %}" maxlength="200"><span class="form-error" data-error-for="party_name"></span>
+        {% include "diamonds/_deal_fields.html" with prefix="s-" price=parcel.sale_price_per_ct %}
+        <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Sell" %}</button>
+        <p class="text-xs text-slate-500">{% translate "The cost leaves at the parcel's average per carat." %}</p>
+      </div>
+    </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

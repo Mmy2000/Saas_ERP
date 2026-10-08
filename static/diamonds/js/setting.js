@@ -2,6 +2,7 @@
 import { api, ApiError, uuid } from "../../core/js/api.js";
 import { formatNumber } from "../../core/js/money.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
+import { readParcelUses } from "./parcel_lines.js";
 
 const root = document.getElementById("setting");
 
@@ -67,6 +68,7 @@ if (root) {
           piece: state.piece?.id || 0, stones: state.stones.map((stone) => stone.id),
           gross_after_g: $("[data-after]").value.trim(), setter: Number($("[data-setter]").value) || null,
           labour_amount: $("[data-labour]").value.trim() || "0", note: $("[data-note]").value.trim(),
+          parcels: readParcelUses(root),
         },
       });
       flash(root.dataset.saved);

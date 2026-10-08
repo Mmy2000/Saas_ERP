@@ -406,6 +406,7 @@ class SettingInput:
     setter_id: int | None = None
     labour_amount: Decimal | str = "0"
     note: str = ""
+    parcel_uses: tuple = ()  # small stones taken from parcels by the carat (apps.diamonds.parcels)
 
 
 def set_stones(data: SettingInput, *, actor=None) -> StoneSetting:
@@ -421,7 +422,7 @@ def set_stones(data: SettingInput, *, actor=None) -> StoneSetting:
         if actor is not None:
             actor.require("diamonds.setting", branch=branch)
         ids = sorted(set(data.stone_ids))
-        if not ids:
+        if not ids and not data.parcel_uses:
             raise _field("stones", _("Add the stones to set."))
         stones = list(Item.objects.select_related("category").filter(pk__in=ids)
                       .prefetch_related("stones"))
@@ -448,18 +449,24 @@ def set_stones(data: SettingInput, *, actor=None) -> StoneSetting:
         if labour < 0:
             raise _field("labour_amount", _("Must not be negative."))
 
+        from .parcels import price_uses
+
         return apply_setting(piece=piece, stones=stones, after=after, labour=labour,
-                             setter=setter, branch=branch, note=data.note, actor=actor)
+                             setter=setter, branch=branch, note=data.note, actor=actor,
+                             parcels=price_uses(data.parcel_uses, branch))
 
 
 def apply_setting(*, piece: Item, stones: list[Item], after: Decimal, labour: Decimal, setter,
-                  branch, note: str = "", actor=None, job=None, extra_lines=()) -> StoneSetting:
+                  branch, note: str = "", actor=None, job=None, extra_lines=(),
+                  parcels=()) -> StoneSetting:
     """Record checked stones going into a checked piece. Stones in stock leave it ("used in
     another piece"); stones already out with the setter (a job) just change state. `extra_lines`
     join the labour entry (a job brings the piece back from the setter in the same entry)."""
     today = timezone.localdate()
-    carats = sum((s.stone_weight_ct for s in stones), ZERO)
-    cost = sum((s.stone_cost_amount for s in stones), ZERO)
+    carats = (sum((s.stone_weight_ct for s in stones), ZERO)
+              + sum((use.carats for use in parcels), ZERO))
+    cost = (sum((s.stone_cost_amount for s in stones), ZERO)
+            + sum((use.cost for use in parcels), ZERO))
     setting = StoneSetting.objects.create(
         branch=branch, business_date=today, piece=piece, setter=setter, job=job,
         gross_before_g=piece.gross_weight_g, gross_after_g=after, stones_carat=carats,
@@ -479,6 +486,11 @@ def apply_setting(*, piece: Item, stones: list[Item], after: Decimal, labour: De
                                          cost=stone.stone_cost_amount)
         add_stones(piece, [_as_dict(row) for row in stone.stones.all()], setting=setting,
                    source=stone)
+    if parcels:  # small stones by the carat: the cost moves with them (the same account)
+        from .parcels import take
+
+        take(list(parcels), doc_type=SETTING_DOC, doc_id=setting.pk, day=today)
+        add_stones(piece, [use.stone() for use in parcels], setting=setting)
     # The gold is unchanged; the piece now carries the stones and the labour.
     piece.gross_weight_g = after
     piece.stone_weight_ct += carats
@@ -555,6 +567,9 @@ def cancel_setting(setting_id: int, *, reason: str = "", actor=None) -> StoneSet
                                movement_type=MovementType.PRODUCTION_OUTPUT, business_date=today,
                                doc=doc, branch=setting.branch, stock_delta=1)
         ItemStone.objects.filter(item=piece, setting=setting).delete()
+        from .parcels import give_back
+
+        give_back(doc_type=SETTING_DOC, doc_id=setting.pk, day=today)
         piece.gross_weight_g = setting.gross_before_g
         piece.stone_weight_ct -= setting.stones_carat
         piece.stone_cost_amount -= setting.stones_cost

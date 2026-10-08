@@ -53,7 +53,7 @@
   </article>
 
   <aside class="space-y-6" data-no-print>
-    {% if can_set and mountings and stones %}
+    {% if can_set and mountings %}{% if stones or parcels %}
     <form data-api-form data-shape="job-set" data-method="POST" data-endpoint="{% url 'diamonds-job-set' job.pk %}"
           data-redirect="{% url 'stone-settings' %}{id}/" data-success="{% translate 'Stones set.' %}" class="card" novalidate>
       <div class="card-header"><h2 class="card-title">{% translate "Came back set" %}</h2></div>
@@ -68,9 +68,10 @@
         <fieldset class="space-y-2">
           <legend class="form-label">{% translate "Stones set in it" %}</legend>
           {% for line in stones %}<label class="flex items-center gap-3 text-sm"><input type="checkbox" value="{{ line.pk }}" data-job-stone>
-            <span class="num">{{ line.item.barcode }}</span><span class="ms-auto num text-slate-500">{{ line.item.stone_weight_ct|num:3 }} ct</span></label>{% endfor %}
+            <span class="num">{{ line.item.barcode }}</span><span class="ms-auto num text-slate-500">{{ line.item.stone_weight_ct|num:3 }} ct</span></label>{% empty %}<p class="text-sm text-slate-400">—</p>{% endfor %}
           <p class="form-error" data-error-for="stones"></p>
         </fieldset>
+        {% include "diamonds/_parcel_lines.html" %}
         <label class="block" data-for-gold><span class="form-label">{% translate "It becomes a diamond piece of" %}</span>
           <select name="category" class="form-input">{% for c in diamond_categories %}<option value="{{ c.pk }}">{{ c.code }} · {{ c.name }}</option>{% endfor %}</select>
           <span class="form-error" data-error-for="category"></span></label>
@@ -87,7 +88,7 @@
         <p class="text-xs text-slate-500">{% translate "The piece comes back to stock with the stones' details and cost; the labour is owed to the setter and added to its cost." %}</p>
       </div>
     </form>
-    {% endif %}
+    {% endif %}{% endif %}
     {% if can_set and out %}
     <form data-api-form data-shape="job-return" data-method="POST" data-endpoint="{% url 'diamonds-job-return' job.pk %}" data-success="{% translate 'Back in stock.' %}" class="card" novalidate>
       <div class="card-header"><h2 class="card-title">{% translate "Came back unused" %}</h2></div>
