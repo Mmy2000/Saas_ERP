@@ -263,6 +263,15 @@ def needs_attention(actor) -> list[Attention]:
         if drafts:
             items.append(Attention(_("Purchases not posted yet"), drafts,
                                    reverse("invoices") + "?status=draft", "receipt"))
+    if actor.can("treasury.transfer.receive"):
+        from apps.treasury.models import TreasuryDocument
+
+        cash = _scoped(TreasuryDocument.objects.filter(
+            status=DocStatus.POSTED, needs_receipt=True, received_at__isnull=True),
+            actor.branch_ids("treasury.transfer.receive"), "to_branch_id").count()
+        if cash:
+            items.append(Attention(_("Cash waiting to be received"), cash,
+                                   reverse("treasury-documents") + "?state=transit", "wallet"))
     if actor.can("treasury.cheque.view"):
         from apps.treasury.models import OPEN_CHEQUE, Cheque, ChequeDirection
 

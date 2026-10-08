@@ -421,6 +421,30 @@ the average), and taken into a piece in a stone setting or when a piece comes ba
 setter (the cost moves onto the piece, the same account). Every change is a movement; a
 cancelled sale or setting puts back exactly what left.
 
+### Notifications, sign-ins and shortcuts
+
+**The bell** (legacy Notifications app) in the top bar shows the unread count, refreshed every
+minute while the tab is open, and opens on what needs attention (the dashboard's list, live)
+above the latest notifications. A notification is written in the same transaction as the work it
+reports, to each member holding its permission in that branch, never to the person who did it:
+goods or cash sent to your branch (marked read for everyone once received or cancelled), new gold
+prices (only the latest stays unread, so a market feed does not flood it), a price jump waiting
+for approval, and at 08:00 each morning (job `notifications.morning`) repairs promised, reservations
+ending and cheques due that day, one per branch. Text is stored as facts and written in the
+reader's language. Each member chooses what to receive on the **Notifications** page (Gweb's
+per-user flags were set by the admin); a lost permission hides its kinds. Read ones go after 90
+days, unread after a year. Unlike Gweb, it does not need a separate "notifications enabled" switch.
+
+**Settings → Sign-ins** (owners: `admin.signins.history`; legacy AuthLog) lists every sign-in,
+wrong password (with the name typed, which Gweb did not keep) and sign-out, with the address and
+browser, filters, and a warning when there were failed attempts in the last 24 hours. Users →
+Last sign-in now means this workspace (it was the global account's). In production the address is
+the last entry of `X-Forwarded-For` (set `SIGNIN_IP_HEADER` for another proxy header).
+
+**Shortcuts** (legacy ShortCuts): the star next to the branch name pins the current screen. Pinned
+screens, up to 12, appear under Dashboard in the sidebar and as tiles on the dashboard (× to
+remove), and only while the member may still open them.
+
 ### Background jobs, e-mail and WhatsApp
 
 `apps/platform/jobs` is a job queue in PostgreSQL (no Redis or Celery, works on Windows). A job is
@@ -528,7 +552,7 @@ English strings in code/templates, Arabic in `locale/ar/LC_MESSAGES/django.po`. 
 not required:
 
 ```powershell
-.\venv\Scripts\python.exe ops\i18n\messages.py extract   # add new strings to the .po
+.\venv\Scripts\python.exe ops\i18n\messages.py extract   # add new strings to the .po (_, _l, gettext, ngettext, templates)
 # translate the new entries (msgstr) in the .po file
 .\venv\Scripts\python.exe ops\i18n\messages.py compile   # write the .mo
 ```

@@ -86,10 +86,14 @@ def documents(request):
     queryset = _visible_documents(request)
     if kind in TreasuryKind.values:
         queryset = queryset.filter(kind=kind)
+    state = request.GET.get("state", "")
+    if state == "transit":  # cash sent to another branch, not received yet
+        queryset = queryset.filter(status=DocStatus.POSTED, needs_receipt=True,
+                                   received_at__isnull=True)
     page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
         request.GET.get("page"))
     return render(request, "treasury/documents.html", {
-        "page": page, "kind": kind, "kinds": TreasuryKind.choices,
+        "page": page, "kind": kind, "kinds": TreasuryKind.choices, "state": state,
     })
 
 

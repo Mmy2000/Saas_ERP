@@ -1,0 +1,68 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Sign-ins" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sign-ins" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Every sign-in to this workspace, every wrong password and every sign-out: who, when, from which address and on which browser." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if failed_today %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-800" role="status">
+  {% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}
+  <p>{% blocktranslate trimmed count counter=failed_today %}{{ counter }} failed sign-in in the last 24 hours.{% plural %}{{ counter }} failed sign-ins in the last 24 hours.{% endblocktranslate %}
+    <a class="font-medium underline" href="?outcome=failed">{% translate "Show them" %}</a></p>
+</div>
+{% endif %}
+<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
+  <label class="sm:w-52"><span class="form-label">{% translate "Who" %}</span>
+    <select name="user" class="form-input"><option value="">{% translate "Anyone" %}</option>
+      {% for m in members %}<option value="{{ m.pk }}" {% if filters.user == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.user.display_name }} (@{{ m.username }})</option>{% endfor %}</select></label>
+  <label class="sm:w-48"><span class="form-label">{% translate "What" %}</span>
+    <select name="outcome" class="form-input"><option value="">{% translate "Everything" %}</option>
+      {% for value, label in outcomes %}<option value="{{ value }}" {% if filters.outcome == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  <label class="sm:w-40"><span class="form-label">{% translate "Address" %}</span><input name="ip" class="form-input num" dir="ltr" value="{{ filters.ip }}" placeholder="192.168."></label>
+  <label><span class="form-label">{% translate "From" %}</span><input type="date" name="from" class="form-input" value="{{ filters.from|date:'Y-m-d' }}"></label>
+  <label><span class="form-label">{% translate "To" %}</span><input type="date" name="to" class="form-input" value="{{ filters.to|date:'Y-m-d' }}"></label>
+  <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+</form>
+
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "Who" %}</th><th>{% translate "What" %}</th>
+        <th>{% translate "Address" %}</th><th>{% translate "Browser" %}</th></tr></thead>
+      <tbody>
+      {% for e in page.object_list %}
+        <tr>
+          <td class="whitespace-nowrap"><span class="num text-slate-600">{{ e.at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{% if e.membership %}<span class="font-medium text-slate-900">{{ e.membership.user.display_name }}</span> <span class="num text-xs text-slate-500">@{{ e.membership.username }}</span>
+            {% else %}<span class="text-slate-500">{% translate "Unknown name" %}</span> <bdi class="num text-xs text-slate-500" dir="ltr">“{{ e.username }}”</bdi>{% endif %}</td>
+          <td>{% if e.outcome == "in" %}<span class="badge badge-success">{{ e.get_outcome_display }}</span>
+            {% elif e.outcome == "failed" %}<span class="badge badge-danger">{% icon "triangle-alert" "size-3" %}{{ e.get_outcome_display }}</span>
+            {% else %}<span class="badge badge-neutral">{{ e.get_outcome_display }}</span>{% endif %}</td>
+          <td><a class="num text-slate-600 hover:underline" dir="ltr" href="?ip={{ e.ip|default:'' }}">{{ e.ip|default:"—" }}</a></td>
+          <td class="text-sm text-slate-600" title="{{ e.user_agent }}">{{ e.device|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+    {% translate "No sign-ins found" as empty_title %}
+    {% translate "Sign-ins are recorded from now on. Try other filters." as empty_text %}
+    {% include "components/empty_state.html" with icon="log-in" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

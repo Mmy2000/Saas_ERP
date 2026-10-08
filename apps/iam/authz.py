@@ -107,6 +107,26 @@ def build_actor(membership) -> Actor:
                  disabled=disabled_permissions(membership.tenant_id))
 
 
+def members_who_can(code: str, branch=None):
+    """Active members who may `code` in `branch` (any branch when None): the people to tell
+    about something they can act on. One query over role grants, without building actors."""
+    from django.db.models import Q
+
+    from apps.core.tenancy.context import require_current_tenant_id
+    from apps.platform.tenants.features import disabled_permissions
+
+    from .models import Membership, MembershipRole, MembershipStatus
+
+    if code in disabled_permissions(require_current_tenant_id()):
+        return Membership.objects.none()
+    assignments = MembershipRole.objects.filter(role__grants__permission__in=(code, WILDCARD))
+    branch_id = getattr(branch, "pk", branch)
+    if branch_id is not None:
+        assignments = assignments.filter(Q(all_branches=True) | Q(branches__branch_id=branch_id))
+    return Membership.objects.filter(status=MembershipStatus.ACTIVE, user__is_active=True,
+                                     pk__in=assignments.values("membership_id"))
+
+
 def permission_required(code: str):
     """Web-view decorator: login, active membership, and `code` in any branch."""
 

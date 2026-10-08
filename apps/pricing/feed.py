@@ -188,6 +188,9 @@ def _decide(feed, now, *, force, approve, actor, market) -> str:
         return Outcome.UNCHANGED
     if proposal.jump_pct > feed.max_jump_pct and not approve:
         feed.held, feed.held_at = proposal.as_json(), now
+        from apps.notifications import events
+
+        events.price_held(proposal.jump_pct)
         return Outcome.HELD
     publish(proposal, actor=actor)
     feed.held = feed.held_at = None
@@ -215,5 +218,8 @@ def dismiss_held() -> PriceFeed:
     feed = feed_settings()
     feed.held = feed.held_at = None
     feed.save(update_fields=["held", "held_at", "updated_at"])
+    from apps.notifications.events import resolve_prefix
+
+    resolve_prefix("price_held:")
     return feed
 

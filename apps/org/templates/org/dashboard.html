@@ -8,6 +8,27 @@
 {% block content %}
 {% can "pricing.board.view" as can_prices %}
 
+{% if shortcuts.items %}
+{# The member's pinned screens (the star in the top bar). #}
+<section class="mb-6" aria-labelledby="shortcuts-title">
+  <h2 id="shortcuts-title" class="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">{% icon "star" "size-3.5 text-amber-500" %}{% translate "Your shortcuts" %}</h2>
+  <ul class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+    {% for item in shortcuts.items %}
+    <li class="group relative" data-shortcut>
+      <a href="{{ item.url }}" class="card flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900">
+        <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">{% icon item.icon "size-4" %}</span>
+        <span class="min-w-0 truncate">{{ item.label }}</span>
+      </a>
+      <button type="button" class="absolute -top-1.5 -end-1.5 grid size-5 place-items-center rounded-full border border-slate-200 bg-surface text-slate-400 opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-slate-900 focus-visible:opacity-100 max-lg:opacity-100"
+              data-pin="{{ item.screen }}" data-pin-remove data-endpoint="{% url 'iam-shortcuts' %}" aria-pressed="true"
+              data-pin-label="{% translate 'Pin to my shortcuts' %}" data-unpin-label="{% translate 'Remove from my shortcuts' %}"
+              title="{% translate 'Remove from my shortcuts' %}" aria-label="{% translate 'Remove from my shortcuts' %}">{% icon "x" "size-3" %}</button>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {# Today at a glance: each card only for people allowed to see it. #}
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
   {% if sales_today %}

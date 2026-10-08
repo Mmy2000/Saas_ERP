@@ -15,6 +15,7 @@
       <option value="">{% translate "All" %}</option>
       {% for value, label in kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
+    <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="state" value="transit" {% if state == "transit" %}checked{% endif %}>{% translate "Only in transit" %}</label>
     <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
   </form>
   {% if page.object_list %}

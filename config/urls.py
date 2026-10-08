@@ -16,6 +16,7 @@ from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
 from apps.merchandising import views as merchandising
 from apps.messaging import views as messaging
+from apps.notifications import views as notifications
 from apps.opening import views as opening
 from apps.org.web import company
 from apps.org.web import views as org
@@ -56,6 +57,8 @@ urlpatterns = [
     path("branches/new/", org.branch_new, name="branch-new"),
     path("branches/<int:pk>/", org.branch_edit, name="branch-edit"),
     path("settings/activity/", audit.activity, name="activity"),
+    path("settings/sign-ins/", iam.sign_ins, name="sign-ins"),
+    path("notifications/", notifications.notifications, name="notifications"),
     path("settings/messages/", messaging.messages_log, name="messages"),
     path("settings/sale-codes/", sales.sale_code_rules, name="sale-code-settings"),
     path("shared/<str:token>/", messaging.shared, name="shared-document"),

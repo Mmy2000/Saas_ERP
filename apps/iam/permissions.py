@@ -6,4 +6,5 @@ register_permissions(_("Administration"), [
     ("admin.users.view", _("View users")),
     ("admin.users.manage", _("Manage users and their roles")),
     ("admin.roles.manage", _("Manage roles")),
+    ("admin.signins.history", _("See who signed in, when and from where, and failed attempts")),
 ])

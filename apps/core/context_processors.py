@@ -145,6 +145,7 @@ NAVIGATION: list[NavSection] = [
         NavItem(_("Users"), "users", "users", "admin.users.view", ("user-new", "user-edit")),
         NavItem(_("Roles"), "roles", "shield-check", "admin.users.view", ("role-new", "role-edit")),
         NavItem(_("Activity"), "activity", "history", "admin.audit.history"),
+        NavItem(_("Sign-ins"), "sign-ins", "log-in", "admin.signins.history"),
         NavItem(_("Sent messages"), "messages", "send", "messaging.view"),
         NavItem(_("Sale codes"), "sale-code-settings", "shield-check", "sales.code.manage"),
         NavItem(_("Label templates"), "label-templates", "printer", "printing.templates.manage",
@@ -177,6 +178,31 @@ def _navigation(request):
     return sections
 
 
+def _bell(request) -> dict:
+    from apps.notifications.kinds import KINDS
+    from apps.notifications.services import unread_count
+
+    unread = unread_count(request.actor)
+    # Every icon the bell's menu may draw, for its script (notification kinds and attention).
+    icons = sorted({"bell", "clock", "send", "flame", "receipt", "landmark", "calendar-check",
+                    "clipboard-check", *(kind.icon for kind in KINDS.values())})
+    return {"unread": unread, "label": "99+" if unread > 99 else str(unread), "icons": icons}
+
+
+def _shortcuts(request) -> dict:
+    """The member's pinned screens, and whether the screen they are on can be (or is) pinned."""
+    from apps.iam.shortcuts import pinned, screens
+
+    current = getattr(request.resolver_match, "url_name", None)
+    mine = pinned(request.actor)
+    item = screens().get(current)
+    screen = None
+    if item is not None and request.actor.can(item.permission):
+        screen = {"name": current, "label": str(item.label),
+                  "pinned": any(s["screen"] == current for s in mine)}
+    return {"items": mine, "screen": screen}
+
+
 def shell(request):
     if getattr(request, "actor", None) is None:
         return {}
@@ -192,7 +218,11 @@ def shell(request):
             "clear": gettext("Clear"),
             "sale_done": gettext("Sale completed."),
             "page_loading": gettext("Loading…"),
+            "pinned": gettext("Pinned to your shortcuts."),
+            "unpinned": gettext("Removed from your shortcuts."),
         },
         "nav_sections": SimpleLazyObject(lambda: _navigation(request)),
+        "bell": SimpleLazyObject(lambda: _bell(request)),
+        "shortcuts": SimpleLazyObject(lambda: _shortcuts(request)),
         "tenant_profile": SimpleLazyObject(lambda: TenantProfile.objects.first()),
     }

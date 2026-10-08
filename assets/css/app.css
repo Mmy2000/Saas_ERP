@@ -339,6 +339,25 @@
   .menu-panel { @apply absolute end-0 top-full z-50 mt-2 animate-pop rounded-xl border border-slate-200 bg-surface p-4
                        text-slate-800 shadow-pop; }
   .menu-label { @apply text-xs font-medium text-slate-500; }
+  /* An on/off switch: <button type="button" class="switch" role="switch" aria-checked="true">. */
+  .switch { @apply relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-slate-300
+                   transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500; }
+  /* The knob sits by a logical margin, so it moves the right way in Arabic too. */
+  .switch::after { content: ""; margin-inline-start: 0.125rem; transition: margin-inline-start 150ms;
+                   @apply inline-block size-4 rounded-full bg-white shadow-xs; }
+  .switch[aria-checked="true"] { @apply bg-brand-600; }
+  .switch[aria-checked="true"]::after { margin-inline-start: 1.125rem; }
+  /* The sidebar's small headings (Pinned), and the star that pins the current screen. */
+  .nav-heading { @apply flex items-center gap-1.5 px-2.5 pt-4 pb-1 text-[11px] font-medium tracking-wide text-slate-400; }
+  .pin-toggle[aria-pressed="true"] { @apply text-amber-500 hover:text-amber-600; }
+  .pin-toggle[aria-pressed="true"] svg { fill: currentColor; }
+  /* The bell: its unread count, and one notification in the menu or on the page. */
+  .bell-badge { @apply pointer-events-none absolute -top-0.5 -end-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500
+                       px-1 text-[10px] leading-none font-semibold text-white ring-2 ring-surface; }
+  .notice { @apply relative flex gap-3 px-4 py-3 text-start transition-colors hover:bg-slate-50; }
+  .notice-icon { @apply grid size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500; }
+  .notice[data-unread] .notice-icon { @apply bg-brand-50 text-brand-700; }
+  .notice[data-unread]::before { content: ""; @apply absolute top-4 start-1.5 size-1.5 rounded-full bg-brand-500; }
   .swatch { @apply flex flex-col items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-slate-600
                    transition-colors hover:bg-slate-100 hover:text-slate-900; }
   .swatch-dot { @apply grid size-7 place-items-center rounded-full text-white ring-2 ring-transparent ring-offset-2

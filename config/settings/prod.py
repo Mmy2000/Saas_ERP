@@ -8,6 +8,8 @@ if not SECRET_KEY:  # noqa: F405
     raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in production.")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# The visitor address our reverse proxy appends, for the sign-in history (apps/iam/signals.py).
+SIGNIN_IP_HEADER = env.str("SIGNIN_IP_HEADER", default="HTTP_X_FORWARDED_FOR")
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=60 * 60 * 24 * 30)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # every tenant is an HTTPS subdomain

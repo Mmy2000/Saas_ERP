@@ -1,0 +1,79 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Notifications" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'notifications/js/page.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Notifications" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Goods and cash sent to your branch, new gold prices, and each morning what is due that day. Only what your role lets you act on." %}</p>
+  </div>
+  {% if unread %}
+  <button type="button" class="btn btn-secondary" data-read-all-page="{% url 'notifications-read-all' %}">{% icon "check-check" "size-4" %}{% translate "Mark all as read" %}</button>
+  {% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    <div class="card-header">
+      <div class="segmented text-xs" role="group" aria-label="{% translate 'Show' %}">
+        <a href="?" class="segment px-3{% if show != 'unread' %} segment-active{% endif %}">{% translate "All" %}</a>
+        <a href="?show=unread" class="segment px-3{% if show == 'unread' %} segment-active{% endif %}">{% translate "Unread" %}{% if unread %} <span class="num">({{ unread }})</span>{% endif %}</a>
+      </div>
+    </div>
+    {% if page.object_list %}
+    <ul class="divide-y divide-slate-100">
+      {% for n in page.object_list %}
+      {% with text=n.text %}
+      <li><a href="{{ n.url|default:'#' }}" class="notice" data-notice="{% url 'notifications-read' n.pk %}"{% if not n.read_at %} data-unread{% endif %}>
+        <span class="notice-icon">{% icon n.icon "size-4" %}</span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-sm font-medium text-slate-900">{{ text.0 }}</span>
+          {% if text.1 %}<span class="mt-0.5 block text-sm text-slate-600">{{ text.1 }}</span>{% endif %}
+          <span class="mt-1 block text-xs text-slate-400">{{ n.created_at|date:"SHORT_DATETIME_FORMAT" }}{% if n.branch %} · {{ n.branch.name }}{% endif %}</span>
+        </span>
+      </a></li>
+      {% endwith %}
+      {% endfor %}
+    </ul>
+    {% if page.has_other_pages %}
+    <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
+      <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+      <div class="flex gap-2">
+        {% if page.has_previous %}<a class="btn btn-secondary" href="?show={{ show }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+        {% if page.has_next %}<a class="btn btn-secondary" href="?show={{ show }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+      </div>
+    </nav>
+    {% endif %}
+    {% else %}
+      {% if show == "unread" %}{% translate "You have read everything" as empty_title %}{% else %}{% translate "No notifications yet" as empty_title %}{% endif %}
+      {% translate "When goods or cash are sent to your branch, or something is due today, it shows up here and on the bell." as empty_text %}
+      {% include "components/empty_state.html" with icon="bell" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  <section class="card self-start scroll-mt-20" id="preferences" data-preferences="{% url 'notifications-preferences' %}">
+    <div class="card-header"><div>
+      <h2 class="card-title">{% translate "Tell me about" %}</h2>
+      <p class="mt-0.5 text-xs text-slate-500">{% translate "Your own choice: it does not change anyone else's." %}</p>
+    </div></div>
+    {% if preferences %}
+    <ul class="divide-y divide-slate-100">
+      {% for p in preferences %}
+      <li class="flex items-start gap-3 px-5 py-3.5">
+        <span class="notice-icon">{% icon p.icon "size-4" %}</span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-sm font-medium text-slate-900" id="pref-{{ p.kind }}">{{ p.label }}</span>
+          <span class="mt-0.5 block text-xs text-slate-500">{{ p.description }}</span>
+        </span>
+        <button type="button" class="switch mt-0.5" role="switch" aria-checked="{{ p.on|yesno:'true,false' }}" aria-labelledby="pref-{{ p.kind }}" data-kind="{{ p.kind }}"></button>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="px-5 py-6 text-sm text-slate-500">{% translate "Your role does not receive any notifications." %}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

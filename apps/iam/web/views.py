@@ -1,22 +1,42 @@
 from collections import defaultdict
 
-from django.db.models import Count
+from django.core.paginator import Paginator
+from django.db.models import Count, OuterRef, Subquery
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 
+from apps.iam import signins
 from apps.iam.authz import permission_required
 from apps.iam.catalog import WILDCARD, permissions
-from apps.iam.models import Membership, Role
+from apps.iam.models import Membership, Role, SignInEvent, SignInOutcome
 from apps.org.models import Branch
 
 
 @permission_required("admin.users.view")
 def users(request):
+    signed_in = SignInEvent.objects.filter(membership=OuterRef("pk"),
+                                           outcome=SignInOutcome.SIGNED_IN).order_by("-at")
     members = (Membership.objects.select_related("user", "default_branch")
                .prefetch_related("roles__role", "roles__branches__branch")
+               .annotate(last_signed_in=Subquery(signed_in.values("at")[:1]))
                .order_by("username"))
     return render(request, "iam/users.html", {"members": members})
+
+
+@permission_required("admin.signins.history")
+def sign_ins(request):
+    events, filters = signins.search(request.GET)
+    page = Paginator(events, 40).get_page(request.GET.get("page"))
+    for event in page.object_list:
+        event.device = signins.device(event.user_agent)
+    query = request.GET.copy()
+    query.pop("page", None)
+    return render(request, "iam/sign_ins.html", {
+        "page": page, "filters": filters, "query": query.urlencode(),
+        "outcomes": SignInOutcome.choices, "failed_today": signins.failed_recently(),
+        "members": Membership.objects.select_related("user").order_by("username"),
+    })
 
 
 def _user_form(request, membership=None):

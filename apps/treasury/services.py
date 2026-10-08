@@ -34,6 +34,7 @@ from apps.ledger.services import (
     post_entry,
     reverse_entry,
 )
+from apps.notifications import events
 from apps.org.models import Branch
 from apps.pricing.selectors import functional_currency
 
@@ -245,6 +246,8 @@ def post_treasury_document(data: TreasuryInput, *, actor=None) -> TreasuryDocume
         doc.posted_at = timezone.now()
         doc.posted_by = getattr(actor, "user", None)
         doc.save()
+        if doc.needs_receipt:
+            events.cash_transfer_sent(doc, by=doc.posted_by)
     return doc
 
 
@@ -283,6 +286,7 @@ def receive_transfer(doc_id: int, *, actor=None) -> TreasuryDocument:
         doc.received_at = timezone.now()
         doc.received_by = getattr(actor, "user", None)
         doc.save()
+        events.cash_transfer_done(doc)
     return doc
 
 
@@ -303,4 +307,5 @@ def void_treasury_document(doc_id: int, *, reason: str = "", actor=None) -> Trea
         doc.voided_by = getattr(actor, "user", None)
         doc.void_reason = reason.strip()[:300]
         doc.save()
+        events.cash_transfer_done(doc)  # nothing left to receive
     return doc

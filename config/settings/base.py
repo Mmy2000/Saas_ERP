@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.diamonds",
     "apps.audit",
     "apps.messaging",
+    "apps.notifications",
     "apps.opening",
     "apps.merchandising",
 ]

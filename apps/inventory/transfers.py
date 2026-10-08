@@ -24,6 +24,7 @@ from apps.core.numeric import MONEY, WEIGHT, quantize
 from apps.core.sequences import allocate_number
 from apps.ledger.models import EntryKind
 from apps.ledger.services import post_entry, reverse_entry
+from apps.notifications import events
 from apps.org.models import Branch
 
 from .models import (
@@ -182,6 +183,7 @@ def send_transfer(data: TransferInput, *, actor=None) -> StockTransfer:
         transfer.posted_at = timezone.now()
         transfer.posted_by = getattr(actor, "user", None)
         transfer.save()
+        events.stock_transfer_sent(transfer, by=transfer.posted_by)
     return transfer
 
 
@@ -235,6 +237,7 @@ def receive_transfer(transfer_id: int, *, actor=None) -> StockTransfer:
         transfer.received_at = timezone.now()
         transfer.received_by = getattr(actor, "user", None)
         transfer.save()
+        events.stock_transfer_done(transfer)
     return transfer
 
 
@@ -266,4 +269,5 @@ def void_transfer(transfer_id: int, *, reason: str = "", actor=None) -> StockTra
         transfer.voided_by = getattr(actor, "user", None)
         transfer.void_reason = reason.strip()[:300]
         transfer.save()
+        events.stock_transfer_done(transfer)  # nothing left to receive
     return transfer

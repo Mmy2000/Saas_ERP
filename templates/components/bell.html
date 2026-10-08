@@ -1,0 +1,24 @@
+{% load i18n ui %}{# The bell: unread notifications and what needs attention (static/core/js/bell.js). #}
+<div class="relative" data-bell data-endpoint="{% url 'notifications-api' %}" data-read-all="{% url 'notifications-read-all' %}">
+  <button type="button" class="btn btn-ghost relative h-8 px-2" aria-haspopup="true" aria-expanded="false" data-bell-toggle
+          title="{% translate 'Notifications' %}" aria-label="{% translate 'Notifications' %}">
+    {% icon "bell" "size-[18px]" %}
+    <span class="bell-badge num" data-bell-count{% if not bell.unread %} hidden{% endif %}>{{ bell.label }}</span>
+  </button>
+  <div class="menu-panel w-[min(23rem,calc(100vw-2rem))] overflow-hidden p-0 max-sm:fixed max-sm:inset-x-4 max-sm:top-14 max-sm:w-auto" data-bell-panel hidden>
+    <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+      <p class="text-sm font-semibold text-slate-900">{% translate "Notifications" %}</p>
+      <button type="button" class="btn btn-ghost h-7 px-2 text-xs" data-bell-read-all hidden>{% icon "check-check" "size-3.5" %}{% translate "Mark all as read" %}</button>
+    </div>
+    <div class="max-h-[min(28rem,70vh)] overflow-y-auto" data-bell-body aria-live="polite"></div>
+    <div class="flex items-center justify-between border-t border-slate-100 bg-slate-50/70 px-4 py-2 text-xs">
+      <a href="{% url 'notifications' %}" class="font-medium text-brand-700 hover:underline">{% translate "See all" %}</a>
+      <a href="{% url 'notifications' %}#preferences" class="text-slate-500 hover:text-slate-900">{% translate "Choose what to receive" %}</a>
+    </div>
+  </div>
+  <template data-bell-strings
+            data-empty="{% translate 'Nothing new' %}" data-empty-text="{% translate 'You are all caught up.' %}"
+            data-attention="{% translate 'Needs attention' %}" data-latest="{% translate 'Latest' %}"
+            data-failed="{% translate 'Could not load the notifications.' %}"></template>
+  <template data-bell-icons>{% for name in bell.icons %}<span data-icon="{{ name }}">{% icon name "size-4" %}</span>{% endfor %}</template>
+</div>

@@ -109,6 +109,9 @@ def publish_price_board(cmd: PublishPriceBoardCommand, *, actor=None) -> MetalPr
             line.board = board
             line.created_by = user
         MetalPriceBoardLine.objects.bulk_create(lines)
+        from apps.notifications import events
+
+        events.price_board_published(board, by=user)
         # TODO(outbox): publish PriceBoardPublished for the e-commerce connector (§9.6).
     return board
 

@@ -31,6 +31,18 @@
               {% icon item.icon "size-[17px]" %}<span class="truncate" data-sidebar-label>{{ item.label }}</span></a></li>
           {% endfor %}
         </ul>
+        {% if forloop.first %}
+        {# The member's pinned screens (the star in the top bar; static/core/js/shortcuts.js). #}
+        <div data-pinned{% if not shortcuts.items %} hidden{% endif %}>
+          <p class="nav-heading" data-sidebar-label>{% icon "star" "size-3" %}{% translate "Pinned" %}</p>
+          <ul class="space-y-0.5" data-pinned-list>
+            {% for item in shortcuts.items %}
+            <li data-screen="{{ item.screen }}"><a href="{{ item.url }}" class="nav-link" title="{{ item.label }}">
+              {% icon item.icon "size-[17px]" %}<span class="truncate" data-sidebar-label>{{ item.label }}</span></a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
         {% else %}
         {# A group: its header opens and closes it (static/core/js/ui.js, remembered in a cookie). #}
         <div class="nav-group" data-nav-group="{{ section.key }}" data-open="{{ section.open|yesno:'true,false' }}"{% if section.current %} data-current{% endif %}>
@@ -79,8 +91,16 @@
         {% icon "building-2" "size-4 text-slate-400" %}
         <span class="truncate font-medium">{{ request.membership.default_branch.name|default:_("All branches") }}</span>
       </div>
+      {% if shortcuts.screen %}
+      <button type="button" class="btn btn-ghost pin-toggle h-8 px-2" data-pin="{{ shortcuts.screen.name }}" data-endpoint="{% url 'iam-shortcuts' %}"
+              aria-pressed="{{ shortcuts.screen.pinned|yesno:'true,false' }}"
+              data-pin-label="{% translate 'Pin to my shortcuts' %}" data-unpin-label="{% translate 'Remove from my shortcuts' %}"
+              title="{% if shortcuts.screen.pinned %}{% translate 'Remove from my shortcuts' %}{% else %}{% translate 'Pin to my shortcuts' %}{% endif %}"
+              aria-label="{% if shortcuts.screen.pinned %}{% translate 'Remove from my shortcuts' %}{% else %}{% translate 'Pin to my shortcuts' %}{% endif %}">{% icon "star" "size-[18px]" %}</button>
+      {% endif %}
       <div class="ms-auto flex items-center gap-2">
         <button type="button" class="btn btn-ghost h-8 px-2 lg:hidden" data-cmdk-open aria-label="{% translate 'Search…' %}">{% icon "search" "size-[18px]" %}</button>
+        {% include "components/bell.html" %}
         {% include "components/appearance.html" %}
         {% include "components/lang_switch.html" %}
       </div>

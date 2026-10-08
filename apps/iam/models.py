@@ -185,3 +185,44 @@ class MembershipLimit(TenantScopedModel):
             models.UniqueConstraint(fields=["tenant", "membership", "key"],
                                     name="iam_membershiplimit_uniq"),
         ]
+
+
+class SignInOutcome(models.TextChoices):
+    SIGNED_IN = "in", _("Signed in")
+    FAILED = "failed", _("Wrong name or password")
+    SIGNED_OUT = "out", _("Signed out")
+
+
+class SignInEvent(TenantScopedModel):
+    """Every sign-in, failed attempt and sign-out on this workspace (Settings → Sign-ins)."""
+
+    membership = models.ForeignKey(Membership, null=True, blank=True, on_delete=models.SET_NULL,
+                                   related_name="+")
+    username = models.CharField(max_length=150, blank=True)  # as typed, for failed attempts
+    outcome = models.CharField(max_length=8, choices=SignInOutcome.choices)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+    at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-at", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "-at"], name="iam_signin_at_idx"),
+            models.Index(fields=["tenant", "membership", "-at"], name="iam_signin_member_idx"),
+        ]
+
+
+class Shortcut(TenantScopedModel):
+    """A screen a member pinned: shown at the top of their sidebar and on their dashboard."""
+
+    membership = models.ForeignKey(Membership, on_delete=models.CASCADE,
+                                   related_name="shortcuts")
+    screen = models.CharField(max_length=80)  # a url name from the sidebar's NAVIGATION
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "membership", "screen"],
+                                    name="iam_shortcut_uniq"),
+        ]

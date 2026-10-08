@@ -26,6 +26,7 @@ urlpatterns = [
     path("manufacturing/", include("apps.manufacturing.api")),
     path("diamonds/", include("apps.diamonds.api")),
     path("messages/", include("apps.messaging.api")),
+    path("notifications/", include("apps.notifications.api")),
     path("opening/", include("apps.opening.api")),
     path("merchandising/", include("apps.merchandising.api")),
     path("repairs/", include("apps.repairs.api")),

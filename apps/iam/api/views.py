@@ -163,3 +163,34 @@ class RoleViewSet(viewsets.GenericViewSet):
     def destroy(self, request, pk=None):
         services.delete_role(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ShortcutSerializer(serializers.Serializer):
+    screen = serializers.CharField(max_length=80)
+    pinned = serializers.BooleanField()
+
+
+class ShortcutsView(APIView):
+    """The member's pinned screens; POST {screen, pinned} pins or unpins one."""
+
+    required_permissions = {"GET": AUTHENTICATED, "POST": AUTHENTICATED}
+
+    def get(self, request):
+        from apps.iam import shortcuts
+
+        return Response({"results": shortcuts.pinned(request.actor)})
+
+    def post(self, request):
+        from apps.iam import shortcuts
+
+        serializer = ShortcutSerializer(data=request.data)
+        if not serializer.is_valid():
+            raise ValidationError(_("Please correct the highlighted fields."),
+                                  fields=serializer.errors)
+        data = serializer.validated_data
+        if data["pinned"]:
+            shortcuts.pin(request.actor, data["screen"])
+        else:
+            shortcuts.unpin(request.actor, data["screen"])
+        return Response({"pinned": data["pinned"],
+                         "results": shortcuts.pinned(request.actor)})

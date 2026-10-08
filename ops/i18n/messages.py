@@ -6,7 +6,7 @@
 
 Source strings are English; Arabic is the translation. The extractor understands the forms
 this codebase uses: {% translate %}, {% blocktranslate [trimmed] … %}…{% plural %}…, and
-_( ) / gettext( ) / gettext_lazy( ) in Python and template filter arguments.
+_( ) / _l( ) / gettext( ) / gettext_lazy( ) / ngettext( ) in Python and template filter arguments.
 """
 
 from __future__ import annotations
@@ -26,7 +26,8 @@ ARABIC_PLURALS = ("nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
                   "n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;")
 
 _STRING = r"""("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')"""
-PY_FUNCS = {"_", "gettext", "gettext_lazy"}
+PY_FUNCS = {"_", "_l", "gettext", "gettext_lazy"}
+PY_PLURALS = {"ngettext", "ngettext_lazy"}
 TPL_TRANSLATE = re.compile(r"{%\s*(?:translate|trans)\s+" + _STRING)
 TPL_UNDERSCORE = re.compile(r"_\(" + _STRING + r"\)")
 TPL_BLOCK = re.compile(
@@ -69,11 +70,17 @@ def _from_template(source: str):
 def _from_python(source: str):
     # Parsed, not pattern-matched: messages split over adjacent literals ("a " "b") arrive
     # joined, exactly as Python sees them at runtime.
+    def text(arg):
+        return arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str) else None
+
     for node in ast.walk(ast.parse(source)):
-        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-                and node.func.id in PY_FUNCS and node.args
-                and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str)):
-            yield Message(node.args[0].value)
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.args):
+            continue
+        if node.func.id in PY_FUNCS and text(node.args[0]) is not None:
+            yield Message(text(node.args[0]))
+        elif (node.func.id in PY_PLURALS and len(node.args) >= 2
+              and text(node.args[0]) is not None and text(node.args[1]) is not None):
+            yield Message(text(node.args[0]), text(node.args[1]))
 
 
 def _sources():

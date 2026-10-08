@@ -13,6 +13,7 @@
 {% endblock %}
 {% block content %}
 {% can "admin.users.manage" as can_manage %}
+{% can "admin.signins.history" as can_history %}
 <section class="card overflow-hidden">
   <div class="overflow-x-auto">
     <table class="table" data-report>
@@ -40,7 +41,7 @@
             {% empty %}<span class="text-slate-400">—</span>{% endfor %}
             </div>
           </td>
-          <td><span class="num text-slate-500">{{ member.user.last_login|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</span></td>
+          <td><span class="num text-slate-500">{% if member.last_signed_in %}{% if can_history %}<a class="hover:text-slate-900 hover:underline" href="{% url 'sign-ins' %}?user={{ member.pk }}">{{ member.last_signed_in|date:"SHORT_DATETIME_FORMAT" }}</a>{% else %}{{ member.last_signed_in|date:"SHORT_DATETIME_FORMAT" }}{% endif %}{% else %}—{% endif %}</span></td>
           <td>{% if member.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-warning">{{ member.get_status_display }}</span>{% endif %}</td>
           <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'user-edit' member.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
