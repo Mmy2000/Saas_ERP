@@ -1,0 +1,127 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Stones at workshops" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/handouts.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stones at workshops" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Small stones from your parcels handed to workshops and setters by the carat: what each one holds, at its cost. They come back into the parcel, go into pieces they set, or are written off." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.handout" as can_handout %}
+{{ held|json_script:"held-stones" }}
+<form method="get" class="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+  <label class="sm:w-72"><span class="form-label">{% translate "Workshop" %}</span>
+    <select name="workshop" class="form-input"><option value="">{% translate "All workshops" %}</option>
+      {% for w in workshops %}<option value="{{ w.pk }}" {% if workshop == w.pk|stringformat:"s" %}selected{% endif %}>{{ w.name }}</option>{% endfor %}</select></label>
+  <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+</form>
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "What each workshop holds" %}</h2></div>
+      {% if groups %}
+      <div class="relative overflow-x-auto">
+        <table class="table" data-report>
+          <thead><tr><th>{% translate "Parcel" %}</th><th>{% translate "Stones" %}</th>
+            <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Count" %}</th>
+            <th class="text-end">{% translate "Cost / ct" %}</th><th class="text-end">{% translate "Cost" %}</th><th data-no-print><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+          {% for g in groups %}
+          <tbody>
+            <tr><td colspan="7" class="bg-slate-50/70 font-semibold text-slate-900">{% icon "hammer" "me-1.5 inline size-3.5 text-slate-400" %}{{ g.workshop.name }}</td></tr>
+            {% for row in g.rows %}
+            <tr>
+              <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'parcel' row.parcel_id %}">{{ row.parcel.code }}</a>
+                <div class="text-xs text-slate-500">{{ row.parcel.branch.name }}</div></td>
+              <td class="text-sm">{{ row.parcel.get_kind_display }}{% if row.parcel.size %} · <span dir="ltr">{{ row.parcel.size }}</span>{% endif %}</td>
+              <td class="text-end"><span class="num">{{ row.carats|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ row.count }}</span></td>
+              <td class="text-end"><span class="num">{{ row.cost_per_ct|num:2|default:"—" }}</span></td>
+              <td class="text-end"><span class="num">{{ row.cost_amount|num:2 }}</span></td>
+              <td class="text-end whitespace-nowrap" data-no-print>{% if can_handout %}
+                <button type="button" class="btn btn-ghost text-xs" data-prefill="back" data-workshop="{{ row.workshop_id }}" data-parcel="{{ row.parcel_id }}">{% icon "undo-2" "size-3.5" %}{% translate "Take back" %}</button>
+                <button type="button" class="btn btn-ghost text-xs" data-prefill="lost" data-workshop="{{ row.workshop_id }}" data-parcel="{{ row.parcel_id }}">{% translate "Write off" %}</button>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            <tr class="font-medium"><td colspan="2" class="text-sm text-slate-500">{% translate "Total" %}</td>
+              <td class="text-end"><span class="num">{{ g.carats|num:3 }}</span></td><td class="text-end"><span class="num">{{ g.count }}</span></td>
+              <td></td><td class="text-end"><span class="num">{{ g.cost|num:2 }}</span></td><td data-no-print></td></tr>
+          </tbody>
+          {% endfor %}
+          {% if groups|length > 1 %}
+          <tfoot><tr class="font-semibold"><td colspan="2">{% translate "All workshops" %}</td>
+            <td class="text-end"><span class="num">{{ totals.carats|num:3 }}</span></td><td class="text-end"><span class="num">{{ totals.count }}</span></td>
+            <td></td><td class="text-end"><span class="num">{{ totals.cost|num:2 }}</span> <span class="text-xs font-normal text-slate-400">{{ home_currency }}</span></td><td data-no-print></td></tr></tfoot>
+          {% endif %}
+        </table>
+      </div>
+      {% else %}
+        {% translate "No stones at workshops" as empty_title %}
+        {% translate "Hand stones from a parcel to a workshop or setter and they show here until they come back or are used." as empty_text %}
+        {% include "components/empty_state.html" with icon="hammer" title=empty_title text=empty_text %}
+      {% endif %}
+    </section>
+
+    {% if handouts %}
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "Latest" %}</h2></div>
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Workshop" %}</th><th>{% translate "Parcel" %}</th>
+            <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Cost" %}</th><th>{% translate "Status" %}</th><th><span class="sr-only">{% translate "Actions" %}</span></th></tr></thead>
+          <tbody>
+          {% for h in handouts %}
+            <tr id="handout-{{ h.pk }}">
+              <td><span class="num font-medium">{{ h.number }}</span><div class="text-xs text-slate-500">{{ h.get_kind_display }}</div></td>
+              <td><span class="num">{{ h.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+              <td>{{ h.workshop.name }}</td>
+              <td><span class="num">{{ h.parcel.code }}</span></td>
+              <td class="text-end"><span class="num">{{ h.carats|num:3 }}</span>{% if h.count %}<div class="text-xs text-slate-500"><span class="num">{{ h.count }}</span> {% translate "stones" %}</div>{% endif %}</td>
+              <td class="text-end"><span class="num">{{ h.cost_amount|num:2 }}</span></td>
+              <td>{% include "components/doc_status.html" with status=h.status label=h.get_status_display %}</td>
+              <td class="text-end">{% if can_handout and h.status == "posted" %}<button type="button" class="btn btn-ghost text-xs text-red-600" data-void-handout="{% url 'diamonds-handout-void' h.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel" %}</button>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+
+  {% if can_handout %}
+  <form id="handout-form" class="card self-start" data-api-form data-shape="handout" data-method="POST" data-endpoint="{% url 'diamonds-handouts' %}"
+        data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="card-header"><h2 class="card-title">{% translate "Hand out or take back" %}</h2></div>
+    <div class="card-body space-y-4">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <label class="block"><span class="form-label">{% translate "What happens" %}</span>
+        <select name="kind" class="form-input" data-handout-kind>{% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label class="block"><span class="form-label">{% translate "Workshop or setter" %}</span>
+        <select name="workshop" class="form-input" data-handout-workshop><option value="">—</option>
+          {% for w in workshops %}<option value="{{ w.pk }}" {% if workshop == w.pk|stringformat:"s" %}selected{% endif %}>{{ w.name }}</option>{% endfor %}</select>
+        <span class="form-error" data-error-for="workshop"></span></label>
+      <label class="block"><span class="form-label">{% translate "Parcel" %}</span>
+        <select name="parcel" class="form-input" data-handout-parcel><option value="">—</option>
+          {% for p in parcels %}<option value="{{ p.pk }}" data-carats="{{ p.carats }}" data-count="{{ p.count }}">{{ p.code }} · {{ p.get_kind_display }}{% if p.size %} {{ p.size }}{% endif %} · {{ p.branch.name }}</option>{% endfor %}</select>
+        <span class="form-error" data-error-for="parcel"></span></label>
+      <p class="text-xs text-slate-500" data-handout-hint data-in-parcel="{% translate 'In the parcel: {carats} ct, {count} stones' %}"
+         data-with-workshop="{% translate 'With the workshop: {carats} ct, {count} stones' %}"></p>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block"><span class="form-label">{% translate "Carats" %}</span><input name="carats" class="form-input num w-full text-start" inputmode="decimal"><span class="form-error" data-error-for="carats"></span></label>
+        <label class="block"><span class="form-label">{% translate "Count" %}</span><input name="count" class="form-input num w-full text-start" inputmode="numeric"><span class="form-error" data-error-for="count"></span></label>
+      </div>
+      <input name="note" class="form-input" placeholder="{% translate 'Note' %}" maxlength="300">
+      <p class="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600" data-kind-help
+         data-out="{% translate 'They leave the parcel at its average cost and the workshop holds them.' %}"
+         data-back="{% translate 'They go back into the parcel at the cost the workshop holds them at.' %}"
+         data-charged="{% translate 'The workshop pays for them: their cost goes on its account.' %}"
+         data-lost="{% translate 'Their cost is booked as a stone loss.' %}"></p>
+      <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -209,7 +209,7 @@ def needs_attention(actor) -> list[Attention]:
             status=DocStatus.POSTED, received_at__isnull=True), branches, "to_branch_id").count()
         if incoming:
             items.append(Attention(_("Transfers waiting to be received"), incoming,
-                                   reverse("stock-transfers"), "truck"))
+                                   reverse("in-transit") + "?direction=in", "truck"))
         counting = _scoped(Stocktake.objects.filter(status=DocStatus.DRAFT), branches).count()
         if counting:
             items.append(Attention(_("Stocktakes in progress"), counting,
@@ -271,7 +271,7 @@ def needs_attention(actor) -> list[Attention]:
             actor.branch_ids("treasury.transfer.receive"), "to_branch_id").count()
         if cash:
             items.append(Attention(_("Cash waiting to be received"), cash,
-                                   reverse("treasury-documents") + "?state=transit", "wallet"))
+                                   reverse("in-transit") + "?direction=in", "wallet"))
     if actor.can("treasury.cheque.view"):
         from apps.treasury.models import OPEN_CHEQUE, Cheque, ChequeDirection
 

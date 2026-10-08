@@ -9,6 +9,8 @@ register_permissions(_("Diamonds and gemstones"), [
     ("diamonds.manage", _("Edit stone details, certificates and label prices")),
     ("diamonds.receive", _("Receive diamond pieces and loose stones from suppliers")),
     ("diamonds.setting", _("Record stones set into pieces")),
+    ("diamonds.handout", _("Hand stones from parcels to workshops, take them back or write "
+                           "them off")),
     ("diamonds.buy_back", _("Buy old diamond jewellery and stones from customers")),
     ("diamonds.sell", _("Sell diamond pieces and loose stones")),
 ])

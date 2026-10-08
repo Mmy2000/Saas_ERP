@@ -59,7 +59,7 @@ def test_todays_figures(tenant_a, busy_day):
     # rules are covered in apps/ledger/tests/test_closing.py.)
     attention = [(a.url, a.count) for a in data["attention"]
                  if not a.url.startswith("/accounting/periods/")]
-    assert attention == [("/stock/transfers/", 1)]
+    assert attention == [("/stock/in-transit/?direction=in", 1)]
     assert len(data["recent"]) == 3 and all(doc["url"] for doc in data["recent"])
 
 

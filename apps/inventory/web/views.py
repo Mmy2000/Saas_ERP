@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
@@ -10,6 +11,7 @@ from apps.catalog.models import ItemCategory, Karat
 from apps.core.documents import document_titles, document_url
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
+from apps.iam.catalog import AUTHENTICATED
 from apps.inventory.models import (
     DiscountClass,
     Item,
@@ -209,4 +211,91 @@ def stocktake_detail(request, pk):
         "recent": lines.filter(result=StocktakeResult.COUNTED).order_by("-counted_at")[:15],
         "lot_lines": take.lot_lines.select_related("lot__category", "lot__karat__metal"),
         "endpoint": reverse("stocktake-api-detail", args=[take.pk]),
+    })
+
+
+@permission_required(AUTHENTICATED)
+def in_transit(request):
+    """Everything sent between branches and not received yet (legacy الخزن الوسيطة, one screen
+    per kind in Gweb): goods by transfer with totals per karat, and cash."""
+    from collections import defaultdict
+    from decimal import Decimal
+
+    from django.utils import timezone
+
+    from apps.inventory.models import StockTransferLine
+    from apps.inventory.services import SCRAP_CATEGORY_CODE
+
+    see_goods, see_cash = (request.actor.can("inventory.stock.view"),
+                           request.actor.can("treasury.view"))
+    if not (see_goods or see_cash):
+        raise PermissionDenied
+    branch = request.GET.get("branch", "")
+    direction = request.GET.get("direction", "")
+    if direction and not branch.isdigit() and request.membership.default_branch_id:
+        branch = str(request.membership.default_branch_id)  # "coming to my branch"
+    today = timezone.localdate()
+
+    def narrow(rows):
+        if not branch.isdigit():
+            return rows
+        if direction == "in":
+            return rows.filter(to_branch_id=int(branch))
+        if direction == "out":
+            return rows.filter(branch_id=int(branch))
+        return rows.filter(Q(branch_id=int(branch)) | Q(to_branch_id=int(branch)))
+
+    transfers = []
+    if see_goods:
+        transfers = list(narrow(_visible_transfers(request).filter(
+            status=DocStatus.POSTED, received_at__isnull=True)).order_by("business_date", "id"))
+    by_karat = defaultdict(lambda: {"pieces": 0, "qty": 0, "gross": Decimal(0),
+                                    "fine": Decimal(0), "cost": Decimal(0)})
+    totals = {"pieces": 0, "gross": Decimal(0), "fine": Decimal(0), "cost": Decimal(0)}
+    lines = StockTransferLine.objects.filter(transfer__in=transfers).select_related(
+        "karat__metal", "category")
+    for line in lines:
+        scrap = line.category.code == SCRAP_CATEGORY_CODE
+        key = (line.karat.metal.code if line.karat else "", line.karat.code if line.karat else 0,
+               scrap)
+        row = by_karat[key]
+        row["label"] = str(line.karat) if line.karat else "—"
+        row["scrap"] = scrap
+        row["pieces"] += 1 if line.item_id else 0
+        row["qty"] += 0 if line.item_id else line.qty
+        row["gross"] += line.gross_weight_g
+        row["fine"] += line.fine_weight_g
+        row["cost"] += line.cost_amount
+        totals["pieces"] += 1 if line.item_id else 0
+        totals["gross"] += line.gross_weight_g
+        totals["fine"] += line.fine_weight_g
+        totals["cost"] += line.cost_amount
+    for transfer in transfers:
+        transfer.days = (today - transfer.business_date).days
+
+    cash, cash_totals = None, {}
+    if see_cash:
+        from apps.treasury.models import TreasuryDocument
+
+        documents = TreasuryDocument.objects.select_related("branch", "to_branch", "currency")
+        scope = request.actor.branch_ids("treasury.view")
+        if scope is not None:
+            documents = (documents.filter(branch_id__in=scope)
+                         | documents.filter(to_branch_id__in=scope))
+        cash = list(narrow(documents.filter(status=DocStatus.POSTED, needs_receipt=True,
+                                            received_at__isnull=True))
+                    .order_by("business_date", "id"))
+        for doc in cash:
+            doc.days = (today - doc.business_date).days
+            cash_totals[doc.currency.code] = cash_totals.get(doc.currency.code, 0) + doc.amount
+
+    branches = Branch.objects.filter(is_active=True).order_by("code")
+    scope = request.actor.branch_ids("inventory.stock.view" if see_goods else "treasury.view")
+    if scope is not None:
+        branches = branches.filter(pk__in=scope)
+    return render(request, "inventory/in_transit.html", {
+        "see_goods": see_goods,
+        "transfers": transfers, "karats": [by_karat[k] for k in sorted(by_karat)],
+        "totals": totals, "cash": cash, "cash_totals": sorted(cash_totals.items()),
+        "branches": branches, "branch": branch, "direction": direction,
     })

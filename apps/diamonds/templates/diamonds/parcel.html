@@ -31,7 +31,7 @@
             <tr>
               <td><span class="num">{{ m.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
               <td>{{ m.get_kind_display }}</td>
-              <td>{% if m.url %}<a class="text-brand-700 hover:underline" href="{{ m.url }}">{{ m.document }}</a>{% else %}{{ m.document|default:"—" }}{% endif %}</td>
+              <td>{% if m.url %}<a class="text-brand-700 hover:underline" href="{{ m.url }}">{{ m.label }} <bdi class="num">{{ m.number }}</bdi></a>{% elif m.label %}{{ m.label }} <bdi class="num">{{ m.number }}</bdi>{% else %}—{% endif %}</td>
               <td class="text-end"><span class="num {% if m.carats < 0 %}text-red-600{% endif %}">{{ m.carats|num:3 }}</span></td>
               <td class="text-end"><span class="num">{{ m.count }}</span></td>
               <td class="text-end"><span class="num">{{ m.cost_amount|num:2 }}</span></td>
@@ -45,6 +45,18 @@
         {% include "components/empty_state.html" with icon="layers" title=empty_title %}
       {% endif %}
     </section>
+    {% if held %}
+    <section class="card overflow-hidden">
+      <div class="card-header"><h2 class="card-title">{% translate "With workshops" %}</h2>
+        <a class="btn btn-ghost text-xs" href="{% url 'workshop-stones' %}">{% translate "Stones at workshops" %}</a></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for h in held %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3"><a class="text-slate-800 hover:underline" href="{% url 'workshop-stones' %}?workshop={{ h.workshop_id }}">{{ h.workshop.name }}</a>
+          <span class="text-slate-600"><span class="num">{{ h.carats|num:3 }}</span> {% translate "ct" %} · <span class="num">{{ h.count }}</span> · <span class="num">{{ h.cost_amount|num:2 }}</span></span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
     {% if deals %}
     <section class="card overflow-hidden" id="deals">
       <div class="card-header"><h2 class="card-title">{% translate "Bought and sold" %}</h2></div>

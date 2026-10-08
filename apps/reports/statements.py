@@ -36,7 +36,7 @@ ZERO = Decimal(0)
 SALES_ROLES = {"sales_gold", "sales_making", "sales_diamonds", "repair_income"}
 COST_ROLES = {"cogs_gold", "cogs_diamonds", "repair_costs"}
 OTHER_ROLES = {"metal_gain", "fx_gain", "metal_loss", "fx_loss", "rounding",
-               "balance_adjustments"}
+               "balance_adjustments", "stone_loss"}
 
 
 @dataclass

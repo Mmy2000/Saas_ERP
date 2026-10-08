@@ -300,6 +300,8 @@ class ParcelMovementKind(models.TextChoices):
     SET = "set", _("Set in a piece")
     UNSET = "unset", _("Back from a piece")
     VOID = "void", _("Cancelled")
+    HAND_OUT = "out", _("Handed to a workshop")
+    HAND_BACK = "back", _("Back from a workshop")
 
 
 class ParcelMovement(TenantScopedModel):
@@ -348,6 +350,81 @@ class ParcelDeal(Document):
         ordering = ["-business_date", "-id"]
         indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
                                 name="diamonds_parcel_deal_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+
+class HandoutKind(models.TextChoices):
+    OUT = "out", _("Handed out")
+    BACK = "back", _("Taken back")
+    CHARGED = "charged", _("Charged to the workshop")
+    LOST = "lost", _("Written off as lost")
+
+
+class WorkshopStones(TenantScopedModel):
+    """Stones of a parcel held by a workshop or setter (legacy Shh2 stone rows, GHSHH23): handed
+    out by the carat, taken back, set into pieces, or written off. Cost leaves at its average."""
+
+    workshop = models.ForeignKey("parties.Party", on_delete=models.PROTECT, related_name="+")
+    parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="held")
+    carats = models.DecimalField(max_digits=12, decimal_places=3, default=0)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ["parcel__code"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "workshop", "parcel"],
+                                    name="diamonds_workshop_stones_uniq"),
+            models.CheckConstraint(condition=Q(carats__gte=0, count__gte=0, cost_amount__gte=0),
+                                   name="diamonds_workshop_stones_check"),
+        ]
+
+    @property
+    def cost_per_ct(self):
+        if not self.carats:
+            return None
+        return (self.cost_amount / self.carats).quantize(Decimal("0.01"))
+
+
+class WorkshopStoneMovement(TenantScopedModel):
+    """Every change to what a workshop holds, signed (to the workshop > 0)."""
+
+    holding = models.ForeignKey(WorkshopStones, on_delete=models.PROTECT, related_name="movements")
+    kind = models.CharField(max_length=8)  # HandoutKind, or set / unset (ParcelMovementKind)
+    carats = models.DecimalField(max_digits=12, decimal_places=3)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2)
+    document_type = models.CharField(max_length=60, blank=True)
+    document_id = models.BigIntegerField(null=True, blank=True)
+    business_date = models.DateField()
+
+    class Meta:
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "holding", "-business_date"],
+                                name="diamonds_held_move_idx"),
+                   models.Index(fields=["tenant", "document_type", "document_id"],
+                                name="diamonds_held_move_doc_idx")]
+
+
+class StoneHandout(Document):
+    """Stones handed to a workshop from a parcel, taken back into it, or written off (legacy
+    GHPR14 سحب احجار, GHPR15 رد حجارة, GHPR16 تنزيل الاحجار المستخدمة)."""
+
+    workshop = models.ForeignKey("parties.Party", on_delete=models.PROTECT, related_name="+")
+    parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="handouts")
+    kind = models.CharField(max_length=8, choices=HandoutKind.choices)
+    carats = models.DecimalField(max_digits=12, decimal_places=3)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "workshop", "-business_date"],
+                                name="diamonds_handout_idx")]
 
     def __str__(self):
         return self.number or f"#{self.pk}"

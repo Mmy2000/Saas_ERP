@@ -145,6 +145,7 @@ class ParcelUse:
     parcel_id: int
     carats: Decimal | str
     count: int = 0
+    held: bool = False  # from the setter's own stones of this parcel, not the shop's
 
 
 @dataclass
@@ -153,6 +154,7 @@ class PricedUse:
     carats: Decimal
     count: int
     cost: Decimal
+    holding: object = None  # the setter's WorkshopStones, when the stones were with them
 
     def stone(self) -> dict:
         """The stone row it becomes on the piece."""
@@ -162,19 +164,30 @@ class PricedUse:
                 "note": _("From parcel %(code)s") % {"code": self.parcel.code}}
 
 
-def price_uses(uses, branch) -> list[PricedUse]:
-    """Lock and check the parcels stones are taken from, at their average cost."""
+def price_uses(uses, branch, setter=None) -> list[PricedUse]:
+    """Lock and check the parcels stones are taken from, at their average cost; or, for stones
+    the setter already holds, their holding at its average cost."""
+    from .handouts import held_cost, holding_for
+
     priced = []
     for use in uses:
         field = "parcels"
-        parcel = (StoneParcel.objects.select_for_update().filter(pk=use.parcel_id, is_active=True)
-                  .first())
-        if parcel is None or parcel.branch_id != branch.pk:
+        parcel = StoneParcel.objects.select_for_update().filter(pk=use.parcel_id).first()
+        if parcel is None or parcel.branch_id != branch.pk or not (parcel.is_active or use.held):
             raise _error(field, _("Choose a parcel of this branch."))
         carats = _amount(use.carats, CARAT, field)
         count = int(use.count or 0)
         if count < 0:
             raise _error(field, _("Must not be negative."))
+        if use.held:
+            held = holding_for(setter, parcel) if setter is not None else None
+            if held is None or carats > held.carats or count > held.count:
+                raise _error(field, _("The setter holds only %(carats)s ct (%(count)s stones) of "
+                                      "parcel %(code)s.") % {
+                    "carats": held.carats if held else ZERO, "count": held.count if held else 0,
+                    "code": parcel.code})
+            priced.append(PricedUse(parcel, carats, count, held_cost(held, carats), held))
+            continue
         if carats > parcel.carats or count > parcel.count:
             raise _error(field, _("Parcel %(code)s has only %(carats)s ct (%(count)s stones).")
                          % {"code": parcel.code, "carats": parcel.carats, "count": parcel.count})
@@ -183,13 +196,22 @@ def price_uses(uses, branch) -> list[PricedUse]:
 
 
 def take(priced: list[PricedUse], *, doc_type: str, doc_id: int, day) -> None:
+    from .handouts import move_held
+
     for use in priced:
-        _move(use.parcel, ParcelMovementKind.SET, -use.carats, -use.count, -use.cost,
-              doc_type=doc_type, doc_id=doc_id, day=day)
+        if use.holding is not None:
+            move_held(use.holding, ParcelMovementKind.SET, -use.carats, -use.count, -use.cost,
+                      doc_type=doc_type, doc_id=doc_id, day=day)
+        else:
+            _move(use.parcel, ParcelMovementKind.SET, -use.carats, -use.count, -use.cost,
+                  doc_type=doc_type, doc_id=doc_id, day=day)
 
 
 def give_back(*, doc_type: str, doc_id: int, day) -> None:
-    """A cancelled setting: what it took from parcels goes back, exactly."""
+    """A cancelled setting: what it took from parcels (or a setter's holding) goes back."""
+    from .handouts import restore_held
+
+    restore_held(doc_type=doc_type, doc_id=doc_id, day=day)
     for move in ParcelMovement.objects.filter(document_type=doc_type, document_id=doc_id,
                                               kind=ParcelMovementKind.SET).order_by("pk"):
         parcel = StoneParcel.objects.select_for_update().get(pk=move.parcel_id)

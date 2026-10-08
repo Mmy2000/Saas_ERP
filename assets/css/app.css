@@ -255,6 +255,8 @@
   .table tbody tr:first-child td { @apply border-t-0; }
   .table tbody tr { @apply transition-colors; }
   .table tbody tr:hover td { @apply bg-slate-50/70; }
+  .table tfoot tr { @apply border-t-2 border-slate-200; }
+  .table tfoot td { @apply px-5 py-3 text-slate-900; }
 
   /* Sidebar */
   .nav-link { @apply relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium text-slate-600

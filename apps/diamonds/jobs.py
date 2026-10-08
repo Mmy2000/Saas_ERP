@@ -255,7 +255,8 @@ def set_from_job(job_id: int, data: SetInput, *, actor=None) -> StoneSetting:
         setting = apply_setting(piece=piece, stones=stones, after=after, labour=labour,
                                 setter=job.setter, branch=job.branch, note=data.note,
                                 actor=actor, job=job, extra_lines=back,
-                                parcels=price_uses(data.parcel_uses, job.branch))
+                                parcels=price_uses(data.parcel_uses, job.branch,
+                                                   job.setter))
         change_item_status(piece.pk, to=ItemStatus.IN_STOCK, allowed_from=(ItemStatus.AT_WORKSHOP,),
                            movement_type=MovementType.WORKSHOP_RECEIPT,
                            business_date=setting.business_date, doc=DocRef(JOB_DOC, job.pk),

@@ -453,7 +453,7 @@ def set_stones(data: SettingInput, *, actor=None) -> StoneSetting:
 
         return apply_setting(piece=piece, stones=stones, after=after, labour=labour,
                              setter=setter, branch=branch, note=data.note, actor=actor,
-                             parcels=price_uses(data.parcel_uses, branch))
+                             parcels=price_uses(data.parcel_uses, branch, setter))
 
 
 def apply_setting(*, piece: Item, stones: list[Item], after: Decimal, labour: Decimal, setter,
@@ -501,6 +501,13 @@ def apply_setting(*, piece: Item, stones: list[Item], after: Decimal, labour: De
 
     setting.number = allocate_number("SS", branch=branch, fiscal_year=today.year)
     lines = list(extra_lines) + labour_lines(labour, setter)
+    held = sum((use.cost for use in parcels if use.holding is not None), ZERO)
+    if held:  # stones the setter held: their cost comes back from stock at workshops
+        home = functional_commodity()
+        lines += [LineInput(account=account_for("inventory_diamonds"), commodity=home,
+                            quantity=held),
+                  LineInput(account=account_for("inventory_at_workshop"), commodity=home,
+                            quantity=-held)]
     if lines:
         setting.journal_entry = post_entry(
             branch=branch, business_date=today, kind=EntryKind.AUTO,

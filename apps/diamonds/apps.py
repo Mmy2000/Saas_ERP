@@ -15,3 +15,4 @@ class DiamondsConfig(AppConfig):
         register_document("diamonds.BuyBack", "buy-back", _("Old diamonds bought"))
         register_document("diamonds.ParcelDeal", "parcel-deal", _("Parcel stones"))
         register_document("diamonds.StoneRemoval", "stone-removal", _("Stones taken out"))
+        register_document("diamonds.StoneHandout", "stone-handout", _("Stones with a workshop"))

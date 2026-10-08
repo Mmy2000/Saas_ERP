@@ -74,6 +74,7 @@ CHART = [
     ("5301", "5",   _("Metal losses"),                        X, DR, True, NONE, ANY, "metal_loss"),
     ("5302", "5",   _("Exchange losses"),                     X, DR, True, NONE, MONEY, "fx_loss"),
     ("5303", "5",   _("Balance adjustments"),                 X, DR, True, NONE, ANY, "balance_adjustments"),
+    ("5304", "5",   _("Stone losses"),                        X, DR, True, NONE, MONEY, "stone_loss"),
     ("5401", "5",   _("Rounding differences"),                X, DR, True, NONE, MONEY, "rounding"),
 ]
 

@@ -1,5 +1,5 @@
 {% load i18n ui %}{# Small stones from parcels, by the carat, for a stone setting (static/diamonds/js/parcel_lines.js). #}
-{% if parcels %}
+{% if parcels or held_parcels %}
 <div class="space-y-2" data-parcel-lines>
   <div class="flex items-center justify-between">
     <span class="form-label mb-0">{% translate "Small stones from a parcel" %}</span>
@@ -10,13 +10,17 @@
   <template data-parcel-row>
     <div class="grid grid-cols-[1fr_5.5rem_4.5rem_auto] items-center gap-2" data-parcel-line>
       <select class="form-input" data-parcel-id aria-label="{% translate 'Parcel' %}">
+        {% if held_parcels %}<optgroup label="{% translate 'The shop’s parcels' %}">{% endif %}
         {% for p in parcels %}<option value="{{ p.pk }}" data-branch="{{ p.branch_id }}">{{ p.code }} · {{ p.get_kind_display }} {{ p.size }} ({{ p.carats|num:3 }} ct, {{ p.count }})</option>{% endfor %}
+        {% if held_parcels %}</optgroup><optgroup label="{% translate 'Stones the setter holds' %}">
+        {% for h in held_parcels %}<option value="held:{{ h.parcel_id }}">{{ h.parcel.code }} · {{ h.parcel.get_kind_display }} {{ h.parcel.size }} ({{ h.carats|num:3 }} ct, {{ h.count }})</option>{% endfor %}
+        </optgroup>{% endif %}
       </select>
       <input class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'ct' %}" data-parcel-carats aria-label="{% translate 'Carats' %}">
       <input class="form-input num w-full text-start" inputmode="numeric" placeholder="{% translate 'Stones' %}" data-parcel-count aria-label="{% translate 'Stones' %}">
       <button type="button" class="btn btn-ghost px-2 text-slate-400" data-remove-parcel-line aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
     </div>
   </template>
-  <p class="text-xs text-slate-500">{% translate "They go onto the piece at the parcel's average cost per carat." %}</p>
+  <p class="text-xs text-slate-500">{% translate "They go onto the piece at the parcel's average cost per carat." %}{% if held_parcels %} {% translate "Stones the setter holds go on at the cost they were handed out at." %}{% endif %}</p>
 </div>
 {% endif %}

@@ -421,6 +421,21 @@ the average), and taken into a piece in a stone setting or when a piece comes ba
 setter (the cost moves onto the piece, the same account). Every change is a movement; a
 cancelled sale or setting puts back exactly what left.
 
+**Diamonds → Stones at workshops** (legacy Prod GHPR14 سحب احجار, GHPR15 رد حجارة, GHPR16
+تنزيل الاحجار المستخدمة, report GHSHH23): stones from a parcel handed to a workshop or setter by the
+carat. Each workshop holds a balance per parcel, at cost. Handing out moves the parcel's average
+cost to "stock at workshops". The stones can come back into the parcel, be set into a piece by that
+setter (pick "Stones the setter holds" on the setter job, and the piece takes them at the cost they
+were handed out at), be charged to the workshop's account, or be written off to Stone losses (5304,
+new). Every step is a document (SH) and can be cancelled while the stones are still where it put
+them. Gweb kept only weights and counts with no posting, and its balance checks ignored the
+workshop and the parcel. The parcel page lists who holds its stones.
+
+**Goods → In transit** (legacy الخزن الوسيطة, one screen per kind in Gweb): every stock transfer
+and cash transfer between branches not received yet, by branch and direction (coming / sent),
+with days waiting, totals by karat (scrap shown apart) and cash per currency. The dashboard's
+"waiting to be received" items open it on the user's own branch.
+
 ### Notifications, sign-ins and shortcuts
 
 **The bell** (legacy Notifications app) in the top bar shows the unread count, refreshed every
@@ -607,7 +622,8 @@ These are Phase 2 spikes or later phases in the plan:
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
   RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
   (repairs), receiving in several batches, labour paid in gold, stones issued to setters;
-  production: bills of materials, stones and findings used, a loss allowance per craftsman;
+  production: bills of materials, findings used, stones used in work-order goods (stones
+  at workshops are set through setter jobs), a loss allowance per craftsman;
   diamonds: certificate scans, selling part of a parcel of stones, a diamond
   price list (Rapaport-style), buying diamond pieces for money instead of gold;
   repairs: photos of the pieces, paying in scrap gold, gold added by the workshop.

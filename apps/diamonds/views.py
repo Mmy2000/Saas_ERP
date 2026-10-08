@@ -16,15 +16,18 @@ from . import certificates
 from .models import (
     BuyBack,
     CertificateCheck,
+    HandoutKind,
     ItemStone,
     JobLineState,
     ParcelDeal,
     SettingJob,
+    StoneHandout,
     StoneKind,
     StoneParcel,
     StoneRemoval,
     StoneSetting,
     StoneShape,
+    WorkshopStones,
 )
 from .services import FAMILIES, stones_summary
 
@@ -192,6 +195,9 @@ def job(request, pk):
             is_active=True).order_by("code"),
         "settings": item.settings.filter(status=DocStatus.POSTED).select_related("piece"),
         "parcels": StoneParcel.objects.filter(is_active=True, carats__gt=0, branch=item.branch),
+        # Stones of the shop's parcels the setter already holds (Stones at workshops).
+        "held_parcels": WorkshopStones.objects.select_related("parcel").filter(
+            workshop=item.setter, carats__gt=0, parcel__branch=item.branch),
         "profile": TenantProfile.objects.first(), "home_currency": functional_currency(),
     })
 
@@ -367,11 +373,12 @@ def parcel(request, pk):
     moves = list(found.movements.order_by("-business_date", "-id")[:200])
     titles = document_titles((m.document_type, m.document_id) for m in moves)
     for move in moves:
-        label, number = titles.get((move.document_type, move.document_id), ("", ""))
-        move.document = f"{label} {number}".strip()
+        move.label, move.number = titles.get((move.document_type, move.document_id), ("", ""))
         move.url = document_url(move.document_type, move.document_id)
     return render(request, "diamonds/parcel.html", {
         "parcel": found, "moves": moves,
+        "held": found.held.select_related("workshop").filter(carats__gt=0).order_by(
+            "workshop__name"),
         "deals": found.deals.select_related("party").order_by("-business_date", "-id")[:50],
         "home_currency": functional_currency(),
         **holder_choices([found.branch_id]),
@@ -384,3 +391,53 @@ def parcel_deal(request, pk):
     if parcel_id is None:
         raise Http404
     return redirect(f"{reverse('parcel', args=[parcel_id])}#deals")
+
+
+@permission_required("diamonds.view")
+def workshop_stones(request):
+    """What each workshop or setter holds of the parcels, and handing stones out and back."""
+    from apps.parties.models import Party, PartyRoleType
+
+    from .handouts import holdings
+
+    scope = request.actor.branch_ids("diamonds.view")
+    rows = holdings(scope)
+    workshop = request.GET.get("workshop", "")
+    if workshop.isdigit():
+        rows = rows.filter(workshop_id=int(workshop))
+    groups, totals = [], {"carats": 0, "count": 0, "cost": 0}
+    for row in rows:
+        if not groups or groups[-1]["workshop"].pk != row.workshop_id:
+            groups.append({"workshop": row.workshop, "rows": [], "carats": 0, "count": 0,
+                           "cost": 0})
+        group = groups[-1]
+        group["rows"].append(row)
+        for key, value in (("carats", row.carats), ("count", row.count),
+                           ("cost", row.cost_amount)):
+            group[key] += value
+            totals[key] += value
+    parcels_ = StoneParcel.objects.select_related("branch").filter(is_active=True)
+    handouts_ = StoneHandout.objects.select_related("workshop", "parcel")
+    if scope is not None:
+        parcels_ = parcels_.filter(branch_id__in=scope)
+        handouts_ = handouts_.filter(branch_id__in=scope)
+    if workshop.isdigit():
+        handouts_ = handouts_.filter(workshop_id=int(workshop))
+    held = {f"{row.workshop_id}:{row.parcel_id}": [str(row.carats), row.count]
+            for row in holdings(scope)}
+    return render(request, "diamonds/workshop_stones.html", {
+        "groups": groups, "totals": totals, "held": held,
+        "workshops": Party.objects.filter(is_active=True, roles__role=PartyRoleType.WORKSHOP)
+        .order_by("name"),
+        "workshop": workshop, "parcels": parcels_.order_by("code"),
+        "handouts": handouts_.order_by("-business_date", "-id")[:50],
+        "kinds": HandoutKind.choices, "home_currency": functional_currency(),
+    })
+
+
+@permission_required("diamonds.view")
+def stone_handout(request, pk):
+    workshop_id = StoneHandout.objects.filter(pk=pk).values_list("workshop_id", flat=True).first()
+    if workshop_id is None:
+        raise Http404
+    return redirect(f"{reverse('workshop-stones')}?workshop={workshop_id}#handout-{pk}")

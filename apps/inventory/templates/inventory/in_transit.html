@@ -1,0 +1,121 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "In transit" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "In transit" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Everything sent from one branch to another and not received yet: pieces, gold and scrap by weight, and cash. It stays here until the receiving branch confirms it." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+  <label class="sm:w-56"><span class="form-label">{% translate "Branch" %}</span>
+    <select name="branch" class="form-input"><option value="">{% translate "All branches" %}</option>
+      {% for b in branches %}<option value="{{ b.pk }}" {% if branch == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+  <label class="sm:w-56"><span class="form-label">{% translate "Direction" %}</span>
+    <select name="direction" class="form-input">
+      <option value="">{% translate "Coming and going" %}</option>
+      <option value="in" {% if direction == "in" %}selected{% endif %}>{% translate "Coming to this branch" %}</option>
+      <option value="out" {% if direction == "out" %}selected{% endif %}>{% translate "Sent from this branch" %}</option></select></label>
+  <button class="btn btn-secondary" type="submit">{% translate "Show" %}</button>
+</form>
+
+{% if see_goods %}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Transfers" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ transfers|length }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Pieces" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.pieces }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Weight (g)" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.gross|num:3 }}</span></p><p class="mt-0.5 text-xs text-slate-500">{% translate "Fine (g)" %} <span class="num">{{ totals.fine|num:3 }}</span></p></div>
+  <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Cost" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.cost|num:2 }}</span></p></div>
+</div>
+
+{% endif %}
+<div class="space-y-6">
+  {% if see_goods %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "Goods on the way" %}</h2>
+      <a class="btn btn-ghost text-xs" href="{% url 'stock-transfers' %}">{% translate "All transfers" %}</a></div>
+    {% if transfers %}
+    <div class="relative overflow-x-auto">
+      <table class="table" data-report>
+        <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Sent" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+          <th class="text-end">{% translate "Items" %}</th><th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine (g)" %}</th><th>{% translate "Waiting" %}</th></tr></thead>
+        <tbody>
+        {% for t in transfers %}
+          <tr>
+            <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-transfer' t.pk %}">{{ t.number }}</a></td>
+            <td><span class="num">{{ t.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+            <td>{{ t.branch.name }}</td><td>{{ t.to_branch.name }}</td>
+            <td class="text-end"><span class="num">{{ t.total_qty }}</span></td>
+            <td class="text-end"><span class="num">{{ t.total_gross_weight_g|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ t.total_fine_weight_g|num:3 }}</span></td>
+            <td>{% if t.days == 0 %}<span class="badge badge-neutral">{% translate "Today" %}</span>{% elif t.days > 2 %}<span class="badge badge-warning">{% blocktranslate count counter=t.days %}{{ counter }} day{% plural %}{{ counter }} days{% endblocktranslate %}</span>{% else %}<span class="badge badge-neutral">{% blocktranslate count counter=t.days %}{{ counter }} day{% plural %}{{ counter }} days{% endblocktranslate %}</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No goods on the way" as empty_title %}
+      {% translate "Every transfer has been received." as empty_text %}
+      {% include "components/empty_state.html" with icon="truck" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  {% if karats %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "By karat" %}</h2></div>
+    <div class="relative overflow-x-auto">
+      <table class="table" data-report>
+        <thead><tr><th>{% translate "Karat" %}</th><th class="text-end">{% translate "Pieces" %}</th><th class="text-end">{% translate "Bulk count" %}</th>
+          <th class="text-end">{% translate "Weight (g)" %}</th><th class="text-end">{% translate "Fine (g)" %}</th><th class="text-end">{% translate "Cost" %}</th></tr></thead>
+        <tbody>
+        {% for k in karats %}
+          <tr>
+            <td>{{ k.label }}{% if k.scrap %} <span class="badge badge-neutral">{% translate "Scrap" %}</span>{% endif %}</td>
+            <td class="text-end"><span class="num">{{ k.pieces }}</span></td>
+            <td class="text-end"><span class="num">{{ k.qty }}</span></td>
+            <td class="text-end"><span class="num">{{ k.gross|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ k.fine|num:3 }}</span></td>
+            <td class="text-end"><span class="num">{{ k.cost|num:2 }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="font-semibold"><td>{% translate "Total" %}</td><td class="text-end"><span class="num">{{ totals.pieces }}</span></td><td></td>
+          <td class="text-end"><span class="num">{{ totals.gross|num:3 }}</span></td><td class="text-end"><span class="num">{{ totals.fine|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ totals.cost|num:2 }}</span></td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {% if cash is not None %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "Cash on the way" %}</h2>
+      {% if cash_totals %}<p class="text-sm text-slate-600">{% for code, amount in cash_totals %}<span class="num font-medium">{{ amount|num:2 }}</span> {{ code }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}</div>
+    {% if cash %}
+    <div class="relative overflow-x-auto">
+      <table class="table" data-report>
+        <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Sent" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+          <th class="text-end">{% translate "Amount" %}</th><th>{% translate "Waiting" %}</th></tr></thead>
+        <tbody>
+        {% for d in cash %}
+          <tr>
+            <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'treasury-document' d.pk %}">{{ d.number }}</a></td>
+            <td><span class="num">{{ d.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+            <td>{{ d.branch.name }}</td><td>{{ d.to_branch.name }}</td>
+            <td class="text-end"><span class="num">{{ d.amount|num:2 }}</span> <span class="text-xs text-slate-400">{{ d.currency.code }}</span></td>
+            <td>{% if d.days == 0 %}<span class="badge badge-neutral">{% translate "Today" %}</span>{% else %}<span class="badge {% if d.days > 2 %}badge-warning{% else %}badge-neutral{% endif %}">{% blocktranslate count counter=d.days %}{{ counter }} day{% plural %}{{ counter }} days{% endblocktranslate %}</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No cash on the way" as empty_title %}
+      {% include "components/empty_state.html" with icon="wallet" title=empty_title %}
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

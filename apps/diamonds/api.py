@@ -9,8 +9,8 @@ from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 from apps.inventory.models import Item, ItemStatus
 
-from . import buyback, certificates, jobs, parcels, services
-from .models import StoneKind, StoneParcel, StoneShape
+from . import buyback, certificates, handouts, jobs, parcels, services
+from .models import HandoutKind, StoneKind, StoneParcel, StoneShape
 
 
 class StoneSerializer(serializers.Serializer):
@@ -133,11 +133,12 @@ class ParcelUseSerializer(serializers.Serializer):
     parcel = serializers.IntegerField()
     carats = serializers.CharField(max_length=20)
     count = serializers.IntegerField(required=False, min_value=0, default=0)
+    held = serializers.BooleanField(required=False, default=False)  # the setter's own stones
 
 
 def _uses(rows):
     return tuple(parcels.ParcelUse(parcel_id=row["parcel"], carats=row["carats"],
-                                   count=row["count"]) for row in rows)
+                                   count=row["count"], held=row["held"]) for row in rows)
 
 
 class SettingSerializer(serializers.Serializer):
@@ -527,7 +528,67 @@ class DealVoidView(APIView):
         return Response({"id": made.pk, "status": made.status})
 
 
+class HandoutSerializer(serializers.Serializer):
+    workshop = serializers.IntegerField()
+    parcel = serializers.IntegerField()
+    kind = serializers.ChoiceField(choices=HandoutKind.choices)
+    carats = serializers.CharField(max_length=20, allow_blank=True)
+    count = serializers.IntegerField(required=False, min_value=0, default=0)
+    note = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+
+
+class HandoutView(APIView):
+    """Stones handed to a workshop from a parcel, taken back, or written off."""
+
+    required_permissions = {"POST": "diamonds.handout"}
+
+    @idempotent
+    def post(self, request):
+        payload = HandoutSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        made = handouts.handout(handouts.HandoutInput(
+            workshop_id=d["workshop"], parcel_id=d["parcel"], kind=d["kind"],
+            carats=d["carats"], count=d["count"], note=d["note"]), actor=request.actor)
+        return Response({"id": made.pk, "number": made.number}, status=status.HTTP_201_CREATED)
+
+
+class HandoutVoidView(APIView):
+    required_permissions = {"POST": "diamonds.handout"}
+
+    @idempotent
+    def post(self, request, pk):
+        made = handouts.void_handout(pk, reason=str(request.data.get("reason") or ""),
+                                     actor=request.actor)
+        return Response({"id": made.pk, "status": made.status})
+
+
+class HeldView(APIView):
+    """The stones a workshop holds, by parcel (?workshop=…&branch=…): what a setting can take
+    from the setter's own stones."""
+
+    required_permissions = {"GET": "diamonds.view"}
+
+    def get(self, request):
+        services.require_enabled()
+        rows = handouts.holdings()
+        workshop = request.query_params.get("workshop", "")
+        branch = request.query_params.get("branch", "")
+        if workshop.isdigit():
+            rows = rows.filter(workshop_id=int(workshop))
+        if branch.isdigit():
+            rows = rows.filter(parcel__branch_id=int(branch))
+        return Response({"results": [{
+            "id": row.parcel_id, "code": row.parcel.code, "carats": row.carats,
+            "count": row.count, "cost_per_ct": row.cost_per_ct, "workshop": row.workshop_id,
+            "name": f"{row.parcel.code} · {row.parcel.get_kind_display()} {row.parcel.size}"
+                    .strip()} for row in rows]})
+
+
 urlpatterns = [
+    path("handouts/", HandoutView.as_view(), name="diamonds-handouts"),
+    path("handouts/<int:pk>/void/", HandoutVoidView.as_view(), name="diamonds-handout-void"),
+    path("held/", HeldView.as_view(), name="diamonds-held"),
     path("receive/", ReceiveView.as_view(), name="diamonds-receive"),
     path("items/<int:pk>/stones/", ItemStonesView.as_view(), name="diamonds-item-stones"),
     path("lookup/", LookupView.as_view(), name="diamonds-lookup"),

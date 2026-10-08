@@ -20,9 +20,15 @@ document.querySelectorAll("[data-parcel-lines]").forEach((block) => {
 export function readParcelUses(root) {
   return [...root.querySelectorAll("[data-parcel-line]")]
     .filter((row) => row.querySelector("[data-parcel-carats]").value.trim())
-    .map((row) => ({
-      parcel: Number(row.querySelector("[data-parcel-id]").value),
-      carats: row.querySelector("[data-parcel-carats]").value.trim(),
-      count: Number(row.querySelector("[data-parcel-count]").value) || 0,
-    }));
+    .map((row) => {
+      // "held:<parcel>": stones of that parcel the setter already holds (Stones at workshops).
+      const value = row.querySelector("[data-parcel-id]").value;
+      const held = value.startsWith("held:");
+      return {
+        parcel: Number(held ? value.slice(5) : value),
+        carats: row.querySelector("[data-parcel-carats]").value.trim(),
+        count: Number(row.querySelector("[data-parcel-count]").value) || 0,
+        held,
+      };
+    });
 }
