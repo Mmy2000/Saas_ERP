@@ -105,7 +105,18 @@ FEATURES: list[Feature] = [
     Feature("messaging", _("E-mail and WhatsApp"),
             _("Send invoices and statements as PDFs by e-mail or a WhatsApp link, and the "
               "daily reminders e-mail."),
-            TOOLS, "send", ("messaging.",)),
+            TOOLS, "send", ("messaging.send", "messaging.view")),
+    Feature("whatsapp_api", _("WhatsApp service"),
+            _("Send invoices and statements with their PDF through the official WhatsApp "
+              "service, in its approved wording. Messages are paid for: off unless switched on "
+              "for the client."),
+            TOOLS, "send", ("messaging.whatsapp.api",), default=False),
+    Feature("whatsapp_own", _("WhatsApp from the shop's number"),
+            _("The shop links its own WhatsApp by scanning a QR, then sends documents with "
+              "its own text and WhatsApp campaigns to customers. Off unless switched on for "
+              "the client."),
+            TOOLS, "send", ("messaging.whatsapp.own", "messaging.whatsapp.link",
+                            "messaging.campaign."), default=False),
     Feature("diamonds", _("Diamonds and gemstones"),
             _("Stone details and certificates, label-price selling, loose stones, stone "
               "setting and diamond reports. Off unless switched on for the client."),

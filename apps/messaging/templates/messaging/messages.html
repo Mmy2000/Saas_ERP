@@ -34,7 +34,7 @@
               <span class="grid size-7 shrink-0 place-items-center rounded-lg {% if m.channel == 'whatsapp' %}bg-emerald-50 text-emerald-700{% else %}bg-brand-50 text-brand-700{% endif %}">{% if m.channel == "whatsapp" %}{% icon "send" "size-3.5" %}{% else %}{% icon "inbox" "size-3.5" %}{% endif %}</span>
               <div class="min-w-0">
                 {% if row.url %}<a class="font-medium text-brand-700 hover:underline" href="{{ row.url }}"><bdi>{{ m.doc_label }}</bdi></a>{% else %}<span class="font-medium text-slate-900"><bdi>{{ m.doc_label }}</bdi></span>{% endif %}
-                <div class="text-xs text-slate-500">{{ m.get_channel_display }}{% if m.party %} · <bdi>{{ m.party.name }}</bdi>{% endif %}</div>
+                <div class="text-xs text-slate-500">{{ m.get_channel_display }}{% if m.via and m.via != "link" %} · {{ m.get_via_display }}{% endif %}{% if m.party %} · <bdi>{{ m.party.name }}</bdi>{% endif %}</div>
               </div>
             </div>
           </td>
@@ -45,12 +45,12 @@
             {% elif m.status == "queued" %}<span class="badge badge-warning">{{ m.get_status_display }}</span>
             {% elif m.status == "shared" %}<span class="badge badge-brand">{{ m.get_status_display }}</span>
             {% else %}<span class="badge">{{ m.get_status_display }}</span>{% endif %}
-            {% if m.channel == "whatsapp" %}<div class="mt-1 text-xs text-slate-500">{% if m.open_count %}{% blocktranslate trimmed count n=m.open_count %}Opened once{% plural %}Opened {{ n }} times{% endblocktranslate %}{% else %}{% translate "Not opened yet" %}{% endif %}</div>{% endif %}
+            {% if m.channel == "whatsapp" and m.via == "link" %}<div class="mt-1 text-xs text-slate-500">{% if m.open_count %}{% blocktranslate trimmed count n=m.open_count %}Opened once{% plural %}Opened {{ n }} times{% endblocktranslate %}{% else %}{% translate "Not opened yet" %}{% endif %}</div>{% endif %}
             {% if m.error %}<div class="mt-1 max-w-xs text-xs text-red-600" title="{{ m.error }}">{{ m.error|truncatechars:90 }}</div>{% endif %}
           </td>
           <td class="text-sm text-slate-600">{{ m.created_by.display_name|default:_("Automatic") }}</td>
           <td class="text-end whitespace-nowrap">
-            {% if can_send and m.status == "failed" %}<button type="button" class="btn btn-secondary text-xs" data-again="{{ m.pk }}">{% icon "repeat" "size-3.5" %}{% translate "Send again" %}</button>{% endif %}
+            {% if can_send and m.status == "failed" and m.kind != "test" %}<button type="button" class="btn btn-secondary text-xs" data-again="{{ m.pk }}">{% icon "repeat" "size-3.5" %}{% translate "Send again" %}</button>{% endif %}
             {% if row.link %}<button type="button" class="btn btn-ghost text-xs" data-copy="{{ request.scheme }}://{{ request.get_host }}{{ row.link }}">{% icon "copy" "size-3.5" %}{% translate "Copy link" %}</button>
             {% if can_send %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-stop="{{ m.pk }}">{% icon "x" "size-3.5" %}{% translate "Stop the link" %}</button>{% endif %}{% endif %}
           </td>

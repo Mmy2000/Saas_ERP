@@ -1,0 +1,16 @@
+{
+  "name": "gweb-wa-gateway",
+  "private": true,
+  "description": "WhatsApp gateway for the shops' own numbers (one linked session per client), used by apps/messaging/gateways.py",
+  "type": "module",
+  "main": "server.mjs",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "^9.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

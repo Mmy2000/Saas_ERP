@@ -1,0 +1,83 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "New campaign" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'messaging/js/campaigns.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'campaigns' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "WhatsApp campaigns" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New campaign" %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+{% if not link or not link.connected %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-800" role="status">
+  {% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}
+  <p>{% translate "The shop's WhatsApp number is not linked, so campaigns cannot send." %} <a class="font-medium underline" href="{% url 'whatsapp-settings' %}">{% translate "Link it now" %}</a></p>
+</div>
+{% endif %}
+<form id="campaign-form" class="grid grid-cols-1 gap-6 xl:grid-cols-3" data-preview="{% url 'campaign-preview' %}" data-endpoint="{% url 'campaigns-api' %}"
+      data-redirect="{% url 'campaign' 0 %}" data-confirm="{% translate 'Start sending to {count} people?' %}" novalidate>
+  <div class="space-y-6 xl:col-span-2">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Who gets it" %}</h2></div>
+      <div class="card-body space-y-4">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="{% translate 'Who gets it' %}">
+          <label class="choice"><input type="radio" name="kind" value="all" checked><span><b>{% translate "All customers" %}</b><small>{% translate "Every active customer with a phone number." %}</small></span></label>
+          <label class="choice"><input type="radio" name="kind" value="owing"><span><b>{% translate "Customers who owe us" %}</b><small>{% translate "A reminder to those with a balance to pay." %}</small></span></label>
+          <label class="choice"><input type="radio" name="kind" value="bought_since"><span><b>{% translate "Bought since a date" %}</b><small>{% translate "Recent customers, to thank them or follow up." %}</small></span></label>
+          <label class="choice"><input type="radio" name="kind" value="not_since"><span><b>{% translate "Have not bought since a date" %}</b><small>{% translate "Customers who bought before, to bring them back." %}</small></span></label>
+          <label class="choice sm:col-span-2"><input type="radio" name="kind" value="list"><span><b>{% translate "A list of numbers" %}</b><small>{% translate "Paste numbers, one per line, with a name before a comma if you like." %}</small></span></label>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label class="block" data-show-for="all owing bought_since not_since"><span class="form-label">{% translate "Home branch" %}</span>
+            <select name="branch" class="form-input"><option value="">{% translate "All branches" %}</option>
+              {% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select></label>
+          <label class="block" data-show-for="bought_since not_since" hidden><span class="form-label">{% translate "Date" %}</span>
+            <input type="date" name="since" class="form-input"><span class="form-error" data-error-for="since"></span></label>
+        </div>
+        <label class="block" data-show-for="list" hidden><span class="form-label">{% translate "Numbers" %}</span>
+          <textarea name="numbers" rows="6" class="form-input num" dir="ltr" placeholder="Mona, 01001234567&#10;201112223334"></textarea></label>
+        <div class="rounded-lg bg-slate-50 px-4 py-3 text-sm" data-reach aria-live="polite">
+          <p class="font-medium text-slate-900"><span class="num" data-reach-count>—</span> {% translate "people will get it" %}</p>
+          <p class="mt-1 text-xs text-slate-500" data-reach-sample></p>
+          <ul class="mt-1 space-y-0.5 text-xs text-amber-700" data-reach-skipped></ul>
+        </div>
+        <span class="form-error" data-error-for="kind"></span>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "The message" %}</h2></div>
+      <div class="card-body space-y-3">
+        <label class="block"><span class="form-label">{% translate "Campaign name" %}</span>
+          <input name="name" class="form-input" maxlength="120" placeholder="{% translate 'For example: Ramadan offer' %}"><span class="form-error" data-error-for="name"></span></label>
+        <label class="block"><span class="form-label">{% translate "Message" %}</span>
+          <textarea name="message" rows="7" class="form-input" maxlength="4000" data-message></textarea><span class="form-error" data-error-for="message"></span></label>
+        <p class="flex flex-wrap items-center gap-2 text-xs text-slate-500">{% translate "Insert:" %}
+          <button type="button" class="badge badge-neutral" data-insert="{name}">{% translate "Customer's name" %}</button>
+          <button type="button" class="badge badge-neutral" data-insert="{company}">{% translate "Shop's name" %}</button></p>
+      </div>
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Pace" %}</h2></div>
+      <div class="card-body space-y-3">
+        <label class="block"><span class="form-label">{% translate "At most a day" %}</span>
+          <input name="daily_cap" class="form-input num w-full text-start" inputmode="numeric" value="150"><span class="form-error" data-error-for="daily_cap"></span></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="form-label">{% translate "Gap from (s)" %}</span><input name="min_gap" class="form-input num w-full text-start" inputmode="numeric" value="25"></label>
+          <label class="block"><span class="form-label">{% translate "to (s)" %}</span><input name="max_gap" class="form-input num w-full text-start" inputmode="numeric" value="70"></label>
+        </div>
+        <p class="text-xs text-slate-500">{% blocktranslate trimmed %}Sent only between 9:00 and 21:00, at a random gap, never under {{ min_gap }} seconds. A faster pace risks WhatsApp blocking the number.{% endblocktranslate %}</p>
+      </div>
+    </section>
+    <section class="card card-body">
+      <h2 class="card-title">{% translate "How it looks" %}</h2>
+      <div class="mt-3 rounded-xl rounded-ss-sm bg-emerald-50 px-4 py-3 text-sm whitespace-pre-line text-slate-800 dark:bg-emerald-950/40" data-sample-message
+           data-name="{% translate 'Mona' %}" data-company="{{ tenant_profile.display_name }}" data-empty="{% translate 'Your message shows here.' %}"></div>
+    </section>
+    <button type="submit" class="btn btn-primary w-full">{% icon "send" "size-4" %}{% translate "Start sending" %}</button>
+  </aside>
+</form>
+{% endblock %}

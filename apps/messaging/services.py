@@ -3,8 +3,11 @@
 * By e-mail: the message is logged and a job is queued in the same transaction; the worker
   makes the PDF and sends it (apps.messaging.jobs). The shop sees it as "Waiting to send", then
   "Sent" or "Not sent" with the reason.
-* On WhatsApp: there is no API to set up. The shop's own WhatsApp opens (wa.me) with the text
-  and a private link to the PDF; the link is signed, ends after SHARE_DAYS and can be stopped.
+* On WhatsApp, one of three routes (`whatsapp_routes`): the shop's own WhatsApp opens (wa.me)
+  with the text and a private link to the PDF (signed, ends after SHARE_DAYS, can be stopped);
+  or, when the platform switched them on for the client, the PDF goes out from the background
+  worker through the hosted WhatsApp service or from the shop's own linked number
+  (apps.messaging.gateways), logged like an e-mail.
 
 Who may send what: the same permission and branch scope as opening or printing the record,
 plus `messaging.send`.
@@ -27,7 +30,16 @@ from apps.core.tenancy.context import require_current_tenant_id
 from apps.org.models import TenantProfile
 from apps.platform.jobs.registry import enqueue
 
-from .models import Channel, MessageKind, MessageStatus, OutboundMessage
+from . import gateways
+from .models import (
+    Channel,
+    LinkStatus,
+    MessageKind,
+    MessageStatus,
+    OutboundMessage,
+    Via,
+    WhatsAppLink,
+)
 
 # Numbers and names inside a sentence of the other script keep their own direction: an
 # invoice number in an Arabic sentence is wrapped in LRI...PDI so it does not read backwards.
@@ -155,8 +167,8 @@ def whatsapp_target(target: Target, *, user, phone: str, message: str,
     text = message.strip() or default_text(target, Channel.WHATSAPP)
     sent = _log(target, user=user, channel=Channel.WHATSAPP, recipient=digits, body=text,
                 status=MessageStatus.SHARED)
-    sent.sent_at = timezone.now()
-    sent.save(update_fields=["sent_at"])
+    sent.sent_at, sent.via = timezone.now(), Via.LINK
+    sent.save(update_fields=["sent_at", "via"])
     link = base_url.rstrip("/") + share_path(sent)
     return sent, f"https://wa.me/{digits}?text={quote(text + chr(10) + link)}"
 
@@ -192,12 +204,120 @@ def stop_link(message: OutboundMessage) -> None:
 
 
 def send_again(message: OutboundMessage) -> None:
-    if message.channel != Channel.EMAIL or message.status != MessageStatus.FAILED:
-        raise DomainError(_("Only an e-mail that was not sent can be sent again."),
+    through_worker = message.channel == Channel.EMAIL or message.via in (Via.API, Via.OWN)
+    if (not through_worker or message.status != MessageStatus.FAILED
+            or message.kind == MessageKind.TEST):
+        raise DomainError(_("Only a message that was not sent can be sent again."),
                           code="MESSAGING_NOT_FAILED")
     message.status, message.error = MessageStatus.QUEUED, ""
     message.save(update_fields=["status", "error", "updated_at"])
-    enqueue("messaging.send_email", message_id=message.pk)
+    enqueue("messaging.send_email" if message.channel == Channel.EMAIL
+            else "messaging.send_whatsapp", message_id=message.pk)
+
+
+# ---- WhatsApp through a gateway --------------------------------------------------------------
+
+def whatsapp_link() -> WhatsAppLink | None:
+    return WhatsAppLink.objects.first()
+
+
+def whatsapp_routes(actor) -> list[str]:
+    """How this member can send on WhatsApp now, the preferred first: the shop's linked number,
+    the hosted service, and always the link that opens their own WhatsApp."""
+    routes = []
+    if actor.can("messaging.whatsapp.own") and gateways.own_ready():
+        link = whatsapp_link()
+        if link is not None and link.connected:
+            routes.append(Via.OWN)
+    if actor.can("messaging.whatsapp.api") and gateways.hosted_ready():
+        routes.append(Via.API)
+    routes.append(Via.LINK)
+    return routes
+
+
+def whatsapp_send(target: Target, *, actor, phone: str, message: str, via: str
+                  ) -> OutboundMessage:
+    """Queue the PDF for the worker to send through a gateway (`via` = api or own)."""
+    if via not in whatsapp_routes(actor) or via == Via.LINK:
+        raise ValidationError(_("This way of sending is not available."),
+                              fields={"via": [_("This way of sending is not available.")]})
+    digits = gateways.phone_digits(phone)
+    if not digits:
+        raise ValidationError(_("Enter the WhatsApp number with the country code."),
+                              fields={"to": [_("Enter the WhatsApp number with the country "
+                                               "code.")]})
+    text = message.strip() or default_text(target, Channel.WHATSAPP)
+    sent = _log(target, user=actor.user, channel=Channel.WHATSAPP, recipient=digits, body=text,
+                status=MessageStatus.QUEUED)
+    sent.via = via
+    sent.save(update_fields=["via"])
+    enqueue("messaging.send_whatsapp", message_id=sent.pk)
+    return sent
+
+
+def link_number(tenant_slug: str) -> WhatsAppLink:
+    """Start (or restart) the shop's session on the gateway; the QR follows in `check_link`."""
+    link = whatsapp_link() or WhatsAppLink(session_id=gateways.new_session_id(tenant_slug))
+    result = gateways.start(link.session_id)
+    link.status = LinkStatus.STARTING if result.ok else link.status
+    link.error = "" if result.ok else result.error[:300]
+    link.checked_at = timezone.now()
+    link.save()
+    if not result.ok:
+        raise DomainError(result.error, code="MESSAGING_GATEWAY")
+    return link
+
+
+def check_link() -> tuple[WhatsAppLink | None, str]:
+    """Ask the gateway how the session is: (the link, the QR image while waiting)."""
+    link = whatsapp_link()
+    if link is None:
+        return None, ""
+    result = gateways.state(link.session_id)
+    link.checked_at = timezone.now()
+    if not result.ok:
+        link.error = result.error[:300]
+        link.save(update_fields=["error", "checked_at", "updated_at"])
+        return link, ""
+    status = result.data.get("status", LinkStatus.DISCONNECTED)
+    if status == LinkStatus.CONNECTED and not link.connected:
+        link.linked_at = timezone.now()
+    link.status, link.error = status, ""
+    # The number only while linked (a stale one, e.g. from the development stand-in, goes).
+    link.phone = (result.data.get("phone") or link.phone) if status == LinkStatus.CONNECTED else ""
+    link.save()
+    return link, result.data.get("qr", "") if status == LinkStatus.QR else ""
+
+
+def unlink_number() -> None:
+    """Log the number out on the gateway and forget the session; linking again starts a new
+    one (and a new QR). Forgotten here even when the gateway cannot be reached."""
+    link = whatsapp_link()
+    if link is not None:
+        gateways.logout(link.session_id)
+    WhatsAppLink.objects.all().delete()
+
+
+def send_test(*, actor, phone: str) -> OutboundMessage:
+    """A short message from the linked number, sent at once so the shop sees it work."""
+    link = whatsapp_link()
+    if link is None or not link.connected:
+        raise DomainError(_("Link the shop's WhatsApp number first."), code="MESSAGING_NOT_LINKED")
+    digits = gateways.phone_digits(phone)
+    if not digits:
+        raise ValidationError(_("Enter the WhatsApp number with the country code."),
+                              fields={"to": [_("Enter the WhatsApp number with the country "
+                                               "code.")]})
+    text = _("This is a test message from %(company)s.") % {
+        "company": ISOLATE.format(company_name())}
+    result = gateways.own_send(link.session_id, phone=digits, text=text)
+    return OutboundMessage.objects.create(
+        channel=Channel.WHATSAPP, kind=MessageKind.TEST, via=Via.OWN, recipient=digits,
+        body=text, created_by=actor.user,
+        status=MessageStatus.SENT if result.ok else MessageStatus.FAILED,
+        sent_at=timezone.now() if result.ok else None,
+        error=(_("Development mode: nothing was really sent.") if result.ok and gateways.console()
+               else result.error[:1000]))
 
 
 # ---- the PDF of a message (worker and shared links) ----------------------------------------

@@ -1,0 +1,90 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "WhatsApp" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'messaging/js/whatsapp.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "WhatsApp" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Link the shop's WhatsApp number once, by scanning a code with the phone. Invoices, statements and campaigns then go out from that number, with your own text." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card xl:col-span-2" data-wa-link data-endpoint="{% url 'whatsapp-link' %}" data-test-url="{% url 'whatsapp-link-test' %}"
+           data-status="{{ link.status|default:'not_started' }}" data-confirm-unlink="{% translate 'Unlink this number? Messages will stop going out from it until you link again.' %}"
+           data-sent="{% translate 'The test message was sent.' %}">
+    <div class="card-header">
+      <div><h2 class="card-title">{% translate "The shop's number" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "The phone stays the shop's: WhatsApp keeps working on it as usual." %}</p></div>
+      <span class="badge" data-wa-badge>{% if link %}{{ link.get_status_display }}{% else %}{% translate "Not linked" %}{% endif %}</span>
+    </div>
+    <div class="card-body space-y-5">
+      {% if simulated %}
+      <div class="flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50/70 px-4 py-3 text-sm text-sky-800" role="note">
+        {% icon "info" "mt-0.5 size-4 shrink-0" %}<p>{% translate "Development mode: no real WhatsApp. Linking is simulated with a made-up number and messages are only logged. Run the WhatsApp gateway (ops/wa-gateway) and set WA_GATEWAY_URL and WA_GATEWAY_KEY to link a real phone." %}</p>
+      </div>
+      {% endif %}
+      {% if not gateway_ready %}
+      <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-800">
+        {% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}<p>{% translate "Linking a WhatsApp number is not set up on this platform yet. Ask support." %}</p>
+      </div>
+      {% else %}
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-wa-error role="alert">{{ link.error }}</div>
+
+      {# Not linked: one button. #}
+      <div class="flex flex-col items-center gap-3 py-6 text-center" data-wa-step="not_started disconnected">
+        <span class="grid size-12 place-items-center rounded-full bg-emerald-50 text-emerald-600">{% icon "send" "size-6" %}</span>
+        <p class="max-w-md text-sm text-slate-600">{% translate "Press the button, then scan the code that appears with the shop's phone." %}</p>
+        <button type="button" class="btn btn-primary" data-wa-start>{% icon "link" "size-4" %}{% translate "Link a number" %}</button>
+      </div>
+
+      {# Waiting for the code, then for the scan. #}
+      <div class="grid grid-cols-1 items-center gap-6 sm:grid-cols-[auto_1fr]" data-wa-step="starting qr" hidden>
+        <div class="grid size-56 place-items-center rounded-xl border border-slate-200 bg-white p-3">
+          <img alt="{% translate 'The code to scan' %}" class="size-full object-contain" data-wa-qr hidden>
+          <span class="flex flex-col items-center gap-2 text-xs text-slate-500" data-wa-wait>{% icon "clock" "size-5" %}{% translate "Preparing the code…" %}</span>
+        </div>
+        <ol class="list-decimal space-y-2 ps-5 text-sm text-slate-700">
+          <li>{% translate "Open WhatsApp on the shop's phone." %}</li>
+          <li>{% translate "Tap Settings (or ⋮), then Linked devices, then Link a device." %}</li>
+          <li>{% translate "Point the phone at this code. The page updates by itself once it is linked." %}</li>
+        </ol>
+      </div>
+
+      {# Linked. #}
+      <div class="space-y-5" data-wa-step="connected" hidden>
+        <div class="flex items-center gap-3 rounded-lg bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
+          {% icon "circle-check" "size-5 shrink-0" %}
+          <p>{% translate "Linked. Messages go out from" %} <bdi class="num font-medium" dir="ltr" data-wa-phone>{{ link.phone|default:"—" }}</bdi>.</p>
+        </div>
+        <form class="flex flex-col gap-3 sm:flex-row sm:items-end" data-wa-test novalidate>
+          <label class="block flex-1"><span class="form-label">{% translate "Send a test message to" %}</span>
+            <input name="to" class="form-input num w-full text-start" dir="ltr" placeholder="201001234567" autocomplete="off">
+            <span class="form-error" data-error-for="to"></span></label>
+          <button type="submit" class="btn btn-secondary">{% icon "send" "size-4" %}{% translate "Send test" %}</button>
+        </form>
+        <button type="button" class="btn btn-ghost text-xs text-red-700" data-wa-unlink>{% icon "x" "size-3.5" %}{% translate "Unlink this number" %}</button>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <aside class="space-y-6">
+    {% if hosted %}
+    <section class="card card-body">
+      <h2 class="card-title">{% translate "WhatsApp service" %}</h2>
+      <p class="mt-2 text-sm text-slate-600">{% translate "Invoices and statements can also go through the official WhatsApp service. It sends its own approved wording with the PDF: the text you type is not passed on." %}</p>
+      <p class="mt-3">{% if hosted_ready %}<span class="badge badge-success">{% translate "Ready" %}</span>{% else %}<span class="badge badge-warning">{% translate "Not set up on this platform" %}</span>{% endif %}</p>
+    </section>
+    {% endif %}
+    <section class="card card-body">
+      <h2 class="card-title">{% translate "Good to know" %}</h2>
+      <ul class="mt-2 list-disc space-y-1.5 ps-5 text-sm text-slate-600">
+        <li>{% translate "Keep the shop's phone on the internet; if it stays off for long, link it again here." %}</li>
+        <li>{% translate "WhatsApp may block a number that sends many messages to people who do not know it. Campaigns are sent slowly for that reason." %}</li>
+        <li>{% translate "Every message sent is listed in Settings → Sent messages." %}</li>
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

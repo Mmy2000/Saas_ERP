@@ -349,6 +349,13 @@
                    @apply inline-block size-4 rounded-full bg-white shadow-xs; }
   .switch[aria-checked="true"] { @apply bg-brand-600; }
   .switch[aria-checked="true"]::after { margin-inline-start: 1.125rem; }
+  /* A choice shown as a card: <label class="choice"><input type="radio"><span><b>…</b><small>…</small></span></label>. */
+  .choice { @apply flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-surface p-3.5 transition-colors
+                   hover:border-slate-300 has-[:checked]:border-brand-400 has-[:checked]:bg-brand-50/60 has-[:checked]:ring-1
+                   has-[:checked]:ring-brand-200; }
+  .choice input { @apply mt-0.5 size-4 shrink-0 accent-brand-600; }
+  .choice b { @apply block text-sm font-medium text-slate-900; }
+  .choice small { @apply mt-0.5 block text-xs text-slate-500; }
   /* The sidebar's small headings (Pinned), and the star that pins the current screen. */
   .nav-heading { @apply flex items-center gap-1.5 px-2.5 pt-4 pb-1 text-[11px] font-medium tracking-wide text-slate-400; }
   .pin-toggle[aria-pressed="true"] { @apply text-amber-500 hover:text-amber-600; }

@@ -99,6 +99,8 @@ NAVIGATION: list[NavSection] = [
                 ("partner-new", "partner-edit", "partner-statement")),
         NavItem(_("Receipts & payments"), "settlements", "arrow-left-right", "settlements.view",
                 ("settlement-new", "settlement-view")),
+        NavItem(_("WhatsApp campaigns"), "campaigns", "megaphone", "messaging.campaign.manage",
+                ("campaign-new", "campaign")),
     ]),
     NavSection("team", _("Team"), "user-round", [
         NavItem(_("Employees"), "employees", "users", "hr.employee.view",
@@ -149,6 +151,7 @@ NAVIGATION: list[NavSection] = [
         NavItem(_("Activity"), "activity", "history", "admin.audit.history"),
         NavItem(_("Sign-ins"), "sign-ins", "log-in", "admin.signins.history"),
         NavItem(_("Sent messages"), "messages", "send", "messaging.view"),
+        NavItem(_("WhatsApp"), "whatsapp-settings", "send", "messaging.whatsapp.link"),
         NavItem(_("Sale codes"), "sale-code-settings", "shield-check", "sales.code.manage"),
         NavItem(_("Label templates"), "label-templates", "printer", "printing.templates.manage",
                 ("label-template-new", "label-template-edit")),

@@ -15,3 +15,5 @@ SITE_SCHEME = env("SITE_SCHEME", default="http")
 SITE_PORT = env("SITE_PORT", default=":8000")
 # One-time codes are logged instead of sent unless a channel is set up.
 CODE_CHANNELS = env.list("CODE_CHANNELS", default=["console"])
+# No real WhatsApp in development unless a gateway is given (ops/wa-gateway: WA_GATEWAY_URL/KEY).
+WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=not env("WA_GATEWAY_URL", default=""))

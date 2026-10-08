@@ -490,6 +490,41 @@ what is waiting, what failed and why, with Run again / Cancel.
 - *WhatsApp*: no API account needed. The shop's own WhatsApp opens (`wa.me`) with the message and
   a private link to the PDF (`/shared/<signed token>/`): no login, works for 30 days, counts how
   often it was opened, and can be stopped from **Settings → Sent messages**.
+- *WhatsApp through a gateway* (`apps/messaging/gateways.py`), each a console feature, off unless
+  switched on for the client; the Send dialog then offers "Send from":
+  - **WhatsApp service** (feature `whatsapp_api`): the official hosted API sale codes use
+    (`WHATSAPP_GATEWAY_URL`/`KEY`, `/whatsapp/send-message/` or `/send-report/`, the PDF as
+    `invoice_file`). It sends its own approved wording: the shop's text is not passed on.
+  - **The shop's number** (feature `whatsapp_own`): a whatsapp-web.js gateway (`WA_GATEWAY_URL`,
+    `WA_GATEWAY_KEY`; `/sessions/<id>/start|status|qr`, `/send`, `/send-document`) with one session
+    per client. **Settings → WhatsApp** links the number by scanning a QR (the page follows the
+    scan), sends a test, and unlinks. Documents go out with the shop's text and the PDF.
+  The gateway is in this repository (`ops/wa-gateway`, Node 20+, Baileys: WhatsApp Web's own
+  protocol, no browser per shop; sessions kept in `ops/wa-gateway/sessions/`, never committed):
+
+  ```powershell
+  cd ops\wa-gateway; npm install
+  $env:WA_GATEWAY_KEY = "<a long random key>"; node server.mjs   # http://127.0.0.1:3002
+  ```
+
+  and give Django `WA_GATEWAY_URL=http://127.0.0.1:3002` and the same `WA_GATEWAY_KEY`. Without a
+  gateway URL, development uses a stand-in that "links" a made-up number at once (the page says
+  so). Unlinking also logs the number out on the gateway.
+  Both are sent by the worker (`messaging.send_whatsapp`, three tries) and logged in Sent messages
+  with the route; failures say why ("not linked", "not on WhatsApp", "service not reachable") and
+  can be sent again. `WHATSAPP_CONSOLE` (on in development and tests) replaces both with a log.
+- **Customers → WhatsApp campaigns** (feature `whatsapp_own`, `messaging.campaign.manage`; legacy
+  bulk sending, only from two reports there): one message to all customers with a phone, one home
+  branch, those who owe the shop, those who bought since / have not bought since a date, or a
+  pasted list, with `{name}` and `{company}` (replaced as plain text: Gweb's `str.format` stopped a
+  campaign on a stray brace). The form shows live how many it reaches and who is skipped (no valid
+  number, a number twice, opted out). Sent one by one by the worker at a random 25–70 s gap (never
+  under 20), only 09:00–21:00 the shop's time, up to 150 a day across campaigns; it pauses after 8
+  failures in a row or when the number is unlinked, and can be paused, carried on or cancelled. One
+  campaign at a time; each queued send carries a step number so a resumed campaign never sends
+  from two chains. **Numbers that do not want campaigns** can be added and removed on the page
+  (Gweb had the table but no screen). Nothing is sent automatically on business events (as in
+  Gweb), and replies such as "STOP" are not read (the gateway has no inbound hook).
 - **Sent messages** lists everything sent, its status (waiting, sent, not sent with the reason,
   link shared/opened), with Send again, Copy link and Stop the link.
 - **Daily reminders e-mail**: at 07:30 local time, each person the owner ticks on Sent messages
@@ -615,8 +650,10 @@ Tests connect as `app_owner`, never as a superuser (superusers bypass RLS, which
 These are Phase 2 spikes or later phases in the plan:
 
 - RLS on the global `iam_user` table, and wiring the `app_platform` role into a DB alias.
-- The tenant-prefixed cache wrapper; WhatsApp Business API (messages sent by the platform
-  itself), SMS, scheduled report e-mails.
+- The tenant-prefixed cache wrapper; SMS beyond sale codes; automatic WhatsApp messages on business
+  events (invoice after a sale, repair ready, birthdays); a client's own sender number on the hosted
+  WhatsApp service (Gweb's Meta sender registration); images in campaigns; scheduled report
+  e-mails.
 - Deactivating a party or branch with a non-zero balance is not blocked yet.
 - QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it), expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,

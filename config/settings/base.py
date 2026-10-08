@@ -232,6 +232,11 @@ CODE_CHANNELS = env.list("CODE_CHANNELS", default=["whatsapp", "sms"])
 WHATSAPP_GATEWAY_URL = env("WHATSAPP_GATEWAY_URL", default="")
 WHATSAPP_GATEWAY_KEY = env("WHATSAPP_GATEWAY_KEY", default="")
 WHATSAPP_GATEWAY_ENDPOINT = env("WHATSAPP_GATEWAY_ENDPOINT", default="/whatsapp/send-otp/")
+# The shop's own WhatsApp number (apps.messaging.gateways): a whatsapp-web.js gateway keeping one
+# session per client. WHATSAPP_CONSOLE replaces both gateways with a log (development, tests).
+WA_GATEWAY_URL = env("WA_GATEWAY_URL", default="")
+WA_GATEWAY_KEY = env("WA_GATEWAY_KEY", default="")
+WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=False)
 SMS_API_URL = env("SMS_API_URL", default="")
 SMS_API_KEY = env("SMS_API_KEY", default="")
 SMS_SENDER = env("SMS_SENDER", default="")

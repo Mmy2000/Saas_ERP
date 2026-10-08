@@ -21,3 +21,4 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # speed on
 FIELD_ENCRYPTION_KEY = derived_dev_key(SECRET_KEY, "field")  # noqa: F405
 BLIND_INDEX_KEY = derived_dev_key(SECRET_KEY, "blind")  # noqa: F405
 CODE_CHANNELS = ["console"]  # codes land in apps.messaging.codes.OUTBOX
+WHATSAPP_CONSOLE = True  # WhatsApp messages land in apps.messaging.gateways.OUTBOX

@@ -71,3 +71,59 @@ def shared(request, token):
     response["X-Robots-Tag"] = "noindex, nofollow"
     response["Referrer-Policy"] = "no-referrer"
     return response
+
+
+@permission_required("messaging.whatsapp.link")
+def whatsapp_settings(request):
+    """Settings → WhatsApp: link the shop's own number (scan the QR) and send a test."""
+    from . import gateways
+    from .services import whatsapp_link
+
+    return render(request, "messaging/whatsapp.html", {
+        "link": whatsapp_link(), "gateway_ready": gateways.own_ready(),
+        "simulated": gateways.console(),
+        "hosted": request.actor.can("messaging.whatsapp.api"),
+        "hosted_ready": gateways.hosted_ready(),
+    })
+
+
+@permission_required("messaging.campaign.manage")
+def campaigns(request):
+    """Customers → WhatsApp campaigns: past and current campaigns, and the opt-out list."""
+    from .models import Campaign, OptOut
+    from .services import whatsapp_link
+
+    return render(request, "messaging/campaigns.html", {
+        "campaigns": Campaign.objects.select_related("created_by")[:50],
+        "opt_outs": OptOut.objects.all()[:500], "link": whatsapp_link(),
+    })
+
+
+@permission_required("messaging.campaign.manage")
+def campaign_new(request):
+    from apps.org.models import Branch
+
+    from .campaigns import MIN_GAP
+    from .services import whatsapp_link
+
+    return render(request, "messaging/campaign_form.html", {
+        "branches": Branch.objects.filter(is_active=True).order_by("code"),
+        "link": whatsapp_link(), "min_gap": MIN_GAP,
+    })
+
+
+@permission_required("messaging.campaign.manage")
+def campaign(request, pk):
+    from .models import Campaign, RecipientStatus
+
+    found = Campaign.objects.select_related("created_by").filter(pk=pk).first()
+    if found is None:
+        raise Http404
+    show = request.GET.get("show", "")
+    people = found.recipients.select_related("party").order_by("id")
+    if show in RecipientStatus.values:
+        people = people.filter(status=show)
+    page = Paginator(people, 50).get_page(request.GET.get("page"))
+    return render(request, "messaging/campaign.html", {
+        "campaign": found, "page": page, "show": show, "statuses": RecipientStatus.choices,
+    })

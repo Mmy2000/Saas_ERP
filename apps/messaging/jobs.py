@@ -24,6 +24,9 @@ from .services import company_name, message_pdf, sender_address
 def _note_error(payload, error, final):
     message = OutboundMessage.objects.filter(pk=payload.get("message_id")).first()
     if message is not None and message.status == MessageStatus.QUEUED:
+        kind, _sep, reason = error.partition(": ")
+        if kind in ("JobFailed", "RuntimeError") and reason:
+            error = reason  # our own words for the shop, without the exception's name
         message.error = error[:1000]
         if final:
             message.status = MessageStatus.FAILED
@@ -53,6 +56,68 @@ def send_email(message_id):
     mail.send()
     message.status, message.sent_at, message.error = MessageStatus.SENT, timezone.now(), ""
     message.save(update_fields=["status", "sent_at", "error", "updated_at"])
+
+
+@task("messaging.send_whatsapp", label=_l("Send a WhatsApp message"), max_attempts=3,
+      on_error=_note_error)
+def send_whatsapp(message_id):
+    """A document or statement through the hosted service or the shop's linked number."""
+    from . import gateways
+    from .models import Via, WhatsAppLink
+
+    message = OutboundMessage.objects.select_related("party").filter(pk=message_id).first()
+    if (message is None or message.channel != Channel.WHATSAPP
+            or message.status != MessageStatus.QUEUED or message.via not in (Via.API, Via.OWN)):
+        return  # sent already, or no longer wanted
+    try:
+        pdf, filename = message_pdf(message)
+    except LookupError as exc:
+        raise JobFailed(str(exc)) from exc
+    if message.via == Via.OWN:
+        link = WhatsAppLink.objects.first()
+        if link is None or not link.connected:
+            raise JobFailed(_("The shop's WhatsApp number is not linked. Link it again in "
+                              "Settings → WhatsApp."))
+        result = gateways.own_send(link.session_id, phone=message.recipient, text=message.body,
+                                   pdf=pdf, filename=filename)
+    else:
+        order_id, amount = _facts(message)
+        result = gateways.hosted_send(
+            phone=message.recipient, name=message.party.name if message.party else "",
+            order_id=order_id, amount=amount, pdf=pdf, filename=filename,
+            statement=message.kind == MessageKind.STATEMENT)
+    if not result.ok:
+        raise RuntimeError(result.error)  # tried again a few times, then "Not sent"
+    message.status, message.sent_at, message.error = MessageStatus.SENT, timezone.now(), ""
+    if gateways.console():  # say so, or a development "sent" looks like a real one
+        message.error = _("Development mode: nothing was really sent.")
+    message.save(update_fields=["status", "sent_at", "error", "updated_at"])
+
+
+@task("messaging.campaign_next", label=_l("Send the next WhatsApp campaign message"),
+      max_attempts=3)
+def campaign_next(campaign_id, step=0):
+    from .campaigns import send_next
+
+    send_next(campaign_id, step)
+
+
+def _facts(message) -> tuple[str, str]:
+    """The document's number and total for the hosted service's wording (a statement sends its
+    title and no amount)."""
+    from django.apps import apps
+
+    marks = {chr(code) for code in range(0x2066, 0x206A)}  # direction isolates
+    plain = "".join(ch for ch in message.doc_label if ch not in marks)
+    if message.kind != MessageKind.DOCUMENT or not message.doc_model:
+        return plain, "0"
+    record = apps.get_model(message.doc_model).objects.filter(pk=message.doc_id).first()
+    number = getattr(record, "number", "") or plain
+    for name in ("total_amount", "grand_total", "total", "amount"):
+        value = getattr(record, name, None)
+        if value is not None and not callable(value):
+            return number, str(value)
+    return number, "0"
 
 
 def _attachments(message) -> list[tuple[bytes, str]]:

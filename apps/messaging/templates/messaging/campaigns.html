@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "WhatsApp campaigns" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'messaging/js/campaigns.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "WhatsApp campaigns" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "One message to many customers from the shop's WhatsApp number, sent slowly, during the day, a limited number a day." %}</p>
+  </div>
+  <a href="{% url 'campaign-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New campaign" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+{% if not link or not link.connected %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-800" role="status">
+  {% icon "triangle-alert" "mt-0.5 size-4 shrink-0" %}
+  <p>{% translate "The shop's WhatsApp number is not linked, so campaigns cannot send." %} <a class="font-medium underline" href="{% url 'whatsapp-settings' %}">{% translate "Link it now" %}</a></p>
+</div>
+{% endif %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card overflow-hidden xl:col-span-2">
+    {% if campaigns %}
+    <div class="relative overflow-x-auto">
+      <table class="table">
+        <thead><tr><th>{% translate "Campaign" %}</th><th>{% translate "Started" %}</th><th>{% translate "Progress" %}</th>
+          <th class="text-end">{% translate "Sent" %}</th><th class="text-end">{% translate "Not sent" %}</th><th>{% translate "Status" %}</th></tr></thead>
+        <tbody>
+        {% for c in campaigns %}
+          <tr>
+            <td><a class="font-medium text-brand-700 hover:underline" href="{% url 'campaign' c.pk %}">{{ c.name }}</a>
+              <div class="text-xs text-slate-500">{{ c.created_by.display_name }}</div></td>
+            <td><span class="num">{{ c.started_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+            <td class="min-w-36"><div class="h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-brand-500" style="width: {{ c.percent }}%"></div></div>
+              <div class="mt-1 text-xs text-slate-500"><span class="num">{{ c.percent }}</span>% · <span class="num">{{ c.total }}</span> {% translate "people" %}</div></td>
+            <td class="text-end"><span class="num">{{ c.sent }}</span></td>
+            <td class="text-end"><span class="num">{{ c.failed|add:c.skipped }}</span></td>
+            <td>{% include "messaging/_campaign_status.html" with status=c.status label=c.get_status_display %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% translate "No campaigns yet" as empty_title %}
+      {% translate "Send an offer, a new collection or a greeting to your customers on WhatsApp." as empty_text %}
+      {% include "components/empty_state.html" with icon="megaphone" title=empty_title text=empty_text %}
+    {% endif %}
+  </section>
+
+  <section class="card self-start" id="opt-outs" data-opt-outs="{% url 'opt-outs' %}" data-confirm="{% translate 'Let this number get campaigns again?' %}">
+    <div class="card-header"><div>
+      <h2 class="card-title">{% translate "Numbers that do not want campaigns" %}</h2>
+      <p class="mt-0.5 text-xs text-slate-500">{% translate "When a customer asks to stop, add the number here: no campaign reaches it again." %}</p>
+    </div></div>
+    <form class="flex gap-2 border-b border-slate-100 p-4" data-opt-out-form novalidate>
+      <div class="flex-1">
+        <input name="phone" class="form-input num w-full text-start" dir="ltr" placeholder="201001234567" aria-label="{% translate 'WhatsApp number' %}">
+        <p class="form-error" data-error-for="phone"></p>
+      </div>
+      <button type="submit" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+    </form>
+    {% if opt_outs %}
+    <ul class="max-h-96 divide-y divide-slate-100 overflow-y-auto text-sm">
+      {% for o in opt_outs %}
+      <li class="flex items-center justify-between gap-3 px-5 py-2.5"><span class="num" dir="ltr">+{{ o.phone }}</span>
+        <button type="button" class="btn btn-ghost px-2 text-slate-400" data-opt-in="{{ o.pk }}" aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="px-5 py-6 text-sm text-slate-500">{% translate "Nobody yet." %}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -10,3 +10,6 @@ var/
 .ruff_cache/
 .coverage
 htmlcov/
+
+# WhatsApp gateway: linked sessions are login keys to the shops' WhatsApp
+ops/wa-gateway/sessions/
