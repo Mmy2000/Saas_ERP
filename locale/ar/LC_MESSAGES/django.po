@@ -827,6 +827,9 @@ msgstr "كل العملاء"
 msgid "All gold pieces"
 msgstr "كل قطع الذهب"
 
+msgid "All goods"
+msgstr "كل الأصناف"
+
 msgid "All item categories"
 msgstr "كل المجموعات"
 
@@ -847,6 +850,9 @@ msgstr "كل الموردين"
 
 msgid "All transfers"
 msgstr "كل التحويلات"
+
+msgid "All work"
+msgstr "كل الأعمال"
 
 msgid "All workshops"
 msgstr "كل الورش"
@@ -1093,6 +1099,9 @@ msgstr "العودة إلى لوحة التحكم"
 
 msgid "Back to top"
 msgstr "اطلع لأعلى الصفحة"
+
+msgid "Back, fine (g)"
+msgstr "العائد، صافي (جم)"
 
 msgid "Background"
 msgstr "الخلفية"
@@ -1466,6 +1475,9 @@ msgstr "حسب العمر"
 msgid "By category"
 msgstr "حسب الصنف"
 
+msgid "By category and karat"
+msgstr "حسب الصنف والعيار"
+
 msgid "By karat"
 msgstr "حسب العيار"
 
@@ -1480,6 +1492,9 @@ msgstr "حسب وقت الخادم"
 
 msgid "By stone"
 msgstr "حسب الحجر"
+
+msgid "By supplier"
+msgstr "حسب المورد"
 
 msgid "By weight"
 msgstr "بالوزن"
@@ -3668,6 +3683,9 @@ msgstr "الجميع"
 msgid "Everyone can sign in and work."
 msgstr "يمكن للجميع الدخول والعمل."
 
+msgid "Everyone with a balance"
+msgstr "كل من لديه رصيد"
+
 msgid "Everything"
 msgstr "الكل"
 
@@ -3902,6 +3920,9 @@ msgstr "من الدفاتر في ذلك اليوم. المستحق: الموجب
 msgid "From the plan"
 msgstr "من الباقة"
 
+msgid "From → to"
+msgstr "من ← إلى"
+
 msgid "Full access"
 msgstr "صلاحيات كاملة"
 
@@ -3916,6 +3937,9 @@ msgstr "جم"
 
 msgid "Gain"
 msgstr "زيادة"
+
+msgid "Gain, fine (g)"
+msgstr "الزيادة، صافي (جم)"
 
 msgid "Gap"
 msgstr "المسافة بينها"
@@ -3984,6 +4008,9 @@ msgid "Gold and stock"
 msgstr "الذهب والمخزون"
 
 msgid "Gold at the day's price"
+msgstr "الذهب بسعر اليوم"
+
+msgid "Gold at today's price"
 msgstr "الذهب بسعر اليوم"
 
 msgid "Gold at today's value"
@@ -4109,6 +4136,9 @@ msgstr "الذهب المستخدم"
 msgid "Gold value"
 msgstr "قيمة الذهب"
 
+msgid "Gold, fine (g)"
+msgstr "الذهب، صافي (جم)"
+
 msgid "Gold: positive is your gold held by the workshop. Money: negative is labour you owe them."
 msgstr "الذهب: الموجب هو ذهبك لدى الورشة. النقدية: السالب هو مصنعية مستحقة لهم."
 
@@ -4150,6 +4180,9 @@ msgstr "بضاعة مردودة إلى المورد، ويقل المستحق ل
 
 msgid "Goods sent between branches and not received"
 msgstr "بضاعة مرسلة بين الفروع ولم تُستلم"
+
+msgid "Goods sent from branch to branch in a period, per route and karat: pieces, weight, fine gold and 21K equivalent, and how much of it is still on the way."
+msgstr "البضاعة المحوّلة بين الفروع في فترة، حسب الاتجاه والعيار: القطع والوزن والصافي ومعادل عيار 21، وما زال منها في الطريق."
 
 msgid "Goods sent to my branch"
 msgstr "بضاعة مرسلة إلى فرعي"
@@ -4427,6 +4460,12 @@ msgstr "في المحل"
 msgid "In transit"
 msgstr "في الطريق"
 
+msgid "In-house"
+msgstr "داخلي"
+
+msgid "In-house production"
+msgstr "تصنيع داخلي"
+
 msgid "Inactive"
 msgstr "موقوف"
 
@@ -4468,6 +4507,9 @@ msgstr "الفاتورة"
 
 msgid "Invoice and receipt designs"
 msgstr "تصميمات الفواتير والإيصالات"
+
+msgid "Invoices"
+msgstr "الفواتير"
 
 msgid "Invoices and statements can also go through the official WhatsApp service. It sends its own approved wording with the PDF: the text you type is not passed on."
 msgstr "يمكن أيضًا إرسال الفواتير وكشوف الحساب عبر خدمة واتساب الرسمية. ترسل الخدمة صيغتها المعتمدة مع ملف PDF: النص الذي تكتبه لا يُرسل."
@@ -4868,11 +4910,17 @@ msgstr "أحجار سائبة تُركَّب في الشواتين: تنتقل �
 msgid "Loss"
 msgstr "هالك"
 
+msgid "Loss %"
+msgstr "نسبة الهالك %"
+
 msgid "Loss (g)"
 msgstr "الهالك (جم)"
 
 msgid "Loss must be less than the weight."
 msgstr "يجب أن يكون الهالك أقل من الوزن."
+
+msgid "Loss, fine (g)"
+msgstr "الهالك، صافي (جم)"
 
 msgid "Lowercase letters, digits and hyphens."
 msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
@@ -4942,6 +4990,9 @@ msgstr "تكلفة المصنعية"
 
 msgid "Making cost / g"
 msgstr "تكلفة المصنعية / جم"
+
+msgid "Making per gram"
+msgstr "المصنعية للجرام"
 
 msgid "Making pieces"
 msgstr "تصنيع قطع"
@@ -5312,6 +5363,9 @@ msgstr "السالب: أنت مدين لهم."
 msgid "Net"
 msgstr "الصافي"
 
+msgid "Net (%(currency)s)"
+msgstr "الصافي (%(currency)s)"
+
 msgid "Net (g)"
 msgstr "الصافي (جم)"
 
@@ -5321,8 +5375,14 @@ msgstr "الصافي عيار 21 (جم)"
 msgid "Net by karat"
 msgstr "الصافي حسب العيار"
 
+msgid "Net fine (g)"
+msgstr "صافي الذهب (جم)"
+
 msgid "Net loss"
 msgstr "صافي الخسارة"
+
+msgid "Net making"
+msgstr "صافي المصنعية"
 
 msgid "Net other income"
 msgstr "صافي الإيرادات الأخرى"
@@ -5338,6 +5398,9 @@ msgstr "صافي الربح"
 
 msgid "Net sales"
 msgstr "صافي المبيعات"
+
+msgid "Net weight (g)"
+msgstr "صافي الوزن (جم)"
 
 msgid "Network"
 msgstr "الشبكة"
@@ -6686,11 +6749,23 @@ msgstr "لكل جرام"
 msgid "Per minute: now / busiest"
 msgstr "في الدقيقة: الآن / الأعلى"
 
+msgid "Per order"
+msgstr "حسب الأمر"
+
 msgid "Per piece"
 msgstr "بالقطعة"
 
 msgid "Per piece: each piece has its own barcode. By weight: counted in grams (chains, bullion)."
 msgstr "بالقطعة: لكل قطعة باركود خاص. بالوزن: تُحسب بالجرام (سلاسل، سبائك)."
+
+msgid "Per route and karat"
+msgstr "حسب الاتجاه والعيار"
+
+msgid "Per trade account"
+msgstr "حسب التاجر"
+
+msgid "Per workshop or craftsman"
+msgstr "حسب الورشة أو الصنايعي"
 
 msgid "Per-gram prices by karat. Documents keep the price that was in force when they were made."
 msgstr "أسعار الجرام لكل عيار. يحتفظ كل مستند بالسعر الذي كان ساريًا وقت إنشائه."
@@ -6769,6 +6844,9 @@ msgstr "القطع والأحجار"
 
 msgid "Pieces covered now"
 msgstr "القطع المشمولة الآن"
+
+msgid "Pieces customers brought back in a period, by category and karat, with what they had paid, what was kept and what was refunded."
+msgstr "القطع التي أرجعها العملاء في فترة، حسب الصنف والعيار، مع ما دفعوه وما خُصم وما رُدّ."
 
 msgid "Pieces customers brought back, newest first. A return is made from its sale."
 msgstr "القطع التي أرجعها العملاء، الأحدث أولًا. يتم الإرجاع من الفاتورة نفسها."
@@ -6889,6 +6967,9 @@ msgstr "الموجب: مستحق لك على العميل."
 
 msgid "Positive: the trader owes you."
 msgstr "الموجب: التاجر مدين لك."
+
+msgid "Positive: they owe us. Negative: we owe them. Gold is valued at today's buying price per fine gram; other currencies at the rates they were booked at."
+msgstr "الموجب: عليهم لنا. السالب: علينا لهم. يُقيّم الذهب بسعر الشراء اليوم للجرام الصافي، والعملات الأخرى بأسعار تسجيلها."
 
 msgid "Positive: they owe you gold. Negative: you owe them."
 msgstr "موجب: الذهب مستحق لك. سالب: الذهب مستحق عليك."
@@ -7451,6 +7532,9 @@ msgstr "المبلغ المردود"
 msgid "Refunded"
 msgstr "المردود"
 
+msgid "Refunds"
+msgstr "المردود"
+
 msgid "Refused"
 msgstr "المرفوضة"
 
@@ -7682,6 +7766,9 @@ msgstr "المرتجع (جم)"
 msgid "Returned 21K (g)"
 msgstr "المرتجع عيار 21 (جم)"
 
+msgid "Returned fine (g)"
+msgstr "المرتجع صافي (جم)"
+
 msgid "Returned in the period"
 msgstr "المرتجع في الفترة"
 
@@ -7873,6 +7960,9 @@ msgstr "المبيعات لجرام عيار 21"
 
 msgid "Sales rung up with this login count towards the commission."
 msgstr "المبيعات المسجلة بهذا الحساب تُحتسب في العمولة."
+
+msgid "Sales to traders by weight in a period, per trade account: weight, fine gold, making and money charged, what they returned, and the net."
+msgstr "مبيعات الجملة للتجار بالوزن في فترة، حسب التاجر: الوزن والصافي والمصنعية والنقدية، وما أرجعوه، والصافي."
 
 msgid "Sales total"
 msgstr "إجمالي البيع"
@@ -8303,6 +8393,9 @@ msgstr "تم الإرسال للورشة."
 msgid "Sent to workshop"
 msgstr "إرسال للورشة"
 
+msgid "Sent, fine (g)"
+msgstr "المُرسل، صافي (جم)"
+
 msgid "Sent, not received yet"
 msgstr "مُرسلة ولم تُستلم بعد"
 
@@ -8507,6 +8600,9 @@ msgstr "فضة مستحقة (جرام صافٍ)"
 msgid "Silver piece"
 msgstr "قطعة فضة"
 
+msgid "Silver, fine (g)"
+msgstr "الفضة، صافي (جم)"
+
 msgid "Size"
 msgstr "المقاس"
 
@@ -8557,6 +8653,9 @@ msgstr "مباعة بخسارة"
 
 msgid "Sold by"
 msgstr "البائع"
+
+msgid "Sold for"
+msgstr "سعر البيع"
 
 msgid "Sold us gold"
 msgstr "باع لنا ذهبًا"
@@ -8689,6 +8788,9 @@ msgstr "الحالة"
 
 msgid "Status changed"
 msgstr "تغيير الحالة"
+
+msgid "Still on the way (g)"
+msgstr "ما زال في الطريق (جم)"
 
 msgid "Still owed"
 msgstr "المتبقي"
@@ -9467,6 +9569,9 @@ msgstr "تُضاف للقطعة بمتوسط تكلفة البرتيتة للق�
 msgid "They leave the parcel at its average cost and the workshop holds them."
 msgstr "تخرج من البرتيتة بمتوسط تكلفتها وتصبح لدى الورشة."
 
+msgid "They owe us"
+msgstr "مستحق لنا"
+
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
 
@@ -9850,6 +9955,9 @@ msgstr[5] "التحويل %(number)s: %(count)s صنف، %(weight)s جم. است
 
 msgid "Transfers"
 msgstr "التحويلات"
+
+msgid "Transfers between branches"
+msgstr "التحويلات بين الفروع"
 
 msgid "Transfers waiting to be received"
 msgstr "تحويلات بانتظار الاستلام"
@@ -10316,6 +10424,9 @@ msgstr "ما تتضمنه كل باقة. يحصل العميل على خصائص
 msgid "What each seller sold in %(month)s and the commission it earns. Returns in the month are taken off."
 msgstr "ما باعه كل بائع في %(month)s والعمولة المستحقة عنه. تُطرح مرتجعات الشهر."
 
+msgid "What each supplier, customer, trader, workshop or partner owes or is owed today: money per currency and gold in fine grams, the gold valued at today's price, and the net in the company currency."
+msgstr "ما على كل مورد أو عميل أو تاجر أو ورشة أو شريك أو له اليوم: النقدية لكل عملة والذهب بالجرام الصافي، وقيمة الذهب بسعر اليوم، والصافي بعملة الشركة."
+
 msgid "What each workshop holds"
 msgstr "ما لدى كل ورشة"
 
@@ -10351,6 +10462,9 @@ msgstr "ما الذي يتغير"
 
 msgid "What to print"
 msgstr "ما يُطبع"
+
+msgid "What was bought from suppliers and traders in a period: by supplier, and by category and karat, with weight, 21K equivalent and making cost; goods returned to them are taken off."
+msgstr "المشتريات من الموردين والتجار في فترة: حسب المورد، وحسب الصنف والعيار، مع الوزن ومعادل عيار 21 وتكلفة المصنعية؛ ويُخصم ما رُدّ إليهم."
 
 msgid "What was made"
 msgstr "ما تم تصنيعه"
@@ -10463,6 +10577,9 @@ msgstr "مرتجع جملة"
 msgid "Wholesale sale"
 msgstr "فاتورة جملة"
 
+msgid "Wholesale sales"
+msgstr "مبيعات الجملة"
+
 msgid "Wholesale today"
 msgstr "الجملة اليوم"
 
@@ -10508,6 +10625,9 @@ msgstr "أمر تشغيل"
 msgid "Work orders"
 msgstr "أوامر التشغيل"
 
+msgid "Work orders and production received in a period: fine gold sent and returned, the loss and gain, loss per cent and labour, per workshop or craftsman and per order."
+msgstr "أوامر الشغل والتصنيع المستلمة في فترة: الذهب الصافي المرسل والعائد، والهالك والزيادة، ونسبة الهالك والمصنعية، حسب الورشة أو الصنايعي وحسب الأمر."
+
 msgid "Work orders at workshops"
 msgstr "أوامر تشغيل لدى الورش"
 
@@ -10520,8 +10640,14 @@ msgstr "العمّال"
 msgid "Workshop"
 msgstr "ورشة"
 
+msgid "Workshop and production loss"
+msgstr "هالك الورش والتصنيع"
+
 msgid "Workshop labour for %(number)s"
 msgstr "مصنعية الورشة للتصليح %(number)s"
+
+msgid "Workshop or craftsman"
+msgstr "الورشة أو الصنايعي"
 
 msgid "Workshop or setter"
 msgstr "الورشة أو المركباتي"

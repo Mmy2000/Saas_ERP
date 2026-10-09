@@ -200,7 +200,7 @@ class CustomerVisits(Report):
         rows = Table(_("Visits"), [
             Column("date", _("Date"), "date"), Column("name", _("Name")),
             Column("phone", _("Phone")), Column("what", _("What")),
-            Column("document", _("Document")), Column("value", _("Value"), "money")])
+            Column("document", _("Document"), "code"), Column("value", _("Value"), "money")])
         spent = {_("Purchase"), _("Repair collected")}
         shown = set()
         for key, own in by_person.items():

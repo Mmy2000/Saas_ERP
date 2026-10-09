@@ -93,7 +93,7 @@ class UnpaidInvoices(Report):
 
         items = Table(_("Open invoices"), [
             Column("party", _("Name")), Column("phone", _("Phone")),
-            Column("document", _("Document")), Column("date", _("Date"), "date"),
+            Column("document", _("Document"), "code"), Column("date", _("Date"), "date"),
             Column("days", _("Days"), "int"), Column("amount", _("Amount"), "money"),
             Column("open", _("Still owed"), "money")])
         ageing = Table(_("By age"), [

@@ -6,6 +6,7 @@ from apps.iam.catalog import register_permissions
 from . import (  # noqa: F401  (fill the registry)
     definitions,
     gold_reports,
+    pack2,
     receivables,
     sales_reports,
     statements,

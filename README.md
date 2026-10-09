@@ -369,6 +369,24 @@ the day they came back at the figures of the original sale.
   totals per kind of movement, and every movement with its document and a running balance.
 * **Branch statement** (GHBR35, GHBR36): money and gold each branch is owed by the others,
   and a branch's statement with running balances.
+* **Purchases** (GHS21, GHS35, GHD21, GHD46): what was bought in a period by supplier and by
+  category and karat (pieces, weight, 21K, making cost and making per gram), with goods
+  returned to the supplier taken off; filters for supplier and gold or diamonds.
+* **Wholesale sales** (GHSH23, GHSH29, GHSH25): sales to traders per trade account: weight,
+  fine gold, making, money charged, what they returned and the net.
+* **Customer returns** (GHS32, GHD28, GHD38, GHZ26): pieces brought back by category and
+  karat, what was paid, kept and refunded, and the refunds per refund method.
+* **Balances** (GHSS22, GHSS23, GHP23, GHP24, GHSHH22, GHSH22, GHC19): what each supplier,
+  customer, trader, workshop or partner owes or is owed today: money per currency, gold in fine
+  grams valued at today's buying price, and the net in the company currency. Each name opens
+  its statement; "they owe us" and "we owe them" filters.
+* **Transfers between branches** (GHBR31-33): goods sent per route and karat (pieces,
+  weight, fine, 21K) and how much is still on the way.
+* **Workshop and production loss** (GHSHH25, GHPR21): work orders and in-house production
+  received in a period: fine gold sent and returned, loss and gain, loss per cent and labour,
+  per workshop or craftsman and per order (each order links to its page).
+
+Document numbers in report tables stay on one line (column kind `code`).
 
 ### Setters (diamonds)
 

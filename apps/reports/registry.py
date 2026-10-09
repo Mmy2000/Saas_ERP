@@ -26,7 +26,8 @@ def register(report_class):
 
 
 # kind → decimal places (None: not a number)
-KINDS = {"text": None, "int": 0, "money": 2, "weight": 3, "fine": 4, "pct": 1, "date": None}
+KINDS = {"text": None, "int": 0, "money": 2, "weight": 3, "fine": 4, "pct": 1, "date": None,
+         "code": None}  # code: a document number, kept on one line
 
 
 @dataclass(frozen=True)

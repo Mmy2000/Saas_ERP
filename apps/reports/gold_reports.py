@@ -451,7 +451,7 @@ class StockCard(Report):
 
         lines = Table(_("Movements"), [
             Column("date", _("Date"), "date"), Column("kind", _("Movement")),
-            Column("document", _("Document")), Column("piece", _("Piece")),
+            Column("document", _("Document"), "code"), Column("piece", _("Piece")),
             Column("karat", _("Karat")), Column("qty", _("Pieces"), "int"),
             Column("g", _("Weight (g)"), "weight"), Column("balance", _("Balance (g)"), "weight")])
         opening = sum((cell["open_g"] for cell in cells.values()), ZERO)
@@ -498,7 +498,7 @@ class BranchStatement(Report):
             note=_("On the last day of the period. Positive: the other branches owe this branch "
                    "(goods or cash it sent and not yet settled)."))
         statement = Table(_("Statement"), [
-            Column("date", _("Date"), "date"), Column("document", _("Document")),
+            Column("date", _("Date"), "date"), Column("document", _("Document"), "code"),
             Column("money_in", _("Money in"), "money"), Column("money_out", _("Money out"),
                                                               "money"),
             Column("money_balance", _("Money balance"), "money"),
