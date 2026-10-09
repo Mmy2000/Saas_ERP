@@ -16,14 +16,8 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
-  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-    <select name="category" class="form-input sm:w-72" aria-label="{% translate 'Expense category' %}">
-      <option value="">{% translate "All categories" %}</option>
-      {% for c in categories %}<option value="{{ c.pk }}" {% if category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
-    </select>
-    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
-    <p class="text-sm text-slate-500 sm:ms-auto">{% translate "Total" %}: <span class="num font-semibold text-slate-900">{{ total|num:2 }}</span> {{ home_currency }}</p>
-  </form>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -45,6 +39,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "No expenses recorded yet" as empty_title %}
     {% include "components/empty_state.html" with icon="receipt-text" title=empty_title %}

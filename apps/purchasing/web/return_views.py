@@ -1,8 +1,11 @@
-from django.core.paginator import Paginator
+from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
+from apps.core.listing import Choice, ListQuery, Total
+from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.inventory.models import LotBalance
 from apps.inventory.services import SCRAP_CATEGORY_CODE
@@ -18,9 +21,22 @@ def _visible(request):
 
 @permission_required("purchasing.invoice.view")
 def supplier_returns(request):
-    page = Paginator(_visible(request).order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
-    return render(request, "purchasing/supplier_returns.html", {"page": page})
+    """Goods sent back to suppliers, searchable (Gweb's GHSS26 / 27 / 30 returns reports)."""
+    filters = ListQuery(
+        request, permission="purchasing.invoice.view",
+        search=("number", "supplier__name", "supplier__phone", "lines__item__barcode"),
+        search_label=_("Number, supplier or barcode"), party="supplier_id",
+        choices=[Choice("status", _("Status"), [("", _("All")), (DocStatus.POSTED, _("Posted")),
+                                                (DocStatus.VOIDED, _("Cancelled"))], "status")])
+    found = filters.apply(_visible(request))
+    sums = SupplierReturn.objects.filter(
+        pk__in=found.filter(status=DocStatus.POSTED).values("pk")).aggregate(
+        weight=Sum("total_gross_weight_g"), cost=Sum("total_cost"))
+    return render(request, "purchasing/supplier_returns.html", {
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "totals": [Total(_("Weight"), sums["weight"] or 0, 3, _("g")),
+                   Total(_("Making cost"), sums["cost"] or 0)],
+    })
 
 
 @permission_required("purchasing.return.create")

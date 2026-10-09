@@ -1,0 +1,8 @@
+{% load i18n ui %}{# What the filtered list adds up to: include with page=… totals=[Total(...)] #}
+<div class="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-slate-100 bg-slate-50/60 px-5 py-2.5 text-sm" data-list-totals>
+  <span class="text-slate-500">{% blocktranslate trimmed count counter=page.paginator.count %}{{ counter }} document{% plural %}{{ counter }} documents{% endblocktranslate %}</span>
+  {% for total in totals %}
+  <span><span class="text-slate-500">{{ total.label }}</span> <span class="num font-semibold text-slate-900">{{ total.value|num:total.places }}</span>{% if total.unit %} <span class="text-xs text-slate-400">{{ total.unit }}</span>{% endif %}</span>
+  {% endfor %}
+  {% if totals %}<span class="text-xs text-slate-400">{% translate "Cancelled ones are not added up." %}</span>{% endif %}
+</div>

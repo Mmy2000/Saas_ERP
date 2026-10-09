@@ -171,7 +171,7 @@ class TestDepositsOnTheCustomer:
         assert reservation.number in deposits and "5,000.00" in deposits
 
         listed = client.get(f"/sales/reservations/?customer={other.pk}").content.decode()
-        assert reservation.number not in listed and "One customer" in listed
+        assert reservation.number not in listed and "Only for" in listed
         assert reservation.number in client.get(
             f"/sales/reservations/?customer={shop.customer.pk}").content.decode()
 

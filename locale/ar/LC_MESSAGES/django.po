@@ -83,6 +83,15 @@ msgstr[3] "%(counter)s أيام"
 msgstr[4] "%(counter)s يومًا"
 msgstr[5] "%(counter)s يوم"
 
+msgid "%(counter)s document"
+msgid_plural "%(counter)s documents"
+msgstr[0] "لا مستندات"
+msgstr[1] "مستند واحد"
+msgstr[2] "مستندان"
+msgstr[3] "%(counter)s مستندات"
+msgstr[4] "%(counter)s مستندًا"
+msgstr[5] "%(counter)s مستند"
+
 msgid "%(counter)s failed sign-in in the last 24 hours."
 msgid_plural "%(counter)s failed sign-ins in the last 24 hours."
 msgstr[0] "لا محاولات دخول فاشلة في آخر 24 ساعة."
@@ -1100,9 +1109,6 @@ msgstr "المهام في الخلفية"
 msgid "Bag"
 msgstr "كيس"
 
-msgid "Bag number, name, phone or piece"
-msgstr "رقم الكيس أو الاسم أو الهاتف أو القطعة"
-
 msgid "Baguette"
 msgstr "باجيت"
 
@@ -1610,6 +1616,9 @@ msgstr "إلغاء %(number)s"
 msgid "Cancelled from the console."
 msgstr "أُلغيت من لوحة المنصة."
 
+msgid "Cancelled ones are not added up."
+msgstr "الملغاة لا تُحسب في الإجمالي."
+
 msgid "Cancelled receipt of %(number)s"
 msgstr "إلغاء استلام %(number)s"
 
@@ -1903,6 +1912,9 @@ msgstr "المطلوب"
 
 msgid "Charged to the workshop"
 msgstr "على حساب الورشة"
+
+msgid "Charges"
+msgstr "الرسوم"
 
 msgid "Chart of accounts"
 msgstr "دليل الحسابات"
@@ -2876,6 +2888,9 @@ msgstr "المدين يساوي الدائن بعملة الشركة، وأعم�
 msgid "Decimals"
 msgstr "الكسور العشرية"
 
+msgid "Deducted"
+msgstr "المخصوم"
+
 msgid "Deduction"
 msgstr "الخصم المحتجز"
 
@@ -3767,6 +3782,9 @@ msgstr "التصفية"
 msgid "Financial year %(year)s"
 msgstr "السنة المالية %(year)s"
 
+msgid "Fine"
+msgstr "الصافي"
+
 msgid "Fine (g)"
 msgstr "صافي (جم)"
 
@@ -3992,6 +4010,9 @@ msgstr "ذهب مسلَّم"
 msgid "Gold in (fine g)"
 msgstr "ذهب وارد (جم صافي)"
 
+msgid "Gold in (fine)"
+msgstr "ذهب وارد (صافي)"
+
 msgid "Gold in stock (21K)"
 msgstr "الذهب بالمخزون (عيار 21)"
 
@@ -4013,8 +4034,14 @@ msgstr "الذهب الموجود"
 msgid "Gold on hand per branch and karat, gold on its way between branches, and gold owed with customers, suppliers and traders."
 msgstr "الذهب الموجود لكل فرع وعيار، والذهب في الطريق بين الفروع، والذهب المستحق مع العملاء والموردين والتجار."
 
+msgid "Gold ordered by weight"
+msgstr "ذهب مطلوب بالوزن"
+
 msgid "Gold out (fine g)"
 msgstr "ذهب صادر (جم صافي)"
+
+msgid "Gold out (fine)"
+msgstr "ذهب صادر (صافي)"
 
 msgid "Gold owed (fine g)"
 msgstr "ذهب مستحق (جرام صافٍ)"
@@ -5663,6 +5690,9 @@ msgstr "لا توجد طلبات في هذه الفترة"
 msgid "No reservations here"
 msgstr "لا توجد حجوزات هنا"
 
+msgid "No returns yet"
+msgstr "لا توجد مرتجعات بعد"
+
 msgid "No sales yet"
 msgstr "لا توجد مبيعات بعد"
 
@@ -5870,6 +5900,9 @@ msgstr "لا توجد أعمال غير مكتملة في هذا الشهر."
 msgid "Nothing is waiting for you."
 msgstr "لا يوجد ما ينتظرك."
 
+msgid "Nothing matches"
+msgstr "لا توجد نتائج"
+
 msgid "Nothing matches your search"
 msgstr "لا توجد نتائج مطابقة"
 
@@ -5927,6 +5960,39 @@ msgstr "عدد الأحجار"
 msgid "Number or trade account"
 msgstr "الرقم أو اسم التاجر"
 
+msgid "Number, bag, customer, phone or piece"
+msgstr "الرقم أو الكيس أو العميل أو الهاتف أو القطعة"
+
+msgid "Number, barcode or note"
+msgstr "الرقم أو الباركود أو الملاحظة"
+
+msgid "Number, customer, phone or barcode"
+msgstr "الرقم أو العميل أو الهاتف أو الباركود"
+
+msgid "Number, invoice, customer or barcode"
+msgstr "الرقم أو الفاتورة أو العميل أو الباركود"
+
+msgid "Number, name or phone"
+msgstr "الرقم أو الاسم أو الهاتف"
+
+msgid "Number, name, phone or reference"
+msgstr "الرقم أو الاسم أو الهاتف أو المرجع"
+
+msgid "Number, note or reference"
+msgstr "الرقم أو الملاحظة أو المرجع"
+
+msgid "Number, note, payee or category"
+msgstr "الرقم أو الملاحظة أو المستفيد أو البند"
+
+msgid "Number, seller, phone or barcode"
+msgstr "الرقم أو البائع أو الهاتف أو الباركود"
+
+msgid "Number, supplier or barcode"
+msgstr "الرقم أو المورد أو الباركود"
+
+msgid "Number, supplier or their invoice number"
+msgstr "الرقم أو المورد أو رقم فاتورته"
+
 msgid "Numbers"
 msgstr "الأرقام"
 
@@ -5938,6 +6004,9 @@ msgstr "من المصنعية"
 
 msgid "of the limit"
 msgstr "من الحد"
+
+msgid "Of which gold"
+msgstr "منها ذهب"
 
 msgid "Off"
 msgstr "متوقف"
@@ -6026,9 +6095,6 @@ msgstr "خزينة واحدة"
 msgid "One craftsman"
 msgstr "صائغ واحد"
 
-msgid "One customer"
-msgstr "عميل واحد"
-
 msgid "One day at a branch: sales, scrap received, money in and out of every cash box and bank account."
 msgstr "يوم واحد في فرع: المبيعات، والكسر المستلم، والوارد والمنصرف من كل خزينة وحساب بنكي."
 
@@ -6095,11 +6161,11 @@ msgstr "تُرد الشيكات الواردة فقط."
 msgid "Only drafts can be edited."
 msgstr "يمكن تعديل المسودات فقط."
 
+msgid "Only for"
+msgstr "فقط لـ"
+
 msgid "Only IGI reports can be checked here."
 msgstr "يمكن التحقق هنا من شهادات IGI فقط."
-
-msgid "Only in transit"
-msgstr "في الطريق فقط"
 
 msgid "Only loose stones go into a piece."
 msgstr "تُركّب الأحجار السائبة فقط في القطعة."
@@ -6404,6 +6470,9 @@ msgstr "الصفحة غير موجودة"
 msgid "Page width (mm)"
 msgstr "عرض الصفحة (مم)"
 
+msgid "Pages"
+msgstr "الصفحات"
+
 msgid "Pagination"
 msgstr "التنقل بين الصفحات"
 
@@ -6700,6 +6769,9 @@ msgstr "القطع والأحجار"
 
 msgid "Pieces covered now"
 msgstr "القطع المشمولة الآن"
+
+msgid "Pieces customers brought back, newest first. A return is made from its sale."
+msgstr "القطع التي أرجعها العملاء، الأحدث أولًا. يتم الإرجاع من الفاتورة نفسها."
 
 msgid "Pieces get barcodes starting with it."
 msgstr "باركود القطع يبدأ به."
@@ -7147,6 +7219,9 @@ msgstr "أُضيفت"
 
 msgid "Quiet"
 msgstr "هادئ"
+
+msgid "Quoted"
+msgstr "قيمة الحجز"
 
 msgid "Rank"
 msgstr "الترتيب"
@@ -7634,6 +7709,9 @@ msgstr "المرتجعات تُحسب على من قام بالبيع، في ي�
 msgid "Returns to suppliers"
 msgstr "المرتجعات للموردين"
 
+msgid "Returns to them"
+msgstr "المرتجعات إليه"
+
 msgid "Reversal"
 msgstr "قيد عكسي"
 
@@ -8030,6 +8108,9 @@ msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
 msgid "See the messages sent to customers"
 msgstr "عرض الرسائل المرسلة للعملاء"
 
+msgid "See their"
+msgstr "اعرض"
+
 msgid "See what the monthly report looks like: last month's report is e-mailed to you now."
 msgstr "اطّلع على شكل التقرير الشهري: يُرسل إليك تقرير الشهر الماضي الآن بالبريد."
 
@@ -8329,6 +8410,9 @@ msgstr "اسم مختصر"
 
 msgid "Show"
 msgstr "عرض"
+
+msgid "Show everyone"
+msgstr "عرض الكل"
 
 msgid "Show labels"
 msgstr "إظهار العناوين"
@@ -9787,6 +9871,9 @@ msgstr "أيام التجربة"
 
 msgid "Trial ends on"
 msgstr "نهاية الفترة التجريبية"
+
+msgid "Try other words or dates."
+msgstr "جرّب كلمات أو تواريخ أخرى."
 
 msgid "Try part of the name, the phone number or the code."
 msgstr "جرّب جزءًا من الاسم أو رقم الهاتف أو الكود."

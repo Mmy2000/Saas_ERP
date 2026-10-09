@@ -13,13 +13,8 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
-  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-    <select name="status" class="form-input sm:w-52" aria-label="{% translate 'Status' %}">
-      <option value="">{% translate "All" %}</option>
-      {% for value, label in statuses %}{% if value != "draft" %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}
-    </select>
-    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
-  </form>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -32,7 +27,7 @@
         <tr>
           <td><span class="num font-medium text-slate-900">{{ invoice.number }}</span></td>
           <td><span class="num">{{ invoice.posted_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
-          <td>{{ invoice.buyer|default:"—" }}</td>
+          <td>{{ invoice.buyer|default:"—" }}{% if filters.show_branches %}<div class="text-xs text-slate-500">{{ invoice.branch.name }}</div>{% endif %}</td>
           <td>{{ invoice.get_payment_terms_display }}</td>
           <td class="text-end"><span class="num">{{ invoice.total_amount|num:2 }}</span></td>
           <td>{% include "components/doc_status.html" with status=invoice.status label=invoice.get_status_display %}</td>
@@ -42,18 +37,10 @@
       </tbody>
     </table>
   </div>
-  {% if page.has_other_pages %}
-  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
-    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
-    <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
-    </div>
-  </nav>
-  {% endif %}
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
-    {% translate "No sales yet" as empty_title %}
-    {% include "components/empty_state.html" with icon="receipt" title=empty_title %}
+    {% if filters.active %}{% translate "Nothing matches" as empty_title %}{% translate "Try other words or dates." as empty_text %}{% else %}{% translate "No sales yet" as empty_title %}{% endif %}
+    {% include "components/empty_state.html" with icon="receipt" title=empty_title text=empty_text %}
   {% endif %}
 </section>
 {% endblock %}

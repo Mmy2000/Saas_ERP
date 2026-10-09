@@ -436,6 +436,23 @@ and cash transfer between branches not received yet, by branch and direction (co
 with days waiting, totals by karat (scrap shown apart) and cash per currency. The dashboard's
 "waiting to be received" items open it on the user's own branch.
 
+### Searching the lists
+
+Every document list shares one filter bar (`apps/core/listing.py` ListQuery, templates
+`components/list_filters.html`, `list_totals.html`, `pager.html`): a search box (number, names,
+phones, barcodes, references as fits the list), a date range, the branch (only branches the member
+may see), the list's own choices (status, type, payment, kind…), and a totals strip for what is
+shown (cancelled documents not added up). Paging and "Print all pages" keep the filters. A link
+with `?party=<id>` (or `?customer=` on repairs and reservations) narrows a list to one customer,
+supplier, trade account, workshop or partner and shows it as a chip to remove; each party's page
+links to "See their" sales, returns, reservations, repairs, purchases, wholesale and receipts &
+payments. Lists covered: Sales, **Returns** (new: every customer return, by goods family too),
+Reservations (also pieces / gold ordered by weight / diamonds), Wholesale, Repairs, Receipts &
+payments (receipts and payments totals, gold in and out), Purchases (weight, making cost), Returns
+to suppliers, Expenses, Transfers, Treasury movements and Buy old diamonds. This replaces Gweb's
+look-up screens (استعلام) and the list-style reports such as GHC28, GHC31-33, GHSS39-40,
+GHSS26/27/30, GHFX21/22, GHM21, GHD35/41 and GHS71-74.
+
 ### Notifications, sign-ins and shortcuts
 
 **The bell** (legacy Notifications app) in the top bar shows the unread count, refreshed every
@@ -682,7 +699,7 @@ These are Phase 2 spikes or later phases in the plan:
 - QR codes on labels, Arabic text in ZPL (printer fonts cannot shape it), expiry reminders, partial receipt of a
   transfer (it is received whole or cancelled), approving stocktake differences line by line,
   RFID bulk counting, partial-weight wholesale returns; work orders: sending finished pieces
-  (repairs), receiving in several batches, labour paid in gold, stones issued to setters;
+  (repairs), receiving in several batches, labour paid in gold;
   production: bills of materials, findings used, stones used in work-order goods (stones
   at workshops are set through setter jobs), a loss allowance per craftsman;
   diamonds: certificate scans, selling part of a parcel of stones, a diamond

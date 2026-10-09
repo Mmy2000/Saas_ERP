@@ -1,0 +1,10 @@
+{% load i18n %}{# Pages of a filtered list, keeping the filters: include with page=… query=filters.query #}
+{% if page.has_other_pages %}
+<nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm" aria-label="{% translate 'Pages' %}">
+  <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
+  <div class="flex gap-2">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?{% if query %}{{ query }}&{% endif %}page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-secondary" href="?{% if query %}{{ query }}&{% endif %}page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+  </div>
+</nav>
+{% endif %}

@@ -1,10 +1,11 @@
-from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency
+from apps.core.listing import Choice, ListQuery, Total
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
@@ -23,17 +24,23 @@ def _visible(request):
 
 @permission_required("expenses.view")
 def expenses(request):
-    category = request.GET.get("category", "")
-    queryset = _visible(request)
-    if category.isdigit():
-        queryset = queryset.filter(category_id=int(category))
-    total = queryset.filter(status="posted").aggregate(total=Sum("functional_amount"))["total"]
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    """Expense vouchers by date, branch, category and words (Gweb's GHM21 report)."""
+    filters = ListQuery(
+        request, permission="expenses.view",
+        search=("number", "note", "payee", "reference", "category__name"),
+        search_label=_("Number, note, payee or category"),
+        choices=[Choice("category", _("Category"), [("", _("All"))] + [
+            (str(c.pk), c.name) for c in ExpenseCategory.objects.order_by("name")],
+            "category_id"),
+                 Choice("status", _("Status"), [("", _("All")), ("posted", _("Posted")),
+                                                ("voided", _("Cancelled"))], "status")])
+    found = filters.apply(_visible(request))
+    total = found.filter(status="posted").aggregate(total=Sum("functional_amount"))["total"]
+    home = functional_currency()
     return render(request, "expenses/list.html", {
-        "page": page, "category": category, "total": total or 0,
-        "categories": ExpenseCategory.objects.all(),
-        "home_currency": functional_currency(),
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "total": total or 0, "home_currency": home,
+        "totals": [Total(_("Total"), total or 0, unit=home)],
     })
 
 

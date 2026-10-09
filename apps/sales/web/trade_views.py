@@ -1,9 +1,11 @@
-from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
+from apps.core.listing import Choice, ListQuery, Total
+from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.inventory.models import LotBalance
 from apps.inventory.services import SCRAP_CATEGORY_CODE
@@ -21,14 +23,28 @@ def _scope(request, queryset):
 
 @permission_required("sales.trade.view")
 def trade_sales(request):
-    term = request.GET.get("q", "").strip()
-    sales = _scope(request, TradeSale.objects.select_related("trade_account", "branch"))
-    if term:
-        sales = sales.filter(Q(number__icontains=term) | Q(trade_account__name__icontains=term))
-    page = Paginator(sales.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    filters = ListQuery(
+        request, permission="sales.trade.view",
+        search=("number", "trade_account__name", "trade_account__phone"),
+        search_label=_("Number or trade account"), party="trade_account_id",
+        choices=[Choice("status", _("Status"), [("", _("All")), (DocStatus.POSTED, _("Posted")),
+                                                (DocStatus.VOIDED, _("Cancelled"))], "status"),
+                 Choice("basis", _("Settled in"), [("", _("All"))] + list(SettlementBasis.choices),
+                        "settlement_basis")])
+    sales = filters.apply(_scope(request, TradeSale.objects.select_related("trade_account",
+                                                                           "branch")))
+    sums = TradeSale.objects.filter(
+        pk__in=sales.filter(status=DocStatus.POSTED).values("pk")).aggregate(
+        weight=Sum("total_gross_weight_g"), fine=Sum("total_fine_weight_g"),
+        money=Sum("money_amount"), making=Sum("making_amount"))
+    home = functional_currency()
     return render(request, "sales/trade_sales.html", {
-        "page": page, "term": term, "home_currency": functional_currency(),
+        "page": filters.page(sales.order_by("-business_date", "-id")), "filters": filters,
+        "home_currency": home,
+        "totals": [Total(_("Weight"), sums["weight"] or 0, 3, _("g")),
+                   Total(_("Fine"), sums["fine"] or 0, 3, _("g")),
+                   Total(_("Making"), sums["making"] or 0, unit=home),
+                   Total(_("Money"), sums["money"] or 0, unit=home)],
     })
 
 

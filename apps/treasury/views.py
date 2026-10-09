@@ -82,18 +82,21 @@ def _visible_documents(request):
 
 @permission_required("treasury.view")
 def documents(request):
-    kind = request.GET.get("kind", "")
-    queryset = _visible_documents(request)
-    if kind in TreasuryKind.values:
-        queryset = queryset.filter(kind=kind)
-    state = request.GET.get("state", "")
-    if state == "transit":  # cash sent to another branch, not received yet
-        queryset = queryset.filter(status=DocStatus.POSTED, needs_receipt=True,
-                                   received_at__isnull=True)
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    from apps.core.listing import Choice, ListQuery
+
+    filters = ListQuery(
+        request, permission="treasury.view", search=("number", "note", "reference"),
+        search_label=_("Number, note or reference"),
+        branch_field=lambda qs, ids: qs.filter(Q(branch_id__in=ids) | Q(to_branch_id__in=ids)),
+        choices=[Choice("kind", _("Type"), [("", _("All"))] + list(TreasuryKind.choices), "kind"),
+                 Choice("state", _("State"), [("", _("All")), ("transit", _("In transit"))],
+                        apply=lambda qs, v: qs.filter(  # sent to a branch, not received yet
+                            status=DocStatus.POSTED, needs_receipt=True,
+                            received_at__isnull=True))])
+    found = filters.apply(_visible_documents(request))
     return render(request, "treasury/documents.html", {
-        "page": page, "kind": kind, "kinds": TreasuryKind.choices, "state": state,
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "totals": [],
     })
 
 

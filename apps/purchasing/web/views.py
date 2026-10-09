@@ -1,15 +1,17 @@
-from django.core.paginator import Paginator
+from django.db.models import Sum
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency, ItemCategory, Karat
+from apps.core.listing import Choice, ListQuery, Total
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
 from apps.pricing.selectors import functional_currency
-from apps.purchasing.models import SupplierInvoice, seller_from_query
+from apps.purchasing.models import SupplierInvoice, SupplierInvoiceLine, seller_from_query
 from apps.purchasing.services import totals
 
 
@@ -21,18 +23,25 @@ def _visible(request):
 
 @permission_required("purchasing.invoice.view")
 def invoices(request):
-    status = request.GET.get("status", "")
-    queryset = _visible(request).prefetch_related("lines")
-    if status in DocStatus.values:
-        queryset = queryset.filter(status=status)
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    filters = ListQuery(
+        request, permission="purchasing.invoice.view",
+        search=("number", "supplier__name", "supplier__phone", "supplier_reference"),
+        search_label=_("Number, supplier or their invoice number"), party="supplier_id",
+        choices=[Choice("status", _("Status"), [("", _("All"))] + list(DocStatus.choices),
+                        "status")])
+    found = filters.apply(_visible(request))
+    lines = SupplierInvoiceLine.objects.filter(
+        invoice__in=found.filter(status=DocStatus.POSTED).values("pk")).aggregate(
+        weight=Sum("gross_weight_g"), making=Sum("making_cost_amount"))
+    page = filters.page(found.prefetch_related("lines").order_by("-business_date", "-id"))
     for invoice in page.object_list:
         lines = invoice.lines.all()
         invoice.weight = sum(line.gross_weight_g for line in lines)
         invoice.making = sum(line.making_cost_amount for line in lines)
     return render(request, "purchasing/invoices.html", {
-        "page": page, "status": status, "statuses": DocStatus.choices,
+        "page": page, "filters": filters,
+        "totals": [Total(_("Weight"), lines["weight"] or 0, 3, _("g")),
+                   Total(_("Making cost"), lines["making"] or 0)],
     })
 
 

@@ -39,8 +39,9 @@ NAVIGATION: list[NavSection] = [
     ]),
     NavSection("sales", _("Sales"), "shopping-bag", [
         NavItem(_("New sale"), "sale-new", "scan-barcode", "sales.invoice.create"),
-        NavItem(_("Sales"), "sales", "shopping-bag", "sales.invoice.view",
-                ("sale-detail", "sale-return-detail")),
+        NavItem(_("Sales"), "sales", "shopping-bag", "sales.invoice.view", ("sale-detail",)),
+        NavItem(_("Returns"), "sale-returns", "undo-2", "sales.invoice.view",
+                ("sale-return-detail",)),
         NavItem(_("Reservations"), "reservations", "bookmark", "sales.reservation.view",
                 ("reservation-new", "reservation")),
         NavItem(_("Wholesale"), "trade-sales", "scale", "sales.trade.view",

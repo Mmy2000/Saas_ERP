@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Returns" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'sales' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Sales" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Returns" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Pieces customers brought back, newest first. A return is made from its sale." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Sale" %}</th><th>{% translate "Customer" %}</th>
+        <th>{% translate "Refund" %}</th><th class="text-end">{% translate "Returned" %}</th><th class="text-end">{% translate "Refunded" %}</th><th>{% translate "Status" %}</th></tr></thead>
+      <tbody>
+      {% for r in page.object_list %}
+        <tr>
+          <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'sale-return-detail' r.pk %}">{{ r.number }}</a></td>
+          <td><span class="num">{{ r.business_date|date:"SHORT_DATE_FORMAT" }}</span>{% if filters.show_branches %}<div class="text-xs text-slate-500">{{ r.branch.name }}</div>{% endif %}</td>
+          <td><a class="num text-slate-700 hover:underline" href="{% url 'sale-detail' r.original_invoice_id %}">{{ r.original_invoice.number }}</a></td>
+          <td>{% if r.customer %}{{ r.customer.name }}{% else %}{{ r.original_invoice.customer_name|default:"—" }}{% endif %}</td>
+          <td>{{ r.get_refund_method_display }}</td>
+          <td class="text-end"><span class="num">{{ r.returned_amount|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ r.refund_amount|num:2 }}</span></td>
+          <td>{% include "components/doc_status.html" with status=r.status label=r.get_status_display %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% if filters.active %}{% translate "Nothing matches" as empty_title %}{% translate "Try other words or dates." as empty_text %}{% else %}{% translate "No returns yet" as empty_title %}{% endif %}
+    {% include "components/empty_state.html" with icon="undo-2" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

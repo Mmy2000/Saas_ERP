@@ -154,6 +154,7 @@ urlpatterns = [
     path("print/<str:doc_type>/<int:pk>/", documents.print_document, name="print-document"),
     path("print/<str:doc_type>/<int:pk>/pdf/", documents.print_document_pdf,
          name="print-document-pdf"),
+    path("sales/returns/", sales.returns, name="sale-returns"),
     path("sales/returns/<int:pk>/", sales.return_detail, name="sale-return-detail"),
     path("sales/offers/", merchandising.offers, name="offers"),
     path("sales/offers/new/", merchandising.offer_new, name="offer-new"),

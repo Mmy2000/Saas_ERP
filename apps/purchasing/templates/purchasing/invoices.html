@@ -16,13 +16,8 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
-  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-    <select name="status" class="form-input sm:w-52" aria-label="{% translate 'Status' %}">
-      <option value="">{% translate "All" %}</option>
-      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
-  </form>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -47,15 +42,7 @@
       </tbody>
     </table>
   </div>
-  {% if page.has_other_pages %}
-  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
-    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
-    <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
-    </div>
-  </nav>
-  {% endif %}
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "No purchases yet" as empty_title %}
     {% translate "Record a supplier invoice to bring gold into stock." as empty_text %}

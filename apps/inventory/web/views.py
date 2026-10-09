@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import ItemCategory, Karat
 from apps.core.documents import document_titles, document_url
@@ -135,13 +136,33 @@ def _visible_transfers(request):
 
 @permission_required("inventory.stock.view")
 def transfers(request):
-    show = request.GET.get("show", "")
-    queryset = _visible_transfers(request)
-    if show == "transit":
-        queryset = queryset.filter(status=DocStatus.POSTED, received_at__isnull=True)
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
-    return render(request, "inventory/transfers.html", {"page": page, "show": show})
+    """Transfers between branches by date, branch (sent or received) and state, with totals
+    (Gweb's transfer reports GHBR22–48)."""
+    from django.db.models import Sum
+
+    from apps.core.listing import Choice, ListQuery, Total
+
+    states = {"transit": Q(status=DocStatus.POSTED, received_at__isnull=True),
+              "received": Q(received_at__isnull=False), "cancelled": Q(status=DocStatus.VOIDED)}
+    filters = ListQuery(
+        request, permission="inventory.stock.view",
+        search=("number", "lines__item__barcode", "note"),
+        search_label=_("Number, barcode or note"),
+        branch_field=lambda qs, ids: qs.filter(Q(branch_id__in=ids) | Q(to_branch_id__in=ids)),
+        choices=[Choice("show", _("State"), [("", _("All")), ("transit", _("In transit")),
+                                             ("received", _("Received")),
+                                             ("cancelled", _("Cancelled"))],
+                        apply=lambda qs, v: qs.filter(states[v]), tabs=True)])
+    found = filters.apply(_visible_transfers(request))
+    sums = StockTransfer.objects.filter(pk__in=found.exclude(
+        status=DocStatus.VOIDED).values("pk")).aggregate(
+        qty=Sum("total_qty"), gross=Sum("total_gross_weight_g"),
+        fine=Sum("total_fine_weight_g"))
+    return render(request, "inventory/transfers.html", {
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "totals": [Total(_("Items"), sums["qty"] or 0, 0),
+                   Total(_("Weight"), sums["gross"] or 0, 3, _("g")),
+                   Total(_("Fine"), sums["fine"] or 0, 3, _("g"))]})
 
 
 @permission_required("inventory.transfer.send")

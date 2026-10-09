@@ -171,6 +171,14 @@
         <a class="btn btn-secondary text-xs" href="{% url url_name %}?{{ param }}={{ party.pk }}">{% icon icon_name "size-4" %}{{ label }}</a>
         {% endif %}{% endfor %}
       </div>
+      {% if config.lists %}
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-100 px-4 py-2.5 text-xs">
+        <span class="text-slate-400">{% translate "See their" %}</span>
+        {% for url_name, param, label, permission in config.lists %}{% can permission as allowed %}{% if allowed %}
+        <a class="font-medium text-brand-700 hover:underline" href="{% url url_name %}?{{ param }}={{ party.pk }}">{{ label }}</a>
+        {% endif %}{% endfor %}
+      </div>
+      {% endif %}
     </section>
     {% endif %}
     <section class="card">

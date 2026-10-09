@@ -14,13 +14,10 @@
 {% block content %}
 <section class="card overflow-hidden">
   <div class="flex flex-wrap gap-1 border-b border-slate-100 p-2.5">
-    <a href="?state=open{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'open' %} tab-active{% endif %}"{% if state == 'open' %} aria-current="true"{% endif %}>{% translate "In progress" %}</a>
-    <a href="?state=overdue{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'overdue' %} tab-active{% endif %}"{% if state == 'overdue' %} aria-current="true"{% endif %}>{% translate "Past their date" %}</a>
-    <a href="?state=completed{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'completed' %} tab-active{% endif %}"{% if state == 'completed' %} aria-current="true"{% endif %}>{% translate "Completed" %}</a>
-    <a href="?state=cancelled{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'cancelled' %} tab-active{% endif %}"{% if state == 'cancelled' %} aria-current="true"{% endif %}>{% translate "Cancelled" %}</a>
-    <a href="?state=all{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'all' %} tab-active{% endif %}"{% if state == 'all' %} aria-current="true"{% endif %}>{% translate "All" %}</a>
-    {% if customer %}<a href="?state={{ state }}" class="badge badge-brand ms-auto self-center">{% translate "One customer" %} {% icon "x" "size-3" %}</a>{% endif %}
+    {% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}
   </div>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -42,6 +39,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "No reservations here" as empty_title %}
     {% include "components/empty_state.html" with icon="bookmark" title=empty_title %}

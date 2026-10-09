@@ -1,0 +1,36 @@
+{% load i18n ui %}{# Search and filters for a list (apps/core/listing.py ListQuery): include with filters=… #}
+<form method="get" class="grid grid-cols-2 gap-3 border-b border-slate-100 p-4 lg:flex lg:flex-wrap lg:items-end" role="search">
+  {% if filters.search %}
+  <label class="col-span-2 min-w-48 flex-1"><span class="form-label">{% translate "Search" %}</span>
+    <span class="relative block">
+      <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" name="q" value="{{ filters.q }}" class="form-input w-full ps-9" placeholder="{{ filters.search_label|default:_('Number, name or phone') }}" autocomplete="off">
+    </span></label>
+  {% endif %}
+  {% if filters.date_field %}
+  <label><span class="form-label">{% translate "From" %}</span><input type="date" name="from" class="form-input" value="{{ filters.date_from|date:'Y-m-d' }}"></label>
+  <label><span class="form-label">{% translate "To" %}</span><input type="date" name="to" class="form-input" value="{{ filters.date_to|date:'Y-m-d' }}"></label>
+  {% endif %}
+  {% if filters.show_branches %}
+  <label class="lg:w-44"><span class="form-label">{% translate "Branch" %}</span>
+    <select name="branch" class="form-input"><option value="">{% translate "All branches" %}</option>
+      {% for b in filters.branches %}<option value="{{ b.pk }}" {% if filters.branch == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+  {% endif %}
+  {% for choice in filters.choices %}{% if choice.tabs %}<input type="hidden" name="{{ choice.name }}" value="{{ choice.value }}">{% else %}
+  <label class="lg:w-44"><span class="form-label">{{ choice.label }}</span>
+    <select name="{{ choice.name }}" class="form-input">
+      {% for value, label in choice.options %}<option value="{{ value }}" {% if choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  {% endif %}{% endfor %}
+  {% if filters.party_id %}<input type="hidden" name="{{ filters.party_param }}" value="{{ filters.party_id }}">{% endif %}
+  <div class="col-span-2 flex gap-2">
+    <button class="btn btn-secondary max-lg:flex-1" type="submit">{% icon "search" "size-4" %}{% translate "Show" %}</button>
+    {% if filters.active %}<a class="btn btn-ghost" href="?">{% translate "Clear" %}</a>{% endif %}
+  </div>
+</form>
+{% if filters.party_id %}
+<div class="flex items-center gap-2 border-b border-slate-100 px-4 py-2 text-sm">
+  <span class="text-slate-500">{% translate "Only for" %}</span>
+  <a class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-0.5 font-medium text-brand-800 ring-1 ring-brand-200 hover:bg-brand-100" href="?{{ filters.without_party }}"
+     title="{% translate 'Show everyone' %}">{{ filters.party_name|default:"—" }} {% icon "x" "size-3.5" %}</a>
+</div>
+{% endif %}

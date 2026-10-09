@@ -13,24 +13,11 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
-  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-    <input type="hidden" name="state" value="{{ state }}">
-    <label class="relative flex-1">
-      <span class="sr-only">{% translate "Search" %}</span>
-      <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-slate-400">{% icon "search" "size-4" %}</span>
-      <input type="search" name="q" value="{{ term }}" class="form-input ps-9" placeholder="{% translate 'Bag number, name, phone or piece' %}">
-    </label>
-    <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
-  </form>
   <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 p-2.5">
-    <a href="?state=open{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'open' %} tab-active{% endif %}">{% translate "In progress" %}</a>
-    <a href="?state=ready{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'ready' %} tab-active{% endif %}">{% translate "Ready for pickup" %}</a>
-    <a href="?state=overdue{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'overdue' %} tab-active{% endif %}">{% translate "Late" %}</a>
-    <a href="?state=delivered{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'delivered' %} tab-active{% endif %}">{% translate "Delivered" %}</a>
-    <a href="?state=cancelled{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'cancelled' %} tab-active{% endif %}">{% translate "Cancelled" %}</a>
-    <a href="?state=all{% if customer %}&amp;customer={{ customer }}{% endif %}" class="tab{% if state == 'all' %} tab-active{% endif %}">{% translate "All" %}</a>
-    {% if customer %}<a href="?state={{ state }}" class="badge badge-brand ms-auto self-center">{% translate "One customer" %} {% icon "x" "size-3" %}</a>{% endif %}
+    {% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}">{{ tab.label }}</a>{% endfor %}
   </div>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -53,15 +40,7 @@
       </tbody>
     </table>
   </div>
-  {% if page.has_other_pages %}
-  <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
-    <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
-    <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
-    </div>
-  </nav>
-  {% endif %}
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "No repairs here" as empty_title %}
     {% include "components/empty_state.html" with icon="wrench" title=empty_title %}

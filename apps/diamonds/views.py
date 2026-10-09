@@ -4,6 +4,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
 from apps.core.models import DocStatus
@@ -303,14 +304,30 @@ def certificate_cards(request):
 
 @permission_required("diamonds.view")
 def buy_backs(request):
-    queryset = BuyBack.objects.select_related("seller", "branch").annotate(pieces=Count("lines"))
+    """Old diamonds bought, by date, branch and seller, with totals (Gweb's GHD41 report)."""
+    from apps.core.listing import Choice, ListQuery, Total
+
+    filters = ListQuery(
+        request, permission="diamonds.view",
+        search=("number", "seller__name", "seller__phone", "seller_name", "seller_phone",
+                "lines__item__barcode"),
+        search_label=_("Number, seller, phone or barcode"), party="seller_id",
+        choices=[Choice("status", _("Status"), [("", _("All")), (DocStatus.POSTED, _("Posted")),
+                                                (DocStatus.VOIDED, _("Cancelled"))], "status")])
+    queryset = BuyBack.objects.select_related("seller", "branch")
     scope = request.actor.branch_ids("diamonds.view")
     if scope is not None:
         queryset = queryset.filter(branch_id__in=scope)
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    found = filters.apply(queryset)
+    sums = BuyBack.objects.filter(pk__in=found.filter(status=DocStatus.POSTED).values(
+        "pk")).aggregate(total=Sum("total_amount"), gold=Sum("gold_value"))
+    home = functional_currency()
     return render(request, "diamonds/buy_backs.html", {
-        "page": page, "home_currency": functional_currency()})
+        "page": filters.page(found.annotate(pieces=Count("lines", distinct=True))
+                             .order_by("-business_date", "-id")),
+        "filters": filters, "home_currency": home,
+        "totals": [Total(_("Paid"), sums["total"] or 0, unit=home),
+                   Total(_("Of which gold"), sums["gold"] or 0, unit=home)]})
 
 
 @permission_required("diamonds.buy_back")

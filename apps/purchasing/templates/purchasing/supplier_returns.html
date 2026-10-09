@@ -14,6 +14,8 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -35,6 +37,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "Nothing returned yet" as empty_title %}
     {% include "components/empty_state.html" with icon="undo-2" title=empty_title %}

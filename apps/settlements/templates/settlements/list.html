@@ -12,13 +12,8 @@
 {% endblock %}
 {% block content %}
 <section class="card overflow-hidden">
-  <form method="get" class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center">
-    <select name="kind" class="form-input sm:w-72" aria-label="{% translate 'Type' %}">
-      <option value="">{% translate "All" %}</option>
-      {% for value, label in kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <button class="btn btn-secondary" type="submit">{% translate "Filter" %}</button>
-  </form>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -39,6 +34,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "Nothing recorded yet" as empty_title %}
     {% include "components/empty_state.html" with icon="arrow-left-right" title=empty_title %}

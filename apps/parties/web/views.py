@@ -27,6 +27,12 @@ ROLES = {
         "settle_kind": "receipt", "settle_label": _("Receive payment"),
         "actions": [("repair-new", "customer", _("Take in a repair"), "wrench",
                      "repairs.order.create")],
+        # Their documents: lists filtered to this party.
+        "lists": [("sales", "party", _("Sales"), "sales.invoice.view"),
+                  ("sale-returns", "party", _("Returns"), "sales.invoice.view"),
+                  ("reservations", "customer", _("Reservations"), "sales.reservation.view"),
+                  ("repairs", "customer", _("Repairs"), "repairs.order.view"),
+                  ("settlements", "party", _("Receipts & payments"), "settlements.view")],
         # Other accounts that hold money for this party, shown beside the main balance.
         "extra": [{
             "account_role": "customer_deposits", "label": _("Deposits held"),
@@ -47,6 +53,9 @@ ROLES = {
         "label": _("Supplier"), "statement_url": "supplier-statement",
         "sign_hint": _("Negative: you owe the supplier."),
         "settle_kind": "payment", "settle_label": _("Pay supplier"),
+        "lists": [("invoices", "party", _("Purchases"), "purchasing.invoice.view"),
+                  ("supplier-returns", "party", _("Returns to them"), "purchasing.invoice.view"),
+                  ("settlements", "party", _("Receipts & payments"), "settlements.view")],
     },
     PartyRoleType.TRADE_ACCOUNT: {
         "title": _("Trade accounts"),
@@ -62,6 +71,9 @@ ROLES = {
                      "sales.trade.create"),
                     ("invoice-new", "from=trade_account&party", _("Buy from them"), "receipt",
                      "purchasing.invoice.create")],
+        "lists": [("trade-sales", "party", _("Wholesale"), "sales.trade.view"),
+                  ("invoices", "party", _("Purchases"), "purchasing.invoice.view"),
+                  ("settlements", "party", _("Receipts & payments"), "settlements.view")],
         "sign_hint": _("Positive: the trader owes you."),
         "settle_kind": "receipt", "settle_label": _("Receive payment"),
     },
@@ -79,6 +91,7 @@ ROLES = {
         "settle_kind": "payment", "settle_label": _("Pay workshop"),
         "actions": [("work-order-new", "workshop", _("Send gold"), "send",
                      "manufacturing.order.issue")],
+        "lists": [("settlements", "party", _("Receipts & payments"), "settlements.view")],
     },
     PartyRoleType.PARTNER: {
         "title": _("Partners"),
@@ -93,6 +106,7 @@ ROLES = {
         "sign_hint": _("Negative: what the business owes the partner (money or gold put in). "
                        "Positive: what the partner has taken out beyond it."),
         "settle_kind": "payment", "settle_label": _("Pay partner"),
+        "lists": [("settlements", "party", _("Receipts & payments"), "settlements.view")],
     },
 }
 PROFILES = {PartyRoleType.CUSTOMER: "customer_profile", PartyRoleType.SUPPLIER: "supplier_profile"}

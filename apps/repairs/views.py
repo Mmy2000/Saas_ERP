@@ -1,11 +1,12 @@
-from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency, Karat
+from apps.core.listing import Choice, ListQuery, Total
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, TenantProfile
@@ -14,8 +15,6 @@ from apps.pricing.selectors import functional_currency
 from apps.treasury.selectors import holder_choices
 
 from .models import RepairKind, RepairOrder
-
-STATES = ("open", "ready", "overdue", "delivered", "cancelled", "all")
 
 
 def _visible(request):
@@ -26,36 +25,39 @@ def _visible(request):
 
 @permission_required("repairs.order.view")
 def repairs(request):
-    state = request.GET.get("state") if request.GET.get("state") in STATES else "open"
-    orders = _visible(request)
+    """Repairs and custom orders: the state tabs, plus search, dates, branch and kind (Gweb's
+    GHFX21 / GHFX22 reports)."""
+    today = timezone.localdate()
     open_orders = Q(status=DocStatus.POSTED, delivered_at__isnull=True)
-    if state == "open":
-        orders = orders.filter(open_orders)
-    elif state == "ready":
-        orders = orders.filter(open_orders, ready_on__isnull=False)
-    elif state == "overdue":
-        orders = orders.filter(open_orders, promised_on__lt=timezone.localdate())
-    elif state == "delivered":
-        orders = orders.filter(delivered_at__isnull=False)
-    elif state == "cancelled":
-        orders = orders.filter(status=DocStatus.VOIDED)
-    customer = request.GET.get("customer", "")
-    if customer.isdigit():
-        orders = orders.filter(customer_id=int(customer))
-    term = request.GET.get("q", "").strip()
-    if term:
-        match = (Q(number__icontains=term) | Q(customer__name__icontains=term)
-                 | Q(customer_name__icontains=term) | Q(customer_phone__icontains=term)
-                 | Q(customer__phone__icontains=term) | Q(lines__description__icontains=term))
-        if term.isdigit():
-            match |= Q(bag_number=int(term))
-        orders = orders.filter(match).distinct()
-    page = Paginator(orders.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    states = {"open": open_orders, "ready": open_orders & Q(ready_on__isnull=False),
+              "overdue": open_orders & Q(promised_on__lt=today),
+              "delivered": Q(delivered_at__isnull=False), "cancelled": Q(status=DocStatus.VOIDED),
+              "all": Q()}
+    filters = ListQuery(
+        request, permission="repairs.order.view",
+        search=("number", "customer__name", "customer_name", "customer_phone",
+                "customer__phone", "lines__description"),
+        search_label=_("Number, bag, customer, phone or piece"), party="customer_id",
+        party_param="customer",
+        choices=[Choice("state", _("State"), [
+            ("open", _("In progress")), ("ready", _("Ready for pickup")), ("overdue", _("Late")),
+            ("delivered", _("Delivered")), ("cancelled", _("Cancelled")), ("all", _("All"))],
+            apply=lambda qs, v: qs.filter(states[v]), value="open", tabs=True),
+                 Choice("kind", _("Kind"), [("", _("All"))] + list(RepairKind.choices), "kind")])
+    orders = filters.apply(_visible(request))
+    if filters.q.isdigit():  # the bag number as well
+        bags = filters.apply(_visible(request).filter(bag_number=int(filters.q)), search=False)
+        orders = _visible(request).filter(Q(pk__in=orders.values("pk"))
+                                          | Q(pk__in=bags.values("pk")))
+    sums = RepairOrder.objects.filter(pk__in=orders.exclude(
+        status=DocStatus.VOIDED).values("pk")).aggregate(
+        deposits=Sum("deposit_amount"), charges=Sum("charge_amount"))
+    home = functional_currency()
     return render(request, "repairs/repairs.html", {
-        "page": page, "state": state, "term": term,
-        "customer": customer if customer.isdigit() else "",
-        "home_currency": functional_currency(),
+        "page": filters.page(orders.order_by("-business_date", "-id")),
+        "filters": filters, "home_currency": home,
+        "totals": [Total(_("Charges"), sums["charges"] or 0, unit=home),
+                   Total(_("Deposits"), sums["deposits"] or 0, unit=home)],
     })
 
 

@@ -14,9 +14,10 @@
 {% block content %}
 <section class="card overflow-hidden">
   <div class="flex gap-1 overflow-x-auto border-b border-slate-100 p-2.5">
-    <a href="?" class="tab{% if not show %} tab-active{% endif %}"{% if not show %} aria-current="true"{% endif %}>{% translate "All" %}</a>
-    <a href="?show=transit" class="tab{% if show == 'transit' %} tab-active{% endif %}"{% if show == 'transit' %} aria-current="true"{% endif %}>{% translate "In transit" %}</a>
+    {% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}
   </div>
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -38,6 +39,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
   {% else %}
     {% translate "No transfers yet" as empty_title %}
     {% include "components/empty_state.html" with icon="truck" title=empty_title %}

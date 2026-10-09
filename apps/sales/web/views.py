@@ -1,18 +1,20 @@
-from django.core.paginator import Paginator
+from django.db.models import Q, Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency, Karat
 from apps.core.errors import DomainError, ValidationError
+from apps.core.listing import Choice, ListQuery, Total
 from apps.core.models import DocStatus
 from apps.iam.authz import permission_required
 from apps.inventory.models import LotBalance
 from apps.inventory.services import SCRAP_CATEGORY_CODE
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import current_price_board, functional_currency
-from apps.sales.models import Reservation, SalesInvoice, SalesReturn
+from apps.sales.models import PaymentTerms, Reservation, SalesInvoice, SalesReturn
 from apps.sales.reservations import quote_completion
 from apps.sales.returns import returned_line_ids
 from apps.sales.services import DISCOUNT_LIMIT
@@ -27,15 +29,24 @@ def _visible(request):
 
 @permission_required("sales.invoice.view")
 def invoices(request):
-    status = request.GET.get("status", "")
-    queryset = _visible(request)
-    if status in DocStatus.values:
-        queryset = queryset.filter(status=status)
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    statuses = [("", _("All"))] + [(v, label) for v, label in DocStatus.choices if v != "draft"]
+    terms = [("", _("All"))] + list(PaymentTerms.choices)
+    filters = ListQuery(
+        request, permission="sales.invoice.view",
+        search=("number", "customer__name", "customer__phone", "customer_name",
+                "customer_phone", "lines__item__barcode"),
+        search_label=_("Number, customer, phone or barcode"), party="customer_id",
+        choices=[Choice("status", _("Status"), statuses, "status"),
+                 Choice("terms", _("Payment"), terms, "payment_terms")])
+    found = filters.apply(_visible(request))
+    sums = found.filter(status=DocStatus.POSTED).aggregate(
+        total=Sum("total_amount"), balance=Sum("balance_amount"))
+    home = functional_currency()
     return render(request, "sales/invoices.html", {
-        "page": page, "status": status, "statuses": DocStatus.choices,
-        "home_currency": functional_currency(),
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "home_currency": home,
+        "totals": [Total(_("Total"), sums["total"] or 0, unit=home),
+                   Total(_("On account"), sums["balance"] or 0, unit=home)],
     })
 
 
@@ -103,6 +114,50 @@ def invoice_detail(request, pk):
 
 
 @permission_required("sales.invoice.view")
+def returns(request):
+    """Every customer return, searchable (Gweb's returns look-up and returns reports)."""
+    from apps.catalog.models import ProductFamily
+    from apps.sales.models import RefundMethod
+
+    families = [("", _("All")), (ProductFamily.GOLD, _("Gold")),
+                (ProductFamily.DIAMOND, _("Diamonds and stones"))]
+
+    def family(queryset, value):
+        wanted = ((ProductFamily.DIAMOND, ProductFamily.STONE) if value == ProductFamily.DIAMOND
+                  else (value,))
+        return queryset.filter(
+            lines__original_line__category__product_family__in=wanted).distinct()
+
+    filters = ListQuery(
+        request, permission="sales.invoice.view",
+        search=("number", "original_invoice__number", "customer__name", "customer__phone",
+                "original_invoice__customer_name", "original_invoice__customer_phone",
+                "lines__original_line__item__barcode"),
+        search_label=_("Number, invoice, customer or barcode"), party="customer_id",
+        choices=[Choice("refund", _("Refund"), [("", _("All"))] + list(RefundMethod.choices),
+                        "refund_method"),
+                 Choice("family", _("Goods"), families, apply=family),
+                 Choice("status", _("Status"), [("", _("All"))] + [
+                     (v, label) for v, label in DocStatus.choices if v != "draft"], "status")])
+    found = SalesReturn.objects.select_related("original_invoice", "branch", "customer")
+    allowed = request.actor.branch_ids("sales.invoice.view")
+    if allowed is not None:
+        found = found.filter(branch_id__in=allowed)
+    found = filters.apply(found)
+    sums = SalesReturn.objects.filter(pk__in=found.filter(status=DocStatus.POSTED).values(
+        "pk")).aggregate(returned=Sum("returned_amount"), kept=Sum("deduction_amount"),
+                         refunded=Sum("refund_amount"))
+    home = functional_currency()
+    return render(request, "sales/returns.html", {
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "home_currency": home,
+        "totals": [Total(_("Returned"), sums["returned"] or 0, unit=home),
+                   Total(_("Deducted"), sums["kept"] or 0, unit=home),
+                   Total(_("Refunded"), sums["refunded"] or 0, unit=home)],
+    })
+
+
+@permission_required("sales.invoice.view")
 def return_detail(request, pk):
     branches = request.actor.branch_ids("sales.invoice.view")
     returns = SalesReturn.objects.select_related("original_invoice", "branch", "customer",
@@ -133,25 +188,41 @@ def _visible_reservations(request):
 
 @permission_required("sales.reservation.view")
 def reservation_list(request):
-    state = request.GET.get("state", "open")
-    queryset = _visible_reservations(request)
+    """Reservations by state, plus search, dates, branch and what is reserved: pieces, gold
+    ordered by weight (Gweb's bullion orders to hand over / handed over, GHS71-74) or diamonds."""
+    from apps.catalog.models import ProductFamily
+
     today = timezone.localdate()
-    if state in ("open", "overdue"):
-        queryset = queryset.filter(status=DocStatus.POSTED, sale__isnull=True)
-        if state == "overdue":
-            queryset = queryset.filter(expires_on__lt=today)
-    elif state == "completed":
-        queryset = queryset.filter(sale__isnull=False)
-    elif state == "cancelled":
-        queryset = queryset.filter(status=DocStatus.VOIDED)
-    customer = request.GET.get("customer", "")
-    if customer.isdigit():
-        queryset = queryset.filter(customer_id=int(customer))
-    page = Paginator(queryset.order_by("-business_date", "-id"), 25).get_page(
-        request.GET.get("page"))
+    waiting = Q(status=DocStatus.POSTED, sale__isnull=True)
+    states = {"open": waiting, "overdue": waiting & Q(expires_on__lt=today),
+              "completed": Q(sale__isnull=False), "cancelled": Q(status=DocStatus.VOIDED),
+              "all": Q()}
+    kinds = {"pieces": Q(lines__item__isnull=False), "orders": Q(lines__item__isnull=True),
+             "diamonds": Q(lines__item__category__product_family__in=(
+                 ProductFamily.DIAMOND, ProductFamily.STONE))}
+    filters = ListQuery(
+        request, permission="sales.reservation.view",
+        search=("number", "customer__name", "customer__phone", "lines__item__barcode"),
+        search_label=_("Number, customer, phone or barcode"), party="customer_id",
+        party_param="customer",
+        choices=[Choice("state", _("State"), [
+            ("open", _("In progress")), ("overdue", _("Past their date")),
+            ("completed", _("Completed")), ("cancelled", _("Cancelled")), ("all", _("All"))],
+            apply=lambda qs, v: qs.filter(states[v]), value="open", tabs=True),
+                 Choice("kind", _("What"), [("", _("All")), ("pieces", _("Pieces")),
+                                            ("orders", _("Gold ordered by weight")),
+                                            ("diamonds", _("Diamonds"))],
+                        apply=lambda qs, v: qs.filter(kinds[v]).distinct())])
+    found = filters.apply(_visible_reservations(request))
+    sums = Reservation.objects.filter(pk__in=found.exclude(
+        status=DocStatus.VOIDED).values("pk")).aggregate(
+        quoted=Sum("quoted_total"), deposits=Sum("deposit_amount"))
+    home = functional_currency()
     return render(request, "sales/reservations.html", {
-        "page": page, "state": state, "home_currency": functional_currency(),
-        "customer": customer if customer.isdigit() else "",
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "home_currency": home,
+        "totals": [Total(_("Quoted"), sums["quoted"] or 0, unit=home),
+                   Total(_("Deposits"), sums["deposits"] or 0, unit=home)],
     })
 
 
