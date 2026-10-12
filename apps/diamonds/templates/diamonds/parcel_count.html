@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{{ doc.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'diamonds/js/parcels.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
+  <a href="{% url 'parcel-count-new' %}?branch={{ doc.branch_id }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Count parcels" %}</a>
+  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+</div>
+{% endblock %}
+{% block content %}
+{% can "diamonds.manage" doc.branch as can_manage %}
+<article class="card overflow-hidden">
+  <header class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-6">
+    <div><p class="text-lg font-semibold text-slate-900">{% translate "Parcels counted" %}</p><p class="text-sm text-slate-500">{{ doc.branch.name }}</p></div>
+    <div class="text-end">
+      <p class="num text-xl font-semibold text-slate-900">{{ doc.number }}</p>
+      <p class="num text-sm text-slate-500">{{ doc.posted_at|date:"SHORT_DATETIME_FORMAT" }}{% if doc.posted_by %} · {{ doc.posted_by.display_name }}{% endif %}</p>
+      <div class="mt-1">{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}</div>
+    </div>
+  </header>
+  <div class="relative overflow-x-auto">
+    <table class="table" data-report="{{ doc.number }}">
+      <thead><tr><th>{% translate "Parcel" %}</th><th class="text-end">{% translate "Books: carats" %}</th><th class="text-end">{% translate "Counted: carats" %}</th><th class="text-end">{% translate "Difference (ct)" %}</th>
+        <th class="text-end">{% translate "Books: stones" %}</th><th class="text-end">{% translate "Counted: stones" %}</th><th class="text-end">{% translate "Value" %} ({{ home_currency }})</th></tr></thead>
+      <tbody>
+      {% for line in lines %}
+        <tr>
+          <td><a class="num text-brand-700 hover:underline" href="{% url 'parcel' line.parcel_id %}">{{ line.parcel.code }}</a></td>
+          <td class="text-end"><span class="num">{{ line.book_carats|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ line.counted_carats|num:3 }}</span></td>
+          <td class="text-end"><span class="num {% if line.carats_diff < 0 %}text-red-600{% elif line.carats_diff > 0 %}text-emerald-700{% endif %}">{{ line.carats_diff|num:3 }}</span></td>
+          <td class="text-end"><span class="num">{{ line.book_count }}</span></td>
+          <td class="text-end"><span class="num">{{ line.counted_count }}</span></td>
+          <td class="text-end"><span class="num {% if line.cost_amount < 0 %}text-red-600{% endif %}">{{ line.cost_amount|num:2 }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if doc.note %}<p class="border-t border-slate-100 px-6 py-3 text-sm text-slate-600">{{ doc.note }}</p>{% endif %}
+  <p class="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">{% translate "Stones missing or found are booked to stone losses at the parcel's average cost." %}</p>
+</article>
+{% if can_manage and doc.status == "posted" %}
+<div class="mt-6 flex justify-end" data-no-print><button type="button" class="btn btn-secondary text-red-700" data-void-deal="{% url 'diamonds-parcel-count-void' doc.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel the count" %}</button></div>
+{% endif %}
+{% endblock %}

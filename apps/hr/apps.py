@@ -10,5 +10,6 @@ class HrConfig(AppConfig):
     def ready(self):
         from apps.core.documents import register_document
 
-        register_document("hr.EmployeeAdvance", "employee-advance", _("Advance"))
+        register_document("hr.EmployeeAdvance", "employee-advance",
+                          lambda doc: doc.get_kind_display())
         register_document("hr.PayrollRun", "payroll", _("Payroll"))

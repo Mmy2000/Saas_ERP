@@ -11,3 +11,4 @@ class ExpensesConfig(AppConfig):
         from apps.core.documents import register_document
 
         register_document("expenses.ExpenseVoucher", "expense-view", _("Expense"))
+        register_document("expenses.ExpenseRefund", "expense-refund-view", _("Expense refund"))

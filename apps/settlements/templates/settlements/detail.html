@@ -37,7 +37,9 @@
       <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
       {% else %}
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Karat" %}</dt><dd>{{ settlement.karat.label }}</dd></div>
-      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Weight" %}</dt><dd class="num">{{ settlement.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
+      {% if settlement.loss_weight_g %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Weight" %}</dt><dd class="num">{{ settlement.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
+      <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Loss (g)" %}</dt><dd class="num">−{{ settlement.loss_weight_g|num:3 }}</dd></div>{% endif %}
+      <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% if settlement.loss_weight_g %}{% translate "Net weight" %}{% else %}{% translate "Weight" %}{% endif %}</dt><dd class="num">{{ settlement.net_weight_g|num:3 }} {% translate "g" %}</dd></div>
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Fine gold" %}</dt><dd class="num">{{ settlement.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
       {% endif %}
       {% if settlement.reference %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Reference" %}</dt><dd>{{ settlement.reference }}</dd></div>{% endif %}

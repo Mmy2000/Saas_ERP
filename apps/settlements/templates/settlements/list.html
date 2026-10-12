@@ -26,7 +26,7 @@
           <td><span class="num">{{ s.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
           <td>{{ s.get_kind_display }}</td>
           <td>{{ s.party.name }} <span class="text-xs text-slate-400">({{ s.get_side_display }})</span>{% if s.counter_party_id %} <span class="rtl:rotate-180 inline-block">→</span> {{ s.counter_party.name }} <span class="text-xs text-slate-400">({{ s.get_counter_side_display }})</span>{% endif %}</td>
-          <td class="text-end">{% if s.kind == "metal_in" or s.kind == "metal_out" or s.asset == "gold" %}<span class="num">{{ s.gross_weight_g|num:3 }}</span> {% translate "g" %} <bdi>{{ s.karat.label }}</bdi>{% elif s.kind == "conversion" %}<span class="num">{{ s.fine_weight_g|num:3 }}</span> {% translate "g" %} → <span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% else %}<span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% endif %}</td>
+          <td class="text-end">{% if s.kind == "metal_in" or s.kind == "metal_out" or s.asset == "gold" %}<span class="num">{{ s.net_weight_g|num:3 }}</span> {% translate "g" %} <bdi>{{ s.karat.label }}</bdi>{% elif s.kind == "conversion" %}<span class="num">{{ s.fine_weight_g|num:3 }}</span> {% translate "g" %} → <span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% else %}<span class="num">{{ s.amount|num:2 }}</span> {{ s.currency.code }}{% endif %}</td>
           <td>{% include "components/doc_status.html" with status=s.status label=s.get_status_display %}</td>
           <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'settlement-view' s.pk %}">{% translate "Open" %}</a></td>
         </tr>

@@ -38,7 +38,22 @@ function refresh() {
                   terminal: form.querySelector("[data-terminal]") });
 }
 
+// Gold in: the loss as a per cent of the weight fills the grams; the net weight is shown.
+function syncLoss(event) {
+  const gross = Number(form.querySelector("#f-gross").value) || 0;
+  const pct = form.querySelector("[data-loss-pct]");
+  const grams = form.querySelector("[data-loss]");
+  if (event?.target === pct) grams.value = pct.value && gross ? (gross * Number(pct.value) / 100).toFixed(3) : "";
+  else if (event?.target === grams || event?.target?.id === "f-gross") pct.value = grams.value && gross ? (Number(grams.value) / gross * 100).toFixed(2) : "";
+  const net = gross - (Number(grams.value) || 0);
+  form.querySelector("[data-net-line]").classList.toggle("hidden", !grams.value || !gross);
+  form.querySelector("[data-net]").textContent = net.toFixed(3);
+}
+
 if (form) {
+  form.addEventListener("input", (event) => {
+    if (event.target.matches("[data-loss-pct], [data-loss], #f-gross")) syncLoss(event);
+  });
   form.addEventListener("change", (event) => {
     if (event.target.matches("[data-kind], [data-side], [data-counter-side], [data-asset], #f-method, #f-branch, [data-currency]")) refresh();
   });
@@ -60,7 +75,10 @@ registerShaper("settlement", (values, formElement) => {
                             terminal: values.method === "card" ? pick("[data-terminal]") : null });
     }
   }
-  if (which === "metal") Object.assign(body, { karat: Number(values.karat), gross_weight_g: values.gross_weight_g ?? "" });
+  if (which === "metal") {
+    Object.assign(body, { karat: Number(values.karat), gross_weight_g: values.gross_weight_g ?? "" });
+    if (values.kind === "metal_in") body.loss_weight_g = values.loss_weight_g ?? "";
+  }
   if (which === "conversion") {
     Object.assign(body, { direction: values.direction, fine_weight_g: values.fine_weight_g ?? "",
                           price_per_fine_g: values.price_per_fine_g ?? "",

@@ -1,6 +1,6 @@
 from django.db.models import Sum
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -11,8 +11,8 @@ from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 from apps.treasury.selectors import holder_choices
 
-from .models import ExpenseCategory, ExpenseVoucher
-from .services import expense_accounts
+from .models import ExpenseCategory, ExpenseRefund, ExpenseVoucher
+from .services import expense_accounts, refunded
 
 
 def _visible(request):
@@ -36,11 +36,15 @@ def expenses(request):
                                                 ("voided", _("Cancelled"))], "status")])
     found = filters.apply(_visible(request))
     total = found.filter(status="posted").aggregate(total=Sum("functional_amount"))["total"]
+    back = ExpenseRefund.objects.filter(voucher__in=found, status="posted").aggregate(
+        total=Sum("functional_amount"))["total"]
     home = functional_currency()
     return render(request, "expenses/list.html", {
         "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
         "total": total or 0, "home_currency": home,
-        "totals": [Total(_("Total"), total or 0, unit=home)],
+        "totals": [Total(_("Total"), total or 0, unit=home)]
+        + ([Total(_("Refunded"), back, unit=home),
+            Total(_("Net"), (total or 0) - back, unit=home)] if back else []),
     })
 
 
@@ -64,11 +68,24 @@ def expense_detail(request, pk):
     voucher = _visible(request).select_related("journal_entry", "posted_by").filter(pk=pk).first()
     if voucher is None:
         raise Http404
+    back, _value = refunded(voucher)
     return render(request, "expenses/detail.html", {
         "voucher": voucher, "profile": TenantProfile.objects.first(),
         "home_currency": functional_currency(),
         "endpoint": reverse("expense-voucher-detail", args=[voucher.pk]),
+        "refunds": voucher.refunds.select_related("cash_box", "bank_account"),
+        "refunded": back, "left": voucher.amount - back,
+        **holder_choices(request.actor.branch_ids("expenses.voucher.create")),
     })
+
+
+@permission_required("expenses.view")
+def refund_detail(request, pk):
+    refund = ExpenseRefund.objects.select_related("voucher", "branch", "currency").filter(
+        pk=pk, voucher__in=_visible(request)).first()
+    if refund is None:
+        raise Http404
+    return redirect("expense-view", pk=refund.voucher_id)
 
 
 @permission_required("expenses.view")

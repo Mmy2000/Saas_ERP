@@ -1,6 +1,7 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui authz %}
+{% load i18n static ui authz %}
 {% block title %}{{ voucher.number }}{% endblock %}
+{% block head %}<script type="module" src="{% static 'expenses/js/refund.js' %}"></script>{% endblock %}
 {% block page_header %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
   <a href="{% url 'expenses' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Expenses" %}</a>
@@ -25,6 +26,8 @@
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Paid from" %}</dt><dd><bdi>{{ voucher.paid_from.label }}</bdi></dd></div>
       <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd><span class="num">{{ voucher.amount|num:2 }}</span> {{ voucher.currency.code }}</dd></div>
       {% if voucher.currency.code != home_currency %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Value" %}</dt><dd><span class="num">{{ voucher.functional_amount|num:2 }}</span> {{ home_currency }}</dd></div>{% endif %}
+      {% if refunded %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Refunded" %}</dt><dd class="text-emerald-700"><span class="num">−{{ refunded|num:2 }}</span> {{ voucher.currency.code }}</dd></div>
+      <div class="flex justify-between px-6 py-3 font-medium"><dt>{% translate "Net" %}</dt><dd><span class="num">{{ left|num:2 }}</span> {{ voucher.currency.code }}</dd></div>{% endif %}
       {% if voucher.reference %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Reference" %}</dt><dd>{{ voucher.reference }}</dd></div>{% endif %}
       {% if voucher.note %}<div class="px-6 py-3 text-slate-600">{{ voucher.note }}</div>{% endif %}
       {% if voucher.status == "voided" and voucher.void_reason %}<div class="px-6 py-3 text-red-700">{% translate "Reason" %}: {{ voucher.void_reason }}</div>{% endif %}
@@ -35,6 +38,41 @@
     </div>
   </article>
   <aside class="space-y-6" data-no-print>
+    {% can "expenses.voucher.create" voucher.branch as can_refund %}
+    {% if can_refund and voucher.status == "posted" and left > 0 %}
+    <form data-api-form data-shape="expense-refund" data-method="POST" data-endpoint="{{ endpoint }}refund/" data-success="{% translate 'Refund recorded.' %}" class="card" novalidate>
+      <div class="card-header"><h2 class="card-title">{% translate "Money back" %}</h2></div>
+      <div class="card-body grid grid-cols-1 gap-4" data-payment>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <p class="text-xs text-slate-500">{% translate "All or part of this expense came back (a deposit returned, an overcharge refunded)." %}</p>
+        <span hidden data-branch data-value="{{ voucher.branch_id }}"></span>
+        <input type="hidden" data-currency value="{{ voucher.currency.code }}">
+        <div><label class="form-label" for="x-amount">{% translate "Amount" %} <span class="text-xs text-slate-400">{{ voucher.currency.code }}</span></label>
+          <input id="x-amount" class="form-input num w-full text-start" inputmode="decimal" data-amount placeholder="{{ left|num:2 }}"><p class="form-error" data-error-for="amount"></p></div>
+        <div><label class="form-label" for="x-method">{% translate "Received in" %}</label>
+          <select id="x-method" class="form-input" data-method data-native><option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank account" %}</option></select></div>
+        {% include "treasury/holder_selects.html" with prefix="x-" %}
+        <input class="form-input" data-note placeholder="{% translate 'Note' %}" maxlength="300">
+        <button type="submit" class="btn btn-secondary w-full">{% icon "check" "size-4" %}{% translate "Record refund" %}</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if refunds %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Refunds" %}</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for r in refunds %}
+        <li class="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
+          <span class="min-w-0"><span class="num font-medium text-slate-900">{{ r.number }}</span> <span class="num text-xs text-slate-400">{{ r.business_date|date:"SHORT_DATE_FORMAT" }}</span>
+            <span class="block truncate text-xs text-slate-500"><bdi>{{ r.paid_into.label }}</bdi>{% if r.note %} · {{ r.note }}{% endif %}</span></span>
+          <span class="flex items-center gap-2">{% if r.status == "voided" %}{% include "components/doc_status.html" with status=r.status label=r.get_status_display %}{% endif %}
+            <span class="num font-medium {% if r.status == 'voided' %}text-slate-400 line-through{% else %}text-emerald-700{% endif %}">{{ r.amount|num:2 }}</span>
+            {% can "expenses.void" voucher.branch as can_void_refund %}{% if can_void_refund and r.status == "posted" %}<form data-api-form data-method="POST" data-endpoint="{% url 'expense-refund-void' r.pk %}" data-success="{% translate 'Cancelled.' %}"><button type="submit" class="btn btn-ghost text-xs text-slate-500" aria-label="{% translate 'Cancel' %}">{% icon "x" "size-4" %}</button></form>{% endif %}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
     {% can "expenses.void" voucher.branch as can_void %}
     {% if can_void and voucher.status == "posted" %}
     <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}void/" data-success="{% translate 'Cancelled.' %}" class="card card-body space-y-3">

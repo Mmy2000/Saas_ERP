@@ -33,6 +33,8 @@
               <span class="segment">{% translate "Customer" %}</span></label>
             <label><input type="radio" name="who" value="supplier" class="peer sr-only" data-who {% if mode == "sell" %}checked{% endif %}>
               <span class="segment">{% translate "Supplier" %}</span></label>
+            <label><input type="radio" name="who" value="trade_account" class="peer sr-only" data-who>
+              <span class="segment">{% translate "Trade account" %}</span></label>
           </div>
         </div>
         {% if mode == "buy" %}
@@ -47,6 +49,9 @@
         </div>
         <div class="hidden sm:col-span-2" data-who-for="supplier">
           <select class="form-input" data-party="supplier" data-remote="{% url 'supplier-list' %}" data-label-field="name" aria-label="{% translate 'Supplier' %}"></select>
+        </div>
+        <div class="hidden sm:col-span-2" data-who-for="trade_account">
+          <select class="form-input" data-party="trade_account" data-remote="{% url 'trade-account-list' %}" data-label-field="name" aria-label="{% translate 'Trade account' %}"></select>
         </div>
       </div>
     </section>

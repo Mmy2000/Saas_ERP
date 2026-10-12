@@ -21,6 +21,31 @@ registerShaper("parcel-deal", (values, form) => {
   };
 });
 
+registerShaper("parcel-transfer", (values) => {
+  const [what, id, branch] = (values.target || "").split(":");
+  return {
+    parcel: Number(values.parcel), to_branch: Number(what === "new" ? id : branch),
+    to_parcel: what === "parcel" ? Number(id) : null, carats: values.carats || "",
+    count: Number(values.count) || 0, note: values.note || "",
+  };
+});
+
+// Counting a branch's parcels: only the parcels weighed are sent; stones left empty keep the
+// books' count.
+registerShaper("parcel-count", (values, form) => ({
+  branch: Number(values.branch), note: values.note || "",
+  rows: [...form.querySelectorAll("[data-count-row]")]
+    .filter((row) => row.querySelector("[data-counted-carats]").value.trim() !== "")
+    .map((row) => {
+      const stones = row.querySelector("[data-counted-count]");
+      return { parcel: Number(row.dataset.countRow), carats: row.querySelector("[data-counted-carats]").value.trim(),
+               count: Number(stones.value.trim() || stones.placeholder) || 0 };
+    }),
+}));
+
+document.querySelectorAll("[data-autosubmit]").forEach((select) =>
+  select.addEventListener("change", () => select.form.submit()));
+
 // Which cash box / bank account the money goes through, per deal form.
 document.querySelectorAll("[data-deal]").forEach((card) => {
   const sync = () => {

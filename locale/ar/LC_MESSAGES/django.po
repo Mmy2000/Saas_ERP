@@ -356,6 +356,9 @@ msgstr "أصبحت حالة %(name)s: %(status)s."
 msgid "%(name)s is ready."
 msgstr "%(name)s جاهز للعمل."
 
+msgid "%(name)s owes %(owed)s in advances."
+msgstr "على %(name)s سلف بقيمة %(owed)s فقط."
+
 msgid ""
 "%(number)s was posted in %(period)s, which is closed. Reopen that month, or "
 "correct it with a new entry."
@@ -518,6 +521,9 @@ msgstr "أُرسل كود جديد."
 
 msgid "A new owner needs a password."
 msgstr "المالك الجديد يحتاج كلمة مرور."
+
+msgid "A new parcel at %(branch)s"
+msgstr "برتيتة جديدة في %(branch)s"
 
 msgid ""
 "A new price is published within minutes of a market move, with your margins."
@@ -818,6 +824,9 @@ msgstr "أضف فريقك لصرف الرواتب والسلف وعمولات ا
 msgid "added"
 msgstr "أضاف"
 
+msgid "Added to the advances the employee owes, with no money moving."
+msgstr "أُضيفت إلى سلف الموظف دون حركة نقدية."
+
 msgid "Address"
 msgstr "العنوان"
 
@@ -844,6 +853,12 @@ msgstr "سلفة %(number)s إلى %(name)s"
 
 msgid "Advance paid."
 msgstr "تم صرف السلفة."
+
+msgid "Advance repaid"
+msgstr "مرتد سلفة"
+
+msgid "Advance repaid or settled"
+msgstr "رد سلفة أو تسوية"
 
 msgid "Advance taken back"
 msgstr "خصم السلفة"
@@ -929,6 +944,11 @@ msgid ""
 msgstr ""
 "كل الشهور مقفلة. إقفال السنة ينقل أرصدة الإيرادات والمصروفات كلها، نقدًا "
 "وذهبًا، إلى الأرباح المحتجزة."
+
+msgid ""
+"All or part of this expense came back (a deposit returned, an overcharge "
+"refunded)."
+msgstr "عاد المصروف كله أو جزء منه (تأمين مسترد أو مبلغ زائد)."
 
 msgid "All pages"
 msgstr "كل الصفحات"
@@ -1444,6 +1464,12 @@ msgstr "تسجيل على فرع"
 msgid "Booked."
 msgstr "تم التسجيل."
 
+msgid "Books: carats"
+msgstr "الدفاتر: قيراط"
+
+msgid "Books: stones"
+msgstr "الدفاتر: أحجار"
+
 msgid "Border colour"
 msgstr "لون الإطار"
 
@@ -1653,6 +1679,9 @@ msgstr "رجعت مركّبة"
 
 msgid "Came back unused"
 msgstr "رجعت بدون تركيب"
+
+msgid "Came from another branch"
+msgstr "وارد من فرع آخر"
 
 msgid "Came in during the year before but not in the last %(n)s days."
 msgstr "حضر خلال السنة السابقة ولم يحضر في آخر %(n)s يومًا."
@@ -2273,6 +2302,9 @@ msgstr "اختر شهرًا."
 msgid "Choose a name from the list."
 msgstr "اختر اسمًا من القائمة."
 
+msgid "Choose a parcel of that branch."
+msgstr "اختر برتيتة من ذلك الفرع."
+
 msgid "Choose a parcel of this branch."
 msgstr "اختر برتيتة من هذا الفرع."
 
@@ -2305,6 +2337,9 @@ msgstr "اختر موردًا نشطًا."
 
 msgid "Choose an active trade account."
 msgstr "اختر حساب تاجر نشطًا."
+
+msgid "Choose an employee."
+msgstr "اختر موظفًا."
 
 msgid "Choose an expense account."
 msgstr "اختر حساب المصروف."
@@ -2847,6 +2882,9 @@ msgstr "جرد خزينة"
 msgid "Count a cash box at the end of the day to check it against the books."
 msgstr "اجرد الخزينة في نهاية اليوم لمطابقتها مع الدفاتر."
 
+msgid "Count at least one parcel."
+msgstr "اجرد برتيتة واحدة على الأقل."
+
 msgid "Count cash boxes and book the difference"
 msgstr "جرد الخزائن وتسجيل الفرق"
 
@@ -2859,11 +2897,17 @@ msgstr ""
 msgid "Count it"
 msgstr "جرد"
 
+msgid "Count parcels"
+msgstr "جرد البرتيتات"
+
 msgid "Count pieces and weigh bulk stock in a stocktake"
 msgstr "عدّ القطع ووزن الذهب في الجرد"
 
 msgid "Count pieces and weigh bulk stock, then post the differences."
 msgstr "عدّ القطع ووزن البضاعة بالجرام ثم ترحيل الفروقات."
+
+msgid "Count posted."
+msgstr "تم تسجيل الجرد."
 
 msgid "Count started."
 msgstr "بدأ الجرد."
@@ -2894,6 +2938,12 @@ msgstr "أخطأت في العد؟ ألغِ الجرد وأعد العد: يُل
 msgid "Counted."
 msgstr "تم الجرد."
 
+msgid "Counted: carats"
+msgstr "الجرد: قيراط"
+
+msgid "Counted: stones"
+msgstr "الجرد: أحجار"
+
 msgid "Counting"
 msgstr "جارٍ الجرد"
 
@@ -2902,6 +2952,9 @@ msgstr "الدولة"
 
 msgid "Counts"
 msgstr "عمليات الجرد"
+
+msgid "Counts as"
+msgstr "يُحتسب"
 
 msgid "Coverage"
 msgstr "التغطية"
@@ -3445,6 +3498,9 @@ msgstr "الألماس والأحجار"
 msgid "Difference"
 msgstr "الفرق"
 
+msgid "Difference (ct)"
+msgstr "الفرق (قيراط)"
+
 msgid "Difference (g)"
 msgstr "الفرق (جم)"
 
@@ -3713,6 +3769,9 @@ msgstr ""
 
 msgid "Earlier changes"
 msgstr "تغييرات سابقة"
+
+msgid "Earlier counts"
+msgstr "جرد سابق"
 
 msgid "Earlier versions"
 msgstr "النسخ السابقة"
@@ -4150,6 +4209,12 @@ msgstr "بنود المصروفات وسنداتها المدفوعة من خز�
 
 msgid "Expense category"
 msgstr "بند المصروف"
+
+msgid "Expense refund"
+msgstr "مرتد مصروف"
+
+msgid "Expense refunds"
+msgstr "مرتد المصروفات"
 
 msgid "Expense voucher"
 msgstr "سند مصروف"
@@ -4996,6 +5061,9 @@ msgstr "إدراج:"
 msgid "Inter-branch"
 msgstr "بين الفروع"
 
+msgid "Into"
+msgstr "إلى"
+
 msgid "into the box or bank"
 msgstr "إلى الخزينة أو البنك"
 
@@ -5310,6 +5378,9 @@ msgstr "آجل على حساب العميل"
 msgid "Legal name"
 msgstr "الاسم القانوني"
 
+msgid "Less than the weight, and not negative."
+msgstr "أقل من الوزن، وليس بالسالب."
+
 msgid "Let this number get campaigns again?"
 msgstr "السماح لهذا الرقم باستلام الحملات مجددًا؟"
 
@@ -5474,6 +5545,9 @@ msgstr "نسبة الهالك %"
 
 msgid "Loss (g)"
 msgstr "الهالك (جم)"
+
+msgid "Loss (per cent)"
+msgstr "الخسية (نسبة مئوية)"
 
 msgid "Loss must be less than the weight."
 msgstr "يجب أن يكون الهالك أقل من الوزن."
@@ -5745,6 +5819,9 @@ msgstr "النقدية والذهب المستلم من العملاء والم�
 msgid "Money and metal"
 msgstr "نقدية ومعادن"
 
+msgid "Money back"
+msgstr "استرداد مبلغ"
+
 msgid "Money balance"
 msgstr "رصيد النقدية"
 
@@ -5806,6 +5883,9 @@ msgstr ""
 
 msgid "Money received"
 msgstr "قبض نقدية"
+
+msgid "Money was refunded on this expense. Cancel the refunds first."
+msgstr "استُرد مبلغ من هذا المصروف. ألغِ المرتد أولًا."
 
 msgid "Money, any currency"
 msgstr "نقدية بأي عملة"
@@ -5876,6 +5956,9 @@ msgstr ""
 "القطع والأحجار المسلّمة للمركباتية: ما زال لدى كل منهم، وما رجع مركّبًا في "
 "قطع، وما رجع بدون تركيب."
 
+msgid "Move"
+msgstr "تحويل"
+
 msgid "Move a balance from one account to another"
 msgstr "تحويل رصيد من حساب إلى آخر"
 
@@ -5894,8 +5977,17 @@ msgstr "نقل عملائها إلى"
 msgid "Move money between cash boxes and bank accounts"
 msgstr "نقل الأموال بين الخزائن والحسابات البنكية"
 
+msgid "Move to another branch"
+msgstr "تحويل لفرع آخر"
+
 msgid "Move up"
 msgstr "تحريك لأعلى"
+
+msgid "Moved between branches"
+msgstr "تحويلات بين الفروع"
+
+msgid "Moved."
+msgstr "تم التحويل."
 
 msgid "Movement"
 msgstr "الحركة"
@@ -6029,6 +6121,9 @@ msgstr "صافي الربح"
 
 msgid "Net sales"
 msgstr "صافي المبيعات"
+
+msgid "Net weight"
+msgstr "الوزن الصافي"
 
 msgid "Net weight (g)"
 msgstr "صافي الوزن (جم)"
@@ -6313,6 +6408,11 @@ msgstr "لا توجد أسعار سوق بعد: تظهر هنا بعد أن تق
 msgid "No matches"
 msgstr "لا توجد نتائج"
 
+msgid ""
+"No money moves: the difference goes to balance adjustments. A reason is "
+"required."
+msgstr "لا توجد حركة نقدية: الفرق يُسجَّل في تسويات الأرصدة. السبب مطلوب."
+
 msgid "No month closed yet"
 msgstr "لم يُقفل أي شهر بعد"
 
@@ -6330,6 +6430,9 @@ msgstr "لا توجد عروض هنا"
 
 msgid "No opening balances yet"
 msgstr "لا توجد أرصدة افتتاحية بعد"
+
+msgid "No parcels at this branch"
+msgstr "لا توجد برتيتات في هذا الفرع"
 
 msgid "No parcels yet"
 msgstr "لا توجد برتيتات بعد"
@@ -6509,6 +6612,9 @@ msgstr "طبيعي"
 
 msgid "Normal balance"
 msgstr "طبيعة الحساب"
+
+msgid "Not a parcel of this branch."
+msgstr "ليست برتيتة من هذا الفرع."
 
 msgid "Not answering"
 msgstr "لا يستجيب"
@@ -6853,6 +6959,9 @@ msgstr "ورشة واحدة"
 msgid "Only %(amount)s %(currency)s in %(box)s."
 msgstr "المتاح في %(box)s هو %(amount)s %(currency)s فقط."
 
+msgid "Only %(left)s %(code)s of this expense is left to refund."
+msgstr "المتبقي للاسترداد من هذا المصروف %(left)s %(code)s فقط."
+
 msgid "Only %(weight)s g (%(qty)s pieces) at %(branch)s."
 msgstr "المتاح في %(branch)s هو %(weight)s جم (%(qty)s قطعة) فقط."
 
@@ -6873,6 +6982,9 @@ msgstr "التسجيل على الحساب يكون لعميل أو مورد ف�
 
 msgid "Only a message that was not sent can be sent again."
 msgstr "لا يمكن إعادة الإرسال إلا لرسالة لم تُرسل."
+
+msgid "Only a posted expense can be refunded."
+msgstr "يُسترد فقط من مصروف مسجَّل."
 
 msgid "Only a registered customer can buy on account."
 msgstr "يمكن البيع على الحساب لعميل مسجّل فقط."
@@ -7282,13 +7394,19 @@ msgstr "البرتيتة %(code)s بها %(carats)s قيراط فقط (%(count)s
 msgid "Parcel stones"
 msgstr "أحجار البرتيتة"
 
+msgid "Parcels counted"
+msgstr "جرد البرتيتات"
+
+msgid "Parcels counted %(number)s"
+msgstr "جرد البرتيتات %(number)s"
+
 msgid "Parent"
 msgstr "الأصل"
 
 msgid ""
-"Part of this advance was already recovered in a payroll. Cancel that payroll"
-" first."
-msgstr "خُصم جزء من هذه السلفة في مسير رواتب. ألغِ ذلك المسير أولًا."
+"Part of this advance was already paid back or recovered in a payroll. Cancel"
+" that first."
+msgstr "جزء من هذه السلفة رُدّ بالفعل أو خُصم في مرتب. ألغِ ذلك أولًا."
 
 msgid "Parties"
 msgstr "الأطراف"
@@ -7824,6 +7942,12 @@ msgstr "تغيير الأسعار"
 msgid "Price changes to approve"
 msgstr "تغيّرات أسعار تنتظر الموافقة"
 
+msgid ""
+"Price empty: back at the parcel's average cost. On their account, it comes "
+"off what is owed to the supplier."
+msgstr ""
+"السعر فارغ: يُرد بمتوسط تكلفة البرتيتة. على الحساب: يُخصم مما علينا للمورد."
+
 msgid "Price history"
 msgstr "سجل الأسعار"
 
@@ -8200,6 +8324,9 @@ msgstr "استلام من فرع"
 msgid "Received from workshop %(number)s"
 msgstr "استلام من الورشة %(number)s"
 
+msgid "Received in"
+msgstr "استُلم في"
+
 msgid "Received."
 msgstr "تم الاستلام."
 
@@ -8261,6 +8388,9 @@ msgstr "تسجيل الذهب المستلم من العملاء والمورد�
 msgid "Record money received from or paid to customers and suppliers"
 msgstr "تسجيل النقدية المقبوضة من العملاء والموردين أو المدفوعة لهم"
 
+msgid "Record refund"
+msgstr "تسجيل المرتد"
+
 msgid "Record return"
 msgstr "تسجيل المرتجع"
 
@@ -8313,11 +8443,20 @@ msgstr "المرجع"
 msgid "Refund"
 msgstr "المبلغ المردود"
 
+msgid "Refund %(number)s of %(voucher)s"
+msgstr "مرتد %(number)s من %(voucher)s"
+
+msgid "Refund recorded."
+msgstr "تم تسجيل المرتد."
+
 msgid "Refunded"
 msgstr "المردود"
 
 msgid "Refunds"
 msgstr "المردود"
+
+msgid "Refunds count on the day the money came back."
+msgstr "المرتد يُحتسب في يوم عودة المبلغ."
 
 msgid "Refused"
 msgstr "المرفوضة"
@@ -8549,6 +8688,9 @@ msgstr "مرتجع لمورد"
 msgid "Return to supplier %(number)s"
 msgstr "مرتجع لمورد %(number)s"
 
+msgid "Return to the supplier"
+msgstr "مرتجع للمورد"
+
 msgid "Returned"
 msgstr "مردود"
 
@@ -8568,6 +8710,9 @@ msgid "Returned or endorsed"
 msgstr "مردودة أو مُظهَّرة"
 
 msgid "Returned to supplier"
+msgstr "مرتجع للمورد"
+
+msgid "Returned to the supplier"
 msgstr "مرتجع للمورد"
 
 msgid "Returned value"
@@ -9232,6 +9377,9 @@ msgstr ""
 "تُرسل فقط بين 9:00 و21:00، بفاصل عشوائي لا يقل عن %(min_gap)s ثانية. الإرسال"
 " الأسرع قد يجعل واتساب يحظر الرقم."
 
+msgid "Sent to another branch"
+msgstr "محوَّل لفرع آخر"
+
 msgid "Sent to branch"
 msgstr "تحويل لفرع"
 
@@ -9307,11 +9455,26 @@ msgstr "تسوية"
 msgid "Settle gold balances in money"
 msgstr "تسوية أرصدة الذهب نقدًا"
 
+msgid "Settled"
+msgstr "التسوية"
+
 msgid "Settled in"
 msgstr "التسوية بعملة"
 
 msgid "Settled — nothing owed either way."
 msgstr "الحساب مسدد، لا مستحقات على أي طرف."
+
+msgid "Settlement against the employee"
+msgstr "تسوية على الموظف"
+
+msgid "Settlement in the employee's favour"
+msgstr "تسوية لصالح الموظف"
+
+msgid "Settlement: lower what they owe"
+msgstr "تسوية: تخفيض ما عليه"
+
+msgid "Settlement: raise what they owe"
+msgstr "تسوية: زيادة ما عليه"
 
 msgid "Settlements"
 msgstr "التسويات"
@@ -9758,6 +9921,15 @@ msgstr "أحجار لدى الورش"
 msgid "Stones bought into %(code)s"
 msgstr "شراء أحجار في %(code)s"
 
+msgid ""
+"Stones missing or found are booked to stone losses at the parcel's average "
+"cost."
+msgstr ""
+"الأحجار الناقصة أو الزائدة تُسجَّل في خسائر الأحجار بمتوسط تكلفة البرتيتة."
+
+msgid "Stones moved between branches"
+msgstr "أحجار محوَّلة بين الفروع"
+
 msgid "Stones of %(code)s back from %(workshop)s"
 msgstr "أحجار %(code)s عائدة من %(workshop)s"
 
@@ -9769,6 +9941,12 @@ msgstr "أحجار %(code)s مسلّمة إلى %(workshop)s"
 
 msgid "Stones of %(code)s lost by %(workshop)s"
 msgstr "أحجار %(code)s مفقودة لدى %(workshop)s"
+
+msgid "Stones of %(code)s moved to %(branch)s"
+msgstr "تحويل أحجار %(code)s إلى %(branch)s"
+
+msgid "Stones of %(code)s returned to the supplier"
+msgstr "مرتجع أحجار %(code)s للمورد"
 
 msgid "Stones part"
 msgstr "جزء الأحجار"
@@ -9987,8 +10165,19 @@ msgstr "تم الاستلام."
 msgid "Taken off at the figures of the original sale."
 msgstr "تُخصم بأرقام البيعة الأصلية."
 
+msgid "Taken off the advances the employee owes, with no money moving."
+msgstr "خُصمت من سلف الموظف دون حركة نقدية."
+
+msgid "Taken off the advances the employee owes."
+msgstr "خُصمت من سلف الموظف."
+
 msgid "Taken off the making charge"
 msgstr "المخصوم من المصنعية"
+
+msgid ""
+"Taken off the weight for impurities before it counts. Enter the per cent or "
+"the grams."
+msgstr "تُخصم من الوزن قبل احتسابه. أدخل النسبة أو الجرامات."
 
 msgid "Taken out"
 msgstr "مفكوكة"
@@ -10058,6 +10247,9 @@ msgstr "هذا المستند يستخدم بالفعل تصميم هذا الم
 
 msgid "That is not the code. %(n)s tries left."
 msgstr "الكود غير صحيح. المحاولات المتبقية: %(n)s."
+
+msgid "That parcel holds another kind of stone."
+msgstr "هذه البرتيتة لنوع آخر من الأحجار."
 
 msgid "The amount goes into the bank account."
 msgstr "يدخل المبلغ إلى الحساب البنكي."
@@ -10460,6 +10652,9 @@ msgstr ""
 "ترجع الأحجار للمخزون كنفس الأحجار السائبة بباركودها وبياناتها وتكلفتها. "
 "والأجرة تُضاف لتكلفة القطعة وتُستحق للمركباتي."
 
+msgid "The stones keep their average cost."
+msgstr "الأحجار تحتفظ بمتوسط تكلفتها."
+
 msgid ""
 "The stones leave stock as used in this piece. A setter's labour is owed to "
 "their workshop; in our shop it is added to the cost."
@@ -10598,6 +10793,9 @@ msgstr "مستحق لنا"
 
 msgid "They owe us gold: they pay money instead"
 msgstr "الذهب مستحق لنا: يسددونه نقدًا"
+
+msgid "They paid it back"
+msgstr "رد السلفة نقدًا"
 
 msgid "Thickness"
 msgstr "السُمك"
@@ -11443,6 +11641,14 @@ msgid "We owe them gold: pay it in money instead"
 msgstr "الذهب مستحق علينا: نسدده نقدًا"
 
 msgid ""
+"Weigh each parcel and count its stones. What differs from the books is "
+"booked as stones lost or found, at the parcel's average cost. Leave a parcel"
+" empty to skip it."
+msgstr ""
+"زِن كل برتيتة وعُدّ أحجارها. الفرق عن الدفاتر يُسجَّل كأحجار ناقصة أو زائدة "
+"بمتوسط تكلفة البرتيتة. اترك البرتيتة فارغة لتخطيها."
+
+msgid ""
 "Weigh each piece and agree its price; the gold in it at today's value shows "
 "as a guide. Its stones can be described now and completed on the piece "
 "later."
@@ -11870,6 +12076,9 @@ msgstr "اكتب اسم المشتري."
 
 msgid "Write down who is selling."
 msgstr "اكتب اسم البائع."
+
+msgid "Write down why."
+msgstr "اكتب السبب."
 
 msgid "Write off"
 msgstr "تنزيل"

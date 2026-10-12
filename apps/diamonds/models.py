@@ -302,6 +302,10 @@ class ParcelMovementKind(models.TextChoices):
     VOID = "void", _("Cancelled")
     HAND_OUT = "out", _("Handed to a workshop")
     HAND_BACK = "back", _("Back from a workshop")
+    RETURN = "return", _("Returned to the supplier")
+    MOVE_OUT = "move_out", _("Sent to another branch")
+    MOVE_IN = "move_in", _("Came from another branch")
+    COUNT = "count", _("Counted")
 
 
 class ParcelMovement(TenantScopedModel):
@@ -329,7 +333,8 @@ class ParcelDeal(Document):
     (legacy GHZ16 small stones bought, GHZ71 small stones sold)."""
 
     parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="deals")
-    kind = models.CharField(max_length=8, choices=[("buy", _("Bought")), ("sell", _("Sold"))])
+    kind = models.CharField(max_length=8, choices=[("buy", _("Bought")), ("sell", _("Sold")),
+                                                   ("return", _("Returned to the supplier"))])
     party = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
                               related_name="+")
     party_name = models.CharField(max_length=200, blank=True)  # a walk-in buyer
@@ -353,6 +358,70 @@ class ParcelDeal(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+
+class ParcelTransfer(Document):
+    """Stones moved from a parcel to a parcel of another branch, at their average cost (Gweb
+    moved single stones only, GHBR15). `branch` is the sending branch."""
+
+    from_parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="+")
+    to_parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="+")
+    carats = models.DecimalField(max_digits=12, decimal_places=3)
+    count = models.IntegerField(default=0)
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        constraints = [
+            *Document.Meta.constraints,
+            models.CheckConstraint(condition=Q(carats__gt=0, count__gte=0),
+                                   name="diamonds_parcel_transfer_check"),
+        ]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_parcel_xfer_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+
+class ParcelCount(Document):
+    """A branch's parcels counted (weighed): what differs from the books is booked as stones
+    lost or found, at the average cost (Gweb's stone stocktake left parcels out)."""
+
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="diamonds_parcel_count_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+
+class ParcelCountLine(TenantScopedModel):
+    count_doc = models.ForeignKey(ParcelCount, on_delete=models.CASCADE, related_name="lines")
+    parcel = models.ForeignKey(StoneParcel, on_delete=models.PROTECT, related_name="+")
+    book_carats = models.DecimalField(max_digits=12, decimal_places=3)
+    book_count = models.IntegerField()
+    counted_carats = models.DecimalField(max_digits=12, decimal_places=3)
+    counted_count = models.IntegerField()
+    cost_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # signed
+
+    class Meta:
+        ordering = ["parcel__code"]
+        indexes = [models.Index(fields=["tenant", "count_doc"], name="diamonds_count_line_idx")]
+
+    @property
+    def carats_diff(self):
+        return self.counted_carats - self.book_carats
+
+    @property
+    def count_diff(self):
+        return self.counted_count - self.book_count
 
 
 class HandoutKind(models.TextChoices):

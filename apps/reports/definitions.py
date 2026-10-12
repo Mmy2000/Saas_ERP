@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy
 from apps.catalog.domain.metal import DEFAULT_REFERENCE_FINENESS
 from apps.catalog.models import Karat
 from apps.core.models import DocStatus
-from apps.expenses.models import ExpenseVoucher
+from apps.expenses.models import ExpenseRefund, ExpenseVoucher
 from apps.inventory.models import ON_HAND, Item, LotBalance, StockTransferLine
 from apps.inventory.services import SCRAP_CATEGORY_CODE
 from apps.ledger.models import BalanceProjection, JournalLine
@@ -160,6 +160,9 @@ class DailySummary(Report):
         add(_("Money paid"), settlements.filter(kind=SettlementKind.PAYMENT), "functional_amount")
         add(_("Expenses"), ExpenseVoucher.objects.filter(status=DocStatus.POSTED,
                                                         business_date=day), "functional_amount")
+        add(_("Expense refunds"), ExpenseRefund.objects.filter(status=DocStatus.POSTED,
+                                                              business_date=day),
+            "functional_amount")
         vouchers = MoneyVoucher.objects.filter(status=DocStatus.POSTED, business_date=day)
         add(_("Money in (other)"), vouchers.filter(direction="in"), "functional_amount")
         add(_("Money out (other)"), vouchers.filter(direction="out"), "functional_amount")
@@ -340,11 +343,22 @@ class Expenses(Report):
         vouchers = _in_scope(ExpenseVoucher.objects.filter(
             status=DocStatus.POSTED,
             business_date__range=(params.date("date_from"), params.date("date_to"))), scope)
+        refunds = _in_scope(ExpenseRefund.objects.filter(
+            status=DocStatus.POSTED,
+            business_date__range=(params.date("date_from"), params.date("date_to"))), scope)
+        back = dict(refunds.values_list("voucher__category__name").annotate(
+            t=Sum("functional_amount")).order_by())
         table = Table(_("Expenses"), [
             Column("category", _("Expense category")), Column("count", _("Number"), "int"),
-            Column("total", _("Total"), "money")])
-        for row in vouchers.values("category__name").annotate(
-                count=Count("id"), total=Sum("functional_amount")).order_by("-total"):
-            table.rows.append({"category": row["category__name"], "count": row["count"],
-                               "total": row["total"]})
+            Column("total", _("Total"), "money"), Column("refunded", _("Refunded"), "money"),
+            Column("net", _("Net"), "money")],
+            note=_("Refunds count on the day the money came back."))
+        rows = {row["category__name"]: row for row in vouchers.values("category__name").annotate(
+            count=Count("id"), total=Sum("functional_amount"))}
+        for name in set(rows) | set(back):
+            total = rows.get(name, {}).get("total") or ZERO
+            table.rows.append({"category": name, "count": rows.get(name, {}).get("count", 0),
+                               "total": total, "refunded": back.get(name, ZERO),
+                               "net": total - back.get(name, ZERO)})
+        table.rows.sort(key=lambda row: -row["net"])
         return [table.add_totals("category", _("Total"))]

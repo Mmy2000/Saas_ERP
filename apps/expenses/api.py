@@ -110,6 +110,7 @@ class VoucherViewSet(viewsets.GenericViewSet):
         "retrieve": "expenses.view",
         "create": "expenses.voucher.create",
         "void": "expenses.void",
+        "refund": "expenses.voucher.create",
     }
 
     def get_queryset(self):
@@ -148,9 +149,43 @@ class VoucherViewSet(viewsets.GenericViewSet):
         return self._respond(services.void_expense(
             int(pk), reason=payload.validated_data["reason"], actor=request.actor))
 
+    @action(detail=True, methods=["post"])
+    @idempotent
+    def refund(self, request, pk=None):
+        payload = RefundWriteSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        made = services.refund_expense(
+            int(pk), d["amount"], method=d["method"], cash_box_id=d["cash_box"],
+            bank_account_id=d["bank_account"], note=d["note"], actor=request.actor)
+        return Response({"id": made.pk, "number": made.number,
+                         "amount": str(made.amount)}, status=status.HTTP_201_CREATED)
+
+
+class RefundWriteSerializer(serializers.Serializer):
+    amount = serializers.CharField(max_length=30, allow_blank=True)
+    method = serializers.ChoiceField(choices=[("cash", "cash"), ("bank_transfer", "bank")])
+    cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class RefundViewSet(viewsets.GenericViewSet):
+    required_permissions = {"void": "expenses.void"}
+
+    @action(detail=True, methods=["post"])
+    @idempotent
+    def void(self, request, pk=None):
+        payload = VoidSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        made = services.void_refund(int(pk), reason=payload.validated_data["reason"],
+                                    actor=request.actor)
+        return Response({"id": made.pk, "status": made.status})
+
 
 router = SimpleRouter()
 router.register("categories", CategoryViewSet, basename="expense-category")
 router.register("vouchers", VoucherViewSet, basename="expense-voucher")
+router.register("refunds", RefundViewSet, basename="expense-refund")
 
 urlpatterns = router.urls

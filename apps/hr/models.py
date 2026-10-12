@@ -58,12 +58,28 @@ class Employee(TenantScopedModel):
         return decrypt(self.national_id_encrypted) if self.national_id_encrypted else ""
 
 
+class AdvanceKind(models.TextChoices):
+    ADVANCE = "advance", _("Advance")
+    REPAYMENT = "repayment", _("Advance repaid")
+    SETTLE_DOWN = "settle_down", _("Settlement in the employee's favour")
+    SETTLE_UP = "settle_up", _("Settlement against the employee")
+
+
+# What each kind does to the advances an employee still owes.
+ADVANCE_SIGN = {AdvanceKind.ADVANCE: 1, AdvanceKind.SETTLE_UP: 1,
+                AdvanceKind.REPAYMENT: -1, AdvanceKind.SETTLE_DOWN: -1}
+
+
 class EmployeeAdvance(Document):
-    """Money paid to an employee ahead of payroll (سلفة); recovered in later payrolls."""
+    """Money paid to an employee ahead of payroll (سلفة), recovered in later payrolls; money
+    they paid back (legacy GHE20 مرتد سلف); and settlements that raise or lower what they owe
+    without money moving (legacy GHE23 التسوية)."""
 
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name="advances")
+    kind = models.CharField(max_length=12, choices=AdvanceKind.choices,
+                            default=AdvanceKind.ADVANCE)
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    method = models.CharField(max_length=16)  # cash / bank_transfer
+    method = models.CharField(max_length=16, blank=True)  # cash / bank_transfer; "" settlements
     cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
                                  on_delete=models.PROTECT, related_name="+")
     bank_account = models.ForeignKey("treasury.BankAccount", null=True, blank=True,
@@ -81,6 +97,10 @@ class EmployeeAdvance(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+    @property
+    def sign(self) -> int:
+        return ADVANCE_SIGN[self.kind]
 
 
 class AdjustmentKind(models.TextChoices):

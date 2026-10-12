@@ -101,6 +101,14 @@
         <div><label class="form-label" for="f-gross">{% translate "Weight (g)" %}</label>
           <input id="f-gross" name="gross_weight_g" class="form-input num w-full text-start" inputmode="decimal">
           <p class="form-error" data-error-for="gross_weight_g"></p></div>
+        <div class="grid grid-cols-2 gap-3 sm:col-span-2" data-only="metal_in">
+          <div><label class="form-label" for="f-loss-pct">{% translate "Loss (per cent)" %}</label>
+            <input id="f-loss-pct" class="form-input num w-full text-start" inputmode="decimal" data-loss-pct></div>
+          <div><label class="form-label" for="f-loss">{% translate "Loss (g)" %}</label>
+            <input id="f-loss" name="loss_weight_g" class="form-input num w-full text-start" inputmode="decimal" data-loss>
+            <p class="form-error" data-error-for="loss_weight_g"></p></div>
+          <p class="col-span-2 text-xs text-slate-500">{% translate "Taken off the weight for impurities before it counts. Enter the per cent or the grams." %} <span class="hidden" data-net-line>{% translate "Counts as" %} <span class="num font-medium text-slate-700" data-net></span> {% translate "g" %}</span></p>
+        </div>
         <p class="text-xs text-slate-500 sm:col-span-2" data-payment-only>{% translate "Gold is taken from or added to the branch's scrap gold." %}</p>
       </div>
     </section>

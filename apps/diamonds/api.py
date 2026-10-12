@@ -487,7 +487,8 @@ class ParcelView(APIView):
 
 class DealSerializer(serializers.Serializer):
     parcel = serializers.IntegerField()
-    kind = serializers.ChoiceField(choices=[("buy", "buy"), ("sell", "sell")])
+    kind = serializers.ChoiceField(choices=[("buy", "buy"), ("sell", "sell"),
+                                            ("return", "return")])
     carats = serializers.CharField(max_length=20, allow_blank=True)
     count = serializers.IntegerField(required=False, min_value=0, default=0)
     price_per_ct = serializers.CharField(max_length=20, allow_blank=True)
@@ -525,6 +526,80 @@ class DealVoidView(APIView):
     def post(self, request, pk):
         made = parcels.void_deal(pk, reason=str(request.data.get("reason") or ""),
                                  actor=request.actor)
+        return Response({"id": made.pk, "status": made.status})
+
+
+class TransferSerializer(serializers.Serializer):
+    parcel = serializers.IntegerField()
+    to_branch = serializers.IntegerField()
+    to_parcel = serializers.IntegerField(required=False, allow_null=True, default=None)
+    carats = serializers.CharField(max_length=20, allow_blank=True)
+    count = serializers.IntegerField(required=False, min_value=0, default=0)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class TransferView(APIView):
+    """Stones moved from a parcel to another branch."""
+
+    required_permissions = {"POST": "diamonds.manage"}
+
+    @idempotent
+    def post(self, request):
+        payload = TransferSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        made = parcels.transfer_parcel(
+            d["parcel"], to_branch_id=d["to_branch"], to_parcel_id=d["to_parcel"],
+            carats=d["carats"], count=d["count"], note=d["note"], actor=request.actor)
+        return Response({"id": made.pk, "number": made.number}, status=status.HTTP_201_CREATED)
+
+
+class TransferVoidView(APIView):
+    required_permissions = {"POST": "diamonds.manage"}
+
+    @idempotent
+    def post(self, request, pk):
+        made = parcels.void_transfer(pk, reason=str(request.data.get("reason") or ""),
+                                     actor=request.actor)
+        return Response({"id": made.pk, "status": made.status})
+
+
+class CountedSerializer(serializers.Serializer):
+    parcel = serializers.IntegerField()
+    carats = serializers.CharField(max_length=20, allow_blank=True)
+    count = serializers.IntegerField(required=False, min_value=0, default=0)
+
+
+class CountSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    rows = CountedSerializer(many=True)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class CountView(APIView):
+    """A branch's parcels weighed and counted."""
+
+    required_permissions = {"POST": "diamonds.manage"}
+
+    @idempotent
+    def post(self, request):
+        payload = CountSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        made = parcels.count_parcels(d["branch"], [
+            parcels.CountedParcel(parcel_id=row["parcel"], carats=row["carats"],
+                                  count=row["count"]) for row in d["rows"]],
+            note=d["note"], actor=request.actor)
+        return Response({"id": made.pk, "number": made.number}, status=status.HTTP_201_CREATED)
+
+
+class CountVoidView(APIView):
+    required_permissions = {"POST": "diamonds.manage"}
+
+    @idempotent
+    def post(self, request, pk):
+        made = parcels.void_count(pk, reason=str(request.data.get("reason") or ""),
+                                  actor=request.actor)
         return Response({"id": made.pk, "status": made.status})
 
 
@@ -601,6 +676,12 @@ urlpatterns = [
     path("parcels/deals/", DealView.as_view(), name="diamonds-parcel-deals"),
     path("parcels/deals/<int:pk>/void/", DealVoidView.as_view(),
          name="diamonds-parcel-deal-void"),
+    path("parcels/transfers/", TransferView.as_view(), name="diamonds-parcel-transfers"),
+    path("parcels/transfers/<int:pk>/void/", TransferVoidView.as_view(),
+         name="diamonds-parcel-transfer-void"),
+    path("parcels/counts/", CountView.as_view(), name="diamonds-parcel-counts"),
+    path("parcels/counts/<int:pk>/void/", CountVoidView.as_view(),
+         name="diamonds-parcel-count-void"),
     path("buy-back/", BuyBackView.as_view(), name="diamonds-buy-back"),
     path("buy-back/quote/", BuyBackQuoteView.as_view(), name="diamonds-buy-back-quote"),
     path("buy-back/<int:pk>/void/", BuyBackVoidView.as_view(), name="diamonds-buy-back-void"),

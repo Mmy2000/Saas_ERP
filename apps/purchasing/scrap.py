@@ -74,6 +74,7 @@ class ScrapInput:
     lines: tuple[ScrapLineInput, ...]
     payment: str
     party_id: int | None = None  # seller (optional when buying) / buyer (required when selling)
+    party_role: str = ""  # customer | supplier | trade_account: whose balance "on account" uses
     seller_name: str = ""
     seller_phone: str = ""
     seller_id_number: str = ""
@@ -108,10 +109,17 @@ def _party(pk, *, required: bool) -> Party | None:
     return party
 
 
-def _party_account(party: Party):
-    """A party's money account: customers if they are a customer, else suppliers."""
-    is_customer = party.roles.filter(role=PartyRoleType.CUSTOMER).exists()
-    return account_for("customers" if is_customer else "suppliers")
+ROLE_ACCOUNTS = {PartyRoleType.CUSTOMER: "customers", PartyRoleType.SUPPLIER: "suppliers",
+                 PartyRoleType.TRADE_ACCOUNT: "trade_accounts"}
+
+
+def _party_account(party: Party, role: str = ""):
+    """A party's money account: the one of the role chosen (a trader's scrap goes on the trade
+    account, legacy GHSH15a), else customers if they are a customer, else suppliers."""
+    roles = set(party.roles.values_list("role", flat=True))
+    if role in ROLE_ACCOUNTS and role in roles:
+        return account_for(ROLE_ACCOUNTS[role])
+    return account_for("customers" if PartyRoleType.CUSTOMER in roles else "suppliers")
 
 
 def _money_side(data: ScrapInput, branch, party, amount: Decimal, *, paying: bool):
@@ -121,7 +129,7 @@ def _money_side(data: ScrapInput, branch, party, amount: Decimal, *, paying: boo
     if data.payment == ScrapPayment.ACCOUNT:
         if party is None:
             raise _field_error("party", _("Only a customer or supplier can be paid on account."))
-        return _party_account(party), party, {}
+        return _party_account(party, data.party_role), party, {}
     home = functional_commodity().currency
     holder = resolve_tender(data.payment, branch, home, cash_box_id=data.cash_box_id,
                             bank_account_id=data.bank_account_id)

@@ -61,3 +61,40 @@ class ExpenseVoucher(Document):
     @property
     def paid_from(self):
         return self.cash_box or self.bank_account
+
+
+class ExpenseRefund(Document):
+    """Money from an expense coming back (a deposit returned, an overcharge refunded): all or
+    part of the voucher, into a cash box or bank account (legacy GHM13 مرتد المصروفات, which was
+    not tied to the expense)."""
+
+    voucher = models.ForeignKey(ExpenseVoucher, on_delete=models.PROTECT, related_name="refunds")
+    cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    bank_account = models.ForeignKey("treasury.BankAccount", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    currency = models.ForeignKey("catalog.Currency", on_delete=models.PROTECT, related_name="+")
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    functional_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        constraints = [
+            *Document.Meta.constraints,
+            models.CheckConstraint(
+                condition=(Q(cash_box__isnull=False, bank_account__isnull=True)
+                           | Q(cash_box__isnull=True, bank_account__isnull=False)),
+                name="expenses_refund_one_holder_check"),
+            models.CheckConstraint(condition=Q(amount__gt=0), name="expenses_refund_amount_check"),
+        ]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="expense_refund_date_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+    @property
+    def paid_into(self):
+        return self.cash_box or self.bank_account

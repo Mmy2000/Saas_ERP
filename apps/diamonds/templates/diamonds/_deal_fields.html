@@ -4,8 +4,8 @@
   <label class="block"><span class="form-label">{% translate "Stones" %}</span><input name="count" class="form-input num w-full text-start" inputmode="numeric" placeholder="0"></label>
   <label class="block"><span class="form-label">{% translate "Price / ct" %}</span><input name="price_per_ct" class="form-input num w-full text-start" inputmode="decimal" value="{{ price|default_if_none:''|stringformat:'s' }}"><span class="form-error" data-error-for="price_per_ct"></span></label>
 </div>
-<label class="block"><span class="form-label">{% translate "Paid" %}</span>
-  <select name="payment" class="form-input" data-deal-method><option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option><option value="account">{% translate "On their account" %}</option></select>
+<label class="block"><span class="form-label">{% if returning %}{% translate "Settled" %}{% else %}{% translate "Paid" %}{% endif %}</span>
+  <select name="payment" class="form-input" data-deal-method>{% if returning %}<option value="account">{% translate "On their account" %}</option>{% endif %}<option value="cash">{% translate "Cash" %}</option><option value="bank_transfer">{% translate "Bank transfer" %}</option>{% if not returning %}<option value="account">{% translate "On their account" %}</option>{% endif %}</select>
   <span class="form-error" data-error-for="payment"></span></label>
 {% include "treasury/holder_selects.html" with prefix=prefix %}
 <input name="note" class="form-input" placeholder="{% translate 'Note' %}">

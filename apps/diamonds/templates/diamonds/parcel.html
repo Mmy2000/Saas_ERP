@@ -10,7 +10,7 @@
 </div>
 {% endblock %}
 {% block content %}
-{% can "diamonds.receive" parcel.branch as can_buy %}{% can "diamonds.sell" parcel.branch as can_sell %}
+{% can "diamonds.receive" parcel.branch as can_buy %}{% can "diamonds.sell" parcel.branch as can_sell %}{% can "diamonds.manage" parcel.branch as can_manage %}
 <div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
   <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Carats" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.carats|num:3 }}</span></p></div>
   <div class="card card-body"><p class="text-sm text-slate-500">{% translate "Stones" %}</p><p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ parcel.count }}</span></p></div>
@@ -74,7 +74,32 @@
               <td class="text-end"><span class="num">{{ d.price_per_ct|num:2 }}</span></td>
               <td class="text-end"><span class="num">{{ d.amount|num:2 }}</span></td>
               <td>{% include "components/doc_status.html" with status=d.status label=d.get_status_display %}</td>
-              <td class="text-end">{% if d.status == "posted" %}{% if d.kind == "buy" and can_buy or d.kind == "sell" and can_sell %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-void-deal="{% url 'diamonds-parcel-deal-void' d.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel" %}</button>{% endif %}{% endif %}</td>
+              <td class="text-end">{% if d.status == "posted" %}{% if d.kind == "sell" and can_sell or d.kind != "sell" and can_buy %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-void-deal="{% url 'diamonds-parcel-deal-void' d.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel" %}</button>{% endif %}{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+    {% if transfers %}
+    <section class="card overflow-hidden" id="transfers">
+      <div class="card-header"><h2 class="card-title">{% translate "Moved between branches" %}</h2></div>
+      <div class="relative overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+            <th class="text-end">{% translate "Carats" %}</th><th class="text-end">{% translate "Stones" %}</th><th class="text-end">{% translate "Cost" %}</th><th></th></tr></thead>
+          <tbody>
+          {% for t in transfers %}
+            <tr class="{% if t.status == 'voided' %}text-slate-400{% endif %}">
+              <td class="whitespace-nowrap"><span class="num">{{ t.number }}</span> {% if t.status == "voided" %}{% include "components/doc_status.html" with status=t.status label=t.get_status_display %}{% endif %}</td>
+              <td><span class="num">{{ t.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+              <td><a class="hover:underline" href="{% url 'parcel' t.from_parcel_id %}"><bdi class="num">{{ t.from_parcel.code }}</bdi></a> <span class="text-xs text-slate-500">{{ t.from_parcel.branch.name }}</span></td>
+              <td><a class="hover:underline" href="{% url 'parcel' t.to_parcel_id %}"><bdi class="num">{{ t.to_parcel.code }}</bdi></a> <span class="text-xs text-slate-500">{{ t.to_parcel.branch.name }}</span></td>
+              <td class="text-end"><span class="num">{{ t.carats|num:3 }}</span></td>
+              <td class="text-end"><span class="num">{{ t.count }}</span></td>
+              <td class="text-end"><span class="num">{{ t.cost_amount|num:2 }}</span></td>
+              <td class="text-end">{% if t.status == "posted" and can_manage %}<button type="button" class="btn btn-ghost text-xs text-red-700" data-void-deal="{% url 'diamonds-parcel-transfer-void' t.pk %}" data-confirm="{% translate 'Cancel this?' %}">{% translate "Cancel" %}</button>{% endif %}</td>
             </tr>
           {% endfor %}
           </tbody>
@@ -111,6 +136,43 @@
         {% include "diamonds/_deal_fields.html" with prefix="s-" price=parcel.sale_price_per_ct %}
         <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Sell" %}</button>
         <p class="text-xs text-slate-500">{% translate "The cost leaves at the parcel's average per carat." %}</p>
+      </div>
+    </form>
+    {% endif %}
+    {% if parcel.is_active and can_buy and parcel.carats %}
+    <form class="card" data-api-form data-shape="parcel-deal" data-method="POST" data-endpoint="{% url 'diamonds-parcel-deals' %}" data-success="{% translate 'Recorded.' %}" novalidate>
+      <input type="hidden" name="parcel" value="{{ parcel.pk }}"><input type="hidden" name="kind" value="return">
+      <div class="card-header"><h2 class="card-title">{% translate "Return to the supplier" %}</h2></div>
+      <div class="card-body space-y-3" data-deal>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <label class="block"><span class="form-label">{% translate "Supplier" %}</span>
+          <select name="party" class="form-input" data-remote="{% url 'supplier-list' %}" data-label-field="name"><option value=""></option></select>
+          <span class="form-error" data-error-for="party"></span></label>
+        {% include "diamonds/_deal_fields.html" with prefix="r-" returning=True %}
+        <button type="submit" class="btn btn-secondary w-full">{% icon "undo-2" "size-4" %}{% translate "Return" %}</button>
+        <p class="text-xs text-slate-500">{% translate "Price empty: back at the parcel's average cost. On their account, it comes off what is owed to the supplier." %}</p>
+      </div>
+    </form>
+    {% endif %}
+    {% if parcel.is_active and can_manage and parcel.carats and other_branches %}
+    <form class="card" data-api-form data-shape="parcel-transfer" data-method="POST" data-endpoint="{% url 'diamonds-parcel-transfers' %}" data-success="{% translate 'Moved.' %}" novalidate>
+      <input type="hidden" name="parcel" value="{{ parcel.pk }}">
+      <div class="card-header"><h2 class="card-title">{% translate "Move to another branch" %}</h2></div>
+      <div class="card-body space-y-3">
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+        <label class="block"><span class="form-label">{% translate "Into" %}</span>
+          <select name="target" class="form-input">
+            {% for b in other_branches %}<option value="new:{{ b.pk }}">{% blocktranslate with branch=b.name %}A new parcel at {{ branch }}{% endblocktranslate %}</option>{% endfor %}
+            {% for p in other_parcels %}<option value="parcel:{{ p.pk }}:{{ p.branch_id }}">{{ p.code }} · {{ p.branch.name }}</option>{% endfor %}
+          </select>
+          <span class="form-error" data-error-for="to_branch"></span><span class="form-error" data-error-for="to_parcel"></span></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="form-label">{% translate "Carats" %}</span><input name="carats" class="form-input num w-full text-start" inputmode="decimal"><span class="form-error" data-error-for="carats"></span></label>
+          <label class="block"><span class="form-label">{% translate "Stones" %}</span><input name="count" class="form-input num w-full text-start" inputmode="numeric" placeholder="0"></label>
+        </div>
+        <input name="note" class="form-input" placeholder="{% translate 'Note' %}">
+        <button type="submit" class="btn btn-secondary w-full">{% icon "truck" "size-4" %}{% translate "Move" %}</button>
+        <p class="text-xs text-slate-500">{% translate "The stones keep their average cost." %}</p>
       </div>
     </form>
     {% endif %}

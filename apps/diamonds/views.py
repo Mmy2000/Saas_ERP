@@ -378,6 +378,16 @@ def parcels_page(request):
     })
 
 
+def _transfers(parcel):
+    from django.db.models import Q
+
+    from .models import ParcelTransfer
+
+    return (ParcelTransfer.objects.filter(Q(from_parcel=parcel) | Q(to_parcel=parcel))
+            .select_related("from_parcel__branch", "to_parcel__branch")
+            .order_by("-business_date", "-id")[:30])
+
+
 @permission_required("diamonds.view")
 def parcel(request, pk):
     from apps.core.documents import document_titles, document_url
@@ -397,8 +407,56 @@ def parcel(request, pk):
         "held": found.held.select_related("workshop").filter(carats__gt=0).order_by(
             "workshop__name"),
         "deals": found.deals.select_related("party").order_by("-business_date", "-id")[:50],
+        "transfers": _transfers(found),
+        "other_branches": _branches(request, "diamonds.view").exclude(pk=found.branch_id),
+        "other_parcels": StoneParcel.objects.filter(is_active=True, kind=found.kind).exclude(
+            branch_id=found.branch_id).select_related("branch").order_by("branch__code", "code"),
         "home_currency": functional_currency(),
         **holder_choices([found.branch_id]),
+    })
+
+
+@permission_required("diamonds.view")
+def parcel_transfer(request, pk):
+    from .models import ParcelTransfer
+
+    parcel_id = ParcelTransfer.objects.filter(pk=pk).values_list(
+        "from_parcel_id", flat=True).first()
+    if parcel_id is None:
+        raise Http404
+    return redirect(f"{reverse('parcel', args=[parcel_id])}#transfers")
+
+
+def _visible_counts(request):
+    from .models import ParcelCount
+
+    found = ParcelCount.objects.select_related("branch", "posted_by")
+    scope = request.actor.branch_ids("diamonds.view")
+    return found if scope is None else found.filter(branch_id__in=scope)
+
+
+@permission_required("diamonds.manage")
+def parcel_count_new(request):
+    branches = _branches(request, "diamonds.manage")
+    chosen = request.GET.get("branch") or str(request.membership.default_branch_id or "")
+    branch = branches.filter(pk=chosen).first() if chosen.isdigit() else None
+    branch = branch or branches.first()
+    return render(request, "diamonds/parcel_count_form.html", {
+        "branches": branches, "branch": branch,
+        "parcels": StoneParcel.objects.filter(branch=branch, is_active=True).order_by("code")
+        if branch else [],
+        "counts": _visible_counts(request)[:10],
+    })
+
+
+@permission_required("diamonds.view")
+def parcel_count(request, pk):
+    doc = _visible_counts(request).filter(pk=pk).first()
+    if doc is None:
+        raise Http404
+    return render(request, "diamonds/parcel_count.html", {
+        "doc": doc, "lines": doc.lines.select_related("parcel"),
+        "home_currency": functional_currency(),
     })
 
 

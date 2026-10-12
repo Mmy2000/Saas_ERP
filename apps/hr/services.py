@@ -1,6 +1,9 @@
 """Employees, advances, adjustments, commissions and the monthly payroll (§7.12).
 
 advance   Dr employee advances              Cr cash box / bank account
+repaid    Dr cash box / bank account        Cr employee advances
+settled   Dr balance adjustments            Cr employee advances   (in the employee's favour)
+          or the mirror image                                     (against the employee)
 payroll   Dr salaries (salary + bonuses − deductions)
           Dr sales commissions
           Cr employee advances (what is recovered this month)
@@ -38,7 +41,9 @@ from apps.pricing.selectors import functional_currency
 from apps.treasury.holders import TenderKind, ensure_cash_available, resolve_tender
 
 from .models import (
+    ADVANCE_SIGN,
     AdjustmentKind,
+    AdvanceKind,
     CommissionBasis,
     Employee,
     EmployeeAdvance,
@@ -166,8 +171,13 @@ def update_employee(employee_id: int, data: EmployeeInput, *, actor=None) -> Emp
 # --- advances and adjustments --------------------------------------------------------------------
 
 def outstanding_advance(employee: Employee) -> Decimal:
-    given = EmployeeAdvance.objects.filter(employee=employee, status=DocStatus.POSTED).aggregate(
-        s=Sum("amount"))["s"] or ZERO
+    """Advances (and settlements against them) less repayments, settlements in their favour
+    and what payrolls took back."""
+    posted = EmployeeAdvance.objects.filter(employee=employee, status=DocStatus.POSTED)
+    up = [k for k, s in ADVANCE_SIGN.items() if s > 0]
+    totals = posted.aggregate(up=Sum("amount", filter=Q(kind__in=up)),
+                              down=Sum("amount", filter=~Q(kind__in=up)))
+    given = (totals["up"] or ZERO) - (totals["down"] or ZERO)
     recovered = PayrollLine.objects.filter(employee=employee,
                                            run__status=DocStatus.POSTED).aggregate(
         s=Sum("advance"))["s"] or ZERO
@@ -224,6 +234,70 @@ def give_advance(employee_id: int, amount, *, branch_id: int, method: str = Tend
     return advance
 
 
+def _post_movement(employee_id: int, kind: str, amount, *, branch_id: int, method: str = "",
+                   cash_box_id=None, bank_account_id=None, note: str = "",
+                   actor=None) -> EmployeeAdvance:
+    """A repayment (cash or bank in) or a settlement (no money moves)."""
+    repaid = kind == AdvanceKind.REPAYMENT
+    with transaction.atomic():
+        branch = Branch.objects.filter(pk=branch_id, is_active=True).first()
+        if branch is None:
+            raise _field("branch", _("Unknown branch."))
+        if actor is not None:
+            actor.require("hr.advance.create", branch=branch)
+        employee = Employee.objects.select_for_update().filter(pk=employee_id).first()
+        if employee is None:
+            raise _field("employee", _("Choose an employee."))
+        value = _amount(amount, "amount", positive=True)
+        if ADVANCE_SIGN[kind] < 0:
+            owed = outstanding_advance(employee)
+            if value > owed:
+                raise _field("amount", _("%(name)s owes %(owed)s in advances.")
+                             % {"name": employee.name, "owed": f"{owed:,.2f}"})
+        if not repaid and not note.strip():
+            raise _field("note", _("Write down why."))
+        holder = _holder(branch, method, cash_box_id, bank_account_id) if repaid else None
+        today = timezone.localdate()
+        movement = EmployeeAdvance.objects.create(
+            branch=branch, business_date=today, employee=employee, kind=kind, amount=value,
+            method=method if repaid else "", note=note.strip(),
+            created_by=getattr(actor, "user", None), **(_paid_from(holder) if holder else {}))
+        movement.number = allocate_number("ER" if repaid else "ES", branch=branch,
+                                          fiscal_year=today.year)
+        home = functional_commodity()
+        other = holder.account if repaid else account_for("balance_adjustments")
+        sign = ADVANCE_SIGN[kind]
+        movement.journal_entry = post_entry(
+            branch=branch, business_date=today, kind=EntryKind.AUTO,
+            source_type=ADVANCE_DOC, source_id=movement.pk,
+            memo=f"{movement.get_kind_display()} {movement.number} · {employee.name}",
+            lines=[LedgerLine(account=account_for("employee_advances"), commodity=home,
+                              quantity=sign * value),
+                   LedgerLine(account=other, commodity=home, quantity=-sign * value)])
+        movement.status = DocStatus.POSTED
+        movement.posted_at = timezone.now()
+        movement.posted_by = getattr(actor, "user", None)
+        movement.save()
+    return movement
+
+
+def repay_advance(employee_id: int, amount, *, branch_id: int, method: str = TenderKind.CASH,
+                  cash_box_id=None, bank_account_id=None, note: str = "",
+                  actor=None) -> EmployeeAdvance:
+    """The employee pays back some of their advances in cash or by transfer."""
+    return _post_movement(employee_id, AdvanceKind.REPAYMENT, amount, branch_id=branch_id,
+                          method=method, cash_box_id=cash_box_id,
+                          bank_account_id=bank_account_id, note=note, actor=actor)
+
+
+def settle_advance(employee_id: int, amount, *, favour: bool, branch_id: int, note: str,
+                   actor=None) -> EmployeeAdvance:
+    """Lower (in the employee's favour) or raise what they owe, with a reason."""
+    return _post_movement(employee_id,
+                          AdvanceKind.SETTLE_DOWN if favour else AdvanceKind.SETTLE_UP,
+                          amount, branch_id=branch_id, note=note, actor=actor)
+
+
 def void_advance(advance_id: int, *, reason: str = "", actor=None) -> EmployeeAdvance:
     with transaction.atomic():
         advance = (EmployeeAdvance.objects.select_for_update(of=("self",))
@@ -234,9 +308,9 @@ def void_advance(advance_id: int, *, reason: str = "", actor=None) -> EmployeeAd
             actor.require("hr.advance.void", branch=advance.branch)
         if advance.status != DocStatus.POSTED:
             raise DomainError(_("Only posted documents can be cancelled."), code="DOC_NOT_POSTED")
-        if outstanding_advance(advance.employee) < advance.amount:
-            raise DomainError(_("Part of this advance was already recovered in a payroll. "
-                                "Cancel that payroll first."), code="HR_ADVANCE_RECOVERED")
+        if advance.sign > 0 and outstanding_advance(advance.employee) < advance.amount:
+            raise DomainError(_("Part of this advance was already paid back or recovered in a "
+                                "payroll. Cancel that first."), code="HR_ADVANCE_RECOVERED")
         today = timezone.localdate()
         reverse_entry(advance.journal_entry_id, business_date=today,
                       memo=_("Cancelled %(number)s") % {"number": advance.number})

@@ -61,6 +61,17 @@ class AdvanceWriteSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default="")
 
 
+class RepaymentWriteSerializer(serializers.Serializer):
+    kind = serializers.ChoiceField(choices=["repayment", "favour", "against"])
+    amount = serializers.CharField(max_length=30)
+    branch = serializers.IntegerField()
+    method = serializers.ChoiceField(choices=services.METHODS, required=False,
+                                     default="cash")
+    cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
 class AdjustmentWriteSerializer(serializers.Serializer):
     kind = serializers.ChoiceField(choices=AdjustmentKind.choices)
     amount = serializers.CharField(max_length=30)
@@ -74,7 +85,7 @@ class AdvanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeAdvance
         fields = ["id", "number", "status", "branch", "employee", "employee_name",
-                  "business_date", "amount", "method", "note"]
+                  "business_date", "kind", "amount", "method", "note"]
 
 
 class PayrollSerializer(serializers.ModelSerializer):
@@ -137,6 +148,7 @@ class EmployeeViewSet(viewsets.GenericViewSet):
         "list": "hr.employee.view", "retrieve": "hr.employee.view",
         "create": "hr.employee.manage", "partial_update": "hr.employee.manage",
         "advance": "hr.advance.create", "adjustments": "hr.advance.create",
+        "repayment": "hr.advance.create",
     }
 
     def get_queryset(self):
@@ -177,6 +189,24 @@ class EmployeeViewSet(viewsets.GenericViewSet):
             cash_box_id=d["cash_box"], bank_account_id=d["bank_account"], note=d["note"],
             actor=request.actor)
         return Response(AdvanceSerializer(advance).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    @idempotent
+    def repayment(self, request, pk=None):
+        """Advances paid back, or settled in the employee's favour or against them."""
+        payload = RepaymentWriteSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        if d["kind"] == "repayment":
+            made = services.repay_advance(
+                int(pk), d["amount"], branch_id=d["branch"], method=d["method"],
+                cash_box_id=d["cash_box"], bank_account_id=d["bank_account"], note=d["note"],
+                actor=request.actor)
+        else:
+            made = services.settle_advance(int(pk), d["amount"], favour=d["kind"] == "favour",
+                                           branch_id=d["branch"], note=d["note"],
+                                           actor=request.actor)
+        return Response(AdvanceSerializer(made).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     def adjustments(self, request, pk=None):

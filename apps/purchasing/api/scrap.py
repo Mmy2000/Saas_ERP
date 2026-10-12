@@ -25,6 +25,8 @@ class ScrapWriteSerializer(serializers.Serializer):
     payment = serializers.ChoiceField(choices=ScrapPayment.choices, required=False,
                                       default=ScrapPayment.CASH)
     party = serializers.IntegerField(required=False, allow_null=True, default=None)
+    party_role = serializers.CharField(max_length=16, required=False, allow_blank=True,
+                                       default="")
     seller_name = serializers.CharField(max_length=200, required=False, allow_blank=True,
                                         default="")
     seller_phone = serializers.CharField(max_length=30, required=False, allow_blank=True,
@@ -42,6 +44,7 @@ def _input(request) -> scrap.ScrapInput:
     d = payload.validated_data
     return scrap.ScrapInput(
         branch_id=d["branch"], payment=d["payment"], party_id=d["party"],
+        party_role=d["party_role"],
         seller_name=d["seller_name"], seller_phone=d["seller_phone"],
         seller_id_number=d["seller_id_number"], cash_box_id=d["cash_box"],
         bank_account_id=d["bank_account"], note=d["note"],

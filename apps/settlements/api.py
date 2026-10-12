@@ -30,6 +30,8 @@ class SettlementWriteSerializer(serializers.Serializer):
     karat = serializers.IntegerField(required=False, allow_null=True, default=None)
     gross_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                            default="")
+    loss_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                          default="")
     fine_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                           default="")
     direction = serializers.ChoiceField(choices=ConversionDirection.choices, required=False,
@@ -57,7 +59,8 @@ class SettlementSerializer(serializers.ModelSerializer):
         model = Settlement
         fields = ["id", "number", "status", "kind", "side", "party", "party_name", "branch",
                   "business_date", "method", "currency", "amount", "fx_rate",
-                  "functional_amount", "karat", "gross_weight_g", "fine_weight_g", "direction",
+                  "functional_amount", "karat", "gross_weight_g", "loss_weight_g",
+                  "fine_weight_g", "direction",
                   "price_per_fine_g", "cash_box", "bank_account", "terminal", "asset",
                   "counter_side", "counter_party", "counter_party_name", "adjustment",
                   "reference", "note"]
@@ -104,6 +107,7 @@ class SettlementViewSet(viewsets.GenericViewSet):
             kind=d["kind"], side=d["side"], party_id=d["party"], branch_id=d["branch"],
             method=d["method"], currency_code=d["currency"], amount=d["amount"] or None,
             karat_id=d["karat"], gross_weight_g=d["gross_weight_g"] or None,
+            loss_weight_g=d["loss_weight_g"] or None,
             fine_weight_g=d["fine_weight_g"] or None, direction=d["direction"],
             price_per_fine_g=d["price_per_fine_g"] or None, reference=d["reference"],
             note=d["note"], cash_box_id=d["cash_box"], bank_account_id=d["bank_account"],

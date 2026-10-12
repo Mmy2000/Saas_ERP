@@ -74,6 +74,8 @@ class Settlement(Document):
     karat = models.ForeignKey("catalog.Karat", null=True, blank=True, on_delete=models.PROTECT,
                               related_name="+")
     gross_weight_g = models.DecimalField(max_digits=14, decimal_places=3, null=True, blank=True)
+    # Gold received: grams taken off for impurities before it counts (legacy خسية, GHSH15a).
+    loss_weight_g = models.DecimalField(max_digits=14, decimal_places=3, default=0)
     fine_weight_g = models.DecimalField(max_digits=16, decimal_places=4, null=True, blank=True)
     direction = models.CharField(max_length=16, choices=ConversionDirection.choices, blank=True)
     price_per_fine_g = models.DecimalField(max_digits=18, decimal_places=4, null=True,
@@ -100,3 +102,10 @@ class Settlement(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+    @property
+    def net_weight_g(self):
+        """What counts: the weight less the loss taken off (gold in and out)."""
+        if self.gross_weight_g is None:
+            return None
+        return self.gross_weight_g - (self.loss_weight_g or 0)

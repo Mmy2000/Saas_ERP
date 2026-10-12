@@ -87,6 +87,7 @@ class SettlementInput:
     amount: Decimal | str | None = None
     karat_id: int | None = None
     gross_weight_g: Decimal | str | None = None
+    loss_weight_g: Decimal | str | None = None  # gold in: grams taken off for impurities
     fine_weight_g: Decimal | str | None = None
     direction: str = ""
     price_per_fine_g: Decimal | str | None = None
@@ -144,7 +145,16 @@ def _metal(settlement: Settlement, data: SettlementInput) -> None:
         raise _field_error("karat", _("Choose the karat."))
     settlement.karat = karat
     settlement.gross_weight_g = _positive(data.gross_weight_g, WEIGHT, "gross_weight_g")
-    settlement.fine_weight_g = fine_weight(settlement.gross_weight_g, karat.fineness)
+    loss = Decimal(0)
+    if data.loss_weight_g not in (None, "") and data.kind == SettlementKind.METAL_IN:
+        try:
+            loss = quantize(data.loss_weight_g, WEIGHT)
+        except (TypeError, ValueError, ArithmeticError):
+            raise _field_error("loss_weight_g", _("Enter a number.")) from None
+        if loss < 0 or loss >= settlement.gross_weight_g:
+            raise _field_error("loss_weight_g", _("Less than the weight, and not negative."))
+    settlement.loss_weight_g = loss
+    settlement.fine_weight_g = fine_weight(settlement.net_weight_g, karat.fineness)
     settlement.functional_amount = round_money(
         settlement.fine_weight_g * fine_gram_value(karat.metal.code))
 
@@ -299,7 +309,7 @@ def post_settlement(data: SettlementInput, *, actor=None) -> Settlement:
         if settlement.kind in (SettlementKind.METAL_IN, SettlementKind.METAL_OUT):
             sign = 1 if settlement.kind == SettlementKind.METAL_IN else -1
             move_lot(lot_for(scrap_category(), settlement.karat, branch), qty=0,
-                     gross_weight_g=sign * settlement.gross_weight_g,
+                     gross_weight_g=sign * settlement.net_weight_g,
                      cost_amount=sign * settlement.functional_amount,
                      movement_type=(MovementType.SCRAP_IN if sign > 0 else MovementType.SCRAP_OUT),
                      business_date=today, doc=DocRef(DOC_TYPE, settlement.pk))
@@ -333,7 +343,7 @@ def void_settlement(settlement_id: int, *, reason: str = "", actor=None) -> Sett
         if settlement.kind in (SettlementKind.METAL_IN, SettlementKind.METAL_OUT):
             sign = -1 if settlement.kind == SettlementKind.METAL_IN else 1
             move_lot(lot_for(scrap_category(), settlement.karat, settlement.branch), qty=0,
-                     gross_weight_g=sign * settlement.gross_weight_g,
+                     gross_weight_g=sign * settlement.net_weight_g,
                      cost_amount=sign * settlement.functional_amount,
                      movement_type=(MovementType.SCRAP_IN if sign > 0 else MovementType.SCRAP_OUT),
                      business_date=today, doc=DocRef(DOC_TYPE, settlement.pk))

@@ -3,9 +3,12 @@
 {% block title %}{% translate "Stone parcels" %}{% endblock %}
 {% block head %}<script type="module" src="{% static 'diamonds/js/parcels.js' %}"></script>{% endblock %}
 {% block page_header %}
-<div class="mb-8">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stone parcels" %}</h1>
-  <p class="mt-1 text-sm text-slate-500">{% translate "Small stones kept by weight, without a barcode each: bought into a parcel, sold by the carat, or set into pieces at the parcel's average cost." %}</p>
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Stone parcels" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Small stones kept by weight, without a barcode each: bought into a parcel, sold by the carat, or set into pieces at the parcel's average cost." %}</p>
+  </div>
+  {% can "diamonds.manage" as can_count %}{% if can_count %}<a href="{% url 'parcel-count-new' %}" class="btn btn-secondary shrink-0">{% icon "scale" "size-4" %}{% translate "Count parcels" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}

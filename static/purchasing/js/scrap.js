@@ -157,7 +157,8 @@ if (root) {
     const pick = (selector) => (block.querySelector(selector)?.value ? Number(block.querySelector(selector).value) : null);
     const body = {
       branch: Number($("select[data-branch]").value), lines: lines(), payment: method,
-      party: party ? Number(party) : null, note: $("[data-note]").value.trim(),
+      party: party ? Number(party) : null, party_role: who() === "walk-in" ? "" : who(),
+      note: $("[data-note]").value.trim(),
       cash_box: method === "cash" ? pick("[data-box]") : null,
       bank_account: method === "bank_transfer" ? pick("[data-bank]") : null,
     };

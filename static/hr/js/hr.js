@@ -31,6 +31,29 @@ registerShaper("hr-advance", (_values, form) => {
   };
 });
 
+// Repaid in cash or by transfer, or settled with no money moving (a reason is then required).
+document.querySelectorAll("[data-repay-kind]").forEach((select) => {
+  const form = select.closest("form");
+  const sync = () => {
+    const money = select.value === "repayment";
+    form.querySelector("[data-repay-money]").classList.toggle("hidden", !money);
+    form.querySelector("[data-repay-hint]").classList.toggle("hidden", money);
+  };
+  select.addEventListener("change", sync);
+  sync();
+});
+
+registerShaper("hr-repayment", (_values, form) => {
+  const block = form.querySelector("[data-payment]");
+  const chosen = payment(block);
+  return {
+    kind: block.querySelector("[data-repay-kind]").value,
+    amount: chosen.amount, method: chosen.kind, cash_box: chosen.cash_box, bank_account: chosen.bank_account,
+    branch: Number(block.querySelector("[data-branch]").value),
+    note: block.querySelector("[data-note]").value.trim(),
+  };
+});
+
 registerShaper("hr-adjustment", (values) => ({
   kind: values.kind, amount: values.amount || "", period: values.period, note: values.note || "",
 }));

@@ -71,7 +71,8 @@ def test_gold_balances_and_sales(shop):
         by_day = run("sales", group="day")["Sales"]
         assert by_day.rows[0]["group"] == timezone.localdate()
         expenses = run("expenses")["Expenses"]
-        assert expenses.rows == [{"category": "Rent", "count": 1, "total": Decimal("1000.00")}]
+        assert expenses.rows == [{"category": "Rent", "count": 1, "total": Decimal("1000.00"),
+                                  "refunded": 0, "net": Decimal("1000.00")}]
 
 
 def test_pages_and_csv(tenant_a, shop):

@@ -283,6 +283,30 @@ and symbols), rename it or switch it off. The company currency always stays on, 
 with active cash boxes or bank accounts cannot be switched off. Amounts keep two decimals in
 every currency. Rates are published under Pricing → Exchange rates as before.
 
+### Advances repaid, expense refunds, gold losses, parcels returned, moved and counted
+
+- **Advance repaid or settled** (employee page; legacy GHE20 مرتد سلف, GHE23 التسوية): the
+  employee pays back part of their advances in cash or by transfer (`ER`), or a settlement lowers
+  or raises what they owe with no money moving, against balance adjustments, with a reason
+  (`ES`). Never more than they owe; the next payroll takes back what is left. Cancelling a
+  repayment makes it owed again; an advance already paid back cannot be cancelled.
+- **Expense refunds** (expense page → Money back; legacy GHM13 مرتد المصروفات, which was not
+  tied to the expense): all or part of an expense back into a cash box or bank account (`XR`),
+  valued in proportion to the voucher and never more than is left of it. The expense list shows
+  refunded and net, the expenses report has refunded and net columns, the daily summary lists
+  refunds; an expense with refunds is cancelled only after them.
+- **Gold received with a loss** (Receipts & payments → Gold received; legacy GHSH15a خسية): grams
+  (or a per cent that fills them) taken off for impurities; the party is credited, and the scrap
+  stock takes, the net weight. **Scrap bought or sold on a trade account**: the scrap screens take
+  a trade account as well as a customer or supplier, and "on their account" uses its balance.
+- **Stone parcels** (none of which Gweb did for parcels; it returned, moved and counted single
+  stones only): *Return to the supplier* (`PX`) at the average cost, or an agreed price with the
+  difference to cost of diamonds sold, off the supplier's balance or refunded in cash;
+  *Move to another branch* (`PT`) into a new parcel there (same description, code + branch
+  code) or an existing one of the same kind, the cost through branch clearing; *Count parcels*
+  (`PC`): weigh a branch's parcels and count their stones, missing stones leave and stones found
+  come in at the average cost against stone losses. Each can be cancelled.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

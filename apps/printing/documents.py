@@ -607,7 +607,11 @@ def build_settlement(s, design, ctx=None):
                    (_("Amount"), f"{_num(s.amount)} {s.currency.code}", True)]
     else:
         meta.append((_("Karat"), s.karat.label if s.karat_id else ""))
-        totals += [(_("Weight"), f"{_num(s.gross_weight_g, 3)} {g}", True),
+        if s.loss_weight_g:
+            totals += [(_("Weight"), f"{_num(s.gross_weight_g, 3)} {g}", False),
+                       (_("Loss (g)"), f"{_num(s.loss_weight_g, 3)} {g}", False)]
+        totals += [(_("Net weight") if s.loss_weight_g else _("Weight"),
+                    f"{_num(s.net_weight_g, 3)} {g}", True),
                    (_("Fine gold"), f"{_num(s.fine_weight_g, 4)} {g}", False)]
     meta.append((_("Reference"), s.reference))
     return make_doc(TYPES["settlement"], design, title=title,
