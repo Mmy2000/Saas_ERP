@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.catalog.models import Karat
 from apps.org.models import Branch
-from apps.parties.models import BarcodeWeightRule, Gender, Party, PartyKind
+from apps.parties.models import BarcodeWeightRule, CustomerTier, Gender, Party, PartyKind
 
 
 class PartyReadSerializer(serializers.ModelSerializer):
@@ -37,7 +37,7 @@ class CustomerReadSerializer(PartyReadSerializer):
             return None
         return {"gender": p.gender, "birth_date": p.birth_date, "anniversary": p.anniversary,
                 "ring_size": p.ring_size, "bracelet_size": p.bracelet_size,
-                "preferences": p.preferences}
+                "preferences": p.preferences, "tier": p.tier, "city": p.city}
 
 
 class SupplierReadSerializer(PartyReadSerializer):
@@ -76,6 +76,8 @@ class CustomerWriteSerializer(PartyWriteSerializer):
     ring_size = serializers.CharField(max_length=10, required=False, allow_blank=True)
     bracelet_size = serializers.CharField(max_length=10, required=False, allow_blank=True)
     preferences = serializers.CharField(required=False, allow_blank=True)
+    tier = serializers.ChoiceField(choices=CustomerTier.choices, required=False, allow_blank=True)
+    city = serializers.CharField(max_length=60, required=False, allow_blank=True)
 
 
 class SupplierWriteSerializer(PartyWriteSerializer):

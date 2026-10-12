@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Grades" %}{% endblock %}
+{% block page_header %}
+  {% translate "Grades" as title %}{% translate "The colours, clarities and cuts your stones are graded with. They are offered when stones are entered, and the diamond stock can be filtered by them." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+{% can "diamonds.manage" as can_manage %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  {% for field, label, grades in lists %}
+  <section class="card overflow-hidden" id="{{ field }}">
+    <div class="card-header"><h2 class="card-title">{{ label }}</h2></div>
+    <ul class="divide-y divide-slate-100 text-sm">
+      {% for g in grades %}
+      <li class="flex items-center gap-2 px-4 py-2 {% if not g.is_active %}bg-slate-50 text-slate-400{% endif %}">
+        {% if can_manage %}
+        <form method="post" class="flex min-w-0 flex-1 items-center gap-2">{% csrf_token %}
+          <input type="hidden" name="field" value="{{ field }}"><input type="hidden" name="grade" value="{{ g.pk }}"><input type="hidden" name="action" value="rename">
+          <input name="code" value="{{ g.code }}" maxlength="20" class="form-input min-w-0 flex-1 py-1 {% if not g.is_active %}line-through{% endif %}" aria-label="{{ label }}">
+        </form>
+        <form method="post" class="flex shrink-0 items-center">{% csrf_token %}
+          <input type="hidden" name="field" value="{{ field }}"><input type="hidden" name="grade" value="{{ g.pk }}">
+          {% if not forloop.first %}<button name="action" value="up" class="btn btn-ghost px-1.5 text-xs" aria-label="{% translate 'Move up' %}">{% icon "arrow-up" "size-3.5" %}</button>{% endif %}
+          {% if not forloop.last %}<button name="action" value="down" class="btn btn-ghost px-1.5 text-xs" aria-label="{% translate 'Move down' %}">{% icon "arrow-down" "size-3.5" %}</button>{% endif %}
+          {% if g.is_active %}<button name="action" value="off" class="btn btn-ghost px-1.5 text-xs">{% translate "Switch off" %}</button>
+          {% else %}<button name="action" value="on" class="btn btn-ghost px-1.5 text-xs">{% translate "Switch on" %}</button>
+          <button name="action" value="delete" class="btn btn-ghost px-1.5 text-xs text-red-700" aria-label="{% translate 'Delete' %}">{% icon "trash-2" "size-3.5" %}</button>{% endif %}
+        </form>
+        {% else %}<span class="num">{{ g.code }}</span>{% if not g.is_active %} <span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}{% endif %}
+      </li>
+      {% empty %}<li class="px-4 py-6 text-center text-slate-500">{% translate "None yet" %}</li>{% endfor %}
+    </ul>
+    {% if can_manage %}
+    <form method="post" class="flex gap-2 border-t border-slate-100 p-3">{% csrf_token %}
+      <input type="hidden" name="field" value="{{ field }}"><input type="hidden" name="action" value="add">
+      <input name="code" maxlength="20" class="form-input flex-1" placeholder="{% translate 'New' %}" aria-label="{{ label }}">
+      <button class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "Add" %}</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+<p class="mt-4 flex items-center gap-2 text-xs text-slate-500">{% icon "info" "size-4" %}{% translate "A grade already used on stones cannot be renamed or deleted: switch it off and add the new one. Rename by editing the text and pressing Enter." %}</p>
+{% endblock %}

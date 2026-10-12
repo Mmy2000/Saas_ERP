@@ -86,6 +86,15 @@ class Gender(models.TextChoices):
     MALE = "male", _("Male")
 
 
+class CustomerTier(models.TextChoices):
+    """A shop's own grading of its customers (legacy Cu1.cuclass)."""
+
+    VIP = "vip", _("VIP")
+    A = "a", _("Class A")
+    B = "b", _("Class B")
+    C = "c", _("Class C")
+
+
 class CustomerProfile(TenantScopedModel):
     party = models.OneToOneField(Party, on_delete=models.CASCADE, related_name="customer_profile")
     # Copy of party.phone_e164, kept here so the database can enforce the legacy rule that a
@@ -97,6 +106,8 @@ class CustomerProfile(TenantScopedModel):
     ring_size = models.CharField(max_length=10, blank=True)
     bracelet_size = models.CharField(max_length=10, blank=True)
     preferences = models.TextField(blank=True)
+    tier = models.CharField(max_length=8, choices=CustomerTier.choices, blank=True)
+    city = models.CharField(max_length=60, blank=True)
 
     class Meta:
         constraints = [

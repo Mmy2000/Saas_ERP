@@ -22,7 +22,7 @@ from apps.inventory.models import (
     StocktakeResult,
     StockTransfer,
 )
-from apps.inventory.selectors import stock_by_karat
+from apps.inventory.selectors import filter_pieces, stock_by_karat
 from apps.inventory.stocktakes import summary
 from apps.org.models import Branch, TenantProfile
 
@@ -37,18 +37,9 @@ def stock(request):
         items = items.filter(branch_id__in=branches)
         lots = lots.filter(lot__branch_id__in=branches)
 
-    filters = {key: request.GET.get(key, "") for key in ("q", "status", "branch", "category",
-                                                         "karat")}
-    filters["status"] = filters["status"] or ItemStatus.IN_STOCK
-    if filters["q"]:
-        term = filters["q"].strip()
-        items = items.filter(Q(barcode=term) | Q(barcode__startswith=term)
-                             | Q(external_code=term) | Q(rfid_epc=term))
-    if filters["status"] != "all":
-        items = items.filter(status=filters["status"])
+    items, filters = filter_pieces(items, request.GET)
     for key in ("branch", "category", "karat"):
         if filters[key].isdigit():
-            items = items.filter(**{f"{key}_id": int(filters[key])})
             lots = lots.filter(**{f"lot__{key}_id": int(filters[key])})
 
     page = Paginator(items.order_by("-id"), 30).get_page(request.GET.get("page"))
@@ -84,7 +75,10 @@ def item_detail(request, pk):
 
     context = {"item": item, "movements": movements, "price": _selling_price(item)}
     if diamonds.is_diamond(item.category) and diamonds.enabled():
+        from apps.diamonds.grades import choices as grade_choices
+
         context.update({"diamond": True, "stones": list(item.stones.all()),
+                        "grades": grade_choices(),
                         "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices,
                         "discount_classes": DiscountClass.objects.filter(
                             Q(is_active=True) | Q(pk=item.discount_class_id))})

@@ -24,7 +24,16 @@ from apps.catalog.domain.metal import fine_weight
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.core.models import DocStatus
-from apps.core.numeric import FX_RATE, GRAMS_PER_CARAT, UNIT_PRICE, WEIGHT, quantize, round_money
+from apps.core.numeric import (
+    FINE_WEIGHT,
+    FX_RATE,
+    GRAMS_PER_CARAT,
+    MONEY,
+    UNIT_PRICE,
+    WEIGHT,
+    quantize,
+    round_money,
+)
 from apps.core.sequences import allocate_number
 from apps.inventory.models import ItemStatus, MovementType
 from apps.inventory.services import DocRef, change_item_status, create_item, lot_for, move_lot
@@ -80,9 +89,51 @@ class InvoiceInput:
     supplier_reference: str = ""
     note: str = ""
     seller_role: str = SellerRole.SUPPLIER
+    # Totals on the supplier's own invoice (None = not given), checked against the lines.
+    stated_pieces: int | None = None
+    stated_weight_g: Decimal | str | None = None
+    stated_fine_g: Decimal | str | None = None
+    stated_making_amount: Decimal | str | None = None
 
 
 # --- drafts -----------------------------------------------------------------------------------
+
+STATED = (("stated_pieces", None), ("stated_weight_g", WEIGHT), ("stated_fine_g", FINE_WEIGHT),
+          ("stated_making_amount", MONEY))
+
+
+def _set_stated(invoice, data: InvoiceInput) -> None:
+    for name, step in STATED:
+        value = getattr(data, name)
+        if value in (None, ""):
+            setattr(invoice, name, None)
+            continue
+        try:
+            number = int(value) if step is None else quantize(value, step)
+        except (TypeError, ValueError, ArithmeticError):
+            raise ValidationError(_("Please correct the highlighted fields."),
+                                  fields={name: [_("Enter a number.")]}) from None
+        if number < 0:
+            raise ValidationError(_("Please correct the highlighted fields."),
+                                  fields={name: [_("Must not be negative.")]})
+        setattr(invoice, name, number)
+
+
+def stated_check(invoice, computed: dict) -> list[dict]:
+    """Their totals against ours, for the ones they gave: label, theirs, ours, difference."""
+    gold = computed["fine_by_metal"].get("gold", 0)
+    rows = []
+    for name, label, ours, places in (
+            ("stated_pieces", _("Pieces"), computed["pieces"], 0),
+            ("stated_weight_g", _("Total weight"), computed["gross_weight_g"], 3),
+            ("stated_fine_g", _("Gold owed (fine g)"), gold, 4),
+            ("stated_making_amount", _("Making charges"), computed["making_cost_amount"], 2)):
+        theirs = getattr(invoice, name)
+        if theirs is None:
+            continue
+        rows.append({"label": label, "theirs": theirs, "ours": ours, "places": places,
+                     "difference": ours - theirs})
+    return rows
 
 def _line_error(index: int, field: str, message: str) -> ValidationError:
     return ValidationError(_("Please correct the highlighted fields."),
@@ -199,6 +250,7 @@ def save_draft(data: InvoiceInput, *, invoice_id: int | None = None,
         invoice.business_date = data.business_date
         invoice.supplier_reference = data.supplier_reference.strip()[:60]
         invoice.note = data.note.strip()
+        _set_stated(invoice, data)
         invoice.updated_by = getattr(actor, "user", None)
         invoice.save()
         invoice.lines.all().delete()

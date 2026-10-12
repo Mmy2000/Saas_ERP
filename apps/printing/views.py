@@ -1,3 +1,6 @@
+from decimal import Decimal
+from types import SimpleNamespace
+
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -7,6 +10,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from apps.core.errors import ValidationError
 from apps.iam.authz import permission_required
 from apps.inventory.models import Item, StockTransferLine
+from apps.inventory.selectors import filter_pieces
 from apps.org.models import TenantProfile
 from apps.purchasing.models import SupplierInvoicePiece
 
@@ -25,7 +29,16 @@ def _int(value, default: int, low: int, high: int) -> int:
 
 
 def _items(request) -> list[Item]:
-    """Pieces to label: ?item=1&item=2, ?invoice=<purchase>, ?transfer=<stock transfer>."""
+    """Pieces to label: ?item=1&item=2, ?invoice=<purchase>, ?transfer=<stock transfer>, or
+    ?stock=1 with the stock page's filters (a barcode range, a category, a branch…)."""
+    if request.GET.get("stock") == "1":
+        items, _filters = filter_pieces(
+            Item.objects.select_related("category", "karat__metal", "branch")
+            .prefetch_related("stones"), request.GET)
+        scope = request.actor.branch_ids("inventory.stock.view")
+        if scope is not None:
+            items = items.filter(branch_id__in=scope)
+        return list(items.order_by("barcode")[:MAX_LABELS + 1])
     ids = {int(v) for v in request.GET.getlist("item") if v.isdigit()}
     invoice, transfer = request.GET.get("invoice", ""), request.GET.get("transfer", "")
     if invoice.isdigit():
@@ -36,7 +49,8 @@ def _items(request) -> list[Item]:
         ids |= set(StockTransferLine.objects.filter(transfer_id=int(transfer),
                                                     item__isnull=False)
                    .values_list("item_id", flat=True))
-    items = Item.objects.select_related("category", "karat__metal", "branch").filter(pk__in=ids)
+    items = (Item.objects.select_related("category", "karat__metal", "branch")
+             .prefetch_related("stones").filter(pk__in=ids))
     scope = request.actor.branch_ids("inventory.stock.view")
     if scope is not None:
         items = items.filter(branch_id__in=scope)
@@ -55,6 +69,8 @@ def _template(request) -> LabelTemplate:
 def labels(request):
     template = _template(request)
     items = _items(request)
+    capped = len(items) > MAX_LABELS
+    items = items[:MAX_LABELS]
     copies = _int(request.GET.get("copies"), 1, 1, 20)
     skip = _int(request.GET.get("skip"), 0, 0, max(template.per_page - 1, 0))
     shop = TenantProfile.objects.first().display_name
@@ -64,7 +80,8 @@ def labels(request):
     return render(request, "printing/labels.html", {
         "template": template, "templates": LabelTemplate.objects.filter(is_active=True),
         "pages": paginate(template, built, skip=skip), "items": items, "copies": copies,
-        "skip": skip, "query": query.urlencode(), "count": len(built),
+        "skip": skip, "query": query.urlencode(), "count": len(built), "capped": capped,
+        "max_labels": MAX_LABELS,
         "back": request.META.get("HTTP_REFERER", reverse("stock")),
     })
 
@@ -72,7 +89,7 @@ def labels(request):
 @permission_required("inventory.item.print_label")
 def labels_zpl(request):
     template = _template(request)
-    items = _items(request)
+    items = _items(request)[:MAX_LABELS]
     if not items:
         raise Http404
     shop = TenantProfile.objects.first().display_name
@@ -133,6 +150,8 @@ class _Sample:
     list_making_rate = 250
     stone_weight_ct = 0.12
     label_price = None
+    sample_stones = [SimpleNamespace(count=1, carat=Decimal("0.120"), color="G", clarity="VS1",
+                                     cut="Excellent", lab="IGI", certificate_no="LG612345678")]
 
     class category:  # noqa: N801
         name = "—"

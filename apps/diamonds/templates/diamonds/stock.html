@@ -38,8 +38,27 @@
         {% for c in classes %}<option value="{{ c.pk }}" {% if current == c.pk|stringformat:'s' %}selected{% endif %}>{{ c }}</option>{% endfor %}
       </select>
       <input name="q" value="{{ term }}" class="form-input w-full lg:w-72" placeholder="{% translate 'Barcode, certificate or category' %}">
+      {% for key, value in stone.items %}{% if value %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+      {% for key, value in carats.items %}{% if value != "" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
     </form>
   </div>
+  <details class="border-b border-slate-100" {% if filtered %}open{% endif %}>
+    <summary class="cursor-pointer px-4 py-2.5 text-sm text-slate-600">{% translate "Filter by the stones" %}{% if filtered %} · <a class="text-brand-700 hover:underline" href="?state={{ state }}&amp;family={{ family }}&amp;cls={{ current }}&amp;q={{ term|urlencode }}">{% translate "Clear" %}</a>{% endif %}</summary>
+    <form method="get" class="grid grid-cols-2 gap-3 px-4 pb-4 sm:grid-cols-4 lg:grid-cols-7 lg:items-end">
+      <input type="hidden" name="state" value="{{ state }}"><input type="hidden" name="family" value="{{ family }}"><input type="hidden" name="cls" value="{{ current }}"><input type="hidden" name="q" value="{{ term }}">
+      {% for field, label, codes, chosen in grade_filters %}
+      <label><span class="form-label">{{ label }}</span>
+        <select name="{{ field }}" class="form-input" data-native><option value="">{% translate "Any" %}</option>
+          {% for code in codes %}<option value="{{ code }}" {% if chosen == code %}selected{% endif %}>{{ code }}</option>{% endfor %}</select></label>
+      {% endfor %}
+      <label><span class="form-label">{% translate "Shape" %}</span>
+        <select name="shape" class="form-input" data-native><option value="">{% translate "Any" %}</option>
+          {% for value, label in shapes %}<option value="{{ value }}" {% if stone.shape == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Carats from" %}</span><input name="ct_min" value="{{ carats.ct_min }}" class="form-input num w-full text-start" inputmode="decimal"></label>
+      <label><span class="form-label">{% translate "Carats to" %}</span><input name="ct_max" value="{{ carats.ct_max }}" class="form-input num w-full text-start" inputmode="decimal"></label>
+      <button type="submit" class="btn btn-secondary">{% icon "search" "size-4" %}{% translate "Show" %}</button>
+    </form>
+  </details>
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
@@ -71,8 +90,8 @@
   <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm">
     <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
     <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}{% if grade_query %}&{{ grade_query }}{% endif %}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?state={{ state }}&family={{ family }}&cls={{ current }}&q={{ term|urlencode }}{% if grade_query %}&{{ grade_query }}{% endif %}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
     </div>
   </nav>
   {% endif %}
@@ -83,7 +102,7 @@
   {% endif %}
 </section>
 {% can "diamonds.manage" as can_manage %}
-{% if can_manage and classes and state == "in_stock" and page.object_list %}
+{% if can_manage and classes and state == "in_stock" and page.object_list and not filtered %}
 <form data-api-form data-method="POST" data-endpoint="{% url 'diamonds-class-assign' %}" data-success="{% translate 'Discount class set.' %}"
       class="card mt-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-end" novalidate>
   <input type="hidden" name="family" value="{{ family }}"><input type="hidden" name="q" value="{{ term }}"><input type="hidden" name="current" value="{{ current }}">

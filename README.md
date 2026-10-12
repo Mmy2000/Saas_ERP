@@ -307,6 +307,29 @@ every currency. Rates are published under Pricing → Exchange rates as before.
   (`PC`): weigh a branch's parcels and count their stones, missing stones leave and stones found
   come in at the average cost against stone losses. Each can be cancelled.
 
+### Stone grades, diamond labels, labels by range, customer follow-up, supplier totals
+
+- **Diamonds → Grades** (`apps/diamonds/grades.py`; legacy GHZ12 درجات النقاء, GHZ13 الوان
+  الحجار, GHZ14 Cut): each business's colour, clarity and cut lists, starting from the GIA
+  scales: add, rename (unused codes only), reorder, switch off, delete unused ones. Entering
+  stones offers them, and a value typed in another case is stored as the listed code ("vs1" →
+  "VS1"); other values are kept as typed so Excel and old records still load. The diamond stock
+  filters by colour, clarity, cut, shape and total carats (Gweb's diamond stock had none of these).
+- **Diamond label fields** (Settings → Labels): main stone (count × ct, colour, clarity), colour /
+  clarity, cut, certificate (lab and number) and all stones, from the piece's own stones, on HTML
+  and ZPL labels; Gweb's diamond labels printed carats only.
+- **Labels by barcode range or by filters** (legacy GHD29 من والي, GHD50 لفرع): the stock list takes
+  a branch and a barcode range (codes of the same length), and "Labels for all N pieces shown"
+  prints everything it shows, at most 500 at a time, only from the branches the user may see.
+- **Customer follow-up** (Customers → Find customers to follow up; legacy GHC11, GHC24, GHC26):
+  each customer gets a class (VIP, A, B, C) and a city; the list filters by class, city, home branch,
+  gender, a birthday or anniversary in the next 7 or 30 days, bought in the last / not bought for
+  N days, bought at least, and they owe us / we owe them, shows the last purchase, total bought and
+  balance, and exports what it shows to CSV for Excel (`apps/parties/crm.py`).
+- **Totals on their invoice** (purchase form; Gweb had none): pieces, weight, fine gold and making
+  charges printed on the supplier's invoice, typed in and compared with the lines as they are
+  entered and on the invoice page ("Matches" / "Differs"); differences are shown, not blocked.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

@@ -20,9 +20,9 @@
           <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}" {% if st.shape == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
           <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="{{ st.count }}"></td>
           <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" value="{{ st.carat|stringformat:'s' }}"></td>
-          <td><input class="form-input min-w-20 py-1" data-s="color" value="{{ st.color }}" maxlength="20"></td>
-          <td><input class="form-input min-w-20 py-1" data-s="clarity" value="{{ st.clarity }}" maxlength="20"></td>
-          <td><input class="form-input min-w-28 py-1" data-s="cut" value="{{ st.cut }}" maxlength="20"></td>
+          <td><input class="form-input min-w-20 py-1" data-s="color" list="grade-color" value="{{ st.color }}" maxlength="20"></td>
+          <td><input class="form-input min-w-20 py-1" data-s="clarity" list="grade-clarity" value="{{ st.clarity }}" maxlength="20"></td>
+          <td><input class="form-input min-w-28 py-1" data-s="cut" list="grade-cut" value="{{ st.cut }}" maxlength="20"></td>
           <td><input class="form-input min-w-20 py-1" data-s="lab" value="{{ st.lab }}" maxlength="40"></td>
           <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" value="{{ st.certificate_no }}" maxlength="60"></td>
           <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>
@@ -54,9 +54,9 @@
       <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
       <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="1"></td>
       <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" placeholder="0.50"></td>
-      <td><input class="form-input min-w-20 py-1" data-s="color" maxlength="20"></td>
-      <td><input class="form-input min-w-20 py-1" data-s="clarity" maxlength="20"></td>
-      <td><input class="form-input min-w-28 py-1" data-s="cut" maxlength="20"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="color" list="grade-color" maxlength="20"></td>
+      <td><input class="form-input min-w-20 py-1" data-s="clarity" list="grade-clarity" maxlength="20"></td>
+      <td><input class="form-input min-w-28 py-1" data-s="cut" list="grade-cut" maxlength="20"></td>
       <td><input class="form-input min-w-20 py-1" data-s="lab" maxlength="40"></td>
       <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" maxlength="60"></td>
       <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>

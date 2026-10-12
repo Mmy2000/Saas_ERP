@@ -88,6 +88,7 @@ def test_every_list_takes_the_filters(tenant_a, shop):
         response = client.get(path, params)
         assert response.status_code == 200, path
         assert 'name="from"' in response.content.decode(), path
+        assert client.get(path).status_code == 200, path  # with documents on the page
 
 
 def test_party_pages_link_to_their_documents(tenant_a, shop):

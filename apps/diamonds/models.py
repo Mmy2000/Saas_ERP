@@ -497,3 +497,30 @@ class StoneHandout(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+
+class GradeField(models.TextChoices):
+    COLOR = "color", _("Colour")
+    CLARITY = "clarity", _("Clarity")
+    CUT = "cut", _("Cut")
+
+
+class StoneGrade(TenantScopedModel):
+    """The colours, clarities and cuts a business grades its stones with (legacy GHZ12 درجات
+    النقاء, GHZ13 الوان الحجار, GHZ14 Cut): offered when stones are entered, and the values the
+    diamond stock is filtered by."""
+
+    field = models.CharField(max_length=8, choices=GradeField.choices)
+    code = models.CharField(max_length=20)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["field", "position", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "field", "code"],
+                                    name="diamonds_grade_code_uniq"),
+        ]
+
+    def __str__(self):
+        return self.code

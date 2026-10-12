@@ -34,6 +34,7 @@ TABLES = {
     "printing_documentdesign": _("Document design"),
     "inventory_item": _("Piece"),
     "diamonds_itemstone": _("Stone details"),
+    "diamonds_stonegrade": _("Stone grade"),
 }
 
 COLUMNS = {

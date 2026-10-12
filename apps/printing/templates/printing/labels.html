@@ -30,6 +30,7 @@
       · {{ template.width_mm|floatformat:"-2" }} × {{ template.height_mm|floatformat:"-2" }} {% translate "mm" %} · {{ template.get_media_display }}
       {% if template.media == "roll" %} · {% translate "Set the printer's paper size to the label size and margins to none." %}{% endif %}
     </p>
+    {% if capped %}<p class="mx-auto max-w-6xl px-4 pb-3 text-sm font-medium text-amber-700">{% blocktranslate trimmed with n=max_labels %}Only the first {{ n }} pieces are printed at a time: narrow the filters or the barcode range.{% endblocktranslate %}</p>{% endif %}
   </header>
   {% if items %}
   <main class="pages flex flex-col items-center gap-6 p-8" style="zoom: {% if template.media == 'roll' %}2{% else %}1{% endif %}">

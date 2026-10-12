@@ -103,6 +103,18 @@
             <input id="f-bracelet" name="bracelet_size" class="form-input" value="{{ profile.bracelet_size|default:'' }}" maxlength="10">
           </div>
         </div>
+        <div>
+          <label class="form-label" for="f-tier">{% translate "Customer class" %}</label>
+          <select id="f-tier" name="tier" class="form-input" data-native>
+            <option value="">—</option>
+            {% for value, label in tiers %}<option value="{{ value }}" {% if profile.tier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-city">{% translate "City" %}</label>
+          <input id="f-city" name="city" class="form-input" list="customer-cities" maxlength="60" value="{{ profile.city|default:'' }}">
+          <datalist id="customer-cities">{% for city in cities %}<option value="{{ city }}"></option>{% endfor %}</datalist>
+        </div>
         <div class="sm:col-span-2">
           <label class="form-label" for="f-prefs">{% translate "Preferences" %}</label>
           <textarea id="f-prefs" name="preferences" rows="2" class="form-input">{{ profile.preferences|default:'' }}</textarea>

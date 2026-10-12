@@ -104,7 +104,7 @@ class CustomerViewSet(_PartyViewSet):
     def _profile(validated, instance=None) -> services.CustomerData:
         current = getattr(instance, "customer_profile", None)
         names = ("gender", "birth_date", "anniversary", "ring_size", "bracelet_size",
-                 "preferences")
+                 "preferences", "tier", "city")
         blank = services.CustomerData()
         return services.CustomerData(**{
             n: validated[n] if n in validated

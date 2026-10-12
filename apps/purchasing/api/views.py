@@ -13,6 +13,9 @@ def invoice_input(data) -> services.InvoiceInput:
         supplier_id=data["supplier"], branch_id=data["branch"],
         business_date=data["business_date"], currency_code=data["currency"],
         fx_rate=data["fx_rate"], supplier_reference=data["supplier_reference"],
+        stated_pieces=data["stated_pieces"], stated_weight_g=data["stated_weight_g"] or None,
+        stated_fine_g=data["stated_fine_g"] or None,
+        stated_making_amount=data["stated_making_amount"] or None,
         note=data["note"], seller_role=data["seller_role"],
         lines=tuple(services.LineInput(
             category_id=line["category"], karat_id=line["karat"], qty=line["qty"],

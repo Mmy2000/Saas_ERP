@@ -28,14 +28,53 @@
       <option value="all" {% if status == "all" %}selected{% endif %}>{% translate "All" %}</option>
     </select>
     <button class="btn btn-secondary" type="submit">{% translate "Search" %}</button>
+    {% if role == "customer" %}{% for key, value in crm.items %}{% if value %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}{% endif %}
   </form>
+  {% if role == "customer" %}
+  <details class="border-b border-slate-100" {% if crm_on %}open{% endif %}>
+    <summary class="cursor-pointer px-4 py-2.5 text-sm text-slate-600">{% translate "Find customers to follow up" %}{% if crm_on %} · <a class="text-brand-700 hover:underline" href="?q={{ term|urlencode }}&amp;status={{ status }}">{% translate "Clear" %}</a>{% endif %}</summary>
+    <form method="get" class="grid grid-cols-2 gap-3 px-4 pb-4 sm:grid-cols-3 lg:grid-cols-5 lg:items-end">
+      <input type="hidden" name="q" value="{{ term }}"><input type="hidden" name="status" value="{{ status }}">
+      <label><span class="form-label">{% translate "Customer class" %}</span>
+        <select name="tier" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for value, label in tiers %}<option value="{{ value }}" {% if crm.tier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "City" %}</span>
+        <select name="city" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for city in cities %}<option value="{{ city }}" {% if crm.city == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
+      {% if branches|length > 1 %}<label><span class="form-label">{% translate "Branch" %}</span>
+        <select name="branch" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for b in branches %}<option value="{{ b.pk }}" {% if crm.branch == b.pk|stringformat:"d" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
+      <label><span class="form-label">{% translate "Gender" %}</span>
+        <select name="gender" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for value, label in genders %}<option value="{{ value }}" {% if crm.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Birthday" %}</span>
+        <select name="birthday" class="form-input" data-native><option value="">{% translate "Any time" %}</option>
+          <option value="week" {% if crm.birthday == "week" %}selected{% endif %}>{% translate "In the next 7 days" %}</option>
+          <option value="month" {% if crm.birthday == "month" %}selected{% endif %}>{% translate "In the next 30 days" %}</option></select></label>
+      <label><span class="form-label">{% translate "Anniversary" %}</span>
+        <select name="anniversary" class="form-input" data-native><option value="">{% translate "Any time" %}</option>
+          <option value="week" {% if crm.anniversary == "week" %}selected{% endif %}>{% translate "In the next 7 days" %}</option>
+          <option value="month" {% if crm.anniversary == "month" %}selected{% endif %}>{% translate "In the next 30 days" %}</option></select></label>
+      <label><span class="form-label">{% translate "Bought in the last (days)" %}</span>
+        <input name="bought" value="{{ crm.bought }}" class="form-input num w-full text-start" inputmode="numeric"></label>
+      <label><span class="form-label">{% translate "Not bought for (days)" %}</span>
+        <input name="not_bought" value="{{ crm.not_bought }}" class="form-input num w-full text-start" inputmode="numeric"></label>
+      <label><span class="form-label">{% translate "Bought at least" %}</span>
+        <input name="min_total" value="{{ crm.min_total }}" class="form-input num w-full text-start" inputmode="decimal"></label>
+      <label><span class="form-label">{% translate "Balance" %}</span>
+        <select name="balance" class="form-input" data-native><option value="">{% translate "Any" %}</option>
+          <option value="owes" {% if crm.balance == "owes" %}selected{% endif %}>{% translate "They owe us" %}</option>
+          <option value="owed" {% if crm.balance == "owed" %}selected{% endif %}>{% translate "We owe them" %}</option></select></label>
+      <div class="col-span-2 flex gap-2 sm:col-span-3 lg:col-span-5">
+        <button type="submit" class="btn btn-secondary">{% icon "search" "size-4" %}{% translate "Show" %}</button>
+        <a href="?{{ query }}&amp;format=csv" class="btn btn-ghost">{% icon "list" "size-4" %}{% translate "Excel (CSV)" %}</a>
+      </div>
+    </form>
+  </details>
+  {% endif %}
 
   {% if page.object_list %}
   <div class="overflow-x-auto">
     <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr>
         <th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Phone" %}</th>
-        <th>{% translate "Branch" %}</th><th>{% translate "Status" %}</th><th></th>
+        <th>{% translate "Branch" %}</th>{% if role == "customer" %}<th>{% translate "City" %}</th><th>{% translate "Last purchase" %}</th><th class="text-end">{% translate "Bought" %}</th><th class="text-end">{% translate "Balance" %}</th>{% endif %}<th>{% translate "Status" %}</th><th></th>
       </tr></thead>
       <tbody>
       {% for party in page.object_list %}
@@ -44,9 +83,14 @@
           <td>
             <div class="font-medium text-slate-900">{{ party.name }}</div>
             {% if party.kind == "organization" %}<div class="text-xs text-slate-500">{{ party.get_kind_display }}</div>{% endif %}
+            {% if party.customer_profile.tier %}<span class="badge badge-brand">{{ party.customer_profile.get_tier_display }}</span>{% endif %}
           </td>
           <td><span class="num">{{ party.phone|default:"—" }}</span></td>
           <td>{{ party.home_branch.name|default:"—" }}</td>
+          {% if role == "customer" %}<td>{{ party.customer_profile.city|default:"—" }}</td>
+          <td><span class="num">{{ party.last_sale|date:"SHORT_DATE_FORMAT"|default:"—" }}</span></td>
+          <td class="text-end"><span class="num">{{ party.bought|num:2 }}</span></td>
+          <td class="text-end"><span class="num {% if party.balance > 0 %}text-amber-700{% elif party.balance < 0 %}text-emerald-700{% endif %}">{{ party.balance|num:2 }}</span></td>{% endif %}
           <td>{% if party.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
           <td class="text-end">{% if can_edit %}<a class="btn btn-ghost text-xs" href="{% url config.edit_url party.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
@@ -58,13 +102,13 @@
   <nav class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm" aria-label="{% translate 'Pagination' %}">
     <p class="text-slate-500">{% blocktranslate trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}Showing {{ start }}–{{ end }} of {{ total }}{% endblocktranslate %}</p>
     <div class="flex gap-2">
-      {% if page.has_previous %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
-      {% if page.has_next %}<a class="btn btn-secondary" href="?q={{ term|urlencode }}&status={{ status }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
+      {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.previous_page_number }}">{% translate "Previous" %}</a>{% endif %}
+      {% if page.has_next %}<a class="btn btn-secondary" href="?{{ query }}&page={{ page.next_page_number }}">{% translate "Next" %}</a>{% endif %}
     </div>
   </nav>
   {% endif %}
   {% else %}
-    {% if term %}
+    {% if term or crm_on %}
       {% translate "Nothing matches your search" as empty_title %}
       {% translate "Try part of the name, the phone number or the code." as empty_text %}
       {% include "components/empty_state.html" with icon="search" title=empty_title text=empty_text %}

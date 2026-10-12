@@ -32,6 +32,15 @@ class InvoiceWriteSerializer(serializers.Serializer):
     currency = serializers.CharField(max_length=3)
     fx_rate = serializers.DecimalField(max_digits=18, decimal_places=8, required=False,
                                        allow_null=True, default=None)
+    stated_pieces = serializers.IntegerField(required=False, allow_null=True, min_value=0,
+                                             default=None)
+    stated_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                            allow_null=True, default=None)
+    stated_fine_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                          allow_null=True, default=None)
+    stated_making_amount = serializers.CharField(max_length=30, required=False,
+                                                 allow_blank=True, allow_null=True,
+                                                 default=None)
     supplier_reference = serializers.CharField(max_length=60, required=False, allow_blank=True,
                                                default="")
     note = serializers.CharField(required=False, allow_blank=True, default="")
@@ -68,6 +77,8 @@ class InvoiceReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = SupplierInvoice
         fields = ["id", "number", "status", "branch", "business_date", "supplier",
-                  "seller_role", "supplier_name", "supplier_reference", "currency", "fx_rate",
+                  "seller_role", "supplier_name", "supplier_reference", "stated_pieces",
+                  "stated_weight_g", "stated_fine_g", "stated_making_amount",
+                  "currency", "fx_rate",
                   "note", "posted_at", "voided_at", "void_reason", "journal_entry",
                   "journal_entry_number", "lines"]

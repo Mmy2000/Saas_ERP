@@ -1,7 +1,8 @@
 from django.core.paginator import Paginator
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Karat
@@ -10,7 +11,8 @@ from apps.ledger.models import Account, Commodity
 from apps.ledger.selectors import party_balance
 from apps.ledger.statements import party_statement
 from apps.org.models import Branch, TenantProfile
-from apps.parties.models import BarcodeWeightRule, Gender, PartyKind, PartyRoleType
+from apps.parties import crm
+from apps.parties.models import BarcodeWeightRule, CustomerTier, Gender, PartyKind, PartyRoleType
 from apps.parties.selectors import parties_with_role, search
 
 ROLES = {
@@ -119,9 +121,22 @@ def _list(request, role):
     queryset = search(parties_with_role(role), term).order_by("-code")
     if status in ("active", "inactive"):
         queryset = queryset.filter(is_active=status == "active")
+    crm_filters = {}
+    if role == PartyRoleType.CUSTOMER:
+        queryset, crm_filters = crm.apply(queryset, request.GET)
+        if request.GET.get("format") == "csv":
+            response = HttpResponse(crm.export_csv(queryset), content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="customers.csv"'
+            return response
+    query = urlencode({k: v for k, v in {"q": term, "status": status, **crm_filters}.items()
+                       if v})
     page = Paginator(queryset, 25).get_page(request.GET.get("page"))
     return render(request, "parties/list.html", {
         "role": role, "config": config, "page": page, "term": term, "status": status,
+        "crm": crm_filters, "query": query, "crm_on": any(crm_filters.values()),
+        **({"tiers": CustomerTier.choices, "cities": crm.cities(), "genders": Gender.choices,
+            "branches": Branch.objects.filter(is_active=True).order_by("code")}
+           if role == PartyRoleType.CUSTOMER else {}),
     })
 
 
@@ -154,6 +169,8 @@ def _form(request, role, pk=None):
         "kinds": PartyKind.choices, "genders": Gender.choices,
         "karats": Karat.objects.filter(is_active=True).select_related("metal"),
         "barcode_rules": BarcodeWeightRule.choices,
+        "tiers": CustomerTier.choices,
+        "cities": crm.cities() if role == PartyRoleType.CUSTOMER else [],
         "list_url": reverse(config["list_url"]),
     })
 

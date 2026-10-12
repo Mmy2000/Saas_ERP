@@ -51,6 +51,19 @@ function refreshTotals() {
   });
   form.querySelector('[data-total="pieces"]').textContent = pieces;
   form.querySelector('[data-total="weight"]').textContent = formatGrams(weight);
+  // Their invoice's totals, when typed: the difference with the lines, as it is entered.
+  const show = (key, ours, format) => {
+    const input = form.querySelector(`[data-stated="${key}"]`);
+    const slot = form.querySelector(`[data-stated-diff="${key}"]`);
+    if (!input || !slot) return;
+    const theirs = key === "pieces" ? (input.value.trim() === "" ? null : BigInt(Number(input.value) || 0)) : grams(input.value);
+    if (theirs === null || input.value.trim() === "") { slot.textContent = ""; return; }
+    const difference = BigInt(ours) - theirs;
+    slot.textContent = difference === 0n ? "✓" : `${difference > 0n ? "+" : ""}${format(difference)}`;
+    slot.className = `text-xs ${difference === 0n ? "text-emerald-700" : "font-medium text-red-600"}`;
+  };
+  show("pieces", pieces, (d) => d.toString());
+  show("weight", weight, formatGrams);
 }
 
 function applyCategoryDefaults(row) {
@@ -132,6 +145,10 @@ registerShaper("supplier-invoice", (values, formElement) => {
     currency: values.currency,
     fx_rate: values.fx_rate ?? null,
     supplier_reference: values.supplier_reference ?? "",
+    stated_pieces: values.stated_pieces === null || values.stated_pieces === undefined || values.stated_pieces === "" ? null : Number(values.stated_pieces),
+    stated_weight_g: values.stated_weight_g ?? null,
+    stated_fine_g: values.stated_fine_g ?? null,
+    stated_making_amount: values.stated_making_amount ?? null,
     note: values.note ?? "",
     lines,
   };

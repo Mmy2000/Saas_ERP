@@ -1,0 +1,2 @@
+{# Datalists of the stone grades (apps.diamonds.grades.choices) for colour / clarity / cut inputs. #}
+{% for field, codes in grades.items %}<datalist id="grade-{{ field }}">{% for code in codes %}<option value="{{ code }}"></option>{% endfor %}</datalist>{% endfor %}

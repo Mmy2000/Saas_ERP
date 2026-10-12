@@ -12,7 +12,7 @@ from apps.iam.authz import permission_required
 from apps.org.models import Branch
 from apps.pricing.selectors import functional_currency
 from apps.purchasing.models import SupplierInvoice, SupplierInvoiceLine, seller_from_query
-from apps.purchasing.services import totals
+from apps.purchasing.services import stated_check, totals
 
 
 def _visible(request):
@@ -30,7 +30,7 @@ def invoices(request):
         choices=[Choice("status", _("Status"), [("", _("All"))] + list(DocStatus.choices),
                         "status")])
     found = filters.apply(_visible(request))
-    lines = SupplierInvoiceLine.objects.filter(
+    sums = SupplierInvoiceLine.objects.filter(
         invoice__in=found.filter(status=DocStatus.POSTED).values("pk")).aggregate(
         weight=Sum("gross_weight_g"), making=Sum("making_cost_amount"))
     page = filters.page(found.prefetch_related("lines").order_by("-business_date", "-id"))
@@ -40,8 +40,8 @@ def invoices(request):
         invoice.making = sum(line.making_cost_amount for line in lines)
     return render(request, "purchasing/invoices.html", {
         "page": page, "filters": filters,
-        "totals": [Total(_("Weight"), lines["weight"] or 0, 3, _("g")),
-                   Total(_("Making cost"), lines["making"] or 0)],
+        "totals": [Total(_("Weight"), sums["weight"] or 0, 3, _("g")),
+                   Total(_("Making cost"), sums["making"] or 0)],
     })
 
 
@@ -100,8 +100,11 @@ def invoice_detail(request, pk):
         raise Http404
     lines = invoice.lines.select_related("category", "karat__metal").prefetch_related(
         "pieces__item")
+    computed = totals(invoice)
+    stated = stated_check(invoice, computed)
     return render(request, "purchasing/invoice_detail.html", {
-        "invoice": invoice, "lines": lines, "totals": totals(invoice),
+        "invoice": invoice, "lines": lines, "totals": computed,
+        "stated": stated, "stated_differs": any(row["difference"] for row in stated),
         "endpoint": reverse("supplier-invoice-detail", args=[invoice.pk]),
         "home_currency": functional_currency(),
     })

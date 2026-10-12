@@ -24,6 +24,12 @@ FIELDS = {
     "weight": gettext_lazy("Weight"),
     "making": gettext_lazy("Making charge per gram"),
     "stones": gettext_lazy("Stones (ct)"),
+    # Diamond pieces: the stones' grading (Gweb's diamond labels printed carats only).
+    "main_stone": gettext_lazy("Main stone (ct, colour, clarity)"),
+    "grade": gettext_lazy("Colour / clarity"),
+    "cut": gettext_lazy("Cut"),
+    "certificate": gettext_lazy("Certificate"),
+    "all_stones": gettext_lazy("All stones"),
     "price": gettext_lazy("Label price"),
     "branch": gettext_lazy("Branch"),
 }
@@ -33,6 +39,41 @@ DOTS_PER_MM = 8  # 203 dpi, the usual Zebra thermal head
 
 def _plain(value: Decimal, places: int) -> str:
     return str(Decimal(value).quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP))
+
+
+def _stones(item) -> list:
+    """The piece's stones, the biggest first (a preview sample carries its own)."""
+    if not getattr(item, "pk", None):
+        return list(getattr(item, "sample_stones", []))
+    return sorted(item.stones.all(), key=lambda s: s.carat / (s.count or 1), reverse=True)
+
+
+def _ct(value) -> str:
+    return f"{Decimal(value).normalize():f}"
+
+
+def _stone_text(key: str, item) -> str:
+    stones = _stones(item)
+    if not stones:
+        return ""
+    main = stones[0]
+    if key == "main_stone":
+        each = main.carat / (main.count or 1)
+        parts = [f"{main.count}×{_ct(each)} ct" if main.count > 1 else f"{_ct(each)} ct",
+                 main.color, main.clarity]
+        return " ".join(part for part in parts if part)
+    if key == "grade":
+        return " / ".join(part for part in (main.color, main.clarity) if part)
+    if key == "cut":
+        return main.cut
+    if key == "certificate":
+        return " ".join(part for part in (main.lab, main.certificate_no) if part) \
+            if main.certificate_no else ""
+    if key == "all_stones":
+        return " + ".join(
+            " ".join(part for part in (f"{s.count}×{_ct(s.carat / (s.count or 1))}",
+                                       s.color, s.clarity) if part) for s in stones)
+    return ""
 
 
 def field_text(key: str, item, shop: str = "") -> str:
@@ -57,6 +98,8 @@ def field_text(key: str, item, shop: str = "") -> str:
         return num(item.label_price, 0) if item.label_price else ""
     if key == "branch":
         return item.branch.name
+    if key in ("main_stone", "grade", "cut", "certificate", "all_stones"):
+        return _stone_text(key, item)
     return ""
 
 
@@ -125,6 +168,9 @@ def _zpl_text(key: str, item, shop: str) -> str:
         return f"{_plain(item.stone_weight_ct, 2)} ct" if item.stone_weight_ct else ""
     if key == "price":
         return _plain(item.label_price, 0) if item.label_price else ""
+    if key in ("main_stone", "grade", "cut", "certificate", "all_stones"):
+        text = _stone_text(key, item).replace("×", "x")
+        return text if text.isascii() else ""
     with translation.override("en"):
         text = field_text(key, item, shop)
     return text if text.isascii() else ""

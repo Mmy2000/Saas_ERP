@@ -1,9 +1,12 @@
+from decimal import Decimal, InvalidOperation
+
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency, ItemCategory, Karat, ProductFamily, Tracking
@@ -13,10 +16,11 @@ from apps.inventory.models import DiscountClass, Item, ItemStatus
 from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 
-from . import certificates
+from . import certificates, grades
 from .models import (
     BuyBack,
     CertificateCheck,
+    GradeField,
     HandoutKind,
     ItemStone,
     JobLineState,
@@ -66,6 +70,22 @@ def stock(request):
         items = items.filter(discount_class__isnull=True)
     elif current.isdigit():
         items = items.filter(discount_class_id=int(current))
+    # A stone of the piece with this colour / clarity / cut / shape; total carats in a range.
+    stone = {key: request.GET.get(key, "").strip() for key in ("color", "clarity", "cut",
+                                                                "shape")}
+    for key, value in stone.items():
+        if value:
+            items = items.filter(**{f"stones__{key}__iexact": value})
+    carats = {}
+    for key, lookup in (("ct_min", "gte"), ("ct_max", "lte")):
+        try:
+            carats[key] = Decimal(request.GET.get(key, "").strip())
+            items = items.filter(**{f"stone_weight_ct__{lookup}": carats[key]})
+        except (InvalidOperation, ValueError):
+            carats[key] = ""
+    if any(stone.values()):
+        items = items.distinct()
+    lists = grades.choices()
     totals = items.aggregate(n=Count("id", distinct=True), ct=Sum("stone_weight_ct"),
                              cost=Sum("stone_cost_amount"), label=Sum("label_price"))
     page = Paginator(items.order_by("-created_at", "-id"), 30).get_page(request.GET.get("page"))
@@ -74,9 +94,54 @@ def stock(request):
     return render(request, "diamonds/stock.html", {
         "page": page, "state": state, "family": family, "term": term, "totals": totals,
         "current": current, "classes": DiscountClass.objects.all(),
+        "stone": stone, "carats": carats,
+        "shapes": StoneShape.choices,
+        "filtered": any(stone.values()) or any(v != "" for v in carats.values()),
+        "grade_filters": [(field, label, lists[field], stone[field])
+                          for field, label in GradeField.choices],
+        "grade_query": urlencode({k: v for k, v in {**stone, **carats}.items() if v != ""}),
         "families": [(value, label) for value, label in ProductFamily.choices
                      if value in FAMILIES],
         "home_currency": functional_currency(),
+    })
+
+
+@permission_required("diamonds.view")
+def grade_lists(request):
+    """Colour, clarity and cut lists (legacy GHZ12-GHZ14): add, rename, order, switch off."""
+    from django.contrib import messages
+
+    from apps.core.errors import DomainError, ValidationError
+
+    from .models import StoneGrade
+
+    if request.method == "POST":
+        request.actor.require(grades.MANAGE)
+        action, pk = request.POST.get("action", ""), request.POST.get("grade", "")
+        try:
+            if action == "add":
+                grades.add_grade(request.POST.get("field", ""), request.POST.get("code", ""),
+                                 actor=request.actor)
+            elif pk.isdigit() and action == "rename":
+                grades.update_grade(int(pk), code=request.POST.get("code", ""),
+                                    actor=request.actor)
+            elif pk.isdigit() and action in ("on", "off"):
+                grades.update_grade(int(pk), is_active=action == "on", actor=request.actor)
+            elif pk.isdigit() and action in ("up", "down"):
+                grades.update_grade(int(pk), move=-1 if action == "up" else 1,
+                                    actor=request.actor)
+            elif pk.isdigit() and action == "delete":
+                grades.delete_grade(int(pk), actor=request.actor)
+        except (ValidationError, DomainError) as exc:
+            messages.error(request, " ".join(
+                str(m) for problems in (getattr(exc, "fields", None) or {}).values()
+                for m in problems) or str(exc))
+        return redirect(f"{reverse('grade-lists')}#{request.POST.get('field', '')}")
+    grades.ensure_defaults()
+    found = list(StoneGrade.objects.order_by("position", "id"))
+    return render(request, "diamonds/grades.html", {
+        "lists": [(value, label, [g for g in found if g.field == value])
+                  for value, label in GradeField.choices],
     })
 
 
@@ -92,7 +157,7 @@ def receive(request):
         "currencies": Currency.objects.filter(is_active=True),
         "home_currency": functional_currency(),
         "kinds": StoneKind.choices, "shapes": StoneShape.choices,
-        "classes": DiscountClass.objects.filter(is_active=True),
+        "classes": DiscountClass.objects.filter(is_active=True), "grades": grades.choices(),
     })
 
 

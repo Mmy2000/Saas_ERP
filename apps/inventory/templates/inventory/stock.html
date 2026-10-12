@@ -40,6 +40,14 @@
 <section class="card mt-6 overflow-hidden">
   <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2></div>
   <form method="get" class="grid grid-cols-1 gap-3 border-b border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+    {% if branches|length > 1 %}<label><span class="form-label">{% translate "Branch" %}</span>
+      <select name="branch" class="form-input"><option value="">{% translate "All" %}</option>
+        {% for branch in branches %}<option value="{{ branch.pk }}" {% if filters.branch == branch.pk|stringformat:"d" %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+      </select></label>{% endif %}
+    <label><span class="form-label">{% translate "Barcode from" %}</span>
+      <input name="from_code" value="{{ filters.from_code }}" class="form-input num w-full text-start" inputmode="numeric" autocomplete="off"></label>
+    <label><span class="form-label">{% translate "Barcode to" %}</span>
+      <input name="to_code" value="{{ filters.to_code }}" class="form-input num w-full text-start" inputmode="numeric" autocomplete="off"></label>
     <label class="lg:col-span-2"><span class="form-label">{% translate "Barcode" %}</span>
       <input name="q" value="{{ filters.q }}" class="form-input num w-full text-start" autofocus autocomplete="off" placeholder="{% translate 'Scan or type' %}"></label>
     <label><span class="form-label">{% translate "Status" %}</span>
@@ -60,7 +68,8 @@
   {% if page.object_list %}
   {% can "inventory.item.print_label" as can_label %}
   {% if can_label %}
-  <form id="labels-form" action="{% url 'labels' %}" method="get" class="flex items-center justify-end border-b border-slate-100 px-4 py-2">
+  <form id="labels-form" action="{% url 'labels' %}" method="get" class="flex flex-wrap items-center justify-end gap-2 border-b border-slate-100 px-4 py-2">
+    <a href="{% url 'labels' %}?stock=1&amp;{{ query }}" class="btn btn-ghost text-xs">{% icon "printer" "size-4" %}{% blocktranslate count n=page.paginator.count %}Labels for the {{ n }} piece shown{% plural %}Labels for all {{ n }} pieces shown{% endblocktranslate %}</a>
     <button type="submit" class="btn btn-secondary text-xs" data-needs-checked="item">{% icon "printer" "size-4" %}{% translate "Print labels" %}</button>
   </form>
   {% endif %}

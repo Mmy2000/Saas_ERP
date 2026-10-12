@@ -66,3 +66,38 @@ def fine_grams_in_stock(branch_ids=None) -> dict[str, Decimal]:
         if line.karat is not None:
             totals[line.karat.metal.code] += line.fine_weight_g
     return dict(totals)
+
+
+PIECE_FILTERS = ("q", "status", "branch", "category", "karat", "from_code", "to_code")
+
+
+def filter_pieces(items, params) -> tuple[object, dict[str, str]]:
+    """Pieces narrowed by the stock page's filters (barcode or code typed, status, branch,
+    category, karat, a barcode range). Used by the stock list and by printing labels for
+    everything it shows (legacy GHD29 by range, GHD50 by filters)."""
+    from django.db.models import Q
+    from django.db.models.functions import Length
+
+    from .models import ItemStatus
+
+    filters = {key: str(params.get(key, "") or "").strip() for key in PIECE_FILTERS}
+    filters["status"] = filters["status"] or ItemStatus.IN_STOCK
+    if filters["q"]:
+        term = filters["q"]
+        items = items.filter(Q(barcode=term) | Q(barcode__startswith=term)
+                             | Q(external_code=term) | Q(rfid_epc=term))
+    if filters["status"] != "all":
+        items = items.filter(status=filters["status"])
+    for key in ("branch", "category", "karat"):
+        if filters[key].isdigit():
+            items = items.filter(**{f"{key}_id": int(filters[key])})
+    low, high = filters["from_code"], filters["to_code"]
+    if low or high:
+        # Barcodes are digit strings: compare those of the same length as the range's ends.
+        width = len(low or high)
+        items = items.annotate(code_len=Length("barcode")).filter(code_len=width)
+        if low:
+            items = items.filter(barcode__gte=low)
+        if high:
+            items = items.filter(barcode__lte=high)
+    return items, filters

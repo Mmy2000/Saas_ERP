@@ -72,6 +72,20 @@
       </dl>
     </section>
 
+    {% if stated %}
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Against their invoice" %}</h2>
+        {% if stated_differs %}<span class="badge badge-warning">{% translate "Differs" %}</span>{% else %}<span class="badge badge-success">{% translate "Matches" %}</span>{% endif %}</div>
+      <table class="table text-sm">
+        <thead><tr><th></th><th class="text-end">{% translate "Theirs" %}</th><th class="text-end">{% translate "Ours" %}</th><th class="text-end">{% translate "Difference" %}</th></tr></thead>
+        <tbody>{% for row in stated %}
+          <tr><td>{{ row.label }}</td><td class="text-end"><span class="num">{{ row.theirs|num:row.places }}</span></td><td class="text-end"><span class="num">{{ row.ours|num:row.places }}</span></td>
+            <td class="text-end"><span class="num {% if row.difference %}font-medium text-red-600{% else %}text-emerald-700{% endif %}">{% if row.difference %}{{ row.difference|num:row.places }}{% else %}✓{% endif %}</span></td></tr>
+        {% endfor %}</tbody>
+      </table>
+    </section>
+    {% endif %}
+
     {% if invoice.status == "draft" %}
       {% if can_post %}
       <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}post/" data-success="{% translate 'Posted. The goods are in stock.' %}" class="card card-body space-y-3">

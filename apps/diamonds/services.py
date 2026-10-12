@@ -93,7 +93,11 @@ class StoneInput:
 
 
 def clean_stones(stones, field_name: str = "stones") -> list[dict]:
-    """Validate stone rows (StoneInput or dicts) into plain dicts, as kept on purchase pieces."""
+    """Validate stone rows (StoneInput or dicts) into plain dicts, as kept on purchase pieces.
+    Colour, clarity and cut typed in another case become the listed grade ("vs1" → "VS1")."""
+    from .grades import normalizer
+
+    normalize = normalizer()
     cleaned = []
     for index, stone in enumerate(stones):
         data = stone if isinstance(stone, dict) else stone.__dict__
@@ -125,6 +129,8 @@ def clean_stones(stones, field_name: str = "stones") -> list[dict]:
                 ("color", 20), ("clarity", 20), ("cut", 20), ("lab", 40),
                 ("certificate_no", 60), ("note", 200))},
         })
+        for key in ("color", "clarity", "cut"):
+            cleaned[-1][key] = normalize(key, cleaned[-1][key])
     return cleaned
 
 

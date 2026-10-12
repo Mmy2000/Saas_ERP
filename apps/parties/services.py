@@ -19,6 +19,7 @@ from .domain import InvalidPhone, normalize_national_id, normalize_phone
 from .models import (
     BarcodeWeightRule,
     CustomerProfile,
+    CustomerTier,
     Party,
     PartyKind,
     PartyRole,
@@ -50,6 +51,8 @@ class CustomerData:
     ring_size: str = ""
     bracelet_size: str = ""
     preferences: str = ""
+    tier: str = ""
+    city: str = ""
 
 
 @dataclass(frozen=True)
@@ -149,6 +152,8 @@ def _save_customer_profile(party: Party, data: CustomerData) -> None:
     profile.ring_size = data.ring_size.strip()
     profile.bracelet_size = data.bracelet_size.strip()
     profile.preferences = data.preferences.strip()
+    profile.tier = data.tier if data.tier in CustomerTier.values else ""
+    profile.city = data.city.strip()[:60]
     try:
         with transaction.atomic():
             profile.save()

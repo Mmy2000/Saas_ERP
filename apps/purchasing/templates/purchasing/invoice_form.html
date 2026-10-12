@@ -69,6 +69,17 @@
   </section>
 
   <section class="card">
+    <div class="card-header"><div><h2 class="card-title">{% translate "Totals on their invoice" %}</h2>
+      <p class="mt-0.5 text-xs text-slate-500">{% translate "Optional: type the totals printed on the supplier's invoice to check the lines against them." %}</p></div></div>
+    <div class="card-body grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <label><span class="form-label">{% translate "Pieces" %}</span><input name="stated_pieces" class="form-input num w-full text-start" inputmode="numeric" data-empty="null" data-stated="pieces" value="{{ invoice.stated_pieces|default_if_none:'' }}"><span class="text-xs" data-stated-diff="pieces"></span><span class="form-error" data-error-for="stated_pieces"></span></label>
+      <label><span class="form-label">{% translate "Total weight (g)" %}</span><input name="stated_weight_g" class="form-input num w-full text-start" inputmode="decimal" data-empty="null" data-stated="weight" value="{{ invoice.stated_weight_g|default_if_none:'' }}"><span class="text-xs" data-stated-diff="weight"></span><span class="form-error" data-error-for="stated_weight_g"></span></label>
+      <label><span class="form-label">{% translate "Gold owed (fine g)" %}</span><input name="stated_fine_g" class="form-input num w-full text-start" inputmode="decimal" data-empty="null" value="{{ invoice.stated_fine_g|default_if_none:'' }}"><span class="form-error" data-error-for="stated_fine_g"></span></label>
+      <label><span class="form-label">{% translate "Making charges" %}</span><input name="stated_making_amount" class="form-input num w-full text-start" inputmode="decimal" data-empty="null" value="{{ invoice.stated_making_amount|default_if_none:'' }}"><span class="form-error" data-error-for="stated_making_amount"></span></label>
+    </div>
+  </section>
+
+  <section class="card">
     <div class="card-body">
       <label class="form-label" for="f-note">{% translate "Note" %}</label>
       <textarea id="f-note" name="note" rows="2" class="form-input">{{ invoice.note|default:'' }}</textarea>

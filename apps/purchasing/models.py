@@ -54,6 +54,13 @@ class SupplierInvoice(SellerMixin, Document):
     # Company-currency units per invoice-currency unit; blank on drafts = use the rate in force
     # on the business date when posting.
     fx_rate = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
+    # The totals printed on the supplier's own invoice, typed in to check the lines against
+    # (blank = not given). Differences are shown, not blocked.
+    stated_pieces = models.PositiveIntegerField(null=True, blank=True)
+    stated_weight_g = models.DecimalField(max_digits=16, decimal_places=3, null=True, blank=True)
+    stated_fine_g = models.DecimalField(max_digits=18, decimal_places=4, null=True, blank=True)
+    stated_making_amount = models.DecimalField(max_digits=18, decimal_places=2, null=True,
+                                               blank=True)
     journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
                                       on_delete=models.PROTECT, related_name="+")
 

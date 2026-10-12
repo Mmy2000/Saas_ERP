@@ -498,6 +498,13 @@ msgstr ""
 "والكاش باك يُضاف لحساب العميل لمشترياته القادمة؛ والبيع بدون عميل لا يحصل "
 "عليه."
 
+msgid ""
+"A grade already used on stones cannot be renamed or deleted: switch it off "
+"and add the new one. Rename by editing the text and pressing Enter."
+msgstr ""
+"الدرجة المستخدمة على أحجار لا يمكن تغيير اسمها أو حذفها: أوقفها وأضف "
+"الجديدة. لتغيير الاسم عدّل النص واضغط Enter."
+
 msgid "A group of accounts"
 msgstr "مجموعة حسابات"
 
@@ -899,6 +906,9 @@ msgstr "مقارنة بالفترة السابقة"
 msgid "Against the same period last year"
 msgstr "مقارنة بنفس الفترة من العام الماضي"
 
+msgid "Against their invoice"
+msgstr "مقارنة بفاتورة المورد"
+
 msgid "Alignment"
 msgstr "المحاذاة"
 
@@ -956,6 +966,9 @@ msgstr "كل الصفحات"
 msgid "All pieces"
 msgstr "كل القطع"
 
+msgid "All stones"
+msgstr "كل الأحجار"
+
 msgid "All suppliers"
 msgstr "كل الموردين"
 
@@ -982,6 +995,9 @@ msgstr "مُدخل من قبل في %(number)s؛ ألغِه لإدخاله من 
 
 msgid "Already exists."
 msgstr "موجود بالفعل."
+
+msgid "Already in the list."
+msgstr "موجودة في القائمة."
 
 msgid "Already used by another customer."
 msgstr "مستخدم لعميل آخر."
@@ -1066,6 +1082,9 @@ msgstr "رُدّ عليها بـ «طلبات كثيرة جدًا»"
 msgid "Answering"
 msgstr "يستجيب"
 
+msgid "Any"
+msgstr "الكل"
+
 msgid "Any branch"
 msgstr "أي فرع"
 
@@ -1074,6 +1093,9 @@ msgstr "أي فئة خصم"
 
 msgid "Any sale of at least"
 msgstr "أي بيع بقيمة لا تقل عن"
+
+msgid "Any time"
+msgstr "أي وقت"
 
 msgid "Anyone"
 msgstr "أي شخص"
@@ -1353,6 +1375,9 @@ msgstr "الباركود"
 msgid "Barcode (bars)"
 msgstr "الباركود (الخطوط)"
 
+msgid "Barcode from"
+msgstr "باركود من"
+
 msgid "Barcode height (mm)"
 msgstr "ارتفاع الباركود (مم)"
 
@@ -1364,6 +1389,9 @@ msgstr "رقم الباركود"
 
 msgid "Barcode prefix"
 msgstr "بادئة الباركود"
+
+msgid "Barcode to"
+msgstr "باركود إلى"
 
 msgid "Barcode, certificate or category"
 msgstr "الباركود أو الشهادة أو الصنف"
@@ -1423,6 +1451,9 @@ msgstr "الفوترة"
 
 msgid "Birth date"
 msgstr "تاريخ الميلاد"
+
+msgid "Birthday"
+msgstr "عيد الميلاد"
 
 msgid "Blocks"
 msgstr "البلوكات"
@@ -1490,6 +1521,12 @@ msgstr "المشترى عيار 21 (جم)"
 
 msgid "Bought and sold"
 msgstr "المشتريات والمبيعات"
+
+msgid "Bought at least"
+msgstr "مشتريات لا تقل عن"
+
+msgid "Bought in the last (days)"
+msgstr "اشترى خلال آخر (أيام)"
 
 msgid "Bought since a date"
 msgstr "اشتروا منذ تاريخ"
@@ -1901,6 +1938,12 @@ msgstr "القيراط"
 
 msgid "Carats"
 msgstr "القيراط"
+
+msgid "Carats from"
+msgstr "قيراط من"
+
+msgid "Carats to"
+msgstr "قيراط إلى"
 
 msgid "Card"
 msgstr "بطاقة"
@@ -2371,6 +2414,9 @@ msgstr "اختر شراء أو بيع."
 msgid "Choose cash or bank transfer."
 msgstr "اختر نقدًا أو تحويلًا بنكيًا."
 
+msgid "Choose colour, clarity or cut."
+msgstr "اختر اللون أو النقاء أو القطع."
+
 msgid "Choose debit or credit."
 msgstr "اختر مدين أو دائن."
 
@@ -2545,8 +2591,20 @@ msgstr "اختر الطرف الذي تتم معه التسوية."
 msgid "Chosen pieces"
 msgstr "قطع مختارة"
 
+msgid "City"
+msgstr "المدينة"
+
 msgid "Clarity"
 msgstr "النقاء"
+
+msgid "Class A"
+msgstr "فئة A"
+
+msgid "Class B"
+msgstr "فئة B"
+
+msgid "Class C"
+msgstr "فئة C"
 
 msgid "Classic"
 msgstr "كلاسيكي"
@@ -2697,6 +2755,9 @@ msgstr "طي القائمة الجانبية أو توسيعها"
 
 msgid "Colour"
 msgstr "اللون"
+
+msgid "Colour / clarity"
+msgstr "اللون / النقاء"
 
 msgid "colour, clarity, certificate…"
 msgstr "اللون، النقاء، الشهادة…"
@@ -3054,6 +3115,9 @@ msgstr "عميل"
 
 msgid "Customer analysis"
 msgstr "تحليل العملاء"
+
+msgid "Customer class"
+msgstr "فئة العميل"
 
 msgid "Customer deposits"
 msgstr "عربون العملاء"
@@ -3511,6 +3575,9 @@ msgid ""
 "Difference: what the gold was worth at the day's selling price for its karat"
 " less what was paid."
 msgstr "الفرق: قيمة الذهب بسعر بيع اليوم لعياره ناقص المدفوع."
+
+msgid "Differs"
+msgstr "يوجد فرق"
 
 msgid "Digits only, at most %(n)s."
 msgstr "أرقام فقط، بحد أقصى %(n)s."
@@ -4274,11 +4341,17 @@ msgstr "الملف (.xlsx أو .csv)"
 msgid "Filter"
 msgstr "تصفية"
 
+msgid "Filter by the stones"
+msgstr "تصفية حسب الأحجار"
+
 msgid "Filters"
 msgstr "التصفية"
 
 msgid "Financial year %(year)s"
 msgstr "السنة المالية %(year)s"
+
+msgid "Find customers to follow up"
+msgstr "البحث عن عملاء للمتابعة"
 
 msgid "Fine"
 msgstr "الصافي"
@@ -4736,6 +4809,9 @@ msgstr "بضاعة مبيعة لمحل آخر بالوزن، مع مصنعية �
 msgid "Goods sold to trade accounts by weight, settled in gold or in money."
 msgstr "بضاعة مبيعة للتجار بالوزن، تُسدَّد ذهبًا أو نقدًا."
 
+msgid "Grades"
+msgstr "درجات الأحجار"
+
 msgid "gram"
 msgstr "جرام"
 
@@ -5014,6 +5090,12 @@ msgstr "في تذييل كل صفحة في مساحات العمل"
 msgid "In the goods"
 msgstr "في المشغولات"
 
+msgid "In the next 30 days"
+msgstr "خلال 30 يومًا"
+
+msgid "In the next 7 days"
+msgstr "خلال 7 أيام"
+
 msgid "In the parcel: {carats} ct, {count} stones"
 msgstr "في البرتيتة: {carats} قيراط، {count} حجر"
 
@@ -5260,6 +5342,15 @@ msgstr "قيمة الملصقات"
 
 msgid "Label width (mm)"
 msgstr "عرض الملصق (مم)"
+
+msgid "Labels for the %(n)s piece shown"
+msgid_plural "Labels for all %(n)s pieces shown"
+msgstr[0] "طباعة باركود لـ %(n)s قطعة معروضة"
+msgstr[1] "طباعة باركود لـ %(n)s قطعة معروضة"
+msgstr[2] "طباعة باركود لـ %(n)s قطعة معروضة"
+msgstr[3] "طباعة باركود لـ %(n)s قطعة معروضة"
+msgstr[4] "طباعة باركود لـ %(n)s قطعة معروضة"
+msgstr[5] "طباعة باركود لـ %(n)s قطعة معروضة"
 
 msgid "Labour"
 msgstr "المصنعية"
@@ -5583,6 +5674,9 @@ msgstr "الفرع الرئيسي"
 msgid "Main cash"
 msgstr "الخزينة الرئيسية"
 
+msgid "Main stone (ct, colour, clarity)"
+msgstr "الحجر الرئيسي (قيراط، لون، نقاء)"
+
 msgid "Make this record available on new documents again."
 msgstr "إتاحة هذا السجل للمستندات الجديدة مرة أخرى."
 
@@ -5729,6 +5823,9 @@ msgstr "أسعار السوق"
 
 msgid "Marquise"
 msgstr "ماركيز"
+
+msgid "Matches"
+msgstr "مطابق"
 
 msgid "Matches the books"
 msgstr "مطابق للدفاتر"
@@ -6634,6 +6731,9 @@ msgstr "لم يعودوا مؤخرًا"
 msgid "Not balanced yet"
 msgstr "القيد غير متوازن بعد"
 
+msgid "Not bought for (days)"
+msgstr "لم يشترِ منذ (أيام)"
+
 msgid "Not counted today"
 msgstr "لم تُجرد اليوم"
 
@@ -7055,6 +7155,12 @@ msgstr "عملة الشركة هي العملة الوحيدة المفعلة"
 msgid "Only the first %(n)s movements are listed."
 msgstr "تُعرض أول %(n)s حركة فقط."
 
+msgid ""
+"Only the first %(n)s pieces are printed at a time: narrow the filters or the"
+" barcode range."
+msgstr ""
+"تُطبع أول %(n)s قطعة فقط في المرة الواحدة: ضيّق التصفية أو نطاق الباركود."
+
 msgid "Only the latest completed reconciliation can be reopened."
 msgstr "يمكن إعادة فتح آخر تسوية مكتملة فقط."
 
@@ -7175,6 +7281,12 @@ msgstr ""
 "تكلفة المصنعية، مصنعية البيع للجرام، تكلفة الأحجار، سعر التيكت، المورد "
 "والموديل."
 
+msgid ""
+"Optional: type the totals printed on the supplier's invoice to check the "
+"lines against them."
+msgstr ""
+"اختياري: اكتب الإجماليات المطبوعة في فاتورة المورد لمطابقة البنود عليها."
+
 msgid "Or a name"
 msgstr "أو اسم"
 
@@ -7216,6 +7328,9 @@ msgstr "شكل آخر"
 
 msgid "Other stone"
 msgstr "حجر آخر"
+
+msgid "Ours"
+msgstr "عندنا"
 
 msgid "Out"
 msgstr "منصرف"
@@ -9891,6 +10006,9 @@ msgstr ""
 "بيانات الأحجار والشهادات، والبيع بسعر الملصق، والأحجار السائبة، وتركيب "
 "الأحجار، وتقارير الألماس. غير مفعّل إلا إذا فُعّل للعميل."
 
+msgid "Stone grade"
+msgstr "درجة حجر"
+
 msgid "Stone losses"
 msgstr "خسائر الأحجار"
 
@@ -9911,6 +10029,12 @@ msgstr "حجر"
 
 msgid "Stones (ct)"
 msgstr "الأحجار (قيراط)"
+
+msgid "Stones are graded with it: switch it off and add the new one instead."
+msgstr "توجد أحجار بهذه الدرجة: أوقفها وأضف الجديدة بدلًا من ذلك."
+
+msgid "Stones are graded with it: switch it off instead."
+msgstr "توجد أحجار بهذه الدرجة: أوقفها بدلًا من الحذف."
 
 msgid "Stones as told"
 msgstr "وصف الأحجار"
@@ -10317,6 +10441,14 @@ msgid ""
 msgstr ""
 "الكود والمجموعة وما يقبله الحساب ثابتة بعد إنشائه. يمكنك تغيير اسمه هنا، أو "
 "إيقافه عندما لا يتبقى عليه رصيد."
+
+msgid ""
+"The colours, clarities and cuts your stones are graded with. They are "
+"offered when stones are entered, and the diamond stock can be filtered by "
+"them."
+msgstr ""
+"الألوان ودرجات النقاء والقطع التي تُقيَّم بها أحجارك. تظهر عند إدخال "
+"الأحجار، ويمكن تصفية مخزون الماس بها."
 
 msgid "The company currency always has a rate of 1."
 msgstr "سعر عملة الشركة دائمًا 1."
@@ -10761,6 +10893,9 @@ msgstr "رقمهم"
 msgid "Their no."
 msgstr "رقمهم"
 
+msgid "Theirs"
+msgstr "عند المورد"
+
 msgid "Theme"
 msgstr "السمة"
 
@@ -11173,6 +11308,9 @@ msgstr "الوزن الإجمالي (جم)"
 
 msgid "Totals"
 msgstr "الإجماليات"
+
+msgid "Totals on their invoice"
+msgstr "إجماليات فاتورة المورد"
 
 msgid "Tracking"
 msgstr "طريقة التتبع"
@@ -11609,6 +11747,9 @@ msgstr "مُطّلع"
 
 msgid "Violet"
 msgstr "بنفسجي"
+
+msgid "VIP"
+msgstr "VIP"
 
 msgid "Visits"
 msgstr "الزيارات"
