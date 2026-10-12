@@ -48,6 +48,7 @@ def _form_context(request):
         "boxes": CashBox.objects.filter(is_active=True, branch__in=branches).select_related(
             "branch", "currency"),
         "banks": BankAccount.objects.filter(is_active=True).select_related("currency"),
+        "all_branches": Branch.objects.filter(is_active=True).order_by("code"),
         "bulk_categories": ItemCategory.objects.filter(is_active=True, tracking=Tracking.BULK)
         .order_by("code"),
     }
@@ -84,7 +85,8 @@ def opening(request, pk):
         raise Http404
     lines = list(doc.lines.select_related("party", "cash_box__branch", "cash_box__currency",
                                           "bank_account", "currency", "karat__metal",
-                                          "category", "item").order_by("kind", "id"))
+                                          "other_branch", "category", "item")
+                 .order_by("kind", "id"))
     groups = {kind: [line for line in lines if line.kind == kind] for kind in LineKind.values}
     pieces = groups[LineKind.PIECE]
     return render(request, "opening/detail.html", {

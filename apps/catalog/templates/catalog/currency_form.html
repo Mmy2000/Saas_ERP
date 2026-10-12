@@ -1,0 +1,38 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if currency %}{{ currency.code }}{% else %}{% translate "New currency" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'currencies' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Currencies" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if currency %}<span class="num">{{ currency.code }}</span> · {{ currency.label }}{% else %}{% translate "New currency" %}{% endif %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" class="grid grid-cols-1 gap-6 lg:grid-cols-3" novalidate>
+  {% csrf_token %}
+  <section class="card lg:col-span-2">
+    {% if form.non_field_errors %}
+    <div class="m-5 mb-0 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div></div>
+    {% endif %}
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+      {% if form.code %}
+        {% include "console/_field.html" with field=form.code %}
+        <datalist id="currency-codes">{% for code, name in known %}<option value="{{ code }}">{{ name }}</option>{% endfor %}</datalist>
+      {% else %}
+        <div><p class="form-label">{% translate "Code" %}</p><p class="num text-sm text-slate-900">{{ currency.code }}</p></div>
+      {% endif %}
+      {% include "console/_field.html" with field=form.name %}
+      {% include "console/_field.html" with field=form.symbol %}
+      <label class="flex items-center gap-3 sm:col-span-2">{{ form.is_active }}<span class="text-sm text-slate-700">{{ form.is_active.label }}</span></label>
+      {% if form.is_active.errors %}<p class="form-error sm:col-span-2">{{ form.is_active.errors|join:" " }}</p>{% endif %}
+    </div>
+    <div class="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+      <a href="{% url 'currencies' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </section>
+  <aside class="card card-body h-fit space-y-2 text-sm text-slate-600">
+    <p class="flex items-start gap-2">{% icon "info" "size-4 mt-0.5 text-slate-400" %}<span>{% translate "After adding a currency, publish its exchange rate and open a cash box or bank account in it." %}</span></p>
+  </aside>
+</form>
+{% endblock %}

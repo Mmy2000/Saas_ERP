@@ -120,3 +120,22 @@ class KaratForm(forms.Form):
             if karat.is_reference:
                 self.fields["is_active"].disabled = True
         _style(self)
+
+
+class CurrencyForm(forms.Form):
+    code = forms.CharField(label=_("Code"), min_length=3, max_length=3,
+                           help_text=_("The international three-letter code, e.g. GBP or KWD."))
+    name = forms.CharField(label=_("Own name"), max_length=60, required=False,
+                           help_text=_("Empty: the usual name, in each user's language."))
+    symbol = forms.CharField(label=_("Symbol"), max_length=8, required=False)
+    is_active = forms.BooleanField(label=_("Active"), required=False, initial=True)
+
+    def __init__(self, *args, currency: Currency | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if currency is not None:  # the code identifies it: fixed once added
+            del self.fields["code"]
+        else:
+            self.fields["code"].widget.attrs.update({"list": "currency-codes",
+                                                     "autocomplete": "off",
+                                                     "class": "uppercase"})
+        _style(self)

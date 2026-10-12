@@ -18,7 +18,7 @@ from apps.org.models import Branch, TenantProfile
 from apps.pricing.selectors import functional_currency
 from apps.settlements.models import PartySide
 
-from . import reconciliation
+from . import reconciliation, vouchers
 from .counts import DENOMINATIONS
 from .holders import HOLDER_MODELS, MANAGE, balance
 from .models import (
@@ -27,8 +27,10 @@ from .models import (
     Cheque,
     ChequeDirection,
     ChequeStatus,
+    MoneyVoucher,
     TreasuryDocument,
     TreasuryKind,
+    VoucherDirection,
 )
 from .selectors import (
     cash_totals,
@@ -390,4 +392,72 @@ def cash_count(request, pk):
         "count": count, "lines": lines, "is_latest": latest == count,
         "profile": TenantProfile.objects.first(),
         "endpoint": reverse("cash-count-detail", args=[count.pk]),
+    })
+
+
+# --- money in and out ---------------------------------------------------------------------------
+
+def _visible_vouchers(request):
+    vouchers = MoneyVoucher.objects.select_related("branch", "currency", "account", "cash_box",
+                                                   "bank_account")
+    scope = _scope(request)
+    return vouchers if scope is None else vouchers.filter(branch_id__in=scope)
+
+
+@permission_required("treasury.view")
+def money_vouchers(request):
+    """Money put into or taken out of cash boxes and banks (Gweb's GHV11/GHV12, GHB13/GHB14)."""
+    from apps.core.listing import Choice, ListQuery, Total
+
+    filters = ListQuery(
+        request, permission="treasury.view",
+        search=("number", "note", "counterparty", "reference", "account__name",
+                "account__code"),
+        search_label=_("Number, name, note or account"),
+        choices=[Choice("direction", _("Direction"), [("", _("All"))]
+                        + list(VoucherDirection.choices), "direction"),
+                 Choice("status", _("Status"), [("", _("All")), ("posted", _("Posted")),
+                                                ("voided", _("Cancelled"))], "status")])
+    found = filters.apply(_visible_vouchers(request))
+    posted = found.filter(status=DocStatus.POSTED)
+    money_in = posted.filter(direction=VoucherDirection.IN).aggregate(
+        t=Sum("functional_amount"))["t"] or 0
+    money_out = posted.filter(direction=VoucherDirection.OUT).aggregate(
+        t=Sum("functional_amount"))["t"] or 0
+    home = functional_currency()
+    return render(request, "treasury/vouchers.html", {
+        "page": filters.page(found.order_by("-business_date", "-id")), "filters": filters,
+        "totals": [Total(_("Money in"), money_in, unit=home),
+                   Total(_("Money out"), money_out, unit=home)],
+    })
+
+
+@permission_required(vouchers.CREATE)
+def money_voucher_new(request):
+    from .selectors import holder_choices
+
+    allowed = request.actor.branch_ids(vouchers.CREATE)
+    direction = request.GET.get("direction")
+    return render(request, "treasury/voucher_form.html", {
+        "branches": _branches(request, vouchers.CREATE),
+        "default_branch": request.membership.default_branch_id,
+        "direction": direction if direction in VoucherDirection.values else VoucherDirection.IN,
+        "directions": VoucherDirection.choices,
+        "accounts": vouchers.counter_accounts(),
+        "currencies": Currency.objects.filter(is_active=True),
+        "home_currency": functional_currency(),
+        **holder_choices(allowed),
+    })
+
+
+@permission_required("treasury.view")
+def money_voucher(request, pk):
+    voucher = _visible_vouchers(request).select_related("journal_entry", "posted_by").filter(
+        pk=pk).first()
+    if voucher is None:
+        raise Http404
+    return render(request, "treasury/voucher.html", {
+        "voucher": voucher, "profile": TenantProfile.objects.first(),
+        "home_currency": functional_currency(),
+        "endpoint": reverse("money-voucher-api-detail", args=[voucher.pk]),
     })

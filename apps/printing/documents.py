@@ -843,6 +843,34 @@ def sample_treasury_document(design, company):
         totals=[(_("Amount"), f"{_num(D('250000.00'))} EGP", True)], currency="EGP")
 
 
+def build_money_voucher(v, design, ctx=None):
+    home = _home()
+    totals = [(_("Amount"), f"{_num(v.amount)} {v.currency.code}", True)]
+    if v.currency.code != home:
+        totals.append((_("Value"), f"{_num(v.functional_amount)} {home}", False))
+    money_in = v.direction == "in"
+    with translation.override(_lang_of(design)):
+        title = str(v.get_direction_display())
+    return make_doc(TYPES["money_voucher"], design, title=title,
+                    company=_record_company(v.branch), number=v.number, date=_when(v),
+                    status=v.status,
+                    meta=[(_("Account"), f"{v.account.code} {v.account.label}"),
+                          (_("Reference"), v.reference)],
+                    party=[(_("Received from") if money_in else _("Paid to"), v.counterparty),
+                           (_("Put into") if money_in else _("Taken from"),
+                            str(v.holder.label))],
+                    totals=totals, currency=home, sections=_note(_("Note"), v.note))
+
+
+def sample_money_voucher(design, company):
+    return make_doc(
+        TYPES["money_voucher"], design, title=_("Money in"), company=company,
+        number="MV-2026-000007", date=SAMPLE_DATE,
+        meta=[(_("Account"), "3101 جاري الشركاء")],
+        party=[(_("Received from"), "أ. محمود"), (_("Put into"), "الخزينة الرئيسية")],
+        totals=[(_("Amount"), f"{_num(D('50000.00'))} EGP", True)], currency="EGP")
+
+
 # ---- stock transfer ------------------------------------------------------------------------
 
 TRANSFER_COLUMNS = (
@@ -959,6 +987,10 @@ TYPES: dict[str, DocumentType] = {t.key: t for t in [
     DocumentType("treasury_document", _("Cash and bank movement"), MONEY, (),
                  build_treasury_document, sample_treasury_document, "treasury.view",
                  _finder("apps.treasury.views._visible_documents"), signatures=HANDOVER),
+    DocumentType("money_voucher", _("Money in or out"), MONEY, (), build_money_voucher,
+                 sample_money_voucher, "treasury.view",
+                 _finder("apps.treasury.views._visible_vouchers"),
+                 signatures=(_("Received by"), _("Paid by"))),
     DocumentType("transfer", _("Stock transfer"), GOODS, TRANSFER_COLUMNS, build_transfer,
                  sample_transfer, "inventory.stock.view",
                  _finder("apps.inventory.web.views._visible_transfers"), signatures=HANDOVER),

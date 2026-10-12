@@ -6,4 +6,5 @@ register_permissions(_("Catalog"), [
     ("catalog.view", _("View karats, currencies and categories")),
     ("catalog.category.manage", _("Manage item categories")),
     ("catalog.karat.manage", _("Manage karats and fineness")),
+    ("catalog.currency.manage", _("Add currencies and switch them on or off")),
 ])

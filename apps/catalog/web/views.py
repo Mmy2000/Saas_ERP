@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from apps.catalog.domain.metal import DEFAULT_REFERENCE_FINENESS
-from apps.catalog.models import ItemCategory, Karat
+from apps.catalog.models import Currency, ItemCategory, Karat
 from apps.iam.authz import permission_required
 
 
@@ -12,6 +12,23 @@ def karats(request):
         ratio = karat.fineness / DEFAULT_REFERENCE_FINENESS if karat.metal.code == "gold" else None
         rows.append({"karat": karat, "ratio": ratio})
     return render(request, "catalog/karats.html", {"rows": rows})
+
+
+@permission_required("catalog.view")
+def currencies(request):
+    """The currencies the business trades in, with the exchange rate in force."""
+    from django.utils import timezone
+
+    from apps.pricing.models import FxRate
+    from apps.pricing.selectors import functional_currency
+
+    home, now, rows = functional_currency(), timezone.now(), []
+    for currency in Currency.objects.order_by("-is_active", "code"):
+        rate = None if currency.code == home else (
+            FxRate.objects.filter(currency=currency, effective_at__lte=now)
+            .order_by("-effective_at", "-id").first())
+        rows.append({"currency": currency, "home": currency.code == home, "rate": rate})
+    return render(request, "catalog/currencies.html", {"rows": rows, "home_currency": home})
 
 
 def _tree(categories):

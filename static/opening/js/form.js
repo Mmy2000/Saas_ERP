@@ -1,4 +1,5 @@
-// Opening balances: rows of party balances, cash/bank balances and stock by weight, sent as one
+// Opening balances: rows of party balances, cash/bank balances, balances with other branches and
+// stock by weight, sent as one
 // document. Field errors come back as parties.<n>.<field>, so each row's error slots are named
 // after its position.
 import { registerShaper } from "../../core/js/forms.js";
@@ -7,7 +8,7 @@ import { enhanceSelects } from "../../core/js/selects.js";
 const form = document.getElementById("opening");
 
 if (form) {
-  const LISTS = { party: "parties", holder: "holders", stock: "stock" };
+  const LISTS = { party: "parties", holder: "holders", branch: "branches", stock: "stock" };
   const partiesUrl = form.dataset.partiesUrl;
 
   const renumber = () => {
@@ -34,6 +35,12 @@ if (form) {
   const addRow = (kind) => {
     const row = document.getElementById(`row-${kind}`).content.firstElementChild.cloneNode(true);
     form.querySelector(`[data-rows="${kind}"]`).append(row);
+    if (kind === "branch") {  // another branch than the one the balances are for
+      const own = form.querySelector('[name="branch"]').value;
+      const select = row.querySelector('[data-f="branch"]');
+      const other = [...select.options].find((option) => option.value !== own);
+      if (other) select.value = other.value;
+    }
     if (kind === "party") {
       pointParty(row);
       row.querySelector('[data-f="role"]').addEventListener("change", () => pointParty(row));
@@ -71,6 +78,14 @@ if (form) {
     holders: rows("holder").map((row) => {
       const [kind, id] = value(row, "holder").split(":");
       return { kind, holder: Number(id) || 0, amount: value(row, "amount") };
+    }),
+    branches: rows("branch").map((row) => {
+      const [unit, id] = value(row, "unit").split(":");
+      return {
+        branch: Number(value(row, "branch")) || 0, amount: value(row, "amount"),
+        owes_us: value(row, "owes_us") === "1",
+        currency: unit === "cur" ? id : "", karat: unit === "karat" ? Number(id) : null,
+      };
     }),
     stock: rows("stock").map((row) => ({
       category: Number(value(row, "category")) || 0, karat: Number(value(row, "karat")) || null,

@@ -1,0 +1,68 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% if account %}{{ account }}{% else %}{% translate "New account" %}{% endif %}{% endblock %}
+{% block head %}{% if not account %}{{ groups|json_script:"account-groups" }}<script type="module" src="{% static 'ledger/js/account.js' %}"></script>{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'accounts' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Chart of accounts" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if account %}<span class="num">{{ account.code }}</span> {{ account.label }}{% else %}{% translate "New account" %}{% endif %}</h1>
+    {% if account and not account.is_active %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}
+    {% if account.role %}<span class="badge badge-brand">{% translate "Standard" %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <form method="post" class="card lg:col-span-2" novalidate {% if not account %}data-account-form{% endif %}>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="m-5 mb-0 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{% icon "circle-alert" "size-5 mt-px" %}<div>{{ form.non_field_errors|join:" " }}</div></div>
+    {% endif %}
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+      {% if account %}
+        <div><p class="form-label">{% translate "Under the group" %}</p><p class="text-sm text-slate-900">{% if account.parent %}<span class="num">{{ account.parent.code }}</span> · {{ account.parent.label }}{% else %}—{% endif %}</p></div>
+        <div><p class="form-label">{% translate "Type" %}</p><p class="text-sm text-slate-900">{{ account.get_type_display }} · {% if account.is_postable %}{% if account.commodity %}{{ account.commodity.code }}{% else %}{{ account.get_commodity_scope_display }}{% endif %}{% else %}{% translate "A group of accounts" %}{% endif %}</p></div>
+        {% include "console/_field.html" with field=form.name span="sm:col-span-2" %}
+        <div class="sm:col-span-2">
+          <label class="flex items-center gap-3">{{ form.is_active }}<span class="text-sm text-slate-700">{{ form.is_active.label }}</span></label>
+          {% for error in form.is_active.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+          {% if locked and account.is_active %}<p class="mt-1.5 text-xs text-slate-500">{{ locked }}</p>{% endif %}
+        </div>
+      {% else %}
+        {% include "console/_field.html" with field=form.parent %}
+        {% include "console/_field.html" with field=form.is_group %}
+        {% include "console/_field.html" with field=form.code %}
+        {% include "console/_field.html" with field=form.name %}
+        {% include "console/_field.html" with field=form.nature %}
+        {% include "console/_field.html" with field=form.commodity_scope %}
+        {% include "console/_field.html" with field=form.currency %}
+      {% endif %}
+    </div>
+    <div class="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+      <a href="{% url 'accounts' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </form>
+  <aside class="space-y-6">
+    <div class="card card-body h-fit space-y-2 text-sm text-slate-600">
+      {% if account %}
+        <p class="flex items-start gap-2">{% icon "info" "size-4 mt-0.5 text-slate-400" %}<span>{% translate "The code, the group and what it takes are fixed once an account exists. Rename it here, or switch it off when nothing is left on it." %}</span></p>
+      {% else %}
+        <p class="flex items-start gap-2">{% icon "info" "size-4 mt-0.5 text-slate-400" %}<span>{% translate "Its type (asset, liability, equity, income or expense) is the group's. Expense accounts can then be given to expense categories; any account can be used in journal entries and in money in and out." %}</span></p>
+      {% endif %}
+    </div>
+    {% if account %}
+    <form method="post" class="card card-body space-y-3">
+      {% csrf_token %}<input type="hidden" name="delete" value="1">
+      {% if undeletable %}
+        <p class="text-sm text-slate-500">{{ undeletable }}</p>
+      {% else %}
+        <p class="text-sm text-slate-600">{% translate "Nothing was ever posted to it, so it can be deleted." %}</p>
+        <button type="submit" class="btn btn-secondary w-full text-red-700">{% icon "trash-2" "size-4" %}{% translate "Delete account" %}</button>
+      {% endif %}
+    </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

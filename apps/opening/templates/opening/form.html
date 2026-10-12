@@ -47,6 +47,17 @@
     <div class="divide-y divide-slate-100" data-rows="holder"></div>
   </section>
 
+  {% if all_branches|length > 1 %}
+  <section class="card">
+    <div class="card-header flex items-center justify-between gap-3">
+      <div><h2 class="card-title">{% translate "Other branches" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "What another branch owes this one, or this one owes it, in money or in gold. Enter it once, at either branch: the other branch's side is booked at the same time." %}</p></div>
+      <button type="button" class="btn btn-secondary text-xs" data-add="branch">{% icon "plus" "size-4" %}{% translate "Add a line" %}</button>
+    </div>
+    <div class="divide-y divide-slate-100" data-rows="branch"></div>
+  </section>
+  {% endif %}
+
   <section class="card">
     <div class="card-header flex items-center justify-between gap-3">
       <div><h2 class="card-title">{% translate "Stock by weight" %}</h2>
@@ -91,6 +102,24 @@
       </select><span class="form-error" data-e="holder"></span></label>
     <label class="lg:col-span-4"><span class="form-label">{% translate "Balance" %}</span>
       <input class="form-input num w-full text-start" data-f="amount" inputmode="decimal"><span class="form-error" data-e="amount"></span></label>
+    <div class="flex items-end justify-end lg:col-span-1 lg:pt-6"><button type="button" class="btn btn-ghost text-xs text-red-700" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
+  </div>
+</template>
+
+<template id="row-branch">
+  <div class="grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-12 lg:items-start" data-row="branch">
+    <label class="min-w-0 lg:col-span-4"><span class="form-label">{% translate "Branch" %}</span>
+      <select class="form-input" data-f="branch" data-native>{% for b in all_branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
+      <span class="form-error" data-e="branch"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Currency or karat" %}</span>
+      <select class="form-input" data-f="unit">
+        {% for c in currencies %}<option value="cur:{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}
+        {% for k in karats %}<option value="karat:{{ k.pk }}">{{ k }} ({% translate "grams" %})</option>{% endfor %}
+      </select><span class="form-error" data-e="currency"></span><span class="form-error" data-e="karat"></span></label>
+    <label class="lg:col-span-2"><span class="form-label">{% translate "Amount" %}</span>
+      <input class="form-input num w-full text-start" data-f="amount" inputmode="decimal"><span class="form-error" data-e="amount"></span></label>
+    <label class="lg:col-span-3"><span class="form-label">{% translate "Direction" %}</span>
+      <select class="form-input" data-f="owes_us" data-native><option value="1">{% translate "It owes this branch" %}</option><option value="0">{% translate "This branch owes it" %}</option></select></label>
     <div class="flex items-end justify-end lg:col-span-1 lg:pt-6"><button type="button" class="btn btn-ghost text-xs text-red-700" data-remove aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></div>
   </div>
 </template>

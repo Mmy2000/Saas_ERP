@@ -30,6 +30,14 @@ class HolderSerializer(serializers.Serializer):
     amount = serializers.CharField(max_length=30)
 
 
+class BranchSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    amount = serializers.CharField(max_length=30)
+    owes_us = serializers.BooleanField()
+    currency = serializers.CharField(max_length=3, required=False, allow_blank=True, default="")
+    karat = serializers.IntegerField(required=False, allow_null=True, default=None)
+
+
 class StockSerializer(serializers.Serializer):
     category = serializers.IntegerField()
     karat = serializers.IntegerField(required=False, allow_null=True, default=None)
@@ -45,6 +53,7 @@ class OpeningSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default="")
     parties = PartySerializer(many=True, required=False, default=list)
     holders = HolderSerializer(many=True, required=False, default=list)
+    branches = BranchSerializer(many=True, required=False, default=list)
     stock = StockSerializer(many=True, required=False, default=list)
 
 
@@ -69,6 +78,9 @@ class OpeningView(APIView):
                      for p in data["parties"]],
             holders=[services.HolderBalance(kind=h["kind"], holder_id=h["holder"],
                                             amount=h["amount"]) for h in data["holders"]],
+            branches=[services.BranchBalance(branch_id=b["branch"], amount=b["amount"],
+                                             owes_us=b["owes_us"], currency_code=b["currency"],
+                                             karat_id=b["karat"]) for b in data["branches"]],
             stock=[services.StockBalance(category_id=s["category"], karat_id=s["karat"],
                                          gross_weight_g=s["gross_weight_g"], qty=s["qty"],
                                          cost_amount=s["cost_amount"] or "0")

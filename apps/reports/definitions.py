@@ -20,7 +20,7 @@ from apps.org.models import Branch
 from apps.pricing.selectors import fine_gram_value
 from apps.sales.models import SalesInvoiceLine, SalesReturn, SalesTradeIn
 from apps.settlements.models import Settlement, SettlementKind
-from apps.treasury.models import BankAccount, CardTerminal, CashBox, CashCount
+from apps.treasury.models import BankAccount, CardTerminal, CashBox, CashCount, MoneyVoucher
 
 from .registry import BRANCH_FILTER, DATE_FILTERS, Column, Filter, Report, Table, register
 
@@ -160,6 +160,9 @@ class DailySummary(Report):
         add(_("Money paid"), settlements.filter(kind=SettlementKind.PAYMENT), "functional_amount")
         add(_("Expenses"), ExpenseVoucher.objects.filter(status=DocStatus.POSTED,
                                                         business_date=day), "functional_amount")
+        vouchers = MoneyVoucher.objects.filter(status=DocStatus.POSTED, business_date=day)
+        add(_("Money in (other)"), vouchers.filter(direction="in"), "functional_amount")
+        add(_("Money out (other)"), vouchers.filter(direction="out"), "functional_amount")
         return table
 
 

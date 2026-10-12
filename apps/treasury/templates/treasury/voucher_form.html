@@ -1,0 +1,88 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui %}
+{% block title %}{% translate "Money in or out" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'treasury/js/voucher.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'money-vouchers' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Money in and out" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Money in or out" %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form data-api-form data-shape="money-voucher" data-method="POST" data-endpoint="{% url 'money-voucher-api-list' %}"
+      data-redirect="{% url 'money-vouchers' %}{id}/" data-success="{% translate 'Recorded.' %}" novalidate
+      class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <fieldset class="sm:col-span-2">
+          <legend class="form-label">{% translate "Direction" %}</legend>
+          <div class="grid grid-cols-2 gap-3">
+            {% for value, label in directions %}
+            <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/60">
+              <input type="radio" name="direction" value="{{ value }}" class="accent-brand-600" {% if value == direction %}checked{% endif %}>
+              <span class="text-sm font-medium text-slate-900">{{ label }}</span>
+              <span class="ms-auto text-xs text-slate-500">{% if value == "in" %}{% translate "into the box or bank" %}{% else %}{% translate "out of the box or bank" %}{% endif %}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-account">{% translate "Account" %}</label>
+          <select id="f-account" name="account" class="form-input">
+            <option value=""></option>
+            {% for a in accounts %}<option value="{{ a.pk }}" data-currency="{{ a.commodity.code|default:'' }}">{{ a.code }} · {{ a.label }}{% if a.commodity %} ({{ a.commodity.code }}){% endif %}</option>{% endfor %}
+          </select>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "Where the money comes from or what it is for. Customers, suppliers and partners go through Receipts & payments; running costs through Expenses." %}</p>
+          <p class="form-error" data-error-for="account"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" name="branch" class="form-input" data-branch>{% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="branch"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-counterparty">{% translate "From or to" %}</label>
+          <input id="f-counterparty" name="counterparty" class="form-input" maxlength="200">
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div>
+          <label class="form-label" for="f-method">{% translate "Cash box or bank" %}</label>
+          <select id="f-method" name="method" class="form-input" data-method-select data-native>
+            <option value="cash">{% translate "Cash" %}</option>
+            <option value="bank_transfer">{% translate "Bank account" %}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="f-currency">{% translate "Currency" %}</label>
+          <select id="f-currency" name="currency" class="form-input" data-currency data-native>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="currency"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-amount">{% translate "Amount" %}</label>
+          <input id="f-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal">
+          <p class="form-error" data-error-for="amount"></p>
+        </div>
+        {% include "treasury/holder_selects.html" %}
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div><label class="form-label" for="f-ref">{% translate "Reference" %}</label><input id="f-ref" name="reference" class="form-input" maxlength="60"></div>
+        <div class="sm:col-span-2"><label class="form-label" for="f-note">{% translate "Note" %}</label><input id="f-note" name="note" class="form-input"></div>
+      </div>
+    </section>
+  </div>
+  <aside class="space-y-4">
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Record" %}</button>
+      <a href="{% url 'money-vouchers' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+    <p class="card card-body text-xs text-slate-500">{% translate "Money in another currency is valued at today's exchange rate; money out at what the box or bank holds it at." %}</p>
+  </aside>
+</form>
+{% endblock %}

@@ -240,6 +240,10 @@ one ledger entry of kind "opening" against the Opening balances equity account (
 - Customers, suppliers, traders, workshops and partners: owes us / we owe them, in any currency
   or in gold as grams of a karat (kept in fine grams, valued at the gold board in force).
 - Cash boxes and bank accounts (a bank may be negative), in their own currency.
+- Other branches (legacy GHBR34): what another branch owes this one or this one owes it, in
+  money or gold by karat. Booked on both branches in the same entry (branch clearing against
+  opening balances at each), so it is entered once, at either branch; a second entry between the
+  same two branches is refused while the first stands. The branch statement report shows it.
 - Stock by weight (scrap, bullion, bulk categories) per karat, with its making cost.
 - Barcoded pieces from **Excel or CSV** (Import pieces from Excel): columns found by their
   English or Arabic header in any order; category by code or name, karat as 21 or 21K, supplier
@@ -249,6 +253,35 @@ one ledger entry of kind "opening" against the Opening balances equity account (
   and suppliers is downloadable. Up to 5,000 rows per file.
 - Cancelling reverses the entry and takes the pieces and weights back out; it is refused once a
   piece has been sold or moved.
+
+### Chart of accounts, money in and out, currencies
+
+**Accounting → Chart of accounts** (permission `ledger.accounts.manage`; legacy Acc GHG11-GHG15,
+a fixed five-level tree there): add an account or a group under any group, at any depth. The code
+starts with the group's code and the next free one is suggested (5 → 5402, 5402 → 540201); the
+type comes from the group, the normal balance can be set, and an account takes money in any
+currency, one currency only (a dollar loan), money and gold, or gold only. Any account can be
+renamed (a standard one goes back to its translated name when the name is cleared). An account
+can be switched off once nothing is left on it, unless the postings use it (a role), it is a cash
+box, bank or card terminal (managed in Treasury), an active expense category points at it, or
+active accounts sit under it; only accounts added here and never posted to can be deleted.
+Migrations that add a standard account later must find it by role and take a free code.
+
+**Treasury → Money in and out** (`apps/treasury/vouchers.py`, permission
+`treasury.voucher.create`, cancelling `treasury.void`; legacy Cash GHV11/GHV12 "ايداع / سحب" and
+Bnk GHB13/GHB14, single-sided there): money put into or taken out of a cash box or bank account
+against a chosen account: the owner adding cash, a loan, interest or other income, a payment that
+is not an expense. Customers, suppliers and partners keep Receipts & payments, running costs
+Expenses; the accounts the stock, documents and closing keep (inventory, branch clearing, cheques,
+cost of sales, metal gains and losses, employee advances…) are not offered. A balance sheet account
+keeps the currency; income and expense accounts are booked in the company currency. Numbered
+`MV`, printable, listed with search and totals, shown on the daily summary.
+
+**Catalog → Currencies** (permission `catalog.currency.manage`; legacy Cod FC1): add a currency
+by its ISO code (common Arab and world currencies are suggested, with their names translated
+and symbols), rename it or switch it off. The company currency always stays on, and a currency
+with active cash boxes or bank accounts cannot be switched off. Amounts keep two decimals in
+every currency. Rates are published under Pricing → Exchange rates as before.
 
 ### Automatic gold prices (market feed)
 

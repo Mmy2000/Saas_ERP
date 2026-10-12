@@ -341,3 +341,51 @@ class CashCount(Document):
 
     def __str__(self):
         return self.number or f"#{self.pk}"
+
+
+# --- money in and out ---------------------------------------------------------------------------
+
+class VoucherDirection(models.TextChoices):
+    IN = "in", _("Money in")
+    OUT = "out", _("Money out")
+
+
+class MoneyVoucher(Document):
+    """Money put into or taken out of a cash box or bank account against any account: the
+    owner adding cash, a loan, interest or other income, a payment that is not an expense
+    (legacy Cash GHV11/GHV12 "ايداع / سحب", single-sided there). Cancelled by a reversal."""
+
+    direction = models.CharField(max_length=4, choices=VoucherDirection.choices)
+    cash_box = models.ForeignKey(CashBox, null=True, blank=True, on_delete=models.PROTECT,
+                                 related_name="+")
+    bank_account = models.ForeignKey(BankAccount, null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
+    account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+")
+    currency = models.ForeignKey("catalog.Currency", on_delete=models.PROTECT, related_name="+")
+    amount = models.DecimalField(max_digits=18, decimal_places=2)
+    functional_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    counterparty = models.CharField(max_length=200, blank=True)  # received from / paid to
+    reference = models.CharField(max_length=60, blank=True)
+    journal_entry = models.ForeignKey("ledger.JournalEntry", null=True, blank=True,
+                                      on_delete=models.PROTECT, related_name="+")
+
+    class Meta(Document.Meta):
+        ordering = ["-business_date", "-id"]
+        constraints = [
+            *Document.Meta.constraints,
+            models.CheckConstraint(
+                condition=(Q(cash_box__isnull=False, bank_account__isnull=True)
+                           | Q(cash_box__isnull=True, bank_account__isnull=False)),
+                name="treasury_voucher_one_holder_check"),
+            models.CheckConstraint(condition=Q(amount__gt=0),
+                                   name="treasury_voucher_amount_check"),
+        ]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="treasury_voucher_date_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
+
+    @property
+    def holder(self):
+        return self.cash_box or self.bank_account

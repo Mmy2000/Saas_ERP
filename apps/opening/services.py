@@ -5,6 +5,8 @@ Every balance goes against the Opening balances equity account ("opening_equity"
     a customer who owes us 5,000      Dr Customers (the customer)   Cr Opening balances
     a supplier we owe 100 g of 21K    Dr Opening balances (87.5 fine g)   Cr Suppliers (party)
     a cash box holding 20,000         Dr the box                    Cr Opening balances
+    Maadi owes this branch 3,000      Dr Branch clearing (here)     Cr Opening balances (here)
+                                      Dr Opening balances (Maadi)   Cr Branch clearing (Maadi)
     bulk stock and pieces             Dr Gold inventory / Scrap (fine g at today's board value,
                                          plus the making cost)       Cr Opening balances
 
@@ -19,6 +21,7 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -79,6 +82,15 @@ class HolderBalance:
 
 
 @dataclass(frozen=True)
+class BranchBalance:
+    branch_id: int  # the other branch
+    amount: Decimal | str  # money in `currency_code`, or grams of `karat_id`
+    owes_us: bool  # True: the other branch owes this one
+    currency_code: str = ""
+    karat_id: int | None = None
+
+
+@dataclass(frozen=True)
 class StockBalance:
     category_id: int
     karat_id: int | None
@@ -109,6 +121,7 @@ class OpeningInput:
     note: str = ""
     parties: list[PartyBalance] = field(default_factory=list)
     holders: list[HolderBalance] = field(default_factory=list)
+    branches: list[BranchBalance] = field(default_factory=list)
     stock: list[StockBalance] = field(default_factory=list)
     pieces: list[PieceBalance] = field(default_factory=list)
 
@@ -196,6 +209,68 @@ def _party_lines(rows, branch, errors) -> tuple[list[OpeningLine], list[LedgerLi
             LedgerLine(account=equity, commodity=commodity, quantity=-quantity,
                        functional_amount=-sign * value, branch=branch),
         ]
+    return lines, ledger
+
+
+def _branch_lines(rows, branch, errors) -> tuple[list[OpeningLine], list[LedgerLine]]:
+    """Balances between branches. Each is booked on both sides at once (this branch and the
+    other), so it is entered once, at either branch."""
+    lines, ledger = [], []
+    if not rows:
+        return lines, ledger
+    equity, clearing = account_for("opening_equity"), account_for("branch_clearing")
+    karats = {k.pk: k for k in Karat.objects.select_related("metal")}
+    currencies = {c.code: c for c in Currency.objects.filter(is_active=True)}
+    others = {b.pk: b for b in Branch.objects.filter(is_active=True).exclude(pk=branch.pk)}
+    for index, row in enumerate(rows):
+        key = f"branches.{index}"
+        other = others.get(row.branch_id)
+        if other is None:
+            errors.add(f"{key}.branch", _("Choose another branch."))
+            continue
+        earlier = (OpeningLine.objects.filter(kind=LineKind.BRANCH,
+                                              opening__status=DocStatus.POSTED)
+                   .filter(Q(opening__branch=branch, other_branch=other)
+                           | Q(opening__branch=other, other_branch=branch))
+                   .select_related("opening").first())
+        if earlier is not None:
+            errors.add(f"{key}.branch", _("Already entered in %(number)s; cancel it to enter "
+                                          "it again.") % {"number": earlier.opening.number})
+            continue
+        sign = 1 if row.owes_us else -1
+        if row.karat_id:
+            karat = karats.get(row.karat_id)
+            weight = _number(row.amount, WEIGHT, errors, f"{key}.amount")
+            if karat is None:
+                errors.add(f"{key}.karat", _("Choose a karat."))
+            if karat is None or weight is None:
+                continue
+            fine = fine_weight(weight, karat.fineness)
+            value = metal_value(karat, fine)
+            commodity = metal_commodity(karat.metal.code)
+            lines.append(OpeningLine(kind=LineKind.BRANCH, other_branch=other, karat=karat,
+                                     weight_g=weight, fine_weight_g=sign * fine,
+                                     functional_amount=sign * value))
+            quantity = sign * fine
+        else:
+            currency = currencies.get(row.currency_code)
+            amount = _number(row.amount, MONEY, errors, f"{key}.amount")
+            if currency is None:
+                errors.add(f"{key}.currency", _("Choose a currency."))
+            if currency is None or amount is None:
+                continue
+            value = _fx_value(currency.code, amount)
+            commodity = money_commodity(currency)
+            lines.append(OpeningLine(kind=LineKind.BRANCH, other_branch=other, currency=currency,
+                                     amount=sign * amount, functional_amount=sign * value))
+            quantity = sign * amount
+        for side, mirror in ((branch, 1), (other, -1)):  # the other branch: the other way
+            ledger += [
+                LedgerLine(account=clearing, commodity=commodity, quantity=mirror * quantity,
+                           functional_amount=mirror * sign * value, branch=side),
+                LedgerLine(account=equity, commodity=commodity, quantity=-mirror * quantity,
+                           functional_amount=-mirror * sign * value, branch=side),
+            ]
     return lines, ledger
 
 
@@ -321,7 +396,8 @@ def _check_pieces(rows, errors) -> list[tuple[PieceBalance, ItemCategory, Karat 
 
 def post_opening(data: OpeningInput, *, actor=None) -> OpeningBalance:
     """Validate everything first (all errors at once), then write the stock and the entry."""
-    count = len(data.parties) + len(data.holders) + len(data.stock) + len(data.pieces)
+    count = (len(data.parties) + len(data.holders) + len(data.branches) + len(data.stock)
+             + len(data.pieces))
     if not count:
         raise ValidationError(_("Add at least one balance."), code="OPENING_EMPTY")
     if count > MAX_LINES:
@@ -343,6 +419,7 @@ def post_opening(data: OpeningInput, *, actor=None) -> OpeningBalance:
         errors = _Errors()
         party_lines, ledger = _party_lines(data.parties, branch, errors)
         holder_lines, holder_ledger = _holder_lines(data.holders, branch, errors)
+        branch_lines, branch_ledger = _branch_lines(data.branches, branch, errors)
         stock = _check_stock(data.stock, errors)
         pieces = _check_pieces(data.pieces, errors)
         errors.raise_if_any()
@@ -351,8 +428,8 @@ def post_opening(data: OpeningInput, *, actor=None) -> OpeningBalance:
         doc = OpeningBalance.objects.create(branch=branch, business_date=day,
                                             note=data.note.strip(), created_by=user)
         ref = DocRef(DOC_TYPE, doc.pk)
-        lines = party_lines + holder_lines
-        ledger += holder_ledger
+        lines = party_lines + holder_lines + branch_lines
+        ledger += holder_ledger + branch_ledger
         parts: list[StockPart] = []
         for row, category, karat, weight, cost in stock:
             lot = lot_for(category, karat, branch)

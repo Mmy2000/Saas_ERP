@@ -1,4 +1,4 @@
-"""Add and edit item categories and karats."""
+"""Add and edit item categories, karats and currencies."""
 
 from __future__ import annotations
 
@@ -7,21 +7,24 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
-from apps.catalog.models import ItemCategory, Karat
+from apps.catalog.models import CURRENCY_NAMES, Currency, ItemCategory, Karat
 from apps.catalog.services import (
     CreateItemCategoryCommand,
+    CurrencyCommand,
     KaratCommand,
     MakingChargeInput,
     UpdateItemCategoryCommand,
+    create_currency,
     create_item_category,
     create_karat,
+    update_currency,
     update_item_category,
     update_karat,
 )
 from apps.core.errors import ValidationError
 from apps.iam.authz import permission_required
 
-from .forms import CategoryForm, KaratForm
+from .forms import CategoryForm, CurrencyForm, KaratForm
 
 # Service error keys → form fields.
 FIELD_NAMES = {"parent_id": "parent", "default_karat_id": "default_karat",
@@ -139,3 +142,47 @@ def karat_edit(request, pk):
             messages.success(request, _("Saved."))
             return redirect("karats")
     return render(request, "catalog/karat_form.html", {"form": form, "karat": karat})
+
+
+def _known_codes():
+    added = set(Currency.objects.values_list("code", flat=True))
+    return [(code, name) for code, name in CURRENCY_NAMES.items() if code not in added]
+
+
+@permission_required("catalog.currency.manage")
+def currency_new(request):
+    form = CurrencyForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        try:
+            currency = create_currency(d["code"], CurrencyCommand(
+                name=d["name"], symbol=d["symbol"], is_active=d["is_active"]),
+                actor=request.actor)
+        except ValidationError as exc:
+            _show(form, exc)
+        else:
+            messages.success(request, _("%(name)s added.") % {"name": currency.code})
+            return redirect("currencies")
+    return render(request, "catalog/currency_form.html", {
+        "form": form, "currency": None, "known": _known_codes()})
+
+
+@permission_required("catalog.currency.manage")
+def currency_edit(request, pk):
+    currency = Currency.objects.filter(pk=pk).first()
+    if currency is None:
+        raise Http404
+    form = CurrencyForm(request.POST or None, currency=currency, initial={
+        "name": currency.name, "symbol": currency.symbol, "is_active": currency.is_active})
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        try:
+            update_currency(currency.pk, CurrencyCommand(
+                name=d["name"], symbol=d["symbol"], is_active=d["is_active"]),
+                actor=request.actor)
+        except ValidationError as exc:
+            _show(form, exc)
+        else:
+            messages.success(request, _("Saved."))
+            return redirect("currencies")
+    return render(request, "catalog/currency_form.html", {"form": form, "currency": currency})

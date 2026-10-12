@@ -2,9 +2,10 @@
 
 One document per branch and cut-over date holds every balance carried in: what each customer,
 supplier, trader, workshop and partner owes or is owed (in money, or in gold by karat), what
-each cash box and bank account holds, bulk stock by weight (scrap, bullion…) and barcoded
-pieces (typed in, or imported from Excel). Posting writes the stock and one ledger entry
-(kind "opening") against the Opening balances equity account; cancelling reverses both.
+each cash box and bank account holds, what the other branches owe this one or are owed by it,
+bulk stock by weight (scrap, bullion…) and barcoded pieces (typed in, or imported from Excel).
+Posting writes the stock and one ledger entry (kind "opening") against the Opening balances
+equity account; cancelling reverses both.
 Legacy: the many "رصيد افتتاحي" screens (GHC20, GHSS25, GHSH24, GHP14, GHB26, GHBR34, GHS69…).
 """
 
@@ -33,6 +34,7 @@ class LineKind(models.TextChoices):
     HOLDER = "holder", _("Cash box or bank")
     STOCK = "stock", _("Stock by weight")
     PIECE = "piece", _("Piece")
+    BRANCH = "branch", _("Another branch")
 
 
 class OpeningLine(TenantScopedModel):
@@ -44,6 +46,9 @@ class OpeningLine(TenantScopedModel):
     party = models.ForeignKey("parties.Party", null=True, blank=True, on_delete=models.PROTECT,
                               related_name="+")
     role = models.CharField(max_length=20, blank=True, choices=PartyRoleType.choices)
+    # another branch (what it owes this branch, or is owed by it: legacy Bran GHBR34)
+    other_branch = models.ForeignKey("org.Branch", null=True, blank=True,
+                                     on_delete=models.PROTECT, related_name="+")
     # cash box or bank account
     cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
                                  on_delete=models.PROTECT, related_name="+")

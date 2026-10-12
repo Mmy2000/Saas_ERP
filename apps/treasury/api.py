@@ -7,7 +7,7 @@ from rest_framework.routers import SimpleRouter
 from apps.core.api.idempotency import idempotent
 from apps.core.errors import NotFound
 
-from . import cheques, counts, holders, reconciliation
+from . import cheques, counts, holders, reconciliation, vouchers
 from .models import (
     BankAccount,
     BankReconciliation,
@@ -16,6 +16,7 @@ from .models import (
     CashCount,
     Cheque,
     ChequeDirection,
+    MoneyVoucher,
     TreasuryDocument,
     TreasuryKind,
 )
@@ -596,7 +597,84 @@ class CashCountViewSet(viewsets.GenericViewSet):
                                                actor=request.actor))
 
 
+# --- money in and out ---------------------------------------------------------------------------
+
+class MoneyVoucherWriteSerializer(serializers.Serializer):
+    branch = serializers.IntegerField()
+    direction = serializers.ChoiceField(choices=[("in", "in"), ("out", "out")])
+    account = serializers.IntegerField(allow_null=True)
+    method = serializers.ChoiceField(choices=[("cash", "cash"), ("bank_transfer", "bank")])
+    currency = serializers.CharField(max_length=3)
+    amount = serializers.CharField(max_length=30, allow_blank=True)
+    cash_box = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bank_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    counterparty = serializers.CharField(max_length=200, required=False, allow_blank=True,
+                                         default="")
+    reference = serializers.CharField(max_length=60, required=False, allow_blank=True, default="")
+    note = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class MoneyVoucherSerializer(serializers.ModelSerializer):
+    currency = serializers.CharField(source="currency.code")
+    account_label = serializers.CharField(source="account.__str__")
+
+    class Meta:
+        model = MoneyVoucher
+        fields = ["id", "number", "status", "branch", "business_date", "direction", "account",
+                  "account_label", "cash_box", "bank_account", "currency", "amount",
+                  "functional_amount", "counterparty", "reference", "note"]
+
+
+class MoneyVoucherViewSet(viewsets.GenericViewSet):
+    queryset = MoneyVoucher.objects.select_related("currency", "account")
+    serializer_class = MoneyVoucherSerializer
+    filterset_fields = {"direction": ["exact"], "status": ["exact"],
+                        "business_date": ["gte", "lte"]}
+    required_permissions = {
+        "list": "treasury.view",
+        "retrieve": "treasury.view",
+        "create": vouchers.CREATE,
+        "void": "treasury.void",
+    }
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        branches = self.request.actor.branch_ids("treasury.view")
+        return queryset if branches is None else queryset.filter(branch_id__in=branches)
+
+    def _respond(self, voucher, code=status.HTTP_200_OK):
+        return Response(self.get_serializer(self.get_queryset().get(pk=voucher.pk)).data,
+                        status=code)
+
+    def list(self, request):
+        page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
+        return self.get_paginated_response(self.get_serializer(page, many=True).data)
+
+    def retrieve(self, request, pk=None):
+        return Response(self.get_serializer(self.get_object()).data)
+
+    @idempotent
+    def create(self, request):
+        payload = MoneyVoucherWriteSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        d = payload.validated_data
+        voucher = vouchers.post_voucher(vouchers.VoucherInput(
+            branch_id=d["branch"], direction=d["direction"], account_id=d["account"] or 0,
+            method=d["method"], currency_code=d["currency"], amount=d["amount"],
+            cash_box_id=d["cash_box"], bank_account_id=d["bank_account"],
+            counterparty=d["counterparty"], reference=d["reference"], note=d["note"]),
+            actor=request.actor)
+        return self._respond(voucher, status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    @idempotent
+    def void(self, request, pk=None):
+        reason = str(request.data.get("reason", ""))[:300]
+        return self._respond(vouchers.void_voucher(int(pk), reason=reason, actor=request.actor))
+
+
 router = SimpleRouter()
+router.register("money-vouchers", MoneyVoucherViewSet, basename="money-voucher-api")
 router.register("cash-counts", CashCountViewSet, basename="cash-count")
 router.register("cheques", ChequeViewSet, basename="cheque-api")
 router.register("reconciliations", ReconciliationViewSet, basename="reconciliation")

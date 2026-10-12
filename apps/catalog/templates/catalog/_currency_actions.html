@@ -1,0 +1,1 @@
+{% load i18n ui authz %}{% can "catalog.currency.manage" as allowed %}{% if allowed %}<a href="{% url 'currency-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New currency" %}</a>{% endif %}

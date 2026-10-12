@@ -53,6 +53,26 @@
     </section>
     {% endif %}
 
+    {% if groups.branch %}
+    <section class="border-b border-slate-100">
+      <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Other branches" %}</h2>
+      <div class="relative overflow-x-auto"><table class="table" data-report="{% translate 'Other branches' %}">
+        <thead><tr><th>{% translate "Branch" %}</th><th class="text-end">{% translate "Owes this branch" %}</th><th class="text-end">{% translate "This branch owes it" %}</th><th class="text-end">{% translate "Value" %} ({{ home_currency }})</th></tr></thead>
+        <tbody>{% for line in groups.branch %}
+          <tr><td>{{ line.other_branch.name }}</td>
+            {% if line.karat %}{% with grams=line.weight_g|num:3 %}
+            <td class="text-end">{% if line.fine_weight_g > 0 %}<span class="num">{{ grams }}</span> {% translate "g" %} {{ line.karat }}{% endif %}</td>
+            <td class="text-end">{% if line.fine_weight_g < 0 %}<span class="num">{{ grams }}</span> {% translate "g" %} {{ line.karat }}{% endif %}</td>{% endwith %}
+            {% else %}
+            <td class="text-end">{% if line.amount > 0 %}<span class="num">{{ line.amount|num:2 }}</span> {{ line.currency.code }}{% endif %}</td>
+            <td class="text-end">{% if line.amount < 0 %}<span class="num">{{ line.amount|absolute|num:2 }}</span> {{ line.currency.code }}{% endif %}</td>
+            {% endif %}
+            <td class="text-end"><span class="num">{{ line.functional_amount|num:2 }}</span></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
     {% if groups.stock %}
     <section class="border-b border-slate-100">
       <h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{% translate "Stock by weight" %}</h2>

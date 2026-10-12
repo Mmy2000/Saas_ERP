@@ -1,0 +1,36 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Currencies" %}{% endblock %}
+{% block page_header %}
+  {% translate "Currencies" as title %}{% translate "The currencies the business trades in. Each one can have its own cash boxes and bank accounts, and is valued at its exchange rate." as subtitle %}
+  {% include "components/page_header.html" with actions_template="catalog/_currency_actions.html" %}
+{% endblock %}
+{% block content %}{% can "catalog.currency.manage" as can_manage %}{% can "pricing.fx.view" as can_rates %}
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr>
+        <th>{% translate "Currency" %}</th><th>{% translate "Symbol" %}</th>
+        <th class="text-end">{% blocktranslate trimmed with home=home_currency %}Rate in {{ home }}{% endblocktranslate %}</th>
+        <th>{% translate "Status" %}</th>{% if can_manage %}<th></th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}{% with currency=row.currency %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ currency.code }}</span> <span class="text-slate-500">{{ currency.label }}</span>
+            {% if row.home %}<span class="badge badge-brand ms-2">{% translate "Company currency" %}</span>{% endif %}</td>
+          <td>{{ currency.symbol|default:"—" }}</td>
+          <td class="text-end">{% if row.home %}<span class="num">1</span>{% elif row.rate %}<span class="num">{{ row.rate.rate|num:4 }}</span>{% elif currency.is_active %}<span class="badge badge-warning">{% translate "Not published yet" %}</span>{% else %}—{% endif %}</td>
+          <td>{% if currency.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          {% if can_manage %}<td class="text-end"><a href="{% url 'currency-edit' currency.pk %}" class="btn btn-ghost text-xs">{% icon "pencil" "size-3.5" %}{% translate "Edit" %}</a></td>{% endif %}
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="flex flex-wrap items-center gap-2 border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+    {% icon "info" "size-4" %}{% translate "Amounts keep two decimals in every currency." %}
+    {% if can_rates %}<a class="font-medium text-brand-700 hover:underline" href="{% url 'fx-rates' %}">{% translate "Exchange rates" %}</a>{% endif %}
+  </p>
+</section>
+{% endblock %}

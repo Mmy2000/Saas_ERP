@@ -14,3 +14,5 @@ class TreasuryConfig(AppConfig):
                           lambda doc: doc.title)
         register_document("treasury.Cheque", "cheque", _("Cheque"))
         register_document("treasury.CashCount", "cash-count", _("Cash count"))
+        register_document("treasury.MoneyVoucher", "money-voucher",
+                          lambda doc: doc.get_direction_display())

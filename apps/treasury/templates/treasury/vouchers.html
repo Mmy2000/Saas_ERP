@@ -1,0 +1,49 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Money in and out" %}{% endblock %}
+{% block page_header %}
+{% can "treasury.voucher.create" as can_create %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Money in and out" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Money put into or taken out of a cash box or bank account against any account: the owner adding cash, a loan, other income, a payment that is not an expense." %}</p>
+  </div>
+  {% if can_create %}<div class="flex gap-2">
+    <a href="{% url 'money-voucher-new' %}?direction=out" class="btn btn-secondary">{% icon "arrow-up" "size-4" %}{% translate "Money out" %}</a>
+    <a href="{% url 'money-voucher-new' %}?direction=in" class="btn btn-primary">{% icon "arrow-down" "size-4" %}{% translate "Money in" %}</a>
+  </div>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% include "components/list_totals.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Direction" %}</th><th>{% translate "Account" %}</th><th>{% translate "Cash box or bank" %}</th><th>{% translate "From or to" %}</th>
+        <th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for v in page.object_list %}
+        <tr>
+          <td class="whitespace-nowrap"><span class="num font-medium text-slate-900">{{ v.number }}</span></td>
+          <td><span class="num">{{ v.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
+          <td>{% if v.direction == "in" %}<span class="badge badge-success">{{ v.get_direction_display }}</span>{% else %}<span class="badge badge-warning">{{ v.get_direction_display }}</span>{% endif %}</td>
+          <td><span class="num text-xs text-slate-400">{{ v.account.code }}</span> {{ v.account.label }}</td>
+          <td><bdi>{{ v.holder.label }}</bdi>{% if v.cash_box %} <span class="text-xs text-slate-400">{{ v.branch.name }}</span>{% endif %}</td>
+          <td>{{ v.counterparty|default:"—" }}</td>
+          <td class="text-end whitespace-nowrap"><span class="num">{{ v.amount|num:2 }}</span> {{ v.currency.code }}</td>
+          <td>{% include "components/doc_status.html" with status=v.status label=v.get_status_display %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'money-voucher' v.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "Nothing recorded yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="arrow-down-up" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -16,6 +16,22 @@ CURRENCY_NAMES = {
     "AED": _("UAE dirham"),
     "SAR": _("Saudi riyal"),
     "EUR": _("Euro"),
+    "GBP": _("Pound sterling"),
+    "KWD": _("Kuwaiti dinar"),
+    "QAR": _("Qatari riyal"),
+    "OMR": _("Omani rial"),
+    "BHD": _("Bahraini dinar"),
+    "JOD": _("Jordanian dinar"),
+    "LYD": _("Libyan dinar"),
+    "IQD": _("Iraqi dinar"),
+    "SDG": _("Sudanese pound"),
+    "TRY": _("Turkish lira"),
+    "CHF": _("Swiss franc"),
+    "CNY": _("Chinese yuan"),
+    "INR": _("Indian rupee"),
+    "CAD": _("Canadian dollar"),
+    "AUD": _("Australian dollar"),
+    "JPY": _("Japanese yen"),
 }
 
 

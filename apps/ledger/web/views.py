@@ -1,15 +1,41 @@
 from datetime import date
 
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
+from apps.core.errors import DomainError, ValidationError
 from apps.iam.authz import permission_required
 from apps.ledger import closing
-from apps.ledger.models import Account, Commodity, EntryKind, JournalEntry, PeriodEvent, YearEnd
+from apps.ledger.accounts import (
+    MANAGE,
+    AccountInput,
+    create_account,
+    delete_account,
+    depth_of,
+    holder_account_ids,
+    parent_choices,
+    suggest_code,
+    update_account,
+    why_locked,
+    why_not_deletable,
+)
+from apps.ledger.models import (
+    Account,
+    Commodity,
+    EntryKind,
+    JournalEntry,
+    JournalLine,
+    PeriodEvent,
+    YearEnd,
+)
 from apps.ledger.selectors import account_balances, trial_balance
 from apps.org.models import Branch
+
+from .forms import ONE_CURRENCY, EditAccountForm, NewAccountForm
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -23,11 +49,86 @@ def _parse_date(value: str | None) -> date | None:
 def accounts(request):
     branches = request.actor.branch_ids("ledger.view")
     balances = account_balances(branch_ids=branches)
-    rows = []
-    for account in Account.objects.order_by("code"):
-        depth = 0 if account.parent_id is None else (1 if len(account.code) <= 2 else 2)
-        rows.append({"account": account, "depth": depth, "balance": balances.get(account.pk)})
-    return render(request, "ledger/accounts.html", {"rows": rows})
+    every = list(Account.objects.order_by("code"))
+    depths = depth_of(every)
+    show_inactive = request.GET.get("inactive") == "1"
+    rows = [{"account": account, "depth": min(depths[account.pk], 4),
+             "balance": balances.get(account.pk)}
+            for account in every if account.is_active or show_inactive]
+    return render(request, "ledger/accounts.html", {
+        "rows": rows, "show_inactive": show_inactive,
+        "inactive_count": sum(1 for a in every if not a.is_active),
+        "holders": holder_account_ids(),
+        "groups": set(parent_choices().values_list("pk", flat=True))})
+
+
+def _show(form, exc: ValidationError) -> None:
+    for key, problems in (exc.fields or {}).items():
+        for problem in problems if isinstance(problems, list) else [problems]:
+            form.add_error(key if key in form.fields else None, str(problem))
+    if not exc.fields:
+        form.add_error(None, str(exc))
+
+
+@permission_required(MANAGE)
+def account_new(request):
+    groups = list(parent_choices())
+    initial = {"nature": "debit"}
+    wanted = request.GET.get("parent") or ""
+    parent = next((g for g in groups if str(g.pk) == wanted), None)
+    if parent is not None:
+        initial.update(parent=parent.pk, nature=parent.nature, code=suggest_code(parent))
+    form = NewAccountForm(request.POST or None, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        one_currency = d["commodity_scope"] == ONE_CURRENCY
+        if one_currency and not d["currency"]:
+            form.add_error("currency", _("Choose the currency."))
+        else:
+            try:
+                account = create_account(AccountInput(
+                    parent_id=d["parent"], code=d["code"], name=d["name"],
+                    is_group=d["is_group"], nature=d["nature"],
+                    commodity_scope="money" if one_currency else d["commodity_scope"],
+                    currency_code=d["currency"] if one_currency else ""), actor=request.actor)
+            except ValidationError as exc:
+                _show(form, exc)
+            else:
+                messages.success(request, _("%(name)s added.") % {"name": str(account)})
+                return redirect("accounts")
+    return render(request, "ledger/account_form.html", {
+        "form": form, "account": None,
+        "groups": [{"pk": g.pk, "code": suggest_code(g), "nature": g.nature} for g in groups]})
+
+
+@permission_required(MANAGE)
+def account_edit(request, pk):
+    account = Account.objects.select_related("parent", "commodity").filter(pk=pk).first()
+    if account is None:
+        raise Http404
+    if request.method == "POST" and request.POST.get("delete"):
+        try:
+            delete_account(account.pk, actor=request.actor)
+        except DomainError as exc:
+            messages.error(request, str(exc))
+            return redirect("account-edit", pk=account.pk)
+        messages.success(request, _("%(name)s deleted.") % {"name": str(account)})
+        return redirect("accounts")
+    form = EditAccountForm(request.POST or None, standard=bool(account.template_key),
+                           initial={"name": account.name, "is_active": account.is_active})
+    if request.method == "POST" and form.is_valid():
+        try:
+            update_account(account.pk, name=form.cleaned_data["name"],
+                           is_active=form.cleaned_data["is_active"], actor=request.actor)
+        except ValidationError as exc:
+            _show(form, exc)
+        else:
+            messages.success(request, _("Saved."))
+            return redirect("accounts")
+    return render(request, "ledger/account_form.html", {
+        "form": form, "account": account, "locked": why_locked(account),
+        "undeletable": why_not_deletable(account),
+        "used": JournalLine.objects.filter(account=account).exists()})
 
 
 @permission_required("ledger.view")

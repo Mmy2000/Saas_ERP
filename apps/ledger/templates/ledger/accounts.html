@@ -1,32 +1,35 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load i18n ui authz %}
 {% block title %}{% translate "Chart of accounts" %}{% endblock %}
 {% block page_header %}
   {% translate "Chart of accounts" as title %}{% translate "Every balance in the system is the sum of the entries on these accounts." as subtitle %}
-  {% include "components/page_header.html" %}
+  {% include "components/page_header.html" with actions_template="ledger/_account_actions.html" %}
 {% endblock %}
-{% block content %}
+{% block content %}{% can "ledger.accounts.manage" as can_manage %}
 <section class="card overflow-hidden">
   <div class="overflow-x-auto">
     <table class="table" data-report>
       <thead><tr>
         <th>{% translate "Account" %}</th><th>{% translate "Type" %}</th><th>{% translate "Takes" %}</th>
-        <th class="text-end">{% translate "Balance" %}</th><th class="text-end">{% translate "Gold (fine g)" %}</th>
+        <th class="text-end">{% translate "Balance" %}</th><th class="text-end">{% translate "Gold (fine g)" %}</th>{% if can_manage %}<th></th>{% endif %}
       </tr></thead>
       <tbody>
       {% for row in rows %}{% with account=row.account %}
         <tr class="{% if not account.is_postable %}bg-slate-50/70{% endif %}">
           <td>
-            <div class="flex items-center gap-2 {% if row.depth == 1 %}ps-5{% elif row.depth == 2 %}ps-10{% endif %}">
+            <div class="flex items-center gap-2 {% if row.depth == 1 %}ps-5{% elif row.depth == 2 %}ps-10{% elif row.depth == 3 %}ps-15{% elif row.depth >= 4 %}ps-20{% endif %}">
               <span class="num text-xs text-slate-400">{{ account.code }}</span>
               <span class="{% if account.is_postable %}text-slate-800{% else %}font-semibold text-slate-900{% endif %}">{{ account.label }}</span>
               {% if account.subledger == "party" %}<span class="badge badge-neutral">{% translate "per customer/supplier" %}</span>{% endif %}
+              {% if account.commodity %}<span class="badge badge-neutral num">{{ account.commodity.code }}</span>{% endif %}
+              {% if not account.is_active %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}
             </div>
           </td>
           <td class="text-slate-500">{{ account.get_type_display }}</td>
           <td class="text-slate-500">{% if account.is_postable %}{{ account.get_commodity_scope_display }}{% endif %}</td>
           <td class="text-end">{% if row.balance %}<span class="num">{{ row.balance.functional|num:2 }}</span>{% endif %}</td>
           <td class="text-end">{% if row.balance.XAU %}<span class="num">{{ row.balance.XAU|num:3 }}</span>{% endif %}</td>
+          {% if can_manage %}<td class="text-end whitespace-nowrap">{% if account.pk not in holders %}<a href="{% url 'account-edit' account.pk %}" class="btn btn-ghost text-xs" aria-label="{% translate 'Edit' %}">{% icon "pencil" "size-3.5" %}</a>{% endif %}{% if account.pk in groups %}<a href="{% url 'account-new' %}?parent={{ account.pk }}" class="btn btn-ghost text-xs" aria-label="{% translate 'Add an account under it' %}" title="{% translate 'Add an account under it' %}">{% icon "plus" "size-3.5" %}</a>{% endif %}</td>{% endif %}
         </tr>
       {% endwith %}{% endfor %}
       </tbody>

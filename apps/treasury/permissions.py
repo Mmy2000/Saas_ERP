@@ -8,6 +8,8 @@ register_permissions(_("Treasury"), [
     ("treasury.transfer.create", _("Move money between cash boxes and bank accounts")),
     ("treasury.transfer.receive", _("Receive cash sent from another branch")),
     ("treasury.exchange.create", _("Exchange currencies")),
+    ("treasury.voucher.create", _("Put money into or take it out of a cash box or bank "
+                                  "account against any account")),
     ("treasury.card_settlement.create", _("Record card settlements from the bank")),
     ("treasury.void", _("Cancel treasury documents")),
     ("treasury.cheque.view", _("View cheques received and issued")),

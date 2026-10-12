@@ -1,4 +1,5 @@
-"""Catalog use cases: seeding a new tenant's reference data and creating item categories."""
+"""Catalog use cases: seeding a new tenant's reference data, currencies, karats and item
+categories."""
 
 from __future__ import annotations
 
@@ -24,7 +25,9 @@ from .models import (
     ProductFamily,
 )
 
-CURRENCY_SYMBOLS = {"EGP": "ج.م", "USD": "$", "AED": "د.إ", "SAR": "ر.س", "EUR": "€"}
+CURRENCY_SYMBOLS = {"EGP": "ج.م", "USD": "$", "AED": "د.إ", "SAR": "ر.س", "EUR": "€", "GBP": "£",
+                    "KWD": "د.ك", "QAR": "ر.ق", "OMR": "ر.ع", "BHD": "د.ب", "JOD": "د.ا",
+                    "LYD": "ل.د", "IQD": "ع.د", "TRY": "₺", "CNY": "¥", "INR": "₹", "JPY": "¥"}
 
 GOLD_REFERENCE_KARAT = 21
 SILVER_KARAT = 925
@@ -291,3 +294,59 @@ def update_karat(karat_id: int, cmd: KaratCommand, *, actor=None) -> Karat:
     karat.is_active = cmd.is_active
     karat.save(update_fields=["fineness", "display_name", "is_active", "updated_at"])
     return karat
+
+
+# --- currencies -------------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class CurrencyCommand:
+    name: str = ""  # blank = the translated default name
+    symbol: str = ""
+    is_active: bool = True
+
+
+def _currency_in_use(currency: Currency) -> str:
+    """Why `currency` cannot be switched off, or ""."""
+    from apps.pricing.selectors import functional_currency
+    from apps.treasury.models import BankAccount, CashBox
+
+    if currency.code == functional_currency():
+        return _("The company currency is always active.")
+    if (CashBox.objects.filter(currency=currency, is_active=True).exists()
+            or BankAccount.objects.filter(currency=currency, is_active=True).exists()):
+        return _("Cash boxes or bank accounts still use it: close them first.")
+    return ""
+
+
+def create_currency(code: str, cmd: CurrencyCommand, *, actor=None) -> Currency:
+    """Add a currency to trade in. Money keeps two decimals in every currency."""
+    if actor is not None:
+        actor.require("catalog.currency.manage")
+    code = (code or "").strip().upper()
+    if len(code) != 3 or not code.isascii() or not code.isalpha():
+        raise ValidationError(_("Please correct the highlighted fields."),
+                              fields={"code": [_("Three letters, e.g. GBP.")]})
+    if Currency.objects.filter(code=code).exists():
+        raise ValidationError(_("Please correct the highlighted fields."),
+                              fields={"code": [_("Already added.")]})
+    return Currency.objects.create(
+        code=code, name=cmd.name.strip()[:60],
+        symbol=cmd.symbol.strip()[:8] or CURRENCY_SYMBOLS.get(code, ""), minor_units=2,
+        is_active=cmd.is_active)
+
+
+def update_currency(currency_id: int, cmd: CurrencyCommand, *, actor=None) -> Currency:
+    if actor is not None:
+        actor.require("catalog.currency.manage")
+    currency = Currency.objects.filter(pk=currency_id).first()
+    if currency is None:
+        raise ValidationError(_("Unknown currency."))
+    if currency.is_active and not cmd.is_active:
+        reason = _currency_in_use(currency)
+        if reason:
+            raise ValidationError(reason, fields={"is_active": [reason]})
+    currency.name = cmd.name.strip()[:60]
+    currency.symbol = cmd.symbol.strip()[:8]
+    currency.is_active = cmd.is_active
+    currency.save(update_fields=["name", "symbol", "is_active", "updated_at"])
+    return currency
