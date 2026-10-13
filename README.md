@@ -500,6 +500,19 @@ Legacy GHS45a / GHS45b (مطابقة جرد اصناف الفرع), `apps/invent
 - **Recounting and stock:** "Count again" starts from the typed figures. Nothing is posted: to
   correct stock, use a stocktake.
 
+### Casting bars (work orders)
+
+Legacy GHSHH15 / GHSHH24 (سبك):
+- **Receiving bars:** when a work order (usually of kind Casting) receives into a by-the-piece
+  category of the Bullion and coins family, each bar is entered with its weight, its fineness
+  (‰, e.g. 995.0 or 999.9) and the caster's serial number.
+- **The bar pieces:** each bar becomes its own barcoded piece. Its fine gold comes from its own
+  fineness, so the fine gold received and the loss are exact. The fineness is kept on the piece,
+  and the serial is its supplier code (searchable, shown on the piece page).
+- **Labels and fees:** labels can print both (fields "Fineness (bars)" and "Serial no.
+  (bars)"). A receipt line can carry a fixed charge (the casting fee) instead of labour per
+  gram. It is owed to the workshop like any labour and paid from its statement.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

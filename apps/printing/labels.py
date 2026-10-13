@@ -32,6 +32,8 @@ FIELDS = {
     "all_stones": gettext_lazy("All stones"),
     "origin": gettext_lazy("Natural or lab-grown"),
     "model": gettext_lazy("Model"),
+    "fineness": gettext_lazy("Fineness (bars)"),
+    "serial": gettext_lazy("Serial no. (bars)"),
     "price": gettext_lazy("Label price"),
     "branch": gettext_lazy("Branch"),
 }
@@ -109,6 +111,10 @@ def field_text(key: str, item, shop: str = "") -> str:
         return _stone_text(key, item)
     if key == "model":
         return getattr(item, "model_code", "")
+    if key == "fineness":
+        return str((getattr(item, "attributes", None) or {}).get("fineness", ""))
+    if key == "serial":
+        return getattr(item, "external_code", "")
     return ""
 
 

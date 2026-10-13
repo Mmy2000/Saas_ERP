@@ -671,6 +671,9 @@ msgstr "النشاط، آخر 14 يومًا"
 msgid "Add"
 msgstr "إضافة"
 
+msgid "Add a bar"
+msgstr "إضافة سبيكة"
+
 msgid "Add a deposit"
 msgstr "إضافة عربون"
 
@@ -3917,6 +3920,9 @@ msgstr "أدخل رقمًا صحيحًا، صفر أو أكثر."
 msgid "Enter an amount of zero or more."
 msgstr "أدخل مبلغًا صفرًا أو أكثر."
 
+msgid "Enter each bar's weight and fineness."
+msgstr "أدخل وزن ونقاوة كل سبيكة."
+
 msgid "Enter either a debit or a credit."
 msgstr "أدخل مدينًا أو دائنًا فقط."
 
@@ -4264,6 +4270,12 @@ msgstr "الوزن الصافي"
 
 msgid "Fineness"
 msgstr "العيار (نقاوة)"
+
+msgid "Fineness (bars)"
+msgstr "النقاوة (السبائك)"
+
+msgid "Fineness (per mille)"
+msgstr "النقاوة (في الألف)"
 
 msgid "Fineness (‰)"
 msgstr "النقاء (‰)"
@@ -7085,6 +7097,9 @@ msgstr "اختياري: الباركود (إن تُرك فارغًا يُعطى 
 msgid "Optional: type the totals printed on the supplier's invoice to check the lines against them."
 msgstr "اختياري: اكتب الإجماليات المطبوعة في فاتورة المورد لمطابقة البنود عليها."
 
+msgid "Or a fixed charge"
+msgstr "أو مبلغ ثابت"
+
 msgid "Or a name"
 msgstr "أو اسم"
 
@@ -9253,6 +9268,15 @@ msgstr "مُرسلة ولم تُستلم بعد"
 
 msgid "Sent."
 msgstr "تم الإرسال."
+
+msgid "Serial %(serial)s is entered twice."
+msgstr "الرقم المسلسل %(serial)s مُدخل مرتين."
+
+msgid "Serial no."
+msgstr "الرقم المسلسل"
+
+msgid "Serial no. (bars)"
+msgstr "الرقم المسلسل (السبائك)"
 
 msgid "Server"
 msgstr "الخادم"

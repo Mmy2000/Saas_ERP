@@ -910,6 +910,9 @@
   .grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
+  .grid-cols-\[1fr_1fr_1\.4fr_auto\] {
+    grid-template-columns: 1fr 1fr 1.4fr auto;
+  }
   .grid-cols-\[1fr_5\.5rem_4\.5rem_auto\] {
     grid-template-columns: 1fr 5.5rem 4.5rem auto;
   }
@@ -2398,6 +2401,9 @@
     }
     .lg\:col-span-5 {
       grid-column: span 5 / span 5;
+    }
+    .lg\:col-span-6 {
+      grid-column: span 6 / span 6;
     }
     .lg\:col-span-7 {
       grid-column: span 7 / span 7;

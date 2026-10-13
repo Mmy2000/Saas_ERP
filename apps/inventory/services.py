@@ -56,15 +56,17 @@ def create_item(*, category, karat, gross_weight_g, branch, business_date: date,
                 supplier=None, stone_weight_ct="0", cost_currency=None, cost_making_rate="0",
                 cost_amount="0", list_making_rate="0", external_code: str = "",
                 movement_type: str = MovementType.PURCHASE_RECEIPT, actor=None,
-                stone_cost_amount="0", label_price=None, barcode: str | None = None) -> Item:
+                stone_cost_amount="0", label_price=None, barcode: str | None = None,
+                fineness=None) -> Item:
     """`barcode`: keep an existing code (pieces carried over from another system) instead of
-    numbering a new one; the caller checks it is free."""
+    numbering a new one; the caller checks it is free. `fineness` (‰): a cast bar's own, when it
+    differs from its karat's (995.0 under 24K), kept in attributes and used for its fine gold."""
     gross = quantize(gross_weight_g, WEIGHT)
     if gross <= 0:
         raise DomainError(_("A piece must weigh more than zero."), code="INVENTORY_ZERO_WEIGHT")
     stones_g = to_decimal(stone_weight_ct) * GRAMS_PER_CARAT
     metal = quantize(max(gross - stones_g, ZERO), WEIGHT)
-    fine = _fine(metal, karat)
+    fine = fine_weight(metal, fineness) if fineness is not None else _fine(metal, karat)
     cost = quantize(cost_amount, MONEY)
     item = Item.objects.create(
         barcode=barcode or next_barcode(category), item_type=FAMILY_TO_ITEM_TYPE.get(
@@ -76,6 +78,7 @@ def create_item(*, category, karat, gross_weight_g, branch, business_date: date,
         list_making_rate=to_decimal(list_making_rate), external_code=external_code,
         stone_cost_amount=quantize(stone_cost_amount or "0", MONEY),
         label_price=quantize(label_price, MONEY) if label_price not in (None, "") else None,
+        attributes={"fineness": str(fineness)} if fineness is not None else {},
         created_by=getattr(actor, "user", None),
     )
     StockMovement.objects.create(

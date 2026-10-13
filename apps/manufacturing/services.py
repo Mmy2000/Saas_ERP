@@ -31,7 +31,7 @@ from apps.catalog.domain.metal import fine_weight
 from apps.catalog.models import Currency, ItemCategory, Karat, Tracking
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.core.models import DocStatus
-from apps.core.numeric import UNIT_PRICE, WEIGHT, quantize, round_money
+from apps.core.numeric import MONEY, UNIT_PRICE, WEIGHT, quantize, round_money
 from apps.core.sequences import allocate_number
 from apps.inventory.models import ItemStatus, LotBalance, MovementType, StockLot
 from apps.inventory.services import (
@@ -100,6 +100,11 @@ class ReceiptLineInput:
     qty: int = 0
     labour_rate: Decimal | str = "0"  # charged per gram, in the company currency
     list_making_rate: Decimal | str = "0"  # selling making charge per gram for new pieces
+    # Cast bars (legacy GHSHH15 سبك): each with its weight, fineness (‰) and the caster's serial;
+    # pieces of the line, their fine gold from their own fineness.
+    bars: tuple[dict, ...] = ()
+    # A fixed charge for the line (a casting fee) instead of labour per gram.
+    labour_amount: Decimal | str | None = None
 
 
 @dataclass(frozen=True)
@@ -123,6 +128,7 @@ class PlannedLine:
     pieces: list[Decimal]
     cost_amount: Decimal = ZERO
     metal_value: Decimal = ZERO
+    bars: list[tuple[Decimal, Decimal, str]] = field(default_factory=list)  # weight, ‰, serial
 
 
 @dataclass
@@ -341,7 +347,27 @@ def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
             line_type = ReceiptLineType.BULK
 
         pieces: list[Decimal] = []
-        if line_type == ReceiptLineType.PIECES:
+        bars: list[tuple[Decimal, Decimal, str]] = []
+        if line_type == ReceiptLineType.PIECES and line.bars:
+            serials = set()
+            for bar in line.bars:
+                try:
+                    weight = quantize(bar.get("weight_g") or "0", WEIGHT)
+                    fineness = quantize(bar.get("fineness") or karat.fineness, Decimal("0.1"))
+                except (TypeError, ValueError, ArithmeticError):
+                    raise _line_error(index, _("Enter each bar's weight and fineness."),
+                                      "bars") from None
+                serial = str(bar.get("serial") or "").strip()[:40]
+                if weight <= 0 or not 0 < fineness <= 1000:
+                    raise _line_error(index, _("Enter each bar's weight and fineness."), "bars")
+                if serial and serial.casefold() in serials:
+                    raise _line_error(index, _("Serial %(serial)s is entered twice.")
+                                      % {"serial": serial}, "bars")
+                serials.add(serial.casefold())
+                bars.append((weight, fineness, serial))
+            pieces = [weight for weight, _f, _s in bars]
+            qty, gross = len(pieces), sum(pieces, ZERO)
+        elif line_type == ReceiptLineType.PIECES:
             try:
                 pieces = [quantize(w, WEIGHT) for w in line.piece_weights]
             except (TypeError, ValueError):
@@ -364,15 +390,27 @@ def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
             raise _line_error(index, _("Enter a number."), "labour_rate") from None
         if labour_rate < 0 or list_rate < 0:
             raise _line_error(index, _("Must not be negative."), "labour_rate")
+        labour_amount = round_money(labour_rate * gross)
+        if line.labour_amount not in (None, ""):
+            try:
+                labour_amount = quantize(line.labour_amount, MONEY)
+            except (TypeError, ValueError, ArithmeticError):
+                raise _line_error(index, _("Enter a number."), "labour_amount") from None
+            if labour_amount < 0:
+                raise _line_error(index, _("Must not be negative."), "labour_amount")
+            labour_rate = quantize(labour_amount / gross, UNIT_PRICE)
         if line_type == ReceiptLineType.SCRAP:
-            labour_rate = list_rate = ZERO  # scrap is not worked goods
-        fine = (sum((fine_weight(w, karat.fineness) for w in pieces), ZERO) if pieces
-                else fine_weight(gross, karat.fineness))
+            labour_rate = list_rate = labour_amount = ZERO  # scrap is not worked goods
+        if bars:
+            fine = sum((fine_weight(w, f) for w, f, _s in bars), ZERO)
+        else:
+            fine = (sum((fine_weight(w, karat.fineness) for w in pieces), ZERO) if pieces
+                    else fine_weight(gross, karat.fineness))
         plan.lines.append(PlannedLine(
             line_type=line_type, category=category, karat=karat, qty=qty, gross_weight_g=gross,
-            fine_weight_g=fine, labour_rate=labour_rate,
-            labour_amount=round_money(labour_rate * gross), list_making_rate=list_rate,
-            pieces=pieces, metal_value=metal_value(karat, fine)))
+            fine_weight_g=fine, labour_rate=labour_rate, labour_amount=labour_amount,
+            list_making_rate=list_rate, pieces=pieces, metal_value=metal_value(karat, fine),
+            bars=bars))
 
     issued: dict[str, Decimal] = defaultdict(lambda: ZERO)
     for line in order.issue_lines.select_related("karat__metal"):
@@ -506,13 +544,15 @@ def receive_work_order(order_id: int, data: ReceiptInput, *, actor=None) -> Work
                     cost = (left if position == len(planned.pieces) - 1 else round_money(
                         planned.cost_amount * weight / planned.gross_weight_g))
                     left -= cost
+                    _w, fineness, serial = (planned.bars[position] if planned.bars
+                                            else (weight, None, ""))
                     item = create_item(
                         category=planned.category, karat=planned.karat, gross_weight_g=weight,
                         branch=order.branch, business_date=today, doc=ref,
                         supplier=order.workshop, cost_currency=currency,
                         cost_making_rate=quantize(cost / weight, UNIT_PRICE), cost_amount=cost,
-                        list_making_rate=planned.list_making_rate,
-                        movement_type=_in_type(order), actor=actor)
+                        list_making_rate=planned.list_making_rate, external_code=serial,
+                        fineness=fineness, movement_type=_in_type(order), actor=actor)
                     WorkOrderPiece.objects.create(line=saved, gross_weight_g=weight, item=item)
             else:
                 # Scrap carries its gold value as cost, like scrap bought or traded in.

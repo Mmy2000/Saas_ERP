@@ -67,7 +67,7 @@
           {% for line in receipt_lines %}
             <tr>
               <td><bdi>{{ line.category.name }}</bdi> <span class="badge badge-neutral">{{ line.get_line_type_display }}</span>
-                {% if line.pieces.all %}<div class="mt-1 flex flex-wrap gap-1.5 text-xs">{% for piece in line.pieces.all %}<a class="num text-brand-700 hover:underline" href="{% url 'stock-item' piece.item_id %}">{{ piece.item.barcode }}</a>{% endfor %}</div>{% endif %}</td>
+                {% if line.pieces.all %}<div class="mt-1 flex flex-wrap gap-1.5 text-xs">{% for piece in line.pieces.all %}<a class="num text-brand-700 hover:underline" href="{% url 'stock-item' piece.item_id %}">{{ piece.item.barcode }}{% if piece.item.attributes.fineness %} <span class="text-slate-500">({{ piece.item.gross_weight_g|num:3 }} g · {{ piece.item.attributes.fineness }}{% if piece.item.external_code %} · {{ piece.item.external_code }}{% endif %})</span>{% endif %}</a>{% endfor %}</div>{% endif %}</td>
               <td>{{ line.karat.label }}</td>
               <td class="text-end"><span class="num">{{ line.qty }}</span></td>
               <td class="text-end"><span class="num">{{ line.gross_weight_g|num:3 }}</span></td>
@@ -122,7 +122,7 @@
           <div class="lg:col-span-3">
             <label class="form-label">{% if order.in_house %}{% translate "What was made" %}{% else %}{% translate "What came back" %}{% endif %}</label>
             <select class="form-input" data-field="category">
-              {% for category in categories %}<option value="{{ category.pk }}" data-kind="{% if category.pk == scrap_id %}scrap{% elif category.tracking == 'serialized' %}pieces{% else %}bulk{% endif %}" data-karat="{{ category.default_karat_id|default:'' }}">{% if category.pk != scrap_id %}{{ category.code }} · {% endif %}{{ category.name }}</option>{% endfor %}
+              {% for category in categories %}<option value="{{ category.pk }}" data-kind="{% if category.pk == scrap_id %}scrap{% elif category.tracking == 'serialized' and category.product_family == 'bullion_coin' %}bars{% elif category.tracking == 'serialized' %}pieces{% else %}bulk{% endif %}" data-karat="{{ category.default_karat_id|default:'' }}">{% if category.pk != scrap_id %}{{ category.code }} · {% endif %}{{ category.name }}</option>{% endfor %}
             </select>
           </div>
           <div class="lg:col-span-2">
@@ -136,18 +136,32 @@
             <label class="form-label">{% translate "Weight of each piece (g)" %}</label>
             <input class="form-input num w-full text-start" data-field="piece_weights" placeholder="5.25 6.10 4.80" autocomplete="off">
           </div>
+          <div class="space-y-2 lg:col-span-6 hidden" data-for="bars">
+            <div class="grid grid-cols-[1fr_1fr_1.4fr_auto] gap-2 text-xs text-slate-500"><span>{% translate "Weight (g)" %}</span><span>{% translate "Fineness (per mille)" %}</span><span>{% translate "Serial no." %}</span><span></span></div>
+            <div class="space-y-2" data-bars></div>
+            <button type="button" class="btn btn-ghost text-xs" data-add-bar>{% icon "plus" "size-4" %}{% translate "Add a bar" %}</button>
+          </div>
           <div class="grid grid-cols-2 gap-3 lg:col-span-3 hidden" data-for="bulk scrap">
             <label><span class="form-label">{% translate "Total weight (g)" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="gross_weight_g"></label>
             <label data-for="bulk"><span class="form-label">{% translate "Count" %}</span><input class="form-input num w-full text-start" inputmode="numeric" data-field="qty"></label>
           </div>
-          <div class="grid grid-cols-2 gap-3 lg:col-span-3" data-for="pieces bulk">
+          <div class="grid grid-cols-2 gap-3 lg:col-span-3" data-for="pieces bulk bars">
             <label><span class="form-label">{% translate "Labour / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="labour_rate"></label>
             <label data-for="pieces"><span class="form-label">{% translate "Sale making / g" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="list_making_rate"></label>
+            <label data-for="bulk bars"><span class="form-label">{% translate "Or a fixed charge" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="labour_amount"></label>
           </div>
           <div class="flex items-end lg:col-span-1 lg:col-start-12 lg:row-start-1 lg:justify-end lg:pt-7">
             <button type="button" class="btn btn-ghost text-slate-400" data-remove-line aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
           </div>
           <p class="form-error col-span-full" data-line-error></p>
+        </div>
+      </template>
+      <template id="bar-row">
+        <div class="grid grid-cols-[1fr_1fr_1.4fr_auto] gap-2" data-bar>
+          <input class="form-input num py-1 text-start" inputmode="decimal" data-b="weight_g" placeholder="100.000" aria-label="{% translate 'Weight (g)' %}">
+          <input class="form-input num py-1 text-start" inputmode="decimal" data-b="fineness" placeholder="999.9" aria-label="{% translate 'Fineness (per mille)' %}">
+          <input class="form-input num py-1" data-b="serial" maxlength="40" aria-label="{% translate 'Serial no.' %}">
+          <button type="button" class="btn btn-ghost px-2 text-slate-400" data-remove-bar aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
         </div>
       </template>
     </section>

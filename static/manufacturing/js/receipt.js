@@ -11,6 +11,8 @@ if (root) {
   const $ = (selector) => root.querySelector(selector);
   const list = $("[data-lines]");
   const template = document.getElementById("receipt-line");
+  const barTemplate = document.getElementById("bar-row");
+  const addBar = (row) => row.querySelector("[data-bars]").append(barTemplate.content.firstElementChild.cloneNode(true));
   const key = uuid();
   let timer = null;
   let asked = 0;
@@ -21,6 +23,7 @@ if (root) {
   const refreshRow = (row) => {
     const kind = kindOf(row);
     row.querySelectorAll("[data-for]").forEach((node) => node.classList.toggle("hidden", !node.dataset.for.split(" ").includes(kind)));
+    if (kind === "bars" && !row.querySelector("[data-bar]")) addBar(row);
   };
 
   const applyDefaultKarat = (row) => {
@@ -46,13 +49,18 @@ if (root) {
       category: Number(read(row, "category")), karat: read(row, "karat") ? Number(read(row, "karat")) : null,
       labour_rate: kind === "scrap" ? "0" : read(row, "labour_rate") || "0",
       list_making_rate: kind === "pieces" ? read(row, "list_making_rate") || "0" : "0",
+      labour_amount: kind === "bulk" || kind === "bars" ? read(row, "labour_amount") || null : null,
     };
     if (kind === "pieces") line.piece_weights = read(row, "piece_weights").split(/[\s,،;]+/).filter(Boolean);
-    else {
+    else if (kind === "bars") {
+      line.bars = [...row.querySelectorAll("[data-bar]")]
+        .map((bar) => Object.fromEntries([...bar.querySelectorAll("[data-b]")].map((input) => [input.dataset.b, input.value.trim()])))
+        .filter((bar) => bar.weight_g);
+    } else {
       line.gross_weight_g = read(row, "gross_weight_g");
       line.qty = kind === "bulk" ? Number(read(row, "qty") || 0) : 0;
     }
-    const ready = line.karat && (kind === "pieces" ? line.piece_weights.length : line.gross_weight_g);
+    const ready = line.karat && (kind === "pieces" ? line.piece_weights.length : kind === "bars" ? line.bars.length : line.gross_weight_g);
     return all || ready ? [line] : [];
   });
 
@@ -90,6 +98,11 @@ if (root) {
   addLine();
   $("[data-add-line]").addEventListener("click", addLine);
   list.addEventListener("click", (event) => {
+    if (event.target.closest("[data-add-bar]")) addBar(event.target.closest("[data-line]"));
+    if (event.target.closest("[data-remove-bar]")) {
+      event.target.closest("[data-bar]").remove();
+      refresh();
+    }
     const button = event.target.closest("[data-remove-line]");
     if (button && list.querySelectorAll("[data-line]").length > 1) {
       button.closest("[data-line]").remove();

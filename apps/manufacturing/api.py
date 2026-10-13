@@ -39,6 +39,9 @@ class ReceiptLineSerializer(serializers.Serializer):
                                         default="0")
     list_making_rate = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                              default="0")
+    bars = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    labour_amount = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                          allow_null=True, default=None)
 
 
 class ReceiptSerializer(serializers.Serializer):
@@ -80,7 +83,8 @@ def _receipt(request) -> services.ReceiptInput:
             category_id=ln["category"], karat_id=ln["karat"],
             piece_weights=tuple(ln["piece_weights"]), gross_weight_g=ln["gross_weight_g"] or None,
             qty=ln["qty"], labour_rate=ln["labour_rate"] or "0",
-            list_making_rate=ln["list_making_rate"] or "0") for ln in d["lines"]))
+            list_making_rate=ln["list_making_rate"] or "0", bars=tuple(ln["bars"]),
+            labour_amount=ln["labour_amount"] or None) for ln in d["lines"]))
 
 
 class WorkOrderViewSet(viewsets.GenericViewSet):

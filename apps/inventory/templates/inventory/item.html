@@ -24,6 +24,8 @@
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Gross weight" %}</dt><dd class="num font-semibold">{{ item.gross_weight_g|num:3 }} {% translate "g" %}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Metal weight" %}</dt><dd class="num">{{ item.metal_weight_g|num:3 }} {% translate "g" %}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Fine weight" %}</dt><dd class="num">{{ item.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>
+      {% if item.attributes.fineness %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Fineness (per mille)" %}</dt><dd class="num">{{ item.attributes.fineness }}</dd></div>{% endif %}
+      {% if item.external_code %}<div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Serial no." %}</dt><dd class="num">{{ item.external_code }}</dd></div>{% endif %}
       {% if can_cost %}
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost / g" %}</dt><dd class="num">{{ item.cost_making_rate|num:2 }} {{ item.cost_currency.code }}</dd></div>
       <div class="flex justify-between px-5 py-3"><dt class="text-slate-500">{% translate "Making cost" %}</dt><dd class="num">{{ item.cost_amount|num:2 }}</dd></div>
