@@ -49,7 +49,7 @@
             </optgroup>
           </select>
           <p class="form-error" data-error-for="destination"></p>
-          <p class="mt-1 hidden text-xs text-amber-700" data-transit-hint>{% translate "Another branch: the cash waits in transit until that branch receives it." %}</p>
+          <p class="mt-1 hidden text-xs text-amber-700" data-transit-hint>{% translate "Another branch: the money waits in transit until that branch receives it." %}</p>
         </div>
 
         <div class="sm:col-span-2" data-for="card_settlement">
@@ -61,11 +61,18 @@
         </div>
 
         <div data-branch-field class="hidden">
-          <label class="form-label" for="f-branch">{% translate "Book it at branch" %}</label>
+          <label class="form-label" for="f-branch"><span data-for="card_settlement">{% translate "Book it at branch" %}</span><span data-for="transfer">{% translate "From branch" %}</span></label>
           <select id="f-branch" name="branch" class="form-input">
             {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
           </select>
           <p class="form-error" data-error-for="branch"></p>
+        </div>
+        <div data-to-branch-field class="hidden">
+          <label class="form-label" for="f-to-branch">{% translate "To branch" %}</label>
+          <select id="f-to-branch" name="to_branch" class="form-input">
+            {% for branch in all_branches %}<option value="{{ branch.pk }}" {% if branch.pk == default_branch %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="to_branch"></p>
         </div>
       </div>
     </section>

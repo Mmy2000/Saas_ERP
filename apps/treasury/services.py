@@ -58,7 +58,10 @@ class TreasuryInput:
     source_terminal_id: int | None = None
     dest_box_id: int | None = None
     dest_bank_id: int | None = None
-    branch_id: int | None = None  # for documents between bank accounts / from a terminal
+    branch_id: int | None = None  # the sending branch, for money from a bank / a terminal
+    # The receiving branch for money paid into a bank account (legacy GHBR45 تحويل نقدية بنك
+    # لفرع): another branch than the sender's waits in transit until that branch receives it.
+    to_branch_id: int | None = None
     amount: Decimal | str | None = None
     dest_amount: Decimal | str | None = None  # exchanges
     fee_amount: Decimal | str | None = None  # card settlements; default: terminal fee rate
@@ -145,18 +148,23 @@ def _prepare(data: TreasuryInput, actor) -> TreasuryDocument:
     if len(destinations) != 1:
         raise _field_error("destination", _("Choose where the money goes."))
     source, destination = sources[0], destinations[0]
-    if source.account_id == destination.account_id:
-        raise _field_error("destination", _("Choose a different destination."))
     doc.currency = source.currency
     doc.dest_currency = destination.currency
     doc.amount = _money(data.amount, "amount")
     if source_box is not None:
         ensure_cash_available(source_box, doc.amount, "amount")
 
-    # Branch: a box belongs to one; a bank-to-bank transfer is booked where the actor says.
+    # Branch: a box belongs to one; money leaving a bank account leaves the branch the actor
+    # says (else the receiving box's); money paid into a bank account reaches the branch the
+    # actor says (else the sender's).
     doc.branch = (source_box.branch if source_box else
-                  dest_box.branch if dest_box else _branch(data.branch_id))
-    doc.to_branch = dest_box.branch if dest_box else doc.branch
+                  _branch(data.branch_id) if data.branch_id or not dest_box else dest_box.branch)
+    doc.to_branch = (dest_box.branch if dest_box else
+                     _branch(data.to_branch_id) if data.to_branch_id else doc.branch)
+    if source.account_id == destination.account_id and doc.branch.pk == doc.to_branch.pk:
+        raise _field_error("destination", _("Choose a different destination."))
+    if source.account_id == destination.account_id and data.kind != TreasuryKind.TRANSFER:
+        raise _field_error("destination", _("Choose a different destination."))
     _usable_bank(source_bank, doc.branch, "source")
     _usable_bank(dest_bank, doc.to_branch, "destination")
 
@@ -165,8 +173,7 @@ def _prepare(data: TreasuryInput, actor) -> TreasuryDocument:
             raise _field_error("destination",
                                _("Use a currency exchange to change money into another currency."))
         doc.dest_amount = doc.amount
-        doc.needs_receipt = bool(source_box and dest_box
-                                 and source_box.branch_id != dest_box.branch_id)
+        doc.needs_receipt = doc.branch.pk != doc.to_branch.pk
     else:  # exchange: between two boxes of one branch
         if not (source_box and dest_box) or source_box.branch_id != dest_box.branch_id:
             raise _field_error("destination",
@@ -253,7 +260,8 @@ def post_treasury_document(data: TreasuryInput, *, actor=None) -> TreasuryDocume
 
 def _locked(doc_id: int) -> TreasuryDocument:
     doc = (TreasuryDocument.objects.select_for_update(of=("self",))
-           .select_related("branch", "to_branch", "currency", "dest_box__account")
+           .select_related("branch", "to_branch", "currency", "dest_box__account",
+                           "dest_bank__account")
            .filter(pk=doc_id).first())
     if doc is None:
         raise NotFound(_("Not found."))
@@ -269,8 +277,8 @@ def receive_transfer(doc_id: int, *, actor=None) -> TreasuryDocument:
         if not doc.in_transit:
             raise DomainError(_("This transfer is not waiting to be received."),
                               code="TREASURY_NOT_IN_TRANSIT")
-        if not doc.dest_box.is_active:
-            raise DomainError(_("The receiving cash box is inactive."),
+        if not doc.destination.is_active:
+            raise DomainError(_("The receiving cash box or bank account is inactive."),
                               code="TREASURY_HOLDER_INACTIVE")
         today = timezone.localdate()
         money = money_commodity(doc.currency)
@@ -278,7 +286,7 @@ def receive_transfer(doc_id: int, *, actor=None) -> TreasuryDocument:
             branch=doc.to_branch, business_date=today, kind=EntryKind.AUTO,
             source_type=DOC_TYPE, source_id=doc.pk,
             memo=_("Received %(number)s") % {"number": doc.number},
-            lines=[LedgerLine(account=doc.dest_box.account, commodity=money,
+            lines=[LedgerLine(account=doc.destination.account, commodity=money,
                               quantity=doc.amount, functional_amount=doc.functional_amount),
                    LedgerLine(account=account_for("branch_clearing"), commodity=money,
                               quantity=-doc.amount, functional_amount=-doc.functional_amount)],

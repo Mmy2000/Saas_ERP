@@ -56,7 +56,8 @@ if (form) {
     const fromValue = source.value;
     filterOptions(dest, (option) => {
       if (!from || !fromValue) return true;
-      if (option.value === fromValue) return false;
+      // The same bank account only to move its balance to another branch.
+      if (option.value === fromValue && !(kind === "transfer" && fromValue.startsWith("bank:"))) return false;
       if (kind === "exchange") {
         return option.value.startsWith("box:") && option.dataset.branch === from.dataset.branch
           && option.dataset.currency !== from.dataset.currency;
@@ -64,10 +65,15 @@ if (form) {
       return option.dataset.currency === from.dataset.currency;
     });
     const to = selected(dest);
-    const bothBanks = source.value.startsWith("bank:") && dest.value.startsWith("bank:");
-    $("[data-branch-field]").classList.toggle("hidden", kind !== "transfer" || !bothBanks);
-    $("[data-transit-hint]").classList.toggle("hidden", !(kind === "transfer" && from?.dataset.branch
-      && to?.dataset.branch && from.dataset.branch !== to.dataset.branch));
+    // Money from a bank leaves the branch chosen; money into a bank reaches the branch chosen.
+    const fromBank = source.value.startsWith("bank:");
+    const toBank = dest.value.startsWith("bank:");
+    $("[data-branch-field]").classList.toggle("hidden", kind !== "transfer" || !fromBank);
+    $("[data-to-branch-field]").classList.toggle("hidden", kind !== "transfer" || !toBank);
+    const fromBranch = fromBank ? $("#f-branch").value : from?.dataset.branch;
+    const toBranch = toBank ? $("#f-to-branch").value : to?.dataset.branch;
+    $("[data-transit-hint]").classList.toggle("hidden", !(kind === "transfer" && fromBranch && toBranch
+      && fromBranch !== toBranch));
     $("[data-currency-label]").textContent = from?.dataset.currency ? `(${from.dataset.currency})` : "";
     $("[data-dest-currency-label]").textContent = to?.dataset.currency ? `(${to.dataset.currency})` : "";
     const sold = Number($("#f-amount").value || 0);
@@ -95,6 +101,7 @@ registerShaper("treasury-document", (values, formElement) => {
   const kind = values.kind;
   const body = { kind, amount: values.amount ?? "", reference: values.reference ?? "", note: values.note ?? "" };
   if (!formElement.querySelector("[data-branch-field]").classList.contains("hidden")) body.branch = Number(values.branch);
+  if (!formElement.querySelector("[data-to-branch-field]").classList.contains("hidden")) body.to_branch = Number(values.to_branch);
   if (kind === "card_settlement") {
     const terminal = formElement.querySelector("[data-terminal]").value;
     body.source_terminal = terminal ? Number(terminal) : null;

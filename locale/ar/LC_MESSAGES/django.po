@@ -1052,8 +1052,8 @@ msgstr "هذا الكود مستخدم لحساب آخر."
 msgid "Another branch"
 msgstr "فرع آخر"
 
-msgid "Another branch: the cash waits in transit until that branch receives it."
-msgstr "فرع آخر: تبقى النقدية في الطريق حتى يستلمها ذلك الفرع."
+msgid "Another branch: the money waits in transit until that branch receives it."
+msgstr "فرع آخر: يبقى المبلغ في الخزينة الوسيطة حتى يستلمه ذلك الفرع."
 
 msgid "Another campaign is still sending or paused. Finish or cancel it first."
 msgstr "توجد حملة أخرى قيد الإرسال أو موقوفة مؤقتًا. أنهها أو ألغها أولًا."
@@ -2825,8 +2825,8 @@ msgstr "تأكيد"
 msgid "Confirm everything on this list arrived at %(branch)s."
 msgstr "أكِّد وصول كل ما في هذه القائمة إلى %(branch)s."
 
-msgid "Confirm the cash arrived in %(box)s at %(branch)s."
-msgstr "أكِّد وصول النقدية إلى %(box)s في %(branch)s."
+msgid "Confirm the money arrived in %(box)s at %(branch)s."
+msgstr "أكّد وصول المبلغ إلى %(box)s في %(branch)s."
 
 msgid "Confirm to start the stocktake."
 msgstr "أكّد لبدء الجرد."
@@ -4366,6 +4366,9 @@ msgstr "المساحة على كل قرص"
 
 msgid "From"
 msgstr "من"
+
+msgid "From branch"
+msgstr "من فرع"
 
 msgid "From hour"
 msgstr "من الساعة"
@@ -10490,8 +10493,8 @@ msgstr "الباقة تتضمنها"
 msgid "The price on the day of completion"
 msgstr "سعر يوم الإتمام"
 
-msgid "The receiving cash box is inactive."
-msgstr "الخزينة المستلِمة موقوفة."
+msgid "The receiving cash box or bank account is inactive."
+msgstr "الخزينة أو الحساب البنكي المستلم غير نشط."
 
 msgid "The reference karat cannot be deactivated."
 msgstr "لا يمكن إيقاف العيار المرجعي."
@@ -10939,6 +10942,9 @@ msgstr "إلى"
 
 msgid "to (s)"
 msgstr "إلى (ث)"
+
+msgid "To branch"
+msgstr "إلى فرع"
 
 msgid "To close"
 msgstr "بانتظار الإقفال"

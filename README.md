@@ -526,6 +526,20 @@ Legacy GHMRK2 / GHMRK4 (كتالوج الذهب / الماس), `apps/inventory/c
   show their label price. "A5 catalogue (PDF)" prints the same list (up to 300 pieces), two to
   a row, with the shop's name and logo.
 
+### Bank money to another branch
+
+Legacy GHBR45-48 (تحويل نقدية بنك لفرع، استلام، الخزينة الوسيطة), on Treasury → Movements →
+New, as a Transfer:
+- **From a bank account:** the movement has a "From branch". Money sent to a cash box at
+  another branch waits in branch clearing until that branch receives it.
+- **Into a bank account:** the movement has a "To branch". Choosing the same bank account with
+  another branch moves that account's balance from one branch to the other, in two steps as
+  well.
+- **Receiving and printing:** it shows under In transit until the receiving branch confirms on
+  the movement's page. The printed movement shows both branches and serves as the receipt.
+- **Unchanged:** a bank withdrawal into a box without a "From branch" is still booked at once
+  where the box is.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

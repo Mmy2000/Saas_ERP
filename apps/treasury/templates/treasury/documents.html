@@ -24,7 +24,7 @@
           <td><span class="num">{{ doc.business_date|date:"SHORT_DATE_FORMAT" }}</span></td>
           <td>{{ doc.title }}</td>
           <td><bdi>{{ doc.source.label }}</bdi>{% if doc.source_box %} <span class="text-xs text-slate-400">{{ doc.branch.name }}</span>{% endif %}</td>
-          <td><bdi>{{ doc.destination.label }}</bdi>{% if doc.dest_box %} <span class="text-xs text-slate-400">{{ doc.to_branch.name }}</span>{% endif %}</td>
+          <td><bdi>{{ doc.destination.label }}</bdi>{% if doc.dest_box or doc.to_branch_id != doc.branch_id %} <span class="text-xs text-slate-400">{{ doc.to_branch.name }}</span>{% endif %}</td>
           <td class="text-end whitespace-nowrap"><span class="num">{{ doc.amount|num:2 }}</span> {{ doc.currency.code }}{% if doc.kind == "exchange" %} → <span class="num">{{ doc.dest_amount|num:2 }}</span> {{ doc.dest_currency.code }}{% endif %}</td>
           <td>{% if doc.in_transit %}<span class="badge badge-warning">{% translate "In transit" %}</span>{% else %}{% include "components/doc_status.html" with status=doc.status label=doc.get_status_display %}{% endif %}</td>
           <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'treasury-document' doc.pk %}">{% translate "Open" %}</a></td>

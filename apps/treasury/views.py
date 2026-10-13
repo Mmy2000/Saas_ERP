@@ -119,6 +119,7 @@ def document_new(request):
         "banks": visible_banks(None).filter(is_active=True),
         "terminals": terminals,
         "branches": _branches(request, PERMISSIONS[kind]),
+        "all_branches": Branch.objects.filter(is_active=True).order_by("code"),
         "default_branch": request.membership.default_branch_id,
         "source": request.GET.get("source", ""),
     })

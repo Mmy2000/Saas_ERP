@@ -848,7 +848,9 @@ def sample_expense(design, company):
 def build_treasury_document(doc, design, ctx=None):
     home = _home()
     source = str(doc.source.label) + (f" · {doc.branch.name}" if doc.source_box else "")
-    dest = str(doc.destination.label) + (f" · {doc.to_branch.name}" if doc.dest_box else "")
+    dest = str(doc.destination.label) + (f" · {doc.to_branch.name}"
+                                         if doc.dest_box or doc.to_branch_id != doc.branch_id
+                                         else "")
     if doc.kind == "exchange":
         totals = [(_("Sold"), f"{_num(doc.amount)} {doc.currency.code}", False),
                   (_("Bought"), f"{_num(doc.dest_amount)} {doc.dest_currency.code}", True),

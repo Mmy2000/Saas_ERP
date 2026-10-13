@@ -38,7 +38,7 @@
     <li class="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="text-sm">
         <a class="num font-medium text-brand-700 hover:underline" href="{% url 'treasury-document' doc.pk %}">{{ doc.number }}</a>
-        <span class="text-slate-500">· {{ doc.branch.name }} → {{ doc.to_branch.name }} · <bdi>{{ doc.dest_box.label }}</bdi></span>
+        <span class="text-slate-500">· {{ doc.branch.name }} → {{ doc.to_branch.name }} · <bdi>{{ doc.destination.label }}</bdi></span>
       </div>
       <div class="flex items-center gap-3">
         <span class="num font-semibold text-slate-900">{{ doc.amount|num:2 }} {{ doc.currency.code }}</span>

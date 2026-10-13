@@ -219,6 +219,7 @@ class DocumentWriteSerializer(serializers.Serializer):
     dest_box = serializers.IntegerField(required=False, allow_null=True, default=None)
     dest_bank = serializers.IntegerField(required=False, allow_null=True, default=None)
     branch = serializers.IntegerField(required=False, allow_null=True, default=None)
+    to_branch = serializers.IntegerField(required=False, allow_null=True, default=None)
     amount = serializers.CharField(max_length=30, required=False, allow_blank=True, default="")
     dest_amount = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                         default="")
@@ -286,7 +287,8 @@ class TreasuryDocumentViewSet(viewsets.GenericViewSet):
         doc = post_treasury_document(TreasuryInput(
             kind=d["kind"], source_box_id=d["source_box"], source_bank_id=d["source_bank"],
             source_terminal_id=d["source_terminal"], dest_box_id=d["dest_box"],
-            dest_bank_id=d["dest_bank"], branch_id=d["branch"], amount=d["amount"] or None,
+            dest_bank_id=d["dest_bank"], branch_id=d["branch"], to_branch_id=d["to_branch"],
+            amount=d["amount"] or None,
             dest_amount=d["dest_amount"] or None, fee_amount=d["fee_amount"] or None,
             reference=d["reference"], note=d["note"]), actor=request.actor)
         return self._respond(doc, status.HTTP_201_CREATED)

@@ -23,7 +23,7 @@
       <div class="flex justify-between gap-4 px-6 py-3"><dt class="text-slate-500">{% translate "From" %}</dt>
         <dd class="text-end"><bdi>{{ doc.source.label }}</bdi>{% if doc.source_box %} · {{ doc.branch.name }}{% endif %}</dd></div>
       <div class="flex justify-between gap-4 px-6 py-3"><dt class="text-slate-500">{% translate "To" %}</dt>
-        <dd class="text-end"><bdi>{{ doc.destination.label }}</bdi>{% if doc.dest_box %} · {{ doc.to_branch.name }}{% endif %}</dd></div>
+        <dd class="text-end"><bdi>{{ doc.destination.label }}</bdi>{% if doc.dest_box or doc.to_branch_id != doc.branch_id %} · {{ doc.to_branch.name }}{% endif %}</dd></div>
       {% if doc.kind == "exchange" %}
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Sold" %}</dt><dd><span class="num">{{ doc.amount|num:2 }}</span> {{ doc.currency.code }}</dd></div>
       <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Bought" %}</dt><dd><span class="num">{{ doc.dest_amount|num:2 }}</span> {{ doc.dest_currency.code }}</dd></div>
@@ -51,7 +51,7 @@
     {% if doc.in_transit and can_receive %}
     <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}receive/" data-success="{% translate 'Received.' %}" class="card card-body space-y-3">
       <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
-      <p class="text-sm text-slate-600">{% blocktranslate trimmed with box=doc.dest_box.label branch=doc.to_branch.name %}Confirm the cash arrived in {{ box }} at {{ branch }}.{% endblocktranslate %}</p>
+      <p class="text-sm text-slate-600">{% blocktranslate trimmed with box=doc.destination.label branch=doc.to_branch.name %}Confirm the money arrived in {{ box }} at {{ branch }}.{% endblocktranslate %}</p>
       <button type="submit" class="btn btn-primary w-full">{% icon "check" "size-4" %}{% translate "Receive" %}</button>
     </form>
     {% endif %}
