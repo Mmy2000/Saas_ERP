@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -75,6 +76,9 @@ class Item(TenantScopedModel):
     external_code = models.CharField(max_length=64, blank=True)  # supplier's own code
     # A diamond piece's model / style (legacy Fd2 d1so "الموديل"): searched and printed on labels.
     model_code = models.CharField(max_length=40, blank=True)
+    # Its model classes (legacy GHD9, several per piece: "Rings", "Solitaire"…), from the
+    # diamonds' managed list.
+    model_classes = ArrayField(models.CharField(max_length=20), default=list, blank=True)
     item_type = models.CharField(max_length=16, choices=ItemType.choices)
     category = models.ForeignKey("catalog.ItemCategory", on_delete=models.PROTECT,
                                  related_name="items")

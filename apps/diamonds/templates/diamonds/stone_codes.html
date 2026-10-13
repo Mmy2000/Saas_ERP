@@ -1,0 +1,59 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Stone codes" %}{% endblock %}
+{% block page_header %}
+  {% translate "Stone codes" as title %}{% translate "Coded stone descriptions with a reference price per carat. Picking a code when entering a stone fills its details; its price gives the stones' reference value and suggests their cost when receiving." as subtitle %}
+  {% include "components/page_header.html" %}
+{% endblock %}
+{% block content %}
+{% can "diamonds.manage" as can_manage %}
+{% include "components/grade_lists.html" %}
+<div class="grid grid-cols-1 gap-6 {% if can_manage %}lg:grid-cols-3{% endif %}">
+  <section class="card overflow-hidden {% if can_manage %}lg:col-span-2{% endif %}">
+    <div class="overflow-x-auto">
+      <table class="table text-sm">
+        <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Kind" %}</th><th>{% translate "Natural or lab-grown" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th class="text-end">{% translate "Price per carat" %}</th>{% if can_manage %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for c in codes %}
+          <tr class="{% if not c.is_active %}text-slate-400{% endif %}">
+            <td class="num font-medium">{{ c.code }}{% if not c.is_active %} <span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+            <td>{{ c.name|default:"—" }}</td><td>{{ c.get_kind_display }}</td><td>{{ c.get_origin_display|default:"—" }}</td>
+            <td>{{ c.get_shape_display|default:"—" }}</td><td>{{ c.color|default:"—" }}</td><td>{{ c.clarity|default:"—" }}</td>
+            <td class="num text-end">{{ c.price_per_ct|num:2 }} {{ c.currency.code }}</td>
+            {% if can_manage %}<td class="text-end"><a class="btn btn-ghost px-2 text-xs" href="?edit={{ c.pk }}">{% icon "pencil" "size-4" %}{% translate "Edit" %}</a></td>{% endif %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="9" class="py-10 text-center text-slate-500">{% translate "No stone codes yet" %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% if can_manage %}
+  <form method="post" class="card self-start" novalidate data-stone-code-form>
+    {% csrf_token %}
+    {% if editing %}<input type="hidden" name="pk" value="{{ editing.pk }}">{% endif %}
+    <div class="card-header"><h2 class="card-title">{% if editing %}{% translate "Edit stone code" %}{% else %}{% translate "New stone code" %}{% endif %}</h2>
+      {% if editing %}<a class="btn btn-ghost px-2 text-xs" href="{% url 'stone-codes' %}">{% translate "Cancel" %}</a>{% endif %}</div>
+    <div class="card-body grid grid-cols-2 gap-3">
+      <label><span class="form-label">{% translate "Code" %}</span><input name="code" class="form-input w-full" maxlength="20" value="{% firstof values.code editing.code %}" required><p class="form-error">{{ errors.code }}</p></label>
+      <label><span class="form-label">{% translate "Name" %}</span><input name="name" class="form-input w-full" maxlength="80" value="{% firstof values.name editing.name %}"></label>
+      <label><span class="form-label">{% translate "Kind" %}</span>
+        <select name="kind" class="form-input">{% for value, label in kinds %}<option value="{{ value }}" {% if value == values.kind or not values and value == editing.kind %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><p class="form-error">{{ errors.kind }}</p></label>
+      <label><span class="form-label">{% translate "Natural or lab-grown" %}</span>
+        <select name="origin" class="form-input"><option value="">—</option>{% for value, label in origins %}<option value="{{ value }}" {% if value == values.origin or not values and value == editing.origin %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Shape" %}</span>
+        <select name="shape" class="form-input"><option value="">—</option>{% for value, label in shapes %}<option value="{{ value }}" {% if value == values.shape or not values and value == editing.shape %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Colour" %}</span><input name="color" class="form-input w-full" maxlength="20" list="grade-color" value="{% firstof values.color editing.color %}"></label>
+      <label><span class="form-label">{% translate "Clarity" %}</span><input name="clarity" class="form-input w-full" maxlength="20" list="grade-clarity" value="{% firstof values.clarity editing.clarity %}"></label>
+      <div></div>
+      <label><span class="form-label">{% translate "Price per carat" %}</span><input name="price_per_ct" class="form-input num w-full text-start" inputmode="decimal" value="{% firstof values.price_per_ct editing.price_per_ct %}"><p class="form-error">{{ errors.price_per_ct }}</p></label>
+      <label><span class="form-label">{% translate "Currency" %}</span>
+        <select name="currency" class="form-input">{% for cur in currencies %}<option value="{{ cur.code }}" {% if values and cur.code == values.currency or not values and editing and cur.code == editing.currency.code or not values and not editing and cur.code == home_currency %}selected{% endif %}>{{ cur.code }}</option>{% endfor %}</select><p class="form-error">{{ errors.currency }}</p></label>
+      <label class="col-span-2 flex items-center gap-2 text-sm"><input type="checkbox" name="is_active" class="size-4 rounded border-slate-300 accent-brand-600" {% if values and values.is_active or not values and not editing or not values and editing.is_active %}checked{% endif %}>{% translate "Active (offered when entering stones)" %}</label>
+    </div>
+    <div class="flex justify-end border-t border-slate-100 p-4"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button></div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

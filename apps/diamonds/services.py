@@ -51,7 +51,16 @@ from apps.purchasing.models import (
 )
 from apps.purchasing.services import post_invoice
 
-from .models import ItemStone, StoneKind, StoneSetting, StoneSettingStone, StoneShape
+from .grades import clean_model_classes
+from .models import (
+    ItemStone,
+    StoneCode,
+    StoneKind,
+    StoneOrigin,
+    StoneSetting,
+    StoneSettingStone,
+    StoneShape,
+)
 
 FEATURE = "diamonds"
 FAMILIES = (ProductFamily.DIAMOND, ProductFamily.STONE)
@@ -90,6 +99,9 @@ class StoneInput:
     lab: str = ""
     certificate_no: str = ""
     note: str = ""
+    origin: str = ""  # natural / lab_grown
+    setting_type: str = ""
+    code: str = ""  # a stone code (fills what is left empty, and the price per carat)
 
 
 def clean_stones(stones, field_name: str = "stones") -> list[dict]:
@@ -98,13 +110,28 @@ def clean_stones(stones, field_name: str = "stones") -> list[dict]:
     from .grades import normalizer
 
     normalize = normalizer()
+    codes = None
     cleaned = []
     for index, stone in enumerate(stones):
-        data = stone if isinstance(stone, dict) else stone.__dict__
+        data = dict(stone if isinstance(stone, dict) else stone.__dict__)
 
         def error(message, name="carat", index=index):
             return ValidationError(message, fields={field_name: {str(index): {name: [message]}}})
 
+        code = None
+        if str(data.get("code") or "").strip():
+            if codes is None:
+                codes = {c.code.casefold(): c
+                         for c in StoneCode.objects.select_related("currency")}
+            code = codes.get(str(data["code"]).strip().casefold())
+            if code is None:
+                raise error(_("Unknown stone code."), "code")
+            for key in ("kind", "origin", "shape", "color", "clarity"):
+                if not data.get(key) and getattr(code, key):
+                    data[key] = getattr(code, key)
+        origin = data.get("origin") or ""
+        if origin not in ("", *StoneOrigin.values):
+            raise error(_("Choose natural or lab-grown."), "origin")
         try:
             carat = quantize(data.get("carat") or "0", Decimal("0.001"))
         except (TypeError, ValueError, InvalidOperation):
@@ -123,31 +150,61 @@ def clean_stones(stones, field_name: str = "stones") -> list[dict]:
             raise error(_("Enter how many."), "count") from None
         if count < 1:
             raise error(_("Enter how many."), "count")
+        price = data.get("price_per_ct")
+        if code is not None and price in (None, ""):
+            price, currency = code.price_per_ct, code.currency.code
+        else:
+            currency = data.get("price_currency") or ""
+        if price not in (None, ""):
+            try:
+                price = quantize(price, MONEY)
+            except (TypeError, ValueError, InvalidOperation):
+                raise error(_("Enter a number."), "price_per_ct") from None
         cleaned.append({
-            "kind": kind, "shape": shape, "count": count, "carat": str(carat),
+            "kind": kind, "shape": shape, "count": count, "carat": str(carat), "origin": origin,
             **{key: str(data.get(key) or "").strip()[:limit] for key, limit in (
                 ("color", 20), ("clarity", 20), ("cut", 20), ("lab", 40),
-                ("certificate_no", 60), ("note", 200))},
+                ("certificate_no", 60), ("note", 200), ("setting_type", 20))},
+            "code": code.code if code is not None else "",
+            "price_per_ct": str(price) if price not in (None, "") and currency else "",
+            "price_currency": currency if price not in (None, "") else "",
         })
         for key in ("color", "clarity", "cut"):
             cleaned[-1][key] = normalize(key, cleaned[-1][key])
+        cleaned[-1]["setting_type"] = normalize("setting", cleaned[-1]["setting_type"])
     return cleaned
 
 
 def add_stones(item: Item, stones, *, setting=None, source=None) -> list[ItemStone]:
+    cleaned = clean_stones(stones)
+    codes = {c.code: c for c in StoneCode.objects.filter(
+        code__in=[s["code"] for s in cleaned if s["code"]])}
     rows = [ItemStone(item=item, setting=setting, source=source, kind=s["kind"], shape=s["shape"],
                       count=s["count"], carat=Decimal(s["carat"]), color=s["color"],
                       clarity=s["clarity"], cut=s["cut"], lab=s["lab"],
-                      certificate_no=s["certificate_no"], note=s["note"])
-            for s in clean_stones(stones)]
+                      certificate_no=s["certificate_no"], note=s["note"], origin=s["origin"],
+                      setting_type=s["setting_type"], code=codes.get(s["code"]),
+                      price_per_ct=Decimal(s["price_per_ct"]) if s["price_per_ct"] else None,
+                      price_currency=s["price_currency"])
+            for s in cleaned]
     return ItemStone.objects.bulk_create(rows)
+
+
+def reference_value(stones) -> dict[str, Decimal]:
+    """The stones' value at their codes' price per carat, per currency."""
+    totals: dict[str, Decimal] = {}
+    for stone in stones:
+        if stone.price_per_ct is not None and stone.price_currency:
+            totals[stone.price_currency] = (totals.get(stone.price_currency, ZERO)
+                                            + round_money(stone.carat * stone.price_per_ct))
+    return totals
 
 
 UNCHANGED = object()
 
 
 def update_item(item_id: int, *, stones, label_price=None, discount_class_id=UNCHANGED,
-                model_code=UNCHANGED,
+                model_code=UNCHANGED, model_classes=UNCHANGED,
                 actor=None) -> Item:
     """Replace a piece's stone details and set its label price and discount class (stone
     weight follows)."""
@@ -175,6 +232,8 @@ def update_item(item_id: int, *, stones, label_price=None, discount_class_id=UNC
                                    if discount_class_id else None)
         if model_code is not UNCHANGED:
             item.model_code = (model_code or "").strip()[:40]
+        if model_classes is not UNCHANGED:
+            item.model_classes = clean_model_classes(model_classes)
         item.stone_weight_ct = sum((s.carat for s in item.stones.all()), ZERO)
         item.updated_by = getattr(actor, "user", None)
         item.save()
@@ -286,6 +345,8 @@ def stones_summary(stones) -> str:
         text = f"{stone.count} × {stone.carat.normalize():f} ct"
         if grade:
             text += f" {grade}"
+        if stone.origin == StoneOrigin.LAB_GROWN:
+            text += f" {_('Lab-grown')}"
         if stone.lab:
             text += f" ({stone.lab})"
         parts.append(text)
@@ -305,6 +366,7 @@ class PieceInput:
     label_price: Decimal | str | None = None  # selling price, company currency
     discount_class_id: int | None = None
     model_code: str = ""  # the piece's model / style
+    model_classes: tuple[str, ...] = ()  # from the model classes list
 
 
 @dataclass(frozen=True)
@@ -401,6 +463,8 @@ def receive(data: ReceiveInput, *, actor=None) -> SupplierInvoice:
                    for index, piece in enumerate(data.pieces) if piece.discount_class_id}
         models = {index: piece.model_code.strip()[:40]
                   for index, piece in enumerate(data.pieces) if piece.model_code.strip()}
+        filed = {index: clean_model_classes(piece.model_classes, f"pieces.{index}")
+                 for index, piece in enumerate(data.pieces) if piece.model_classes}
         posted = post_invoice(invoice.pk, actor=actor)
         for line in posted.lines.filter(position__in=list(classes)):
             Item.objects.filter(pk=line.pieces.get().item_id).update(
@@ -408,6 +472,9 @@ def receive(data: ReceiveInput, *, actor=None) -> SupplierInvoice:
         for line in posted.lines.filter(position__in=list(models)):
             Item.objects.filter(pk=line.pieces.get().item_id).update(
                 model_code=models[line.position])
+        for line in posted.lines.filter(position__in=list(filed)):
+            Item.objects.filter(pk=line.pieces.get().item_id).update(
+                model_classes=filed[line.position])
     return posted
 
 
@@ -553,7 +620,10 @@ def _as_dict(stone: ItemStone) -> dict:
     return {"kind": stone.kind, "shape": stone.shape, "count": stone.count,
             "carat": str(stone.carat), "color": stone.color, "clarity": stone.clarity,
             "cut": stone.cut, "lab": stone.lab, "certificate_no": stone.certificate_no,
-            "note": stone.note}
+            "note": stone.note, "origin": stone.origin, "setting_type": stone.setting_type,
+            "code": stone.code.code if stone.code_id else "",
+            "price_per_ct": str(stone.price_per_ct) if stone.price_per_ct is not None else "",
+            "price_currency": stone.price_currency}
 
 
 def cancel_setting(setting_id: int, *, reason: str = "", actor=None) -> StoneSetting:

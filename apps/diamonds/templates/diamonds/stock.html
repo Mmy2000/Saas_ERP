@@ -44,7 +44,7 @@
   </div>
   <details class="border-b border-slate-100" {% if filtered %}open{% endif %}>
     <summary class="cursor-pointer px-4 py-2.5 text-sm text-slate-600">{% translate "Filter by the stones" %}{% if filtered %} · <a class="text-brand-700 hover:underline" href="?state={{ state }}&amp;family={{ family }}&amp;cls={{ current }}&amp;q={{ term|urlencode }}">{% translate "Clear" %}</a>{% endif %}</summary>
-    <form method="get" class="grid grid-cols-2 gap-3 px-4 pb-4 sm:grid-cols-4 lg:grid-cols-7 lg:items-end">
+    <form method="get" class="grid grid-cols-2 gap-3 px-4 pb-4 sm:grid-cols-4 lg:grid-cols-5 lg:items-end">
       <input type="hidden" name="state" value="{{ state }}"><input type="hidden" name="family" value="{{ family }}"><input type="hidden" name="cls" value="{{ current }}"><input type="hidden" name="q" value="{{ term }}">
       {% for field, label, codes, chosen in grade_filters %}
       <label><span class="form-label">{{ label }}</span>
@@ -54,6 +54,9 @@
       <label><span class="form-label">{% translate "Shape" %}</span>
         <select name="shape" class="form-input"><option value="">{% translate "Any" %}</option>
           {% for value, label in shapes %}<option value="{{ value }}" {% if stone.shape == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span class="form-label">{% translate "Natural or lab-grown" %}</span>
+        <select name="origin" class="form-input"><option value="">{% translate "Any" %}</option>
+          {% for value, label in origins %}<option value="{{ value }}" {% if stone.origin == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
       <label><span class="form-label">{% translate "Carats from" %}</span><input name="ct_min" value="{{ carats.ct_min }}" class="form-input num w-full text-start" inputmode="decimal"></label>
       <label><span class="form-label">{% translate "Carats to" %}</span><input name="ct_max" value="{{ carats.ct_max }}" class="form-input num w-full text-start" inputmode="decimal"></label>
       <button type="submit" class="btn btn-secondary">{% icon "search" "size-4" %}{% translate "Show" %}</button>

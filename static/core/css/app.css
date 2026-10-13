@@ -808,8 +808,14 @@
   .min-w-20 {
     min-width: calc(var(--spacing) * 20);
   }
+  .min-w-24 {
+    min-width: calc(var(--spacing) * 24);
+  }
   .min-w-28 {
     min-width: calc(var(--spacing) * 28);
+  }
+  .min-w-32 {
+    min-width: calc(var(--spacing) * 32);
   }
   .min-w-36 {
     min-width: calc(var(--spacing) * 36);

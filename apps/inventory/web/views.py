@@ -71,14 +71,21 @@ def item_detail(request, pk):
             (movement.document_type, movement.document_id), ("", ""))
         movement.doc_url = document_url(movement.document_type, movement.document_id)
     from apps.diamonds import services as diamonds
-    from apps.diamonds.models import StoneKind, StoneShape
+    from apps.diamonds.models import StoneKind, StoneOrigin, StoneShape
 
     context = {"item": item, "movements": movements, "price": _selling_price(item)}
     if diamonds.is_diamond(item.category) and diamonds.enabled():
         from apps.diamonds.grades import choices as grade_choices
+        from apps.diamonds.stone_codes import codes_for_entry
 
-        context.update({"diamond": True, "stones": list(item.stones.all()),
-                        "grades": grade_choices(),
+        stones = list(item.stones.select_related("code"))
+        grades = grade_choices()
+        context.update({"diamond": True, "stones": stones, "grades": grades,
+                        "stone_codes": codes_for_entry(),
+                        "reference_value": diamonds.reference_value(stones),
+                        "model_class_choices": [*grades["model"], *(
+                            c for c in item.model_classes if c not in grades["model"])],
+                        "stone_origins": StoneOrigin.choices,
                         "stone_kinds": StoneKind.choices, "stone_shapes": StoneShape.choices,
                         "discount_classes": DiscountClass.objects.filter(
                             Q(is_active=True) | Q(pk=item.discount_class_id))})

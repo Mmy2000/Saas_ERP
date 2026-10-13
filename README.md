@@ -468,6 +468,22 @@ every currency. Rates are published under Pricing → Exchange rates as before.
   as of that date, it shows "Changed since agreed" and the new figure. Agreements are in the
   audit trail.
 
+### Diamond details: natural or lab-grown, setting types, model classes, stone codes
+
+- **Natural or lab-grown** (legacy Fd1 type): set on each stone. It is shown in stock lists
+  ("Lab-grown"), on the sales invoice's Stones column and as a label field. The diamond stock
+  can be filtered by it.
+- **Setting types** (GHD13a: prong, bezel, pavé…) and **model classes** (GHD9: several per
+  piece, e.g. "Rings", "Solitaire") are managed lists on Diamonds → Grades and lists. Setting
+  types start on the usual list; model classes start empty. The diamond stock can be filtered
+  by both. A value already used can only be switched off.
+- **Stone codes** (GHD11, Diamonds → Stone codes): a coded description (kind, origin, shape,
+  colour, clarity) with a reference price per carat in a currency. Picking a code on a stone
+  row fills the stone. The stone keeps the code's price per carat at that moment, so later
+  price changes don't rewrite old stones. The piece page shows the stones' reference value.
+  When receiving, the stones' cost follows the codes' prices until it is typed in, as long as
+  the codes are in the invoice currency.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

@@ -1,4 +1,5 @@
-"""The colour, clarity and cut lists stones are graded with (legacy GHZ12-GHZ14).
+"""The colour, clarity and cut lists stones are graded with (legacy GHZ12-GHZ14), the setting
+types they are held with (GHD13a) and the model classes pieces are filed under (GHD9).
 
 Each business keeps its own lists, starting from the usual GIA scales. Entering a stone offers
 the active codes; a value typed in another case is stored as the listed code ("vs1" → "VS1"),
@@ -19,17 +20,21 @@ DEFAULTS = {
     GradeField.CLARITY: ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2",
                          "I3"],
     GradeField.CUT: ["Excellent", "Very Good", "Good", "Fair", "Poor"],
+    GradeField.SETTING: ["Prong", "Bezel", "Pave", "Micro pave", "Channel", "Invisible",
+                         "Tension", "Halo"],
 }
 MANAGE = "diamonds.manage"
 
 
 def ensure_defaults() -> None:
-    """Start a business on the usual scales, the first time its lists are needed."""
-    if StoneGrade.objects.exists():
-        return
-    StoneGrade.objects.bulk_create([
-        StoneGrade(field=field, code=code, position=position)
-        for field, codes in DEFAULTS.items() for position, code in enumerate(codes)])
+    """Start each list on the usual scale the first time it is needed (model classes start
+    empty: each business files its pieces its own way)."""
+    present = set(StoneGrade.objects.values_list("field", flat=True).distinct())
+    missing = [field for field in DEFAULTS if field not in present]
+    if missing:
+        StoneGrade.objects.bulk_create([
+            StoneGrade(field=field, code=code, position=position)
+            for field in missing for position, code in enumerate(DEFAULTS[field])])
 
 
 def choices() -> dict[str, list[str]]:
@@ -62,7 +67,7 @@ def add_grade(field: str, code: str, *, actor=None) -> StoneGrade:
     if actor is not None:
         actor.require(MANAGE)
     if field not in GradeField.values:
-        raise _error("field", _("Choose colour, clarity or cut."))
+        raise _error("field", _("Choose a list."))
     code = code.strip()[:20]
     if not code:
         raise _error("code", _("This field is required."))
@@ -78,7 +83,29 @@ def add_grade(field: str, code: str, *, actor=None) -> StoneGrade:
 
 
 def used(grade: StoneGrade) -> bool:
-    return ItemStone.objects.filter(**{f"{grade.field}__iexact": grade.code}).exists()
+    if grade.field == GradeField.MODEL:
+        from apps.inventory.models import Item
+
+        return Item.objects.filter(model_classes__contains=[grade.code]).exists()
+    column = "setting_type" if grade.field == GradeField.SETTING else grade.field
+    return ItemStone.objects.filter(**{f"{column}__iexact": grade.code}).exists()
+
+
+def clean_model_classes(values, field: str = "model_classes") -> list[str]:
+    """Model classes as listed (any case typed → the listed code); unknown ones are refused."""
+    known = {code.casefold(): code for code in StoneGrade.objects.filter(
+        field=GradeField.MODEL).values_list("code", flat=True)}
+    cleaned = []
+    for value in values or ():
+        value = str(value).strip()
+        if not value:
+            continue
+        code = known.get(value.casefold())
+        if code is None:
+            raise _error(field, _("%(name)s is not in the model classes list.") % {"name": value})
+        if code not in cleaned:
+            cleaned.append(code)
+    return cleaned
 
 
 def update_grade(grade_id: int, *, code: str | None = None, is_active: bool | None = None,
@@ -96,7 +123,7 @@ def update_grade(grade_id: int, *, code: str | None = None, is_active: bool | No
             if not code:
                 raise _error("code", _("This field is required."))
             if used(grade):
-                raise _error("code", _("Stones are graded with it: switch it off and add the "
+                raise _error("code", _("Stones or pieces use it: switch it off and add the "
                                        "new one instead."))
             if StoneGrade.objects.filter(field=grade.field, code__iexact=code).exclude(
                     pk=grade.pk).exists():
@@ -128,6 +155,6 @@ def delete_grade(grade_id: int, *, actor=None) -> None:
     if grade is None:
         raise NotFound(_("Not found."))
     if used(grade):
-        raise DomainError(_("Stones are graded with it: switch it off instead."),
+        raise DomainError(_("Stones or pieces use it: switch it off instead."),
                           code="DIAMONDS_GRADE_USED")
     grade.delete()

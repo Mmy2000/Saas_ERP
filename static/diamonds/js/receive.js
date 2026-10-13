@@ -3,6 +3,7 @@ import { api, ApiError, uuid } from "../../core/js/api.js";
 import { formatNumber } from "../../core/js/money.js";
 import { enhanceSelects } from "../../core/js/selects.js";
 import { flash, strings, toast } from "../../core/js/ui.js";
+import { applyCode, codeValue } from "./stone_codes.js";
 
 const root = document.getElementById("receive");
 
@@ -50,6 +51,10 @@ if (root) {
     const all = [...pieces.querySelectorAll("[data-piece]")];
     for (const piece of all) {
       piece.querySelectorAll('[data-s="carat"]').forEach((input) => (carats += number(input.value)));
+      // The stones' cost follows their codes' prices until it is typed in.
+      const costInput = piece.querySelector('[data-field="stone_cost"]');
+      const suggested = codeValue(piece.querySelectorAll("[data-stone]"), $("[data-currency]").value);
+      if (!costInput.dataset.typed && suggested.priced) costInput.value = suggested.value.toFixed(2);
       cost += number(piece.querySelector('[data-field="stone_cost"]').value);
       label += number(piece.querySelector('[data-field="label_price"]').value);
     }
@@ -75,6 +80,7 @@ if (root) {
         stone_cost: field("stone_cost") || "0", label_price: field("label_price") || null,
         discount_class: Number(piece.querySelector('[data-field="discount_class"]')?.value) || null,
         model_code: field("model_code"),
+        model_classes: [...(piece.querySelector("[data-model-classes]")?.selectedOptions || [])].map((option) => option.value),
         stones: [...piece.querySelectorAll("[data-stone]")]
           .filter((row) => row.querySelector('[data-s="carat"]').value.trim())
           .map((row) => Object.fromEntries([...row.querySelectorAll("[data-s]")].map(
@@ -113,7 +119,14 @@ if (root) {
     else if (event.target.closest("[data-add-stone]") && piece) addStone(piece);
     else if (event.target.closest("[data-remove-stone]")) { event.target.closest("[data-stone]").remove(); refresh(); }
   });
-  root.addEventListener("input", refresh);
+  root.addEventListener("input", (event) => {
+    if (event.target.matches('[data-field="stone_cost"]')) event.target.dataset.typed = event.target.value ? "1" : "";
+    refresh();
+  });
+  root.addEventListener("change", (event) => {
+    if (event.target.matches('[data-s="code"]')) applyCode(event.target.closest("[data-stone]"));
+    if (event.target.matches('[data-s="code"], [data-currency]')) refresh();
+  });
 
   $("[data-save]").addEventListener("click", async (event) => {
     const button = event.currentTarget;

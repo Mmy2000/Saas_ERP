@@ -151,7 +151,8 @@ class _Sample:
     stone_weight_ct = 0.12
     label_price = None
     sample_stones = [SimpleNamespace(count=1, carat=Decimal("0.120"), color="G", clarity="VS1",
-                                     cut="Excellent", lab="IGI", certificate_no="LG612345678")]
+                                     cut="Excellent", lab="IGI", certificate_no="LG612345678",
+                                     origin="lab_grown")]
 
     class category:  # noqa: N801
         name = "—"

@@ -341,6 +341,9 @@ msgstr "تم إيقاف %(name)s."
 msgid "%(name)s is enabled."
 msgstr "تم تفعيل %(name)s."
 
+msgid "%(name)s is not in the model classes list."
+msgstr "%(name)s غير موجود في قائمة تصنيفات الموديلات."
+
 msgid "%(name)s is now %(status)s."
 msgstr "أصبحت حالة %(name)s: %(status)s."
 
@@ -476,9 +479,6 @@ msgstr "يوم (أو عدة أيام، أو ساعات وردية) في فرع: 
 msgid "A discount applies to the making charge only (the gold is always at the day's price) and never takes it below what it cost. Cashback goes on the customer's account for their next purchase; a sale without a customer gets none."
 msgstr "الخصم على المصنعية فقط (الذهب دائمًا بسعر اليوم) ولا ينزل بها عن تكلفتها. والكاش باك يُضاف لحساب العميل لمشترياته القادمة؛ والبيع بدون عميل لا يحصل عليه."
 
-msgid "A grade already used on stones cannot be renamed or deleted: switch it off and add the new one. Rename by editing the text and pressing Enter."
-msgstr "الدرجة المستخدمة على أحجار لا يمكن تغيير اسمها أو حذفها: أوقفها وأضف الجديدة. لتغيير الاسم عدّل النص واضغط Enter."
-
 msgid "A group of accounts"
 msgstr "مجموعة حسابات"
 
@@ -560,6 +560,9 @@ msgstr "يوجد جرد مفتوح بالفعل في هذا الفرع."
 msgid "A template with this name already exists."
 msgstr "يوجد قالب بهذا الاسم بالفعل."
 
+msgid "A value already used on stones or pieces cannot be renamed or deleted: switch it off and add the new one. Rename by editing the text and pressing Enter."
+msgstr "القيمة المستخدمة على أحجار أو قطع لا يمكن تعديل اسمها أو حذفها: أوقفها وأضف القيمة الجديدة. لتعديل الاسم عدّل النص واضغط Enter."
+
 msgid "A visit is one person on one day. Value: what they bought and the repairs they collected."
 msgstr "الزيارة = شخص واحد في يوم واحد. القيمة: ما اشتراه والتصليحات التي استلمها."
 
@@ -634,6 +637,9 @@ msgstr "تفعيل"
 
 msgid "Active"
 msgstr "نشط"
+
+msgid "Active (offered when entering stones)"
+msgstr "نشط (يظهر عند إدخال الأحجار)"
 
 msgid "Active clients"
 msgstr "العملاء النشطون"
@@ -2258,6 +2264,9 @@ msgstr "اختر عيار ذهب."
 msgid "Choose a karat."
 msgstr "اختر العيار."
 
+msgid "Choose a list."
+msgstr "اختر القائمة."
+
 msgid "Choose a month and prepare its payroll: you check every payslip before paying."
 msgstr "اختر شهرًا وجهّز مسير رواتبه: تراجع كل قسيمة قبل الصرف."
 
@@ -2339,9 +2348,6 @@ msgstr "اختر شراء أو بيع."
 msgid "Choose cash or bank transfer."
 msgstr "اختر نقدًا أو تحويلًا بنكيًا."
 
-msgid "Choose colour, clarity or cut."
-msgstr "اختر اللون أو النقاء أو القطع."
-
 msgid "Choose debit or credit."
 msgstr "اختر مدين أو دائن."
 
@@ -2368,6 +2374,9 @@ msgstr "اختر وارد أو صادر."
 
 msgid "Choose money or gold."
 msgstr "اختر نقدية أو ذهب."
+
+msgid "Choose natural or lab-grown."
+msgstr "اختر طبيعي أو معملي."
 
 msgid "Choose received or issued."
 msgstr "اختر وارد أو صادر."
@@ -2659,6 +2668,9 @@ msgstr "تم تأكيد الكود"
 
 msgid "Code skipped"
 msgstr "بدون كود"
+
+msgid "Coded stone descriptions with a reference price per carat. Picking a code when entering a stone fills its details; its price gives the stones' reference value and suggests their cost when receiving."
+msgstr "أوصاف أحجار مكوّدة بسعر استرشادي للقيراط. اختيار الكود عند إدخال حجر يملأ بياناته، وسعره يعطي القيمة الاسترشادية للأحجار ويقترح تكلفتها عند الاستلام."
 
 msgid "Codes go by WhatsApp, else SMS, are valid for 5 minutes and allow 5 tries. People with the permission \"Sell without the customer's code\" can skip it; the invoice says so."
 msgstr "تُرسل الأكواد عبر واتساب، وإلا برسالة نصية، وتصلح لمدة 5 دقائق مع 5 محاولات. من لديه صلاحية «البيع بدون كود العميل» يمكنه تخطيه، ويُذكر ذلك في الفاتورة."
@@ -3698,6 +3710,9 @@ msgstr "تعديل الشراء"
 msgid "Edit role"
 msgstr "تعديل دور"
 
+msgid "Edit stone code"
+msgstr "تعديل كود حجر"
+
 msgid "Edit stone details, certificates and label prices"
 msgstr "تعديل بيانات الأحجار والشهادات وأسعار الملصقات"
 
@@ -4577,8 +4592,8 @@ msgstr "بضاعة مبيعة لمحل آخر بالوزن، مع مصنعية �
 msgid "Goods sold to trade accounts by weight, settled in gold or in money."
 msgstr "بضاعة مبيعة للتجار بالوزن، تُسدَّد ذهبًا أو نقدًا."
 
-msgid "Grades"
-msgstr "درجات الأحجار"
+msgid "Grades and lists"
+msgstr "الدرجات والقوائم"
 
 msgid "gram"
 msgstr "جرام"
@@ -5044,6 +5059,9 @@ msgstr "دينار كويتي"
 
 msgid "Lab"
 msgstr "المعمل"
+
+msgid "Lab-grown"
+msgstr "معملي"
 
 msgid "Label"
 msgstr "النص"
@@ -5615,6 +5633,12 @@ msgstr "أجهزة الموبايل"
 msgid "Model"
 msgstr "الموديل"
 
+msgid "Model class"
+msgstr "تصنيف الموديل"
+
+msgid "Model classes"
+msgstr "تصنيفات الموديل"
+
 msgid "Modern"
 msgstr "عصري"
 
@@ -5852,6 +5876,12 @@ msgstr "الاسم أو الهاتف أو الكود أو الرقم القوم�
 msgid "National ID"
 msgstr "الرقم القومي"
 
+msgid "Natural"
+msgstr "طبيعي"
+
+msgid "Natural or lab-grown"
+msgstr "طبيعي أو معملي"
+
 msgid "Near the limit"
 msgstr "قريب من الحد"
 
@@ -6040,6 +6070,9 @@ msgstr "بيع جديد"
 
 msgid "New settlement"
 msgstr "تسوية جديدة"
+
+msgid "New stone code"
+msgstr "كود حجر جديد"
 
 msgid "New supplier"
 msgstr "مورد جديد"
@@ -6328,6 +6361,9 @@ msgstr "لا يوجد جرد بهذا الرقم في هذا الفرع."
 
 msgid "No stocktakes yet"
 msgstr "لا توجد عمليات جرد بعد"
+
+msgid "No stone codes yet"
+msgstr "لا توجد أكواد أحجار بعد"
 
 msgid "No stones at workshops"
 msgstr "لا توجد أحجار لدى الورش"
@@ -7733,6 +7769,9 @@ msgstr "السعر المدفوع"
 msgid "Price per 21K gram"
 msgstr "السعر لجرام عيار 21"
 
+msgid "Price per carat"
+msgstr "السعر للقيراط"
+
 msgid "Price per fine gram"
 msgstr "سعر الجرام الصافي"
 
@@ -8200,6 +8239,9 @@ msgstr "إعادة"
 
 msgid "Reference"
 msgstr "المرجع"
+
+msgid "Reference value at the stone codes' prices"
+msgstr "القيمة الاسترشادية بأسعار أكواد الأحجار"
 
 msgid "Refund"
 msgstr "المبلغ المردود"
@@ -9179,6 +9221,9 @@ msgstr "أمر تركيب"
 msgid "Setters"
 msgstr "المركباتية"
 
+msgid "Setting type"
+msgstr "نوع التركيب"
+
 msgid "Settings"
 msgstr "الإعدادات"
 
@@ -9608,6 +9653,12 @@ msgstr "حجر"
 msgid "Stone %(barcode)s is not a loose stone in stock here."
 msgstr "الحجر %(barcode)s ليس حجرًا سائبًا في مخزون هذا الفرع."
 
+msgid "Stone code"
+msgstr "كود الحجر"
+
+msgid "Stone codes"
+msgstr "أكواد الأحجار"
+
 msgid "Stone details"
 msgstr "بيانات الأحجار"
 
@@ -9637,12 +9688,6 @@ msgstr "حجر"
 
 msgid "Stones (ct)"
 msgstr "الأحجار (قيراط)"
-
-msgid "Stones are graded with it: switch it off and add the new one instead."
-msgstr "توجد أحجار بهذه الدرجة: أوقفها وأضف الجديدة بدلًا من ذلك."
-
-msgid "Stones are graded with it: switch it off instead."
-msgstr "توجد أحجار بهذه الدرجة: أوقفها بدلًا من الحذف."
 
 msgid "Stones as told"
 msgstr "وصف الأحجار"
@@ -9676,6 +9721,12 @@ msgstr "تحويل أحجار %(code)s إلى %(branch)s"
 
 msgid "Stones of %(code)s returned to the supplier"
 msgstr "مرتجع أحجار %(code)s للمورد"
+
+msgid "Stones or pieces use it: switch it off and add the new one instead."
+msgstr "مستخدمة على أحجار أو قطع: أوقفها وأضف الجديدة بدلًا منها."
+
+msgid "Stones or pieces use it: switch it off instead."
+msgstr "مستخدمة على أحجار أو قطع: أوقفها بدلًا من الحذف."
 
 msgid "Stones part"
 msgstr "جزء الأحجار"
@@ -10022,8 +10073,8 @@ msgstr "الرمز المطلوب مسحه"
 msgid "The code, the group and what it takes are fixed once an account exists. Rename it here, or switch it off when nothing is left on it."
 msgstr "الكود والمجموعة وما يقبله الحساب ثابتة بعد إنشائه. يمكنك تغيير اسمه هنا، أو إيقافه عندما لا يتبقى عليه رصيد."
 
-msgid "The colours, clarities and cuts your stones are graded with. They are offered when stones are entered, and the diamond stock can be filtered by them."
-msgstr "الألوان ودرجات النقاء والقطع التي تُقيَّم بها أحجارك. تظهر عند إدخال الأحجار، ويمكن تصفية مخزون الماس بها."
+msgid "The colours, clarities, cuts and setting types your stones are described with, and the model classes your pieces are filed under. They are offered when stones and pieces are entered, and the diamond stock can be filtered by them."
+msgstr "الألوان ودرجات النقاء والقطع وأنواع التركيب التي توصف بها أحجارك، وتصنيفات الموديلات التي تُصنَّف بها قطعك. تظهر عند إدخال الأحجار والقطع، ويمكن تصفية مخزون الماس بها."
 
 msgid "The company currency always has a rate of 1."
 msgstr "سعر عملة الشركة دائمًا 1."
@@ -11038,6 +11089,9 @@ msgstr "كشف حساب غير معروف."
 
 msgid "Unknown status."
 msgstr "حالة غير معروفة."
+
+msgid "Unknown stone code."
+msgstr "كود حجر غير معروف."
 
 msgid "Unknown stone."
 msgstr "حجر غير معروف."

@@ -126,6 +126,7 @@ urlpatterns = [
          name="certificate-pdf"),
     path("diamonds/cards/", diamonds.certificate_cards, name="certificate-cards"),
     path("diamonds/grades/", diamonds.grade_lists, name="grade-lists"),
+    path("diamonds/stone-codes/", diamonds.stone_codes_page, name="stone-codes"),
     path("diamonds/parcels/", diamonds.parcels_page, name="parcels"),
     path("diamonds/parcels/<int:pk>/", diamonds.parcel, name="parcel"),
     path("diamonds/parcels/deals/<int:pk>/", diamonds.parcel_deal, name="parcel-deal"),

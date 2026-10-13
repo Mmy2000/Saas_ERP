@@ -11,6 +11,7 @@
 {% endblock %}
 {% block content %}
 {% include "components/grade_lists.html" %}
+{{ stone_codes|json_script:"stone-codes" }}
 <datalist id="diamond-models">{% for code in models %}<option value="{{ code }}"></option>{% endfor %}</datalist>
 {% if not categories %}
 <section class="card card-body">
@@ -72,6 +73,8 @@
         <label><span class="form-label">{% translate "Stones' cost" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="stone_cost" placeholder="0"></label>
         <label><span class="form-label">{% translate "Label price" %}</span><input class="form-input num w-full text-start" inputmode="decimal" data-field="label_price"></label>
         <label><span class="form-label">{% translate "Model" %}</span><input class="form-input" data-field="model_code" maxlength="40" list="diamond-models"></label>
+        {% if grades.model %}<label class="col-span-2"><span class="form-label">{% translate "Model classes" %}</span>
+          <select class="form-input" multiple data-model-classes>{% for code in grades.model %}<option value="{{ code }}">{{ code }}</option>{% endfor %}</select></label>{% endif %}
         {% if classes %}<label><span class="form-label">{% translate "Discount class" %}</span>
           <select class="form-input" data-field="discount_class"><option value="">—</option>{% for c in classes %}<option value="{{ c.pk }}">{{ c }}</option>{% endfor %}</select></label>{% endif %}
         <p class="form-error col-span-full" data-piece-error></p>
@@ -81,8 +84,8 @@
           <button type="button" class="btn btn-ghost text-xs" data-add-stone>{% icon "plus" "size-4" %}{% translate "Add a stone" %}</button></div>
         <div class="overflow-x-auto">
           <table class="table text-sm">
-            <thead><tr><th>{% translate "Kind" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
-              <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th><th></th></tr></thead>
+            <thead><tr><th>{% translate "Stone code" %}</th><th>{% translate "Kind" %}</th><th>{% translate "Natural or lab-grown" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
+              <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Setting type" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th><th></th></tr></thead>
             <tbody data-stones></tbody>
           </table>
         </div>
@@ -91,13 +94,16 @@
   </template>
   <template id="stone-template">
     <tr data-stone>
+      <td><select class="form-input min-w-48 py-1" data-s="code"><option value="">—</option>{% for c in stone_codes %}<option value="{{ c.code }}">{{ c.label }}</option>{% endfor %}</select><input type="hidden" data-s="price_per_ct"><input type="hidden" data-s="price_currency"></td>
       <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><select class="form-input min-w-28 py-1" data-s="origin"><option value="">—</option>{% for value, label in origins %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
       <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
       <td><input class="form-input num min-w-16 py-1 text-start" inputmode="numeric" data-s="count" value="1"></td>
       <td><input class="form-input num min-w-20 py-1 text-start" inputmode="decimal" data-s="carat" placeholder="0.50"></td>
       <td><input class="form-input min-w-20 py-1" data-s="color" list="grade-color" maxlength="20" placeholder="D"></td>
       <td><input class="form-input min-w-20 py-1" data-s="clarity" list="grade-clarity" maxlength="20" placeholder="VS1"></td>
       <td><input class="form-input min-w-28 py-1" data-s="cut" list="grade-cut" maxlength="20"></td>
+      <td><input class="form-input min-w-24 py-1" data-s="setting_type" list="grade-setting" maxlength="20"></td>
       <td><input class="form-input min-w-20 py-1" data-s="lab" maxlength="40" placeholder="GIA"></td>
       <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" maxlength="60"></td>
       <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>

@@ -278,6 +278,8 @@ def stones_text(item) -> str:
         grade = " ".join(part for part in (stone.color, stone.clarity, stone.cut) if part)
         if grade:
             text += f" {grade}"
+        if stone.origin == "lab_grown":
+            text += f" ({_('Lab-grown')})"
         if stone.certificate_no:
             text += f" · {' '.join(p for p in (stone.lab, stone.certificate_no) if p)}"
         parts.append(text)

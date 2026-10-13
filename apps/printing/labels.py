@@ -30,6 +30,7 @@ FIELDS = {
     "cut": gettext_lazy("Cut"),
     "certificate": gettext_lazy("Certificate"),
     "all_stones": gettext_lazy("All stones"),
+    "origin": gettext_lazy("Natural or lab-grown"),
     "model": gettext_lazy("Model"),
     "price": gettext_lazy("Label price"),
     "branch": gettext_lazy("Branch"),
@@ -70,6 +71,11 @@ def _stone_text(key: str, item) -> str:
     if key == "certificate":
         return " ".join(part for part in (main.lab, main.certificate_no) if part) \
             if main.certificate_no else ""
+    if key == "origin":
+        from apps.diamonds.models import StoneOrigin
+
+        origin = getattr(main, "origin", "")
+        return str(StoneOrigin(origin).label) if origin in StoneOrigin.values else ""
     if key == "all_stones":
         return " + ".join(
             " ".join(part for part in (f"{s.count}×{_ct(s.carat / (s.count or 1))}",
@@ -99,7 +105,7 @@ def field_text(key: str, item, shop: str = "") -> str:
         return num(item.label_price, 0) if item.label_price else ""
     if key == "branch":
         return item.branch.name
-    if key in ("main_stone", "grade", "cut", "certificate", "all_stones"):
+    if key in ("main_stone", "grade", "cut", "certificate", "all_stones", "origin"):
         return _stone_text(key, item)
     if key == "model":
         return getattr(item, "model_code", "")

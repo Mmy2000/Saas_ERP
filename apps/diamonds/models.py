@@ -40,6 +40,41 @@ class StoneShape(models.TextChoices):
     OTHER = "other", _("Other shape")
 
 
+class StoneOrigin(models.TextChoices):
+    """Mined or grown (legacy Fd1 type Natural / Lab Grown): priced very differently."""
+
+    NATURAL = "natural", _("Natural")
+    LAB_GROWN = "lab_grown", _("Lab-grown")
+
+
+class StoneCode(TenantScopedModel):
+    """A coded stone description with a reference price per carat (legacy GHD11 تكويد الحجارة,
+    Fd1): picking the code when entering a stone fills its details, and the price per carat
+    gives the stones' reference value (and suggests their cost when receiving)."""
+
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=80, blank=True)
+    kind = models.CharField(max_length=12, choices=StoneKind.choices, default=StoneKind.DIAMOND)
+    origin = models.CharField(max_length=10, choices=StoneOrigin.choices, blank=True)
+    shape = models.CharField(max_length=12, choices=StoneShape.choices, blank=True)
+    color = models.CharField(max_length=20, blank=True)
+    clarity = models.CharField(max_length=20, blank=True)
+    price_per_ct = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    currency = models.ForeignKey("catalog.Currency", on_delete=models.PROTECT, related_name="+")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["code"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "code"], name="diamonds_stonecode_uniq"),
+            models.CheckConstraint(condition=Q(price_per_ct__gte=0),
+                                   name="diamonds_stonecode_price_check"),
+        ]
+
+    def __str__(self):
+        return f"{self.code} · {self.name}" if self.name else self.code
+
+
 class ItemStone(TenantScopedModel):
     """A stone, or a group of identical stones, in a piece (or a loose stone/parcel)."""
 
@@ -54,6 +89,13 @@ class ItemStone(TenantScopedModel):
     lab = models.CharField(max_length=40, blank=True)  # GIA, IGI, HRD…
     certificate_no = models.CharField(max_length=60, blank=True)
     note = models.CharField(max_length=200, blank=True)
+    origin = models.CharField(max_length=10, choices=StoneOrigin.choices, blank=True)
+    setting_type = models.CharField(max_length=20, blank=True)  # prong, bezel… (legacy GHD13a)
+    # The stone code it was entered with and that code's price per carat at the time.
+    code = models.ForeignKey(StoneCode, null=True, blank=True, on_delete=models.SET_NULL,
+                             related_name="+")
+    price_per_ct = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    price_currency = models.CharField(max_length=3, blank=True)
     # Set from a loose stone by a stone setting (cancelling the setting removes it).
     setting = models.ForeignKey("StoneSetting", null=True, blank=True, on_delete=models.CASCADE,
                                 related_name="+")
@@ -503,12 +545,15 @@ class GradeField(models.TextChoices):
     COLOR = "color", _("Colour")
     CLARITY = "clarity", _("Clarity")
     CUT = "cut", _("Cut")
+    SETTING = "setting", _("Setting type")  # how a stone is held (legacy GHD13a)
+    MODEL = "model", _("Model class")  # what a piece is (legacy GHD9 تصنيف الموديلات)
 
 
 class StoneGrade(TenantScopedModel):
-    """The colours, clarities and cuts a business grades its stones with (legacy GHZ12 درجات
-    النقاء, GHZ13 الوان الحجار, GHZ14 Cut): offered when stones are entered, and the values the
-    diamond stock is filtered by."""
+    """The lists a business describes its stones and pieces with: colours, clarities and cuts
+    (legacy GHZ12 درجات النقاء, GHZ13 الوان الحجار, GHZ14 Cut), setting types (GHD13a) and model
+    classes (GHD9). Offered when stones and pieces are entered, and the values the diamond
+    stock is filtered by."""
 
     field = models.CharField(max_length=8, choices=GradeField.choices)
     code = models.CharField(max_length=20)

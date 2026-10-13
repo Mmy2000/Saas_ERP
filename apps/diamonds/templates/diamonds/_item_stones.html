@@ -1,6 +1,7 @@
 {% load i18n static ui authz %}{# On a diamond piece's or loose stone's page: its stones, certificates and label price. #}
 {% can "diamonds.manage" item.branch as can_edit %}
 <script type="module" src="{% static 'diamonds/js/item_stones.js' %}"></script>
+{{ stone_codes|json_script:"stone-codes" }}
 <form class="card mt-6 overflow-hidden" {% if can_edit %}data-api-form data-shape="item-stones" data-method="PUT" data-endpoint="{% url 'diamonds-item-stones' item.pk %}" data-success="{% translate 'Saved.' %}"{% endif %} novalidate>
   <div class="card-header"><h2 class="card-title flex items-center gap-2">{% icon "gem" "size-4 text-slate-400" %}{% translate "Stones" %}</h2>
     <div class="flex gap-1">
@@ -10,40 +11,48 @@
   <div class="hidden mx-5 mt-4 rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
   <div class="overflow-x-auto">
     <table class="table text-sm">
-      <thead><tr><th>{% translate "Kind" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
-        <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
+      <thead><tr><th>{% translate "Stone code" %}</th><th>{% translate "Kind" %}</th><th>{% translate "Natural or lab-grown" %}</th><th>{% translate "Shape" %}</th><th>{% translate "Count" %}</th><th>{% translate "Carats" %}</th>
+        <th>{% translate "Colour" %}</th><th>{% translate "Clarity" %}</th><th>{% translate "Cut" %}</th><th>{% translate "Setting type" %}</th><th>{% translate "Lab" %}</th><th>{% translate "Certificate no." %}</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
       <tbody data-stones>
       {% for st in stones %}
         {% if can_edit and not st.setting_id %}
         <tr data-stone>
+          <td><select class="form-input min-w-48 py-1" data-s="code"><option value="">—</option>{% if st.code_id and not st.code.is_active %}<option value="{{ st.code.code }}" selected>{{ st.code }}</option>{% endif %}{% for c in stone_codes %}<option value="{{ c.code }}" {% if st.code.code == c.code %}selected{% endif %}>{{ c.label }}</option>{% endfor %}</select><input type="hidden" data-s="price_per_ct" value="{{ st.price_per_ct|default_if_none:''|stringformat:'s' }}"><input type="hidden" data-s="price_currency" value="{{ st.price_currency }}"></td>
           <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in stone_kinds %}<option value="{{ value }}" {% if st.kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
+          <td><select class="form-input min-w-28 py-1" data-s="origin"><option value="">—</option>{% for value, label in stone_origins %}<option value="{{ value }}" {% if st.origin == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
           <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}" {% if st.shape == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></td>
           <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="{{ st.count }}"></td>
           <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" value="{{ st.carat|stringformat:'s' }}"></td>
           <td><input class="form-input min-w-20 py-1" data-s="color" list="grade-color" value="{{ st.color }}" maxlength="20"></td>
           <td><input class="form-input min-w-20 py-1" data-s="clarity" list="grade-clarity" value="{{ st.clarity }}" maxlength="20"></td>
           <td><input class="form-input min-w-28 py-1" data-s="cut" list="grade-cut" value="{{ st.cut }}" maxlength="20"></td>
+          <td><input class="form-input min-w-24 py-1" data-s="setting_type" list="grade-setting" value="{{ st.setting_type }}" maxlength="20"></td>
           <td><input class="form-input min-w-20 py-1" data-s="lab" value="{{ st.lab }}" maxlength="40"></td>
           <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" value="{{ st.certificate_no }}" maxlength="60"></td>
           <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>
         </tr>
         {% else %}
         <tr>
-          <td>{{ st.get_kind_display }}</td><td>{{ st.get_shape_display|default:"—" }}</td><td><span class="num">{{ st.count }}</span></td><td><span class="num">{{ st.carat|num:3 }}</span></td>
-          <td>{{ st.color|default:"—" }}</td><td>{{ st.clarity|default:"—" }}</td><td>{{ st.cut|default:"—" }}</td><td>{{ st.lab|default:"—" }}</td><td><span class="num">{{ st.certificate_no|default:"—" }}</span></td>
+          <td>{{ st.code.code|default:"—" }}</td><td>{{ st.get_kind_display }}</td><td>{{ st.get_origin_display|default:"—" }}</td><td>{{ st.get_shape_display|default:"—" }}</td><td><span class="num">{{ st.count }}</span></td><td><span class="num">{{ st.carat|num:3 }}</span></td>
+          <td>{{ st.color|default:"—" }}</td><td>{{ st.clarity|default:"—" }}</td><td>{{ st.cut|default:"—" }}</td><td>{{ st.setting_type|default:"—" }}</td><td>{{ st.lab|default:"—" }}</td><td><span class="num">{{ st.certificate_no|default:"—" }}</span></td>
           {% if can_edit %}<td class="text-xs text-slate-400">{% if st.setting_id %}{% translate "set" %}{% endif %}</td>{% endif %}
         </tr>
         {% endif %}
       {% empty %}
-        {% if not can_edit %}<tr><td colspan="9" class="py-6 text-center text-slate-400">{% translate "No stones recorded" %}</td></tr>{% endif %}
+        {% if not can_edit %}<tr><td colspan="12" class="py-6 text-center text-slate-400">{% translate "No stones recorded" %}</td></tr>{% endif %}
       {% endfor %}
       </tbody>
     </table>
   </div>
+  {% if reference_value %}<p class="border-t border-slate-100 px-5 py-3 text-sm text-slate-600" data-reference-value>{% translate "Reference value at the stone codes' prices" %}: {% for code, value in reference_value.items %}<span class="num font-medium text-slate-900">{{ value|num:2 }} {{ code }}</span>{% if not forloop.last %} + {% endif %}{% endfor %}</p>{% endif %}
+  {% if not can_edit and item.model_classes %}<p class="border-t border-slate-100 px-5 py-3 text-sm text-slate-600">{% translate "Model classes" %}: {{ item.model_classes|join:", " }}</p>{% endif %}
   {% if can_edit %}
   <div class="flex flex-wrap items-end gap-3 border-t border-slate-100 p-5">
     <label class="w-48"><span class="form-label">{% translate "Label price" %}</span><input name="label_price" class="form-input num text-start" inputmode="decimal" value="{{ item.label_price|default_if_none:''|stringformat:'s' }}"><p class="form-error" data-error-for="label_price"></p></label>
     <label class="w-40"><span class="form-label">{% translate "Model" %}</span><input name="model_code" class="form-input" maxlength="40" value="{{ item.model_code }}"></label>
+    <label class="w-64"><span class="form-label">{% translate "Model classes" %}</span>
+      <select name="model_classes" class="form-input" multiple data-model-classes>{% for code in model_class_choices %}<option value="{{ code }}" {% if code in item.model_classes %}selected{% endif %}>{{ code }}</option>{% endfor %}</select>
+      <p class="form-error" data-error-for="model_classes"></p></label>
     <label class="w-56"><span class="form-label">{% translate "Discount class" %}</span>
       <select name="discount_class" class="form-input"><option value="">—</option>{% for c in discount_classes %}<option value="{{ c.pk }}" {% if c.pk == item.discount_class_id %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
       <p class="form-error" data-error-for="discount_class"></p></label>
@@ -51,13 +60,16 @@
   </div>
   <template id="stone-row">
     <tr data-stone>
+      <td><select class="form-input min-w-48 py-1" data-s="code"><option value="">—</option>{% for c in stone_codes %}<option value="{{ c.code }}">{{ c.label }}</option>{% endfor %}</select><input type="hidden" data-s="price_per_ct"><input type="hidden" data-s="price_currency"></td>
       <td><select class="form-input min-w-28 py-1" data-s="kind">{% for value, label in stone_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
+      <td><select class="form-input min-w-28 py-1" data-s="origin"><option value="">—</option>{% for value, label in stone_origins %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
       <td><select class="form-input min-w-28 py-1" data-s="shape"><option value="">—</option>{% for value, label in stone_shapes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></td>
       <td><input class="form-input num min-w-16 py-1 text-start" data-s="count" value="1"></td>
       <td><input class="form-input num min-w-20 py-1 text-start" data-s="carat" placeholder="0.50"></td>
       <td><input class="form-input min-w-20 py-1" data-s="color" list="grade-color" maxlength="20"></td>
       <td><input class="form-input min-w-20 py-1" data-s="clarity" list="grade-clarity" maxlength="20"></td>
       <td><input class="form-input min-w-28 py-1" data-s="cut" list="grade-cut" maxlength="20"></td>
+      <td><input class="form-input min-w-24 py-1" data-s="setting_type" list="grade-setting" maxlength="20"></td>
       <td><input class="form-input min-w-20 py-1" data-s="lab" maxlength="40"></td>
       <td><input class="form-input num min-w-36 py-1" data-s="certificate_no" maxlength="60"></td>
       <td><button type="button" class="btn btn-ghost text-slate-400" data-remove-stone aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button></td>

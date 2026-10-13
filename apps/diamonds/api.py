@@ -27,6 +27,14 @@ class StoneSerializer(serializers.Serializer):
     certificate_no = serializers.CharField(max_length=60, required=False, allow_blank=True,
                                            default="")
     note = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    origin = serializers.CharField(max_length=10, required=False, allow_blank=True, default="")
+    setting_type = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                         default="")
+    code = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+    price_per_ct = serializers.CharField(max_length=20, required=False, allow_blank=True,
+                                         default="")
+    price_currency = serializers.CharField(max_length=3, required=False, allow_blank=True,
+                                           default="")
 
 
 class PieceSerializer(serializers.Serializer):
@@ -44,6 +52,8 @@ class PieceSerializer(serializers.Serializer):
     discount_class = serializers.IntegerField(required=False, allow_null=True, default=None)
     model_code = serializers.CharField(max_length=40, required=False, allow_blank=True,
                                        default="")
+    model_classes = serializers.ListField(child=serializers.CharField(max_length=20),
+                                          required=False, default=list)
 
 
 class ReceiveSerializer(serializers.Serializer):
@@ -72,7 +82,7 @@ class ReceiveView(APIView):
                 gross_weight_g=p["gross_weight_g"], making_cost_rate=p["making_cost_rate"] or "0",
                 stone_cost=p["stone_cost"] or "0", label_price=p["label_price"] or None,
                 stones=tuple(p["stones"]), discount_class_id=p["discount_class"],
-                model_code=p["model_code"])
+                model_code=p["model_code"], model_classes=tuple(p["model_classes"]))
                 for p in d["pieces"])), actor=request.actor)
         return Response({"id": invoice.pk, "number": invoice.number},
                         status=status.HTTP_201_CREATED)
@@ -84,6 +94,8 @@ class ItemStonesSerializer(serializers.Serializer):
                                         allow_null=True, default=None)
     discount_class = serializers.IntegerField(required=False, allow_null=True)
     model_code = serializers.CharField(max_length=40, required=False, allow_blank=True)
+    model_classes = serializers.ListField(child=serializers.CharField(max_length=20),
+                                          required=False)
 
 
 class ItemStonesView(APIView):
@@ -97,6 +109,7 @@ class ItemStonesView(APIView):
                                     discount_class_id=d.get("discount_class",
                                                             services.UNCHANGED),
                                     model_code=d.get("model_code", services.UNCHANGED),
+                                    model_classes=d.get("model_classes", services.UNCHANGED),
                                     actor=request.actor)
         return Response({"id": item.pk, "label_price": item.label_price,
                          "stone_weight_ct": item.stone_weight_ct})

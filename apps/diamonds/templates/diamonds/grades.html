@@ -1,8 +1,8 @@
 {% extends "layouts/app.html" %}
 {% load i18n ui authz %}
-{% block title %}{% translate "Grades" %}{% endblock %}
+{% block title %}{% translate "Grades and lists" %}{% endblock %}
 {% block page_header %}
-  {% translate "Grades" as title %}{% translate "The colours, clarities and cuts your stones are graded with. They are offered when stones are entered, and the diamond stock can be filtered by them." as subtitle %}
+  {% translate "Grades and lists" as title %}{% translate "The colours, clarities, cuts and setting types your stones are described with, and the model classes your pieces are filed under. They are offered when stones and pieces are entered, and the diamond stock can be filtered by them." as subtitle %}
   {% include "components/page_header.html" %}
 {% endblock %}
 {% block content %}
@@ -41,5 +41,5 @@
   </section>
   {% endfor %}
 </div>
-<p class="mt-4 flex items-center gap-2 text-xs text-slate-500">{% icon "info" "size-4" %}{% translate "A grade already used on stones cannot be renamed or deleted: switch it off and add the new one. Rename by editing the text and pressing Enter." %}</p>
+<p class="mt-4 flex items-center gap-2 text-xs text-slate-500">{% icon "info" "size-4" %}{% translate "A value already used on stones or pieces cannot be renamed or deleted: switch it off and add the new one. Rename by editing the text and pressing Enter." %}</p>
 {% endblock %}

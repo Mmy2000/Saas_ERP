@@ -28,6 +28,7 @@ from .models import (
     SettingJob,
     StoneHandout,
     StoneKind,
+    StoneOrigin,
     StoneParcel,
     StoneRemoval,
     StoneSetting,
@@ -35,6 +36,7 @@ from .models import (
     WorkshopStones,
 )
 from .services import FAMILIES, stones_summary
+from .stone_codes import codes_for_entry
 
 STATES = ("in_stock", "sold", "all")
 
@@ -71,12 +73,16 @@ def stock(request):
         items = items.filter(discount_class__isnull=True)
     elif current.isdigit():
         items = items.filter(discount_class_id=int(current))
-    # A stone of the piece with this colour / clarity / cut / shape; total carats in a range.
-    stone = {key: request.GET.get(key, "").strip() for key in ("color", "clarity", "cut",
-                                                                "shape")}
+    # A stone of the piece with this colour / clarity / cut / setting / shape / origin; the
+    # piece filed under a model class; total carats in a range.
+    stone = {key: request.GET.get(key, "").strip()
+             for key in ("color", "clarity", "cut", "setting", "model", "shape", "origin")}
+    lookups = {"setting": "stones__setting_type__iexact", "model": "model_classes__contains",
+               "origin": "stones__origin"}
     for key, value in stone.items():
         if value:
-            items = items.filter(**{f"stones__{key}__iexact": value})
+            lookup = lookups.get(key, f"stones__{key}__iexact")
+            items = items.filter(**{lookup: [value] if key == "model" else value})
     carats = {}
     for key, lookup in (("ct_min", "gte"), ("ct_max", "lte")):
         try:
@@ -96,7 +102,7 @@ def stock(request):
         "page": page, "state": state, "family": family, "term": term, "totals": totals,
         "current": current, "classes": DiscountClass.objects.all(),
         "stone": stone, "carats": carats,
-        "shapes": StoneShape.choices,
+        "shapes": StoneShape.choices, "origins": StoneOrigin.choices,
         "filtered": any(stone.values()) or any(v != "" for v in carats.values()),
         "grade_filters": [(field, label, lists[field], stone[field])
                           for field, label in GradeField.choices],
@@ -158,6 +164,7 @@ def receive(request):
         "currencies": Currency.objects.filter(is_active=True),
         "home_currency": functional_currency(),
         "kinds": StoneKind.choices, "shapes": StoneShape.choices,
+        "origins": StoneOrigin.choices, "stone_codes": codes_for_entry(),
         "classes": DiscountClass.objects.filter(is_active=True), "grades": grades.choices(),
         "models": sorted(set(Item.objects.exclude(model_code="").values_list(
             "model_code", flat=True)))[:500],
@@ -584,3 +591,46 @@ def stone_handout(request, pk):
     if workshop_id is None:
         raise Http404
     return redirect(f"{reverse('workshop-stones')}?workshop={workshop_id}#handout-{pk}")
+
+
+@permission_required("diamonds.view")
+def stone_codes_page(request):
+    """Stone codes with a reference price per carat (legacy GHD11): add, edit, switch off."""
+    from django.contrib import messages
+
+    from apps.core.errors import NotFound, ValidationError
+
+    from .models import StoneCode
+    from .stone_codes import StoneCodeInput, save_stone_code
+
+    editing = StoneCode.objects.filter(pk=request.GET.get("edit") or 0).first()
+    errors, values = {}, {}
+    if request.method == "POST":
+        request.actor.require(grades.MANAGE)
+        pk = request.POST.get("pk", "")
+        values = request.POST
+        try:
+            save_stone_code(StoneCodeInput(
+                code=values.get("code", ""), name=values.get("name", ""),
+                kind=values.get("kind", ""), origin=values.get("origin", ""),
+                shape=values.get("shape", ""), color=values.get("color", ""),
+                clarity=values.get("clarity", ""), price_per_ct=values.get("price_per_ct", ""),
+                currency_code=values.get("currency", ""),
+                is_active=values.get("is_active") == "on"),
+                code_id=int(pk) if pk.isdigit() else None, actor=request.actor)
+        except NotFound:
+            raise Http404 from None
+        except ValidationError as exc:
+            errors = {key: " ".join(str(m) for m in problems)
+                      for key, problems in exc.fields.items()}
+            editing = StoneCode.objects.filter(pk=pk).first() if pk.isdigit() else None
+        else:
+            messages.success(request, _("Saved."))
+            return redirect("stone-codes")
+    codes = StoneCode.objects.select_related("currency").order_by("-is_active", "code")
+    return render(request, "diamonds/stone_codes.html", {
+        "codes": codes, "editing": editing, "errors": errors, "values": values,
+        "kinds": StoneKind.choices, "origins": StoneOrigin.choices, "shapes": StoneShape.choices,
+        "currencies": Currency.objects.filter(is_active=True),
+        "home_currency": functional_currency(), "grades": grades.choices(),
+    })

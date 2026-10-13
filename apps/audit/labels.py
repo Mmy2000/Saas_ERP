@@ -36,6 +36,7 @@ TABLES = {
     "inventory_item": _("Piece"),
     "diamonds_itemstone": _("Stone details"),
     "diamonds_stonegrade": _("Stone grade"),
+    "diamonds_stonecode": _("Stone code"),
 }
 
 COLUMNS = {
@@ -68,6 +69,8 @@ COLUMNS = {
     "stone_weight_ct": _("Stones (ct)"), "stone_cost_amount": _("Stones' cost"),
     "carat": _("Carats"), "clarity": _("Clarity"), "certificate_no": _("Certificate no."),
     "lab": _("Lab"), "cut": _("Cut"), "count": _("Count"), "item_id": _("Piece"),
+    "origin": _("Natural or lab-grown"), "setting_type": _("Setting type"),
+    "price_per_ct": _("Price per carat"), "model_classes": _("Model classes"),
     "description": _("Description"), "value": _("Value"),
     "key": _("Limit"), "membership_id": _("User"), "short_name": _("Short name"),
 }
