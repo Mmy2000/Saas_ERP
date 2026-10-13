@@ -2280,6 +2280,9 @@
     .sm\:w-56 {
       width: calc(var(--spacing) * 56);
     }
+    .sm\:w-64 {
+      width: calc(var(--spacing) * 64);
+    }
     .sm\:w-72 {
       width: calc(var(--spacing) * 72);
     }

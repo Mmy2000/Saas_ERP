@@ -40,7 +40,7 @@ def accent_hex(design: DocumentDesign, accent_key: str) -> str:
 # What "following" another document's design copies: its look. Columns and options stay the
 # document's own (they differ per type).
 LOOK = ("layout", "paper", "lang", "color", "show_logo", "header_note", "footer_note", "terms",
-        "copies", "blocks", "page", "custom_html", "use_custom")
+        "copies", "blocks", "page", "custom_html", "use_custom", "font")
 
 
 def own_design(doc_type: str) -> DocumentDesign:
@@ -95,7 +95,7 @@ def _context(doc: Doc, design: DocumentDesign, accent_key: str) -> dict:
     return {
         "doc": doc,
         "design": {
-            "layout": layout, "paper": paper, "color": color,
+            "layout": layout, "paper": paper, "color": color, "font": design.font,
             "show_logo": design.show_logo and bool(doc.company.get("logo")),
             "header_note": design.header_note, "footer_note": design.footer_note,
             "terms": design.terms, "copies": range(max(1, min(design.copies or 1, 5))),

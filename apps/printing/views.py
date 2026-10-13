@@ -15,7 +15,7 @@ from apps.org.models import TenantProfile
 from apps.purchasing.models import SupplierInvoicePiece
 
 from .labels import FIELDS, build_label, ensure_default_templates, paginate, zpl
-from .models import LabelTemplate, Layout, Media
+from .models import LabelTemplate, Layout, Media, PrintFont
 from .services import MANAGE, template_from
 
 MAX_LABELS = 500
@@ -105,7 +105,37 @@ def labels_zpl(request):
 def label_templates(request):
     ensure_default_templates(getattr(TenantProfile.objects.first(), "locale", "ar"))
     return render(request, "printing/templates.html", {
-        "templates": LabelTemplate.objects.all()})
+        "templates": LabelTemplate.objects.select_related("font"),
+        "fonts": PrintFont.objects.all()})
+
+
+@permission_required(MANAGE)
+def label_fonts(request):
+    """Upload a font, or remove one (labels and documents using it go back to the system's)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from apps.core.errors import NotFound
+    from apps.core.errors import ValidationError as AppValidationError
+
+    from . import fonts
+
+    if request.method != "POST":
+        raise Http404
+    try:
+        if request.POST.get("delete", "").isdigit():
+            fonts.delete_font(int(request.POST["delete"]), actor=request.actor)
+            messages.success(request, _("Font removed."))
+        else:
+            font = fonts.add_font(request.POST.get("name", ""), request.FILES.get("file"),
+                                  actor=request.actor)
+            messages.success(request, _("%(name)s added.") % {"name": font.name})
+    except AppValidationError as exc:
+        messages.error(request, " ".join(str(m) for v in exc.fields.values() for m in v)
+                       or exc.message)
+    except NotFound:
+        raise Http404 from None
+    return redirect(f"{reverse('label-templates')}#fonts")
 
 
 def _options(chosen: list[str]) -> list[tuple[str, str, bool]]:
@@ -119,7 +149,7 @@ def _form(request, template=None):
     return render(request, "printing/template_form.html", {
         "template": shown, "options_a": _options(shown.fields),
         "options_b": _options(shown.fields_b),
-        "is_new": template is None, "medias": Media.choices,
+        "is_new": template is None, "medias": Media.choices, "fonts": PrintFont.objects.all(),
         "layouts": Layout.choices,
         "endpoint": (reverse("label-template-detail", args=[template.pk]) if template
                      else reverse("label-template-list")),

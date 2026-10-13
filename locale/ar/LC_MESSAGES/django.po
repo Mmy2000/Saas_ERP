@@ -761,6 +761,15 @@ msgstr "إضافة عملاء"
 msgid "Add employees with a salary, or bonuses for this month."
 msgstr "أضف موظفين برواتب، أو مكافآت لهذا الشهر."
 
+msgid "Add font"
+msgstr "إضافة خط"
+
+msgid "Add fonts on Settings → Label templates."
+msgstr "أضف الخطوط من الإعدادات ← قوالب الملصقات."
+
+msgid "Add fonts on the label templates page. Zebra (ZPL) printers keep their own fonts."
+msgstr "أضف الخطوط من صفحة قوالب الملصقات. طابعات زيبرا (ZPL) تستخدم خطوطها الخاصة."
+
 msgid "Add goods to set their making charge."
 msgstr "أضف البضاعة لتحديد مصنعيتها."
 
@@ -2321,6 +2330,9 @@ msgstr "اختر حسابًا آخر."
 msgid "Choose a different destination."
 msgstr "اختر وجهة مختلفة."
 
+msgid "Choose a font file."
+msgstr "اختر ملف الخط."
+
 msgid "Choose a gold karat."
 msgstr "اختر عيار ذهب."
 
@@ -2440,6 +2452,9 @@ msgstr "اختر نقدية أو ذهب."
 
 msgid "Choose natural or lab-grown."
 msgstr "اختر طبيعي أو معملي."
+
+msgid "Choose one of your fonts."
+msgstr "اختر أحد خطوطك."
 
 msgid "Choose received or issued."
 msgstr "اختر وارد أو صادر."
@@ -4367,6 +4382,18 @@ msgstr "اتباع سعر الذهب في السوق"
 msgid "Following the market"
 msgstr "يتبع السوق"
 
+msgid "Font"
+msgstr "الخط"
+
+msgid "Font file"
+msgstr "ملف الخط"
+
+msgid "Font removed."
+msgstr "تم حذف الخط."
+
+msgid "Fonts"
+msgstr "الخطوط"
+
 msgid "Footer links"
 msgstr "روابط التذييل"
 
@@ -4411,6 +4438,9 @@ msgstr "من حساب"
 
 msgid "From the books on that day. Owed: positive is owed to you, negative is what you owe. The total is the gold that is the shop's own."
 msgstr "من الدفاتر في ذلك اليوم. المستحق: الموجب مستحق لك، والسالب عليك. الإجمالي هو ذهب المحل الفعلي."
+
+msgid "From the file name"
+msgstr "من اسم الملف"
 
 msgid "From the plan"
 msgstr "من الباقة"
@@ -10394,6 +10424,9 @@ msgstr "السطر الأول يحمل أسماء الأعمدة، بالعرب�
 msgid "The fold is wider than the label."
 msgstr "الذيل أعرض من الملصق."
 
+msgid "The font must be 5 MB or smaller."
+msgstr "يجب ألا يزيد حجم الخط عن 5 ميجابايت."
+
 msgid "The gold leaves your stock and the workshop holds it until the goods come back."
 msgstr "يخرج الذهب من مخزونك ويبقى لدى الورشة حتى تعود البضاعة."
 
@@ -10627,6 +10660,9 @@ msgstr "يقل رصيد ذهب المورد بقدر الذهب الصافي ا�
 
 msgid "The system posts to this account: it stays on."
 msgstr "النظام يسجّل على هذا الحساب: يبقى نشطًا."
+
+msgid "The system's font"
+msgstr "خط النظام"
 
 msgid "The template's second sheet lists your categories, karats and suppliers."
 msgstr "الورقة الثانية في النموذج فيها مجموعاتك وعياراتك ومورديك."
@@ -11393,6 +11429,9 @@ msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF."
 msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
 msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
 
+msgid "Upload a TTF, OTF, WOFF or WOFF2 font."
+msgstr "ارفع خطًا بصيغة TTF أو OTF أو WOFF أو WOFF2."
+
 msgid "US dollar"
 msgstr "دولار أمريكي"
 
@@ -12088,6 +12127,9 @@ msgstr "اسمك وشعاراتك وروابطك كما يراها كل عميل
 
 msgid "Your own choice: it does not change anyone else's."
 msgstr "اختيارك أنت: لا يغيّر اختيار أي شخص آخر."
+
+msgid "Your own fonts for labels and printed documents (TTF, OTF, WOFF or WOFF2, up to 5 MB). Choose one in a label template or a document's design; Arabic falls back to the system's font when the chosen one has no Arabic letters."
+msgstr "خطوطك الخاصة للملصقات والمستندات المطبوعة (TTF أو OTF أو WOFF أو WOFF2 حتى 5 ميجابايت). اختر خطًا في قالب الملصق أو في تصميم المستند؛ يُستخدم خط النظام للعربية إذا لم يحتوِ الخط المختار على حروف عربية."
 
 msgid "Your plan allows %(limit)s branches. Contact us to add more."
 msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإضافة المزيد."

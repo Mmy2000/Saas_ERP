@@ -12,7 +12,7 @@ class TemplateSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "media", "layout", "width_mm", "height_mm", "tail_mm", "fields",
                   "fields_b", "font_size_pt", "barcode_height_mm", "page_width_mm",
                   "page_height_mm", "columns", "rows", "margin_top_mm", "margin_start_mm",
-                  "gap_x_mm", "gap_y_mm", "is_default", "is_active"]
+                  "gap_x_mm", "gap_y_mm", "is_default", "is_active", "font"]
 
 
 class LabelTemplateViewSet(viewsets.GenericViewSet):

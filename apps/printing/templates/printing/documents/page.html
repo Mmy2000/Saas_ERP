@@ -1,4 +1,4 @@
-{% load i18n static %}<!doctype html>
+{% load i18n static print_fonts %}<!doctype html>
 <html lang="{{ doc.lang }}" dir="{{ doc.dir }}">
 <head>
 <meta charset="utf-8">
@@ -9,11 +9,12 @@
   @font-face { font-family: "Plex Arabic"; font-weight: 400; src: url("{% static 'core/fonts/plex-arabic-400.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
   @font-face { font-family: "Plex Arabic"; font-weight: 600; src: url("{% static 'core/fonts/plex-arabic-600.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
   @font-face { font-family: "Plex Arabic"; font-weight: 700; src: url("{% static 'core/fonts/plex-arabic-700.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  {% print_font_face design.font %}
   @page { size: {{ page.size }}; margin: {{ page.margin }}; }
   :root { --accent: {{ design.color }}; --ink: #18181b; --muted: #71717a; --line: #e4e4e7; --soft: #fafafa; }
   * { box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { margin: 0; background: #e4e4e7; color: var(--ink); font: 13px/1.5 "Inter", "Plex Arabic", system-ui, sans-serif; }
+  body { margin: 0; background: #e4e4e7; color: var(--ink); font: 13px/1.5 {% print_font_family design.font %}; }
   .num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
   .sheet { background: #fff; margin: 16px auto; padding: {{ page.margin }}; box-shadow: 0 1px 3px rgb(0 0 0 / .12);
            {% if design.paper == "a4" %}width: 210mm; min-height: 297mm;{% elif design.paper == "a5" %}width: 148mm; min-height: 210mm;{% else %}width: 80mm;{% endif %} }

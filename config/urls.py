@@ -210,6 +210,7 @@ urlpatterns = [
     path("stock/labels/", printing.labels, name="labels"),
     path("stock/labels/zpl/", printing.labels_zpl, name="labels-zpl"),
     path("settings/labels/", printing.label_templates, name="label-templates"),
+    path("settings/labels/fonts/", printing.label_fonts, name="label-fonts"),
     path("settings/labels/new/", printing.label_template_new, name="label-template-new"),
     path("settings/labels/preview/", printing.label_preview, name="label-preview"),
     path("settings/labels/<int:pk>/", printing.label_template_edit, name="label-template-edit"),

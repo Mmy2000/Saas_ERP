@@ -562,6 +562,19 @@ Legacy GHD51 (كرت الصنف ماس), Diamonds feature, report `diamond_card`
 - **A limit:** carats and cost are the piece's current ones. A piece whose stones changed later
   (set or taken out) shows today's figures on its earlier movements.
 
+### Fonts for labels and documents
+
+Legacy GHSH14 font manager, `apps/printing/fonts.py`:
+- **Uploading:** Settings → Label templates → Fonts takes the client's own fonts (TTF, OTF,
+  WOFF or WOFF2, checked by content, up to 5 MB, kept with the client's files) under a name.
+  It needs the permission "Design label templates".
+- **Choosing:** a label template and a document's design can each choose one; documents that
+  follow another's design follow its font too. The font is declared under a family name made
+  from its id. Inter and Plex Arabic stay behind it, so Arabic still shows when the font has no
+  Arabic letters.
+- **Removing and Zebra:** removing a font puts its labels and documents back on the system's
+  font. Zebra (ZPL) printing keeps the printer's own fonts.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

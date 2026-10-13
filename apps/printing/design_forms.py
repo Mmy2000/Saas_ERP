@@ -6,7 +6,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from .documents import TYPES
-from .models import DocLayout, DocumentDesign, Paper
+from .models import DocLayout, DocumentDesign, Paper, PrintFont
 
 CHECKBOX = "size-4 rounded border-slate-300 accent-brand-600"
 SWATCH = "h-9 w-16 cursor-pointer rounded-lg border border-slate-200 bg-surface p-1"
@@ -19,17 +19,18 @@ class DesignForm(forms.ModelForm):
     class Meta:
         model = DocumentDesign
         fields = ["follows", "layout", "paper", "lang", "color", "show_logo", "copies",
-                  "header_note", "footer_note", "terms"]
+                  "header_note", "footer_note", "terms", "font"]
         labels = {
             "follows": _("Design"), "layout": _("Layout"), "paper": _("Paper"),
             "lang": _("Language"),
             "color": _("Colour"), "show_logo": _("Show the logo"), "copies": _("Copies"),
             "header_note": _("Line under the header"), "footer_note": _("Line at the bottom"),
-            "terms": _("Terms and conditions"),
+            "terms": _("Terms and conditions"), "font": _("Font"),
         }
         help_texts = {
             "color": _("Empty: the workspace's accent colour."),
             "paper": _("The thermal layout always prints on an 80 mm roll."),
+            "font": _("Add fonts on Settings → Label templates."),
         }
         widgets = {"terms": forms.Textarea(attrs={"rows": 3}),
                     "color": forms.TextInput(attrs={"type": "color"})}
@@ -50,6 +51,13 @@ class DesignForm(forms.ModelForm):
                 (key, _("Same as: %(name)s") % {"name": kind.label})
                 for key, kind in TYPES.items() if key != doc_type])
         self.fields["color"].required = False
+        # Read now, inside the client's context: the console draws the form outside it.
+        self.fonts = {str(font.pk): font for font in PrintFont.objects.all()}
+        self.fields["font"] = forms.ChoiceField(
+            label=_("Font"), required=False, help_text=self.fields["font"].help_text,
+            choices=[("", _("The system's font"))] + [
+                (key, font.name) for key, font in self.fonts.items()],
+            initial=str(design.font_id or ""))
         chosen = design.enabled_columns(doc_type)
         self.column_names = []
         for column in self.doc_type.columns:
@@ -74,6 +82,9 @@ class DesignForm(forms.ModelForm):
                 if isinstance(field, forms.IntegerField):
                     css += " num w-full text-start"
                 field.widget.attrs.setdefault("class", css)
+
+    def clean_font(self):
+        return self.fonts.get(self.cleaned_data.get("font") or "")
 
     def clean(self):
         data = super().clean()

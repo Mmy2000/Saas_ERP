@@ -1,7 +1,9 @@
-{% load l10n %}{% localize off %}<style>
+{% load l10n print_fonts %}{% localize off %}<style>
+  {% print_font_face template.font %}
   @page { size: {% if template.media == "sheet" %}{{ template.page_width_mm }}mm {{ template.page_height_mm }}mm{% else %}{{ template.width_mm }}mm {{ template.height_mm }}mm{% endif %}; margin: 0; }
   .label { width: {{ template.width_mm }}mm; height: {{ template.height_mm }}mm; display: flex; overflow: hidden;
-           background: #fff; color: #000; font-size: {{ template.font_size_pt }}pt; line-height: 1.15; }
+           background: #fff; color: #000; font-size: {{ template.font_size_pt }}pt; line-height: 1.15;
+           font-family: {% print_font_family template.font %}; }
   .label .area { width: {{ template.area_width_mm }}mm; height: 100%; padding: 0.6mm 1mm; display: flex; flex-direction: column;
                  justify-content: center; gap: 0.3mm; overflow: hidden; }
   .label .tail { width: {{ template.tail_mm }}mm; flex: none; }

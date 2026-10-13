@@ -49,6 +49,17 @@ def template_from(data: dict, template: LabelTemplate | None = None) -> LabelTem
             continue
         setattr(template, key, int(value) if key in ("columns", "rows") else value)
 
+    font = str(data.get("font") or "").strip()
+    if font:
+        from .models import PrintFont
+
+        found = PrintFont.objects.filter(pk=int(font)).first() if font.isdigit() else None
+        if found is None:
+            errors["font"] = [_("Choose one of your fonts.")]
+        template.font = found
+    elif "font" in data:
+        template.font = None
+
     for key in ("fields", "fields_b"):
         chosen = data.get(key) or []
         if isinstance(chosen, str):

@@ -14,6 +14,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.media import TenantUploadPath
 from apps.core.models import TenantScopedModel
 
 
@@ -27,6 +28,29 @@ class Layout(models.TextChoices):
     SPLIT = "split", _("Two wings (jewellery tail tag)")
 
 
+class PrintFont(TenantScopedModel):
+    """A font the client uploads for its labels and printed documents (legacy GHSH14 font
+    manager): TrueType, OpenType or web fonts, served to its own members and to PDF rendering.
+    Zebra printers keep their own fonts (ZPL)."""
+
+    name = models.CharField(max_length=60)
+    file = models.FileField(upload_to=TenantUploadPath("fonts"))
+    format = models.CharField(max_length=10)  # truetype | opentype | woff | woff2
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [models.UniqueConstraint(fields=["tenant", "name"],
+                                               name="printing_font_name_uniq")]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def family(self) -> str:
+        """The CSS family name it is declared under (never the client's text)."""
+        return f"PrintFont{self.pk}"
+
+
 class LabelTemplate(TenantScopedModel):
     name = models.CharField(max_length=100)
     media = models.CharField(max_length=8, choices=Media.choices, default=Media.ROLL)
@@ -37,6 +61,8 @@ class LabelTemplate(TenantScopedModel):
     fields = models.JSONField(default=list)  # first area / wing, in order
     fields_b = models.JSONField(default=list, blank=True)  # second wing
     font_size_pt = models.DecimalField(max_digits=4, decimal_places=1, default=Decimal("6"))
+    font = models.ForeignKey(PrintFont, null=True, blank=True, on_delete=models.SET_NULL,
+                             related_name="+")  # empty: the system's font
     barcode_height_mm = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("5"))
     # Sheet media only.
     page_width_mm = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal("210"))
@@ -115,6 +141,8 @@ class DocumentDesign(TenantScopedModel):
     columns = models.JSONField(default=list, blank=True)  # [] = the type's defaults
     options = models.JSONField(default=dict, blank=True)
     copies = models.PositiveSmallIntegerField(default=1)
+    font = models.ForeignKey(PrintFont, null=True, blank=True, on_delete=models.SET_NULL,
+                             related_name="+")  # empty: the system's font
     # The drag-and-drop designer (apps.printing.builder): validated blocks and page settings.
     blocks = models.JSONField(default=list, blank=True)
     page = models.JSONField(default=dict, blank=True)

@@ -29,4 +29,27 @@
     </table>
   </div>
 </section>
+
+<section class="card mt-6 overflow-hidden" id="fonts">
+  <div class="card-header"><h2 class="card-title">{% translate "Fonts" %}</h2></div>
+  <p class="px-5 pt-4 text-sm text-slate-500">{% translate "Your own fonts for labels and printed documents (TTF, OTF, WOFF or WOFF2, up to 5 MB). Choose one in a label template or a document's design; Arabic falls back to the system's font when the chosen one has no Arabic letters." %}</p>
+  {% if fonts %}
+  <ul class="mt-3 divide-y divide-slate-100 border-t border-slate-100">
+    {% for f in fonts %}
+    <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+      <style>{% load print_fonts %}{% print_font_face f %}</style>
+      <div><p class="font-medium text-slate-900">{{ f.name }} <span class="badge badge-neutral uppercase">{{ f.format }}</span></p>
+        <p class="text-lg text-slate-700" style="font-family: {% print_font_family f %}">Gold 21K · 4.25 g · ذهب عيار ٢١</p></div>
+      <form method="post" action="{% url 'label-fonts' %}">{% csrf_token %}<button class="btn btn-ghost text-xs text-red-700" name="delete" value="{{ f.pk }}">{% icon "trash-2" "size-4" %}{% translate "Remove" %}</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <form method="post" action="{% url 'label-fonts' %}" enctype="multipart/form-data" class="flex flex-col gap-3 border-t border-slate-100 p-5 sm:flex-row sm:items-end">
+    {% csrf_token %}
+    <label class="sm:w-64"><span class="form-label">{% translate "Name" %}</span><input name="name" maxlength="60" class="form-input w-full" placeholder="{% translate 'From the file name' %}"></label>
+    <label class="flex-1"><span class="form-label">{% translate "Font file" %}</span><input type="file" name="file" accept=".ttf,.otf,.woff,.woff2" class="form-input w-full py-1.5" required></label>
+    <button class="btn btn-secondary">{% icon "upload" "size-4" %}{% translate "Add font" %}</button>
+  </form>
+</section>
 {% endblock %}
