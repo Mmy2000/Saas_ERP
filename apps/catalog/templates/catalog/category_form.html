@@ -1,5 +1,5 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load authz i18n ui %}
 {% block title %}{% if category %}{{ category.name }}{% else %}{% translate "New item category" %}{% endif %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
@@ -58,4 +58,22 @@
     </div>
   </aside>
 </form>
+{% if category %}{% can "inventory.item.photo" as can_photo %}{% if can_photo or category.photo %}
+<section class="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center" data-category-photo>
+  {% if category.photo %}<img src="{{ category.photo.url }}" alt="{{ category.name }}" class="size-28 rounded-lg bg-slate-50 object-contain">
+  {% else %}<div class="flex size-28 items-center justify-center rounded-lg bg-slate-50 text-slate-300">{% icon "image-off" "size-8" %}</div>{% endif %}
+  <div class="space-y-2">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "Category photo" %}</h2>
+    <p class="text-sm text-slate-500">{% translate "Shown in the catalogue for its pieces that have no photo of their own." %}</p>
+    {% if can_photo %}
+    <form method="post" action="{% url 'category-photo' category.pk %}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
+      {% csrf_token %}
+      <label class="btn btn-secondary cursor-pointer text-xs">{% icon "upload" "size-4" %}{% if category.photo %}{% translate "Change photo" %}{% else %}{% translate "Add a photo" %}{% endif %}
+        <input type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/gif" class="sr-only" onchange="this.form.requestSubmit()"></label>
+      {% if category.photo %}<button type="submit" name="remove" value="1" class="btn btn-ghost text-xs text-red-700">{% icon "trash-2" "size-4" %}{% translate "Remove" %}</button>{% endif %}
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}{% endif %}
 {% endblock %}

@@ -424,3 +424,93 @@ def blind_count_detail(request, pk):
         "reveal": request.actor.can("admin.blind_count.reveal", branch=count.branch),
         "cash_ok": count.cash_counted == count.cash_actual,
     })
+
+
+# --- photo catalogue (legacy GHMRK2 / GHMRK4) ------------------------------------------------
+
+@permission_required("inventory.stock.view")
+def catalogue(request):
+    from django.utils import timezone
+
+    from apps.inventory import catalogue as service
+
+    items, filters, price_range = service.pieces(
+        request.GET, branch_ids=request.actor.branch_ids("inventory.stock.view"))
+    query = urlencode({k: v for k, v in filters.items() if v})
+    if request.GET.get("format") == "pdf":
+        from django.template.loader import render_to_string
+
+        from apps.printing.pdf import Paper, PdfUnavailable, html_to_pdf, logo_src, pdf_response
+
+        profile = TenantProfile.objects.first()
+        entries = service.priced(items, price_range, limit=300)
+        html = render_to_string("inventory/catalogue_sheet.html", {
+            "entries": entries, "profile": profile, "logo": logo_src(profile),
+            "made_at": timezone.localtime(), "home_currency": _home_currency()}, request=request)
+        try:
+            content = html_to_pdf(html, Paper(page_numbers=True))
+        except PdfUnavailable:
+            return render(request, "printing/pdf_unavailable.html", status=503)
+        return pdf_response(content, f"{_('Catalogue')} {timezone.localdate().isoformat()}.pdf")
+    if any(v is not None for v in price_range):
+        entries = service.priced(items, price_range)
+        page = Paginator(entries, 24).get_page(request.GET.get("page"))
+    else:
+        page = Paginator(items, 24).get_page(request.GET.get("page"))
+        page.object_list = service.priced(page.object_list, (None, None))
+    return render(request, "inventory/catalogue.html", {
+        "page": page, "filters": filters, "query": query,
+        "branches": _branches_for(request, "inventory.stock.view"),
+        "categories": ItemCategory.objects.filter(is_active=True, tracking="serialized")
+        .order_by("code"),
+        "karats": Karat.objects.filter(is_active=True).select_related("metal"),
+        "home_currency": _home_currency(),
+    })
+
+
+def _home_currency() -> str:
+    from apps.pricing.selectors import functional_currency
+
+    return functional_currency()
+
+
+@permission_required("inventory.item.photo")
+def item_photo(request, pk):
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from apps.core.errors import ValidationError
+    from apps.inventory import catalogue as service
+
+    if request.method != "POST":
+        raise Http404
+    item = service.item_for_photo(pk)
+    try:
+        service.set_photo(item, None if request.POST.get("remove") else request.FILES.get("photo"),
+                          actor=request.actor, branch=item.branch)
+    except ValidationError as exc:
+        messages.error(request, exc.message)
+    else:
+        messages.success(request, _("Photo saved.") if item.photo else _("Photo removed."))
+    return redirect("stock-item", pk=item.pk)
+
+
+@permission_required("inventory.item.photo")
+def category_photo(request, pk):
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from apps.core.errors import ValidationError
+    from apps.inventory import catalogue as service
+
+    category = ItemCategory.objects.filter(pk=pk).first()
+    if request.method != "POST" or category is None:
+        raise Http404
+    try:
+        service.set_photo(category, None if request.POST.get("remove")
+                          else request.FILES.get("photo"), actor=request.actor)
+    except ValidationError as exc:
+        messages.error(request, exc.message)
+    else:
+        messages.success(request, _("Photo saved.") if category.photo else _("Photo removed."))
+    return redirect("category-edit", pk=category.pk)

@@ -6,6 +6,7 @@ register_permissions(_("Stock"), [
     ("inventory.stock.view", _("View stock and pieces")),
     ("inventory.item.view_cost", _("See purchase costs")),
     ("inventory.item.print_label", _("Print piece labels")),
+    ("inventory.item.photo", _("Add and change photos of pieces and categories")),
     ("inventory.transfer.send", _("Send goods to another branch")),
     ("inventory.transfer.receive", _("Receive goods from another branch")),
     ("inventory.transfer.void", _("Cancel transfers still in transit")),

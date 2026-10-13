@@ -15,6 +15,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.media import TenantUploadPath
 from apps.core.models import Document, TenantScopedModel
 
 
@@ -110,6 +111,8 @@ class Item(TenantScopedModel):
                                        on_delete=models.SET_NULL, related_name="items")
     attributes = models.JSONField(default=dict, blank=True)
     note = models.CharField(max_length=300, blank=True)
+    # Its photo for the catalogue (legacy gold_photo); without one, its category's is shown.
+    photo = models.FileField(upload_to=TenantUploadPath("photos"), blank=True)
 
     class Meta:
         ordering = ["-id"]

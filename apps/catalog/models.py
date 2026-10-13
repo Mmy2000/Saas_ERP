@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.media import TenantUploadPath
 from apps.core.models import TenantScopedModel
 
 #: Default currency names, shown in the viewer's language unless the tenant sets its own.
@@ -165,6 +166,8 @@ class ItemCategory(TenantScopedModel):
     reorder_max_qty = models.PositiveIntegerField(null=True, blank=True)
     attributes = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
+    # Shown in the catalogue for its pieces that have no photo of their own.
+    photo = models.FileField(upload_to=TenantUploadPath("photos"), blank=True)
 
     class Meta:
         ordering = ["code"]

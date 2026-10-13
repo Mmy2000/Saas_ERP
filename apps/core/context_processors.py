@@ -80,6 +80,7 @@ NAVIGATION: list[NavSection] = [
         NavItem(_("In transit"), "in-transit", "arrow-left-right", "inventory.stock.view"),
         NavItem(_("Stocktake"), "stocktakes", "clipboard-check", "inventory.stock.view",
                 ("stocktake-new", "stocktake")),
+        NavItem(_("Catalogue"), "catalogue", "image", "inventory.stock.view"),
         NavItem(_("Blind counts"), "blind-counts", "eye-off", "inventory.blind_count.view",
                 ("blind-count-new", "blind-count")),
         NavItem(_("Purchases"), "invoices", "receipt", "purchasing.invoice.view",

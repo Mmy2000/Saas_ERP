@@ -1,0 +1,51 @@
+{% comment %}The A5 catalogue (apps.inventory.catalogue): the client's name and logo, then each piece's
+photo, category, karat, weight and today's price, two to a row.{% endcomment %}{% load i18n static ui %}{% get_current_language as LANG %}{% get_current_language_bidi as RTL %}<!doctype html>
+<html lang="{{ LANG }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
+<head>
+<meta charset="utf-8">
+<title>{% translate "Catalogue" %}</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 100 900; src: url("{% static 'core/fonts/inter-latin-wght.woff2' %}") format("woff2"); }
+  @font-face { font-family: "Plex Arabic"; font-weight: 400; src: url("{% static 'core/fonts/plex-arabic-400.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: "Plex Arabic"; font-weight: 600; src: url("{% static 'core/fonts/plex-arabic-600.woff2' %}") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+  @page { size: A5 portrait; margin: 10mm 9mm 12mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: #18181b; font: 9.5px/1.4 "Inter", "Plex Arabic", system-ui, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1.5px solid #a16207; margin-bottom: 10px; }
+  header img { max-height: 34px; max-width: 100px; object-fit: contain; }
+  header .name { font-size: 13px; font-weight: 600; }
+  header .meta { color: #71717a; text-align: end; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .piece { border: 1px solid #e4e4e7; border-radius: 6px; overflow: hidden; break-inside: avoid; }
+  .photo { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #fafafa; display: block; }
+  .none { width: 100%; aspect-ratio: 1 / 1; background: #fafafa; display: flex; align-items: center; justify-content: center; color: #d4d4d8; font-size: 9px; }
+  .body { padding: 5px 7px 6px; }
+  .title { font-weight: 600; margin: 0; }
+  .sub { color: #71717a; margin: 1px 0 0; }
+  .price { font-weight: 600; color: #a16207; margin: 3px 0 0; font-size: 11px; }
+  .empty { color: #a1a1aa; }
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;gap:8px;align-items:center">{% if logo %}<img src="{{ logo }}" alt="">{% endif %}<div><p class="name" style="margin:0">{{ profile.display_name }}</p><p style="margin:0;color:#52525b">{% translate "Catalogue" %}</p></div></div>
+  <div class="meta"><span class="num">{{ made_at|date:"SHORT_DATETIME_FORMAT" }}</span><br>{% translate "Prices for today, before any discount." %}</div>
+</header>
+{% if entries %}
+<div class="grid">
+  {% for entry in entries %}
+  <div class="piece">
+    {% if entry.photo_url %}<img class="photo" src="{{ entry.photo_url }}" alt="">{% else %}<div class="none">{% translate "No photo" %}</div>{% endif %}
+    <div class="body">
+      <p class="title">{{ entry.item.category.name }}</p>
+      <p class="sub"><span class="num">{{ entry.item.barcode }}</span>{% if entry.item.karat %} · {{ entry.item.karat.label }}{% endif %} · <span class="num">{{ entry.item.gross_weight_g|num:2 }} {% translate "g" %}</span></p>
+      {% if entry.price is not None %}<p class="price num">{{ entry.price|num:0 }} {{ home_currency }}</p>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}<p class="empty">{% translate "No pieces match" %}</p>{% endif %}
+</body>
+</html>

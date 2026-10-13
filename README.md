@@ -513,6 +513,19 @@ Legacy GHSHH15 / GHSHH24 (سبك):
   (bars)"). A receipt line can carry a fixed charge (the casting fee) instead of labour per
   gram. It is owed to the workshop like any labour and paid from its statement.
 
+### Photos and the catalogue (Goods → Catalogue)
+
+Legacy GHMRK2 / GHMRK4 (كتالوج الذهب / الماس), `apps/inventory/catalogue.py`:
+- **Photos:** a piece's page takes a photo, and a category's page takes one for its pieces
+  without their own. Both need the permission "Add and change photos of pieces and
+  categories". Photos are PNG, JPEG, WEBP or GIF up to 2 MB, kept per client and served only
+  to its members.
+- **The catalogue:** pieces in stock with their photo and today's price, filtered by branch,
+  category, karat, weight and price, and with or without a photo (to find pieces still to
+  photograph). Gold is priced like the sales screen before discounts or offers; diamond pieces
+  show their label price. "A5 catalogue (PDF)" prints the same list (up to 300 pieces), two to
+  a row, with the shop's name and logo.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

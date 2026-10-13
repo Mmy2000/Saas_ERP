@@ -1,0 +1,51 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Catalogue" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Catalogue" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Pieces in stock with their photo and today's price, to show customers or print as an A5 catalogue." %}</p>
+  </div>
+  <a href="?{{ query }}{% if query %}&amp;{% endif %}format=pdf" class="btn btn-primary" data-pdf-link>{% icon "file-down" "size-4" %}{% translate "A5 catalogue (PDF)" %}</a>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="card mb-6 grid grid-cols-2 gap-3 p-4 sm:grid-cols-4 lg:grid-cols-8 lg:items-end">
+  <label class="col-span-2 sm:col-span-1 lg:col-span-1"><span class="form-label">{% translate "Branch" %}</span>
+    <select name="branch" class="form-input"><option value="">{% translate "All" %}</option>{% for b in branches %}<option value="{{ b.pk }}" {% if filters.branch == b.pk|stringformat:'s' %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+  <label class="col-span-2 sm:col-span-1 lg:col-span-2"><span class="form-label">{% translate "Category" %}</span>
+    <select name="category" class="form-input"><option value="">{% translate "All" %}</option>{% for c in categories %}<option value="{{ c.pk }}" {% if filters.category == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.code }} · {{ c.name }}</option>{% endfor %}</select></label>
+  <label><span class="form-label">{% translate "Karat" %}</span>
+    <select name="karat" class="form-input"><option value="">{% translate "All" %}</option>{% for k in karats %}<option value="{{ k.pk }}" {% if filters.karat == k.pk|stringformat:'s' %}selected{% endif %}>{{ k.label }}</option>{% endfor %}</select></label>
+  <label><span class="form-label">{% translate "Photos" %}</span>
+    <select name="photos" class="form-input"><option value="">{% translate "All" %}</option><option value="with" {% if filters.photos == "with" %}selected{% endif %}>{% translate "With a photo" %}</option><option value="without" {% if filters.photos == "without" %}selected{% endif %}>{% translate "Without a photo" %}</option></select></label>
+  <fieldset class="col-span-2 lg:col-span-1"><span class="form-label">{% translate "Weight (g)" %}</span>
+    <div class="flex gap-1"><input name="w_min" value="{{ filters.w_min }}" class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'From' %}" aria-label="{% translate 'Weight from' %}"><input name="w_max" value="{{ filters.w_max }}" class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'To' %}" aria-label="{% translate 'Weight to' %}"></div></fieldset>
+  <fieldset class="col-span-2 lg:col-span-1"><span class="form-label">{% translate "Price" %} <span class="text-xs text-slate-400">{{ home_currency }}</span></span>
+    <div class="flex gap-1"><input name="p_min" value="{{ filters.p_min }}" class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'From' %}" aria-label="{% translate 'Price from' %}"><input name="p_max" value="{{ filters.p_max }}" class="form-input num w-full text-start" inputmode="decimal" placeholder="{% translate 'To' %}" aria-label="{% translate 'Price to' %}"></div></fieldset>
+  <button type="submit" class="btn btn-secondary col-span-2 sm:col-span-1">{% icon "search" "size-4" %}{% translate "Show" %}</button>
+</form>
+
+{% if page.object_list %}
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6" data-catalogue>
+  {% for entry in page.object_list %}
+  <a href="{% url 'stock-item' entry.item.pk %}" class="card group overflow-hidden transition hover:shadow-md">
+    {% if entry.photo_url %}<img src="{{ entry.photo_url }}" alt="{{ entry.item.category.name }}" loading="lazy" class="aspect-square w-full bg-slate-50 object-contain">
+    {% else %}<div class="flex aspect-square w-full items-center justify-center bg-slate-50 text-slate-300">{% icon "image-off" "size-8" %}</div>{% endif %}
+    <div class="space-y-0.5 p-3 text-sm">
+      <p class="truncate font-medium text-slate-900"><bdi>{{ entry.item.category.name }}</bdi></p>
+      <p class="text-xs text-slate-500"><span class="num">{{ entry.item.barcode }}</span>{% if entry.item.karat %} · {{ entry.item.karat.label }}{% endif %} · <span class="num">{{ entry.item.gross_weight_g|num:2 }} {% translate "g" %}</span></p>
+      <p class="num pt-1 font-semibold text-brand-700">{% if entry.price is not None %}{{ entry.price|num:0 }} {{ home_currency }}{% else %}—{% endif %}</p>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% if page.has_other_pages %}<div class="card mt-6">{% include "components/pager.html" with query=query %}</div>{% endif %}
+{% else %}
+<section class="card">
+  {% translate "No pieces match" as empty_title %}
+  {% include "components/empty_state.html" with icon="image" title=empty_title %}
+</section>
+{% endif %}
+{% endblock %}

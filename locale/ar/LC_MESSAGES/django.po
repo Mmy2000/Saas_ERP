@@ -593,6 +593,9 @@ msgstr "ورقة A4، 3 × 8 ملصقات"
 msgid "A5"
 msgstr "A5"
 
+msgid "A5 catalogue (PDF)"
+msgstr "كتالوج A5 (PDF)"
+
 msgid "Abandon the count"
 msgstr "إلغاء الجرد"
 
@@ -689,6 +692,9 @@ msgstr "أضف سطرًا."
 msgid "Add a parcel for each kind of small stone you keep, then buy stones into it."
 msgstr "أضف برتيتة لكل نوع من الأحجار الصغيرة لديك، ثم اشترِ أحجارًا فيها."
 
+msgid "Add a photo"
+msgstr "إضافة صورة"
+
 msgid "Add a piece"
 msgstr "إضافة قطعة"
 
@@ -712,6 +718,9 @@ msgstr "أضف بند مصروفات أولًا."
 
 msgid "Add an item category of the family Diamonds (pieces) or Stones (loose stones) first."
 msgstr "أضف أولًا صنفًا من فئة الألماس (قطع) أو الأحجار (أحجار سائبة)."
+
+msgid "Add and change photos of pieces and categories"
+msgstr "إضافة وتغيير صور القطع والأصناف"
 
 msgid "Add and edit employees, their salaries and commissions"
 msgstr "إضافة الموظفين وتعديلهم ورواتبهم وعمولاتهم"
@@ -2048,6 +2057,9 @@ msgstr "سبك"
 msgid "Catalog"
 msgstr "الأصناف"
 
+msgid "Catalogue"
+msgstr "الكتالوج"
+
 msgid "Categories"
 msgstr "البنود"
 
@@ -2068,6 +2080,9 @@ msgstr "كارت الصنف"
 
 msgid "Category making charge"
 msgstr "مصنعية الصنف"
+
+msgid "Category photo"
+msgstr "صورة الصنف"
 
 msgid "Cell padding"
 msgstr "مسافة الخلايا"
@@ -2110,6 +2125,9 @@ msgstr "الباقي يُرد نقدًا: ادفع المبلغ المضبوط �
 
 msgid "Change password"
 msgstr "تغيير كلمة المرور"
+
+msgid "Change photo"
+msgstr "تغيير الصورة"
 
 msgid "Change the making charge of many gold pieces at once (or the label price of diamond pieces). Check the result first; every change is kept and can be undone."
 msgstr "غيّر مصنعية قطع ذهب كثيرة دفعة واحدة (أو سعر التيكت لقطع الألماس). راجع النتيجة أولًا؛ كل تغيير يُحفظ ويمكن التراجع عنه."
@@ -6374,6 +6392,12 @@ msgstr "لم يُصرف أي مسير رواتب بعد"
 msgid "No phones signed in"
 msgstr "لا توجد هواتف مسجّلة الدخول"
 
+msgid "No photo"
+msgstr "بدون صورة"
+
+msgid "No photo yet"
+msgstr "لا توجد صورة بعد"
+
 msgid "no piece has this barcode"
 msgstr "لا توجد قطعة بهذا الباركود"
 
@@ -7559,6 +7583,15 @@ msgstr "الهاتف"
 msgid "Phones signed in to the stock app. A lost or replaced phone can be signed out here; it stops working at once."
 msgstr "الهواتف المسجّلة الدخول في تطبيق المخزون. يمكن تسجيل خروج هاتف مفقود أو مستبدل من هنا؛ يتوقف عن العمل فورًا."
 
+msgid "Photo removed."
+msgstr "تم حذف الصورة."
+
+msgid "Photo saved."
+msgstr "تم حفظ الصورة."
+
+msgid "Photos"
+msgstr "الصور"
+
 msgid "Pick pieces on the stock page, or open this from a purchase or a transfer."
 msgstr "اختر القطع من صفحة المخزون، أو افتح هذه الصفحة من فاتورة شراء أو تحويل."
 
@@ -7639,6 +7672,9 @@ msgstr "قطع واردة"
 
 msgid "Pieces in stock"
 msgstr "القطع بالمخزون"
+
+msgid "Pieces in stock with their photo and today's price, to show customers or print as an A5 catalogue."
+msgstr "القطع الموجودة بالمخزون بصورتها وسعر اليوم، لعرضها على العملاء أو طباعتها ككتالوج A5."
 
 msgid "Pieces include reserved ones. Value at today's buy price for pure metal."
 msgstr "القطع تشمل المحجوزة. القيمة بسعر شراء الذهب الخالص اليوم."
@@ -7726,6 +7762,9 @@ msgstr "بلاتين"
 
 msgid "Please correct the highlighted fields."
 msgstr "يرجى تصحيح الحقول المحددة."
+
+msgid "PNG, JPEG, WEBP or GIF, up to 2 MB."
+msgstr "PNG أو JPEG أو WEBP أو GIF، حتى 2 ميجابايت."
 
 msgid "PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a transparent background works best."
 msgstr "PNG أو JPEG أو WEBP أو GIF أو ICO، حتى 2 ميجابايت. الأفضل صورة مربعة أو عريضة بخلفية شفافة."
@@ -7853,6 +7892,9 @@ msgstr "تغيّرات أسعار تنتظر الموافقة"
 msgid "Price empty: back at the parcel's average cost. On their account, it comes off what is owed to the supplier."
 msgstr "السعر فارغ: يُرد بمتوسط تكلفة البرتيتة. على الحساب: يُخصم مما علينا للمورد."
 
+msgid "Price from"
+msgstr "السعر من"
+
 msgid "Price history"
 msgstr "سجل الأسعار"
 
@@ -7871,6 +7913,9 @@ msgstr "سعر الجرام الصافي"
 msgid "Price saved."
 msgstr "حُفظ السعر."
 
+msgid "Price to"
+msgstr "السعر إلى"
+
 msgid "Price today"
 msgstr "سعر اليوم"
 
@@ -7879,6 +7924,9 @@ msgstr "البنود المسعّرة"
 
 msgid "Prices changed."
 msgstr "تغيرت الأسعار."
+
+msgid "Prices for today, before any discount."
+msgstr "أسعار اليوم، قبل أي خصم."
 
 msgid "Prices must be positive."
 msgstr "يجب أن تكون الأسعار أكبر من صفر."
@@ -9455,6 +9503,9 @@ msgstr "تُعرض أول %(shown)s من %(total)s قطعة؛ وكلها موج�
 msgid "Shown in every workspace sidebar. Empty: the platform name."
 msgstr "يظهر في القائمة الجانبية لكل مساحة عمل. فارغ: اسم المنصة."
 
+msgid "Shown in the catalogue for its pieces that have no photo of their own."
+msgstr "تظهر في الكتالوج لقطع هذا الصنف التي ليس لها صورة خاصة."
+
 msgid "Side"
 msgstr "الجانب"
 
@@ -10165,6 +10216,9 @@ msgstr "الأفضل المتاح"
 
 msgid "the category's"
 msgstr "من المجموعة"
+
+msgid "The category's photo (this piece has none of its own)."
+msgstr "صورة الصنف (لا توجد صورة خاصة بهذه القطعة)."
 
 msgid "The cheque"
 msgstr "الشيك"
@@ -11255,6 +11309,9 @@ msgstr "حدّث الآن"
 msgid "Updated"
 msgstr "التحديث"
 
+msgid "Upload a PNG, JPEG, WEBP or GIF photo."
+msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF."
+
 msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
 msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
 
@@ -11483,6 +11540,9 @@ msgstr "الوزن بعد التركيب (جم)"
 msgid "Weight difference (g)"
 msgstr "فرق الوزن (جم)"
 
+msgid "Weight from"
+msgstr "الوزن من"
+
 msgid "Weight from (g)"
 msgstr "الوزن من (جم)"
 
@@ -11503,6 +11563,9 @@ msgstr "الوزن عند التسليم (جم)"
 
 msgid "Weight sold (g)"
 msgstr "الوزن المباع (جم)"
+
+msgid "Weight to"
+msgstr "الوزن إلى"
 
 msgid "Weight to (g)"
 msgstr "الوزن إلى (جم)"
@@ -11732,6 +11795,9 @@ msgstr "مع"
 msgid "With a certificate"
 msgstr "بشهادة"
 
+msgid "With a photo"
+msgstr "بصورة"
+
 msgid "With the country code. Leave it empty to choose the chat in WhatsApp."
 msgstr "مع كود الدولة. اتركه فارغًا لتختار المحادثة في واتساب."
 
@@ -11749,6 +11815,9 @@ msgstr "لدى الورش"
 
 msgid "With your margins and rounding, %(karat)s would be:"
 msgstr "بهوامشك وتقريبك، سيكون %(karat)s:"
+
+msgid "Without a photo"
+msgstr "بدون صورة"
 
 msgid "Work"
 msgstr "العمل"
