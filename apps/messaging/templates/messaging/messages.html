@@ -10,6 +10,15 @@
 {% endblock %}
 {% block content %}
 {% can "messaging.send" as can_send %}
+{% if wa_now.total or wa_before.total or wa_now.failed %}
+<section class="card mb-6 grid grid-cols-2 gap-4 p-4 text-sm sm:grid-cols-5" data-whatsapp-usage>
+  <div class="col-span-2 sm:col-span-1"><p class="text-slate-500">{% translate "WhatsApp this month" %}</p><p class="mt-1 text-xl font-semibold text-slate-900"><span class="num">{{ wa_now.total|num:0 }}</span></p><p class="text-xs text-slate-500">{% translate "Last month" %} <span class="num">{{ wa_before.total|num:0 }}</span></p></div>
+  <div><p class="text-slate-500">{% translate "WhatsApp service" %}</p><p class="mt-1 font-semibold"><span class="num">{{ wa_now.sent.api|num:0 }}</span></p></div>
+  <div><p class="text-slate-500">{% translate "Shop's number" %}</p><p class="mt-1 font-semibold"><span class="num">{{ wa_now.sent.own|add:wa_now.campaign|num:0 }}</span></p></div>
+  <div><p class="text-slate-500">{% translate "WhatsApp link" %}</p><p class="mt-1 font-semibold"><span class="num">{{ wa_now.sent.link|num:0 }}</span></p></div>
+  <div><p class="text-slate-500">{% translate "Not sent" %}</p><p class="mt-1 font-semibold {% if wa_now.failed %}text-red-700{% endif %}"><span class="num">{{ wa_now.failed|num:0 }}</span></p></div>
+</section>
+{% endif %}
 <div class="grid grid-cols-1 gap-6 2xl:grid-cols-3">
 <section class="card overflow-hidden 2xl:col-span-2" id="messages" data-again-url="{% url 'message-again' 0 %}" data-stop-url="{% url 'message-stop' 0 %}"
          data-queued="{% translate 'It will be sent in a moment.' %}" data-stopped="{% translate 'The link no longer works.' %}"

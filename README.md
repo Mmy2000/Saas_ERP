@@ -540,6 +540,18 @@ New, as a Transfer:
 - **Unchanged:** a bank withdrawal into a box without a "From branch" is still booked at once
   where the box is.
 
+### WhatsApp usage
+
+Legacy WhatsappDashboard, `apps/messaging/usage.py`:
+- **Console → WhatsApp:** the hosted service's own account, read live with the platform's key
+  (`GET /accounts/profile/` and `/accounts/messages/`): messages sent, the quota and what is
+  left, with a bar that turns amber at 75% and red at 90%. Below it, every client with WhatsApp
+  switched on (or with messages), showing this month's and last month's messages by route
+  (WhatsApp service, the shop's number including campaigns, WhatsApp links), those not sent,
+  and the last message.
+- **Settings → Sent messages:** each shop sees its own WhatsApp count for this month by route,
+  and last month's total.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

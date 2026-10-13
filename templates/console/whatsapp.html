@@ -1,0 +1,86 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "WhatsApp" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "WhatsApp" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "The WhatsApp service's account (messages sent and the quota left) and each client's messages this month, by route." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not account.ok %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" data-account-problem>
+  {% icon "triangle-alert" "size-5 shrink-0" %}
+  <div><p class="font-semibold">{% translate "The service's account could not be read" %}</p><p class="mt-0.5">{{ account.error }}</p></div>
+</div>
+{% endif %}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "Sent by the service (account)" %}</p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900" data-account-sent><span class="num">{% if sent is not None %}{{ sent|num:0 }}{% else %}—{% endif %}</span></p>
+  </div>
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "Quota" %}</p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{% if quota is not None %}{{ quota|num:0 }}{% else %}—{% endif %}</span></p>
+    {% if used_pct is not None %}
+    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {% if used_pct >= 90 %}bg-red-500{% elif used_pct >= 75 %}bg-amber-500{% else %}bg-brand-600{% endif %}" style="width: {{ used_pct }}%"></div></div>
+    <p class="mt-1.5 text-xs text-slate-500"><span class="num">{{ used_pct }}%</span> {% translate "used" %} · <span class="num">{{ left|num:0 }}</span> {% translate "left" %}</p>
+    {% endif %}
+  </div>
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "All clients this month" %} <span class="text-slate-400">{{ month|date:"F Y" }}</span></p>
+    <p class="mt-2 text-2xl font-semibold text-slate-900"><span class="num">{{ totals.this|num:0 }}</span></p>
+    <p class="mt-1 text-xs text-slate-500">{% translate "Last month" %} <span class="num">{{ totals.last|num:0 }}</span></p>
+  </div>
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "By route this month" %}</p>
+    <p class="mt-2 text-sm text-slate-700">{% translate "WhatsApp service" %} <span class="num font-semibold">{{ totals.api|num:0 }}</span></p>
+    <p class="text-sm text-slate-700">{% translate "Shop's number" %} <span class="num font-semibold">{{ totals.own|num:0 }}</span></p>
+    <p class="text-sm {% if totals.failed %}text-red-700{% else %}text-slate-500{% endif %}">{% translate "Not sent" %} <span class="num font-semibold">{{ totals.failed|num:0 }}</span></p>
+  </div>
+</div>
+
+<section class="card overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Clients" %}</h2></div>
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="table text-sm">
+      <thead><tr><th>{% translate "Client" %}</th><th>{% translate "Routes on" %}</th><th class="text-end">{% translate "WhatsApp service" %}</th><th class="text-end">{% translate "Shop's number" %}</th><th class="text-end">{% translate "WhatsApp link" %}</th><th class="text-end">{% translate "Not sent" %}</th><th class="text-end">{% translate "This month" %}</th><th class="text-end">{% translate "Last month" %}</th><th>{% translate "Last message" %}</th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a class="font-medium text-brand-700 hover:underline" href="{% url 'console-tenant' row.tenant.pk %}">{{ row.tenant.name }}</a></td>
+          <td class="text-xs text-slate-600">{% if row.whatsapp_api %}<span class="badge badge-brand">{% translate "Service" %}</span>{% endif %} {% if row.whatsapp_own %}<span class="badge badge-neutral">{% translate "Own number" %}</span>{% endif %}{% if not row.whatsapp_api and not row.whatsapp_own %}—{% endif %}</td>
+          <td class="text-end"><span class="num">{{ row.now.sent.api|num:0 }}</span></td>
+          <td class="text-end"><span class="num">{{ row.now.sent.own|add:row.now.campaign|num:0 }}</span></td>
+          <td class="text-end"><span class="num">{{ row.now.sent.link|num:0 }}</span></td>
+          <td class="text-end {% if row.now.failed %}text-red-700{% endif %}"><span class="num">{{ row.now.failed|num:0 }}</span></td>
+          <td class="text-end font-semibold"><span class="num">{{ row.now.total|num:0 }}</span></td>
+          <td class="text-end text-slate-500"><span class="num">{{ row.before.total|num:0 }}</span></td>
+          <td class="text-slate-500">{% if row.last %}<span class="num">{{ row.last|date:"SHORT_DATETIME_FORMAT" }}</span>{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "No client has WhatsApp switched on or sent a message yet." %}</p>
+  {% endif %}
+</section>
+
+{% if account.data.messages %}
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Latest messages at the service" %}</h2></div>
+  <div class="overflow-x-auto">
+    <table class="table text-sm">
+      <thead><tr><th>{% translate "To" %}</th><th>{% translate "Status" %}</th><th>{% translate "When" %}</th></tr></thead>
+      <tbody>
+      {% for message in account.data.messages %}
+        <tr><td><span class="num">{{ message.phone|default:message.to|default:"—" }}</span></td><td>{{ message.status|default:"—" }}</td><td class="text-slate-500"><span class="num">{{ message.created_at|default:message.sent_at|default:"—" }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

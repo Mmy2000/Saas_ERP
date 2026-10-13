@@ -932,6 +932,9 @@ msgstr "كل العملاء"
 msgid "All clients are busy"
 msgstr "كل العملاء يعملون"
 
+msgid "All clients this month"
+msgstr "كل العملاء هذا الشهر"
+
 msgid "All customers"
 msgstr "كل العملاء"
 
@@ -1702,6 +1705,9 @@ msgstr "حسب المجموعة الرئيسية"
 
 msgid "By memory"
 msgstr "حسب الذاكرة"
+
+msgid "By route this month"
+msgstr "حسب طريقة الإرسال هذا الشهر"
 
 msgid "By server time"
 msgstr "حسب وقت الخادم"
@@ -5252,6 +5258,12 @@ msgstr "آخر نسخة ناجحة"
 msgid "Last hour"
 msgstr "آخر ساعة"
 
+msgid "Last message"
+msgstr "آخر رسالة"
+
+msgid "Last month"
+msgstr "الشهر الماضي"
+
 msgid "Last purchase"
 msgstr "آخر شراء"
 
@@ -5285,6 +5297,9 @@ msgstr "توجد شهور لاحقة مقفلة. أعد فتحها أولًا ب
 msgid "Latest"
 msgstr "الأحدث"
 
+msgid "Latest messages at the service"
+msgstr "آخر الرسائل لدى الخدمة"
+
 msgid "Latest price moves"
 msgstr "آخر تحركات الأسعار"
 
@@ -5308,6 +5323,9 @@ msgstr "ترك الباقي على حساب العميل"
 
 msgid "Ledger account"
 msgstr "الحساب في الدفاتر"
+
+msgid "left"
+msgstr "متبقٍ"
 
 msgid "Left during the count"
 msgstr "خرجت أثناء الجرد"
@@ -6259,6 +6277,9 @@ msgstr "لا توجد شيكات هنا"
 
 msgid "No class"
 msgstr "بدون فئة"
+
+msgid "No client has WhatsApp switched on or sent a message yet."
+msgstr "لا يوجد عميل مفعّل له واتساب أو أرسل رسالة بعد."
 
 msgid "No client is on this plan."
 msgstr "لا يوجد عملاء على هذه الباقة."
@@ -7244,6 +7265,9 @@ msgstr "ذهب المحل"
 msgid "Own name"
 msgstr "اسم خاص"
 
+msgid "Own number"
+msgstr "رقم المحل"
+
 msgid "Owner"
 msgstr "المالك"
 
@@ -8150,6 +8174,9 @@ msgstr "أُضيفت"
 msgid "Quiet"
 msgstr "هادئ"
 
+msgid "Quota"
+msgstr "الحصة"
+
 msgid "Quoted"
 msgstr "قيمة الحجز"
 
@@ -8744,6 +8771,9 @@ msgstr "تقريب"
 msgid "Rounding differences"
 msgstr "فروق التقريب"
 
+msgid "Routes on"
+msgstr "الطرق المفعّلة"
+
 msgid "Row"
 msgstr "السطر"
 
@@ -9284,6 +9314,9 @@ msgstr "جارٍ إرسال الكود…"
 msgid "Sent"
 msgstr "أُرسلت"
 
+msgid "Sent by the service (account)"
+msgstr "المرسل عبر الخدمة (الحساب)"
+
 msgid "Sent from the shop's linked number with the PDF attached."
 msgstr "تُرسل من رقم المحل المربوط مع ملف PDF مرفق."
 
@@ -9334,6 +9367,9 @@ msgstr "الخادم"
 
 msgid "Server errors"
 msgstr "أخطاء الخادم"
+
+msgid "Service"
+msgstr "الخدمة"
 
 msgid "set"
 msgstr "مُركَّب"
@@ -10520,6 +10556,9 @@ msgstr "الطلب نفسه ما زال قيد التنفيذ."
 msgid "The seller"
 msgstr "البائع"
 
+msgid "The service's account could not be read"
+msgstr "تعذّرت قراءة حساب الخدمة"
+
 msgid "The setter holds only %(carats)s ct (%(count)s stones) of parcel %(code)s."
 msgstr "لدى المركباتي %(carats)s قيراط فقط (%(count)s حجر) من البرتيتة %(code)s."
 
@@ -10606,6 +10645,9 @@ msgstr "رفضت خدمة واتساب مفتاح المنصة. تواصل مع 
 
 msgid "The WhatsApp service sends its own approved wording with the PDF: this text is not passed on."
 msgstr "ترسل خدمة واتساب صيغتها المعتمدة مع ملف PDF: هذا النص لا يُرسل."
+
+msgid "The WhatsApp service's account (messages sent and the quota left) and each client's messages this month, by route."
+msgstr "حساب خدمة واتساب (الرسائل المرسلة والحصة المتبقية) ورسائل كل عميل هذا الشهر حسب طريقة الإرسال."
 
 msgid "The workshop pays for them: their cost goes on its account."
 msgstr "تدفع الورشة ثمنها: تُحمّل تكلفتها على حسابها."
@@ -10798,6 +10840,9 @@ msgstr "هذا الحساب ليس عضوًا في مساحة العمل."
 
 msgid "This minute"
 msgstr "هذه الدقيقة"
+
+msgid "This month"
+msgstr "هذا الشهر"
 
 msgid "This month is already closed."
 msgstr "هذا الشهر مقفل بالفعل."
@@ -11354,6 +11399,9 @@ msgstr "استخدام هذا التصميم المخصص"
 msgid "Used"
 msgstr "المستخدم"
 
+msgid "used"
+msgstr "مستخدم"
+
 msgid "Used in another piece"
 msgstr "مستخدمة في قطعة أخرى"
 
@@ -11701,6 +11749,9 @@ msgstr "رقم واتساب"
 
 msgid "WhatsApp service"
 msgstr "خدمة واتساب"
+
+msgid "WhatsApp this month"
+msgstr "واتساب هذا الشهر"
 
 msgid "When"
 msgstr "متى"

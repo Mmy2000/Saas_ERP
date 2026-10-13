@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET
 from apps.core.documents import document_url
 from apps.iam.authz import permission_required
 
+from . import usage
 from .models import Channel, DigestRecipient, MessageStatus, OutboundMessage
 from .services import share_path, shared_message
 
@@ -43,6 +44,8 @@ def messages_log(request):
     return render(request, "messaging/messages.html", {
         "page": page, "rows": rows, "show": show, "filters": FILTERS, "members": members,
         "failed": OutboundMessage.objects.filter(status=MessageStatus.FAILED).count(),
+        "wa_now": usage.usage(*usage.month_bounds()),
+        "wa_before": usage.usage(*usage.month_bounds(back=1)),
     })
 
 

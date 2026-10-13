@@ -135,6 +135,31 @@ def hosted_send(*, phone: str, name: str, order_id: str, amount: str, pdf: bytes
     return Result(False, _problem(status, str(data.get("message") or data.get("error") or "")))
 
 
+def hosted_usage() -> Result:
+    """The platform's account at the hosted service (legacy WhatsappDashboard):
+    GET /accounts/profile/ → messages_sent_count, messages_quota; GET /accounts/messages/ → the
+    latest messages it sent. data: {"sent", "quota", "messages"}."""
+    if console():
+        return Result(True, data={"sent": len([m for m in OUTBOX if m.get("via") == "api"]),
+                                  "quota": 1000, "messages": []})
+    if not hosted_ready():
+        return Result(False, _("The WhatsApp service is not set up on this platform."))
+    base = settings.WHATSAPP_GATEWAY_URL.rstrip("/")
+    key = settings.WHATSAPP_GATEWAY_KEY
+    headers = {"Authorization": f"ApiKey {key}", "X-API-KEY": key}
+    status, profile = _call("GET", base + "/accounts/profile/", headers=headers,
+                            timeout=CHECK_TIMEOUT)
+    if status != 200:
+        return Result(False, _problem(status, str(profile.get("detail") or "")))
+    _status, listed = _call("GET", base + "/accounts/messages/", headers=headers,
+                            timeout=CHECK_TIMEOUT)
+    if isinstance(listed, dict):
+        listed = listed.get("results") or listed.get("messages") or []
+    return Result(True, data={"sent": profile.get("messages_sent_count"),
+                              "quota": profile.get("messages_quota"),
+                              "messages": listed[:50] if isinstance(listed, list) else []})
+
+
 # ---- the shop's own number -------------------------------------------------------------------
 
 def own_ready() -> bool:

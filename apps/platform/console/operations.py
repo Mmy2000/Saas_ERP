@@ -81,3 +81,37 @@ def backup_now(request):
     else:
         messages.success(request, _("Backup queued: the worker runs it in a moment."))
     return redirect("console-backups")
+
+
+@staff_required
+def whatsapp(request):
+    """Console → WhatsApp (legacy WhatsappDashboard): the hosted service's account (messages
+    sent, quota) and each client's messages this month and last, by route."""
+    from apps.core.tenancy import tenant_context
+    from apps.messaging import gateways, usage
+    from apps.platform.tenants.features import is_enabled
+    from apps.platform.tenants.models import Tenant
+
+    account = gateways.hosted_usage()
+    this_month, last_month = usage.month_bounds(), usage.month_bounds(back=1)
+    rows, totals = [], {"this": 0, "last": 0, "api": 0, "own": 0, "failed": 0}
+    for tenant in Tenant.objects.order_by("name"):
+        with tenant_context(tenant.id):
+            now, before = usage.usage(*this_month), usage.usage(*last_month)
+            last = usage.last_sent()
+        features = {key: is_enabled(tenant.id, key) for key in ("whatsapp_api", "whatsapp_own")}
+        if not (now.total or before.total or now.failed or any(features.values())):
+            continue
+        rows.append({"tenant": tenant, "now": now, "before": before, "last": last, **features})
+        totals["this"] += now.total
+        totals["last"] += before.total
+        totals["api"] += now.sent["api"]
+        totals["own"] += now.sent["own"] + now.campaign
+        totals["failed"] += now.failed
+    quota, sent = account.data.get("quota"), account.data.get("sent")
+    left = (quota - sent) if isinstance(quota, int) and isinstance(sent, int) else None
+    return render(request, "console/whatsapp.html", {
+        "section": "whatsapp", "account": account, "quota": quota, "sent": sent, "left": left,
+        "used_pct": round(sent * 100 / quota) if left is not None and quota else None,
+        "rows": rows, "totals": totals, "month": this_month[0], "previous": last_month[0],
+    })
