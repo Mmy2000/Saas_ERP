@@ -47,3 +47,50 @@ class ServerSample(models.Model):
 
     def __str__(self):
         return f"{self.taken_at:%Y-%m-%d %H:%M:%S} cpu {self.cpu_pct:.0f}%"
+
+
+class ErrorEvent(models.Model):
+    """A server error, one row per kind (same exception at the same place): how often, when
+    first and last, and the last request it happened on. Written through its own connection
+    (apps.platform.monitor.errors) so a failed request's rollback does not take it away."""
+
+    fingerprint = models.CharField(max_length=64, unique=True)
+    exc_type = models.CharField(max_length=200)
+    message = models.CharField(max_length=500, blank=True)
+    where = models.CharField(max_length=300, blank=True)  # file:line in function
+    count = models.PositiveIntegerField(default=1)
+    first_seen = models.DateTimeField()
+    last_seen = models.DateTimeField(db_index=True)
+    last_method = models.CharField(max_length=10, blank=True)
+    last_path = models.CharField(max_length=500, blank=True)
+    last_host = models.CharField(max_length=200, blank=True)
+    last_tenant = models.ForeignKey("tenants.Tenant", null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name="+")
+    last_user = models.CharField(max_length=200, blank=True)
+    traceback = models.TextField(blank=True)  # the last one
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-last_seen"]
+
+    def __str__(self):
+        return f"{self.exc_type}: {self.message[:60]}"
+
+
+class BackupRun(models.Model):
+    """One backup: the database dump and the uploaded files, written under BACKUP_DIR."""
+
+    started_at = models.DateTimeField()
+    finished_at = models.DateTimeField(null=True, blank=True)
+    ok = models.BooleanField(default=False)
+    database_file = models.CharField(max_length=300, blank=True)
+    database_bytes = models.BigIntegerField(default=0)
+    media_file = models.CharField(max_length=300, blank=True)
+    media_bytes = models.BigIntegerField(default=0)
+    error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"backup {self.started_at:%Y-%m-%d %H:%M} {'ok' if self.ok else 'failed'}"

@@ -114,6 +114,9 @@ if env("DATABASE_OWNER_URL", default=""):
 for _db in DATABASES.values():
     _db["ATOMIC_REQUESTS"] = False
     _db.setdefault("CONN_MAX_AGE", env.int("DB_CONN_MAX_AGE", default=0))
+# The error log (apps.platform.monitor.errors) writes on its own connection, so a request rolled
+# back after a 500 does not take the record of its error with it.
+DATABASES["errorlog"] = {**DATABASES["default"]}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -179,7 +182,8 @@ MONITOR_CRITICAL_PCT = env.int("MONITOR_CRITICAL_PCT", default=90)
 TENANT_REQUESTS_PER_MINUTE = env.int("TENANT_REQUESTS_PER_MINUTE", default=600)
 TRAFFIC_SLOW_MS = env.int("TRAFFIC_SLOW_MS", default=1000)  # a request this slow counts as slow
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+# One process only in development and tests. Production shares it between processes (prod.py).
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
@@ -203,9 +207,27 @@ SPECTACULAR_SETTINGS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        # Server errors kept for Console → Errors (apps.platform.monitor.errors).
+        "errorlog": {"class": "apps.platform.monitor.errors.ErrorLogHandler", "level": "ERROR"},
+    },
+    "loggers": {
+        "django.request": {"handlers": ["errorlog"], "level": "ERROR"},
+        "apps.platform.jobs": {"handlers": ["errorlog"], "level": "ERROR"},
+    },
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
 }
+# A new server error (or one back after being marked resolved) is e-mailed to these addresses.
+ERROR_ALERT_EMAILS = env.list("ERROR_ALERT_EMAILS", default=[])
+
+# Backups (manage.py backup, nightly through the worker; Console → Backups). The database is
+# dumped with pg_dump as a role that bypasses row-level security (app_platform, see
+# ops/db/bootstrap.sql): the owner and app_rw only see one client's rows at a time.
+BACKUP_DIR = Path(env("BACKUP_DIR", default="") or BASE_DIR / "var" / "backups")
+BACKUP_KEEP = env.int("BACKUP_KEEP", default=14)
+BACKUP_DATABASE_URL = env("BACKUP_DATABASE_URL", default="")
+BACKUP_PG_DUMP = env("BACKUP_PG_DUMP", default="pg_dump")
 
 # PII encryption (apps.core.crypto). Keep these outside the database and back them up:
 # losing FIELD_ENCRYPTION_KEY makes encrypted values (national IDs) unreadable.

@@ -329,6 +329,15 @@ msgstr "%(n)s خطأ في الخادم"
 msgid "%(n)s suspended"
 msgstr "%(n)s موقوف"
 
+msgid "%(n)s time"
+msgid_plural "%(n)s times"
+msgstr[0] "%(n)s مرة"
+msgstr[1] "%(n)s مرة"
+msgstr[2] "%(n)s مرة"
+msgstr[3] "%(n)s مرة"
+msgstr[4] "%(n)s مرة"
+msgstr[5] "%(n)s مرة"
+
 msgid "%(n)s wrong try"
 msgid_plural "%(n)s wrong tries"
 msgstr[0] "%(n)s محاولة خاطئة"
@@ -450,6 +459,9 @@ msgstr "رول 80 مم"
 
 msgid "<strong class=\"font-semibold\">%(month)s</strong> is over and still open."
 msgstr "انتهى <strong class=\"font-semibold\">%(month)s</strong> وما زال مفتوحًا."
+
+msgid "A backup was already asked for this minute."
+msgstr "تم طلب نسخة احتياطية في هذه الدقيقة بالفعل."
 
 msgid "A big gold price change is waiting for you"
 msgstr "تغيّر كبير في سعر الذهب ينتظر موافقتك"
@@ -1260,6 +1272,12 @@ msgstr "العودة إلى لوحة التحكم"
 msgid "Back to top"
 msgstr "اطلع لأعلى الصفحة"
 
+msgid "Back up now"
+msgstr "نسخ احتياطي الآن"
+
+msgid "Back up the database and files"
+msgstr "نسخ احتياطي لقاعدة البيانات والملفات"
+
 msgid "Back, fine (g)"
 msgstr "العائد، صافي (جم)"
 
@@ -1274,6 +1292,15 @@ msgstr "إعادة تشغيل مهمة في الخلفية"
 
 msgid "Background jobs"
 msgstr "المهام في الخلفية"
+
+msgid "Backup queued: the worker runs it in a moment."
+msgstr "تمت جدولة النسخ الاحتياطي: سيُنفَّذ خلال لحظات."
+
+msgid "Backups"
+msgstr "النسخ الاحتياطية"
+
+msgid "Backups are not set up"
+msgstr "النسخ الاحتياطي غير مُعد"
 
 msgid "Bag"
 msgstr "كيس"
@@ -2227,6 +2254,12 @@ msgstr "راجع كل قسيمة راتب. تُخصم السلف بالكامل 
 
 msgid "Check reports"
 msgstr "التحقق من الشهادات"
+
+msgid ""
+"Check that the worker is running (Console → Jobs) and look at the last run "
+"below."
+msgstr ""
+"تأكد أن منفّذ المهام يعمل (لوحة المنصة ← المهام) وراجع آخر تشغيل بالأسفل."
 
 msgid "Check the file"
 msgstr "افحص الملف"
@@ -4190,6 +4223,13 @@ msgstr "كل تعديل، ومن قام به ومتى."
 msgid "Every client workspace, how much it is used, and what needs a look."
 msgstr "كل مساحات عمل العملاء، ومدى استخدامها، وما يحتاج متابعة."
 
+msgid ""
+"Every error a client or the worker ran into, grouped by kind and counted. "
+"Mark one resolved once it is fixed: it comes back here if it happens again."
+msgstr ""
+"كل خطأ حدث لعميل أو لمنفّذ المهام، مجمّعًا حسب النوع ومعدودًا. علّمه محلولًا"
+" بعد إصلاحه: يعود هنا إن تكرر."
+
 msgid "Every finished month is closed."
 msgstr "كل الشهور المنتهية مقفلة."
 
@@ -4204,6 +4244,14 @@ msgstr "كل صباح، المرمات الموعودة في ذلك اليوم."
 
 msgid "Every morning, the reservations whose date is that day."
 msgstr "كل صباح، الحجوزات التي موعدها ذلك اليوم."
+
+msgid ""
+"Every night at 02:30 the worker saves the whole database and the uploaded "
+"files. Copy them off the server too: a backup on the same disk is lost with "
+"it."
+msgstr ""
+"كل ليلة في 02:30 يحفظ منفّذ المهام قاعدة البيانات كاملة والملفات المرفوعة. "
+"انسخها خارج الخادم أيضًا: النسخة على نفس القرص تضيع معه."
 
 msgid ""
 "Every piece sold with its price per gram, the gold at the day's price, the "
@@ -4364,6 +4412,9 @@ msgstr ""
 msgid "File (.xlsx or .csv)"
 msgstr "الملف (.xlsx أو .csv)"
 
+msgid "Files"
+msgstr "الملفات"
+
 msgid "Filter"
 msgstr "تصفية"
 
@@ -4439,6 +4490,9 @@ msgstr "مكتمل"
 msgid "Finished months not closed yet"
 msgstr "شهور منتهية لم تُقفل بعد"
 
+msgid "first"
+msgstr "أول مرة"
+
 msgid "First 5 of the last 15 digits"
 msgstr "أول 5 من آخر 15 رقمًا"
 
@@ -4450,6 +4504,9 @@ msgstr "ثابت: على المجموعة بضاعة."
 
 msgid "Fold between the wings (mm)"
 msgstr "الذيل بين الجناحين (مم)"
+
+msgid "Folder"
+msgstr "المجلد"
 
 msgid ""
 "Follow another document to print with its design (its layout, colours and "
@@ -5330,6 +5387,9 @@ msgid ""
 msgstr ""
 "أبقِ هاتف المحل متصلًا بالإنترنت؛ وإذا انقطع طويلًا اربطه من جديد هنا."
 
+msgid "Kept"
+msgstr "المحفوظ"
+
 msgid "Kind"
 msgstr "النوع"
 
@@ -5405,6 +5465,9 @@ msgstr "أقصى خصم %%"
 msgid "Last"
 msgstr "آخر نشاط"
 
+msgid "last"
+msgstr "آخر مرة"
+
 msgid "Last 24 hours"
 msgstr "آخر 24 ساعة"
 
@@ -5428,6 +5491,9 @@ msgstr "آخر فحص"
 
 msgid "Last counted %(day)s"
 msgstr "آخر جرد %(day)s"
+
+msgid "Last good backup"
+msgstr "آخر نسخة ناجحة"
 
 msgid "Last hour"
 msgstr "آخر ساعة"
@@ -6413,6 +6479,15 @@ msgstr "لا يوجد حساب مخصص لـ «%(role)s»."
 msgid "No advances"
 msgstr "لا توجد سلف"
 
+msgid "No backup in the last day"
+msgstr "لا توجد نسخة خلال اليوم الأخير"
+
+msgid "No backup yet"
+msgstr "لا توجد نسخة بعد"
+
+msgid "No backups yet"
+msgstr "لا توجد نسخ بعد"
+
 msgid "No bank account is set up for this branch in %(currency)s."
 msgstr "لا يوجد حساب بنكي لهذا الفرع بعملة %(currency)s."
 
@@ -6496,6 +6571,9 @@ msgstr "لا يوجد موظفون بعد"
 
 msgid "No entries yet"
 msgstr "لا توجد قيود بعد"
+
+msgid "No errors"
+msgstr "لا توجد أخطاء"
 
 msgid "No exchange rate for %(code)s."
 msgstr "لا يوجد سعر صرف لـ %(code)s."
@@ -8679,6 +8757,9 @@ msgid ""
 msgstr ""
 "الإيجار والمرافق وغيرها من المصروفات الجارية المدفوعة من خزينة أو حساب بنكي."
 
+msgid "Reopen"
+msgstr "إعادة فتح"
+
 msgid "Reopen closed months and years"
 msgstr "إعادة فتح الشهور والسنوات المقفلة"
 
@@ -8827,6 +8908,9 @@ msgstr "سعر الحجز"
 
 msgid "Reserved."
 msgstr "محجوز."
+
+msgid "Resolved"
+msgstr "تم الحل"
 
 msgid "Restore"
 msgstr "استعادة"
@@ -9371,6 +9455,9 @@ msgstr ""
 msgid "See who signed in, when and from where, and failed attempts"
 msgstr "معرفة من دخل ومتى ومن أين، والمحاولات الفاشلة"
 
+msgid "Seen in the last 24 hours"
+msgstr "ظهرت خلال آخر 24 ساعة"
+
 msgid "Select all"
 msgstr "تحديد الكل"
 
@@ -9592,6 +9679,9 @@ msgstr "تم الإرسال."
 msgid "Server"
 msgstr "الخادم"
 
+msgid "Server errors"
+msgstr "أخطاء الخادم"
+
 msgid "set"
 msgstr "مُركَّب"
 
@@ -9600,6 +9690,14 @@ msgstr "مركّبة"
 
 msgid "Set a new password"
 msgstr "تعيين كلمة مرور جديدة"
+
+msgid ""
+"Set BACKUP_DATABASE_URL to the platform role that reads every client "
+"(app_platform), and install the PostgreSQL client tools (pg_dump) on the "
+"server."
+msgstr ""
+"اضبط BACKUP_DATABASE_URL على دور المنصة الذي يقرأ كل العملاء (app_platform)،"
+" وثبّت أدوات PostgreSQL (pg_dump) على الخادم."
 
 msgid ""
 "Set how gold prices follow the market, update them now, approve big changes"
@@ -10605,6 +10703,15 @@ msgstr "سيُرسل البريد خلال لحظات. راجع الإعدادا
 msgid "The earlier design is back."
 msgstr "تمت استعادة التصميم السابق."
 
+msgid ""
+"The encryption keys (FIELD_ENCRYPTION_KEY, BLIND_INDEX_KEY) are not in the "
+"backup: keep a safe copy of them, or national IDs cannot be read after a "
+"restore. Restoring is described in the README."
+msgstr ""
+"مفاتيح التشفير (FIELD_ENCRYPTION_KEY و BLIND_INDEX_KEY) ليست في النسخة "
+"الاحتياطية: احتفظ بنسخة آمنة منها، وإلا لن تُقرأ أرقام الهوية بعد الاستعادة."
+" خطوات الاستعادة في ملف README."
+
 msgid "The fee must be less than the amount."
 msgstr "يجب أن تكون العمولة أقل من المبلغ."
 
@@ -10721,6 +10828,15 @@ msgstr "الشاتون"
 
 msgid "The new password is the same as the current one."
 msgstr "كلمة المرور الجديدة مطابقة للحالية."
+
+msgid "the newest %(n)s"
+msgid_plural "the newest %(n)s"
+msgstr[0] "أحدث %(n)s"
+msgstr[1] "أحدث %(n)s"
+msgstr[2] "أحدث %(n)s"
+msgstr[3] "أحدث %(n)s"
+msgstr[4] "أحدث %(n)s"
+msgstr[5] "أحدث %(n)s"
 
 msgid "The Owner role cannot be changed."
 msgstr "لا يمكن تعديل دور المالك."
@@ -11309,6 +11425,12 @@ msgstr "بانتظار الإقفال"
 msgid "To deliver"
 msgstr "المطلوب تسليمه"
 
+msgid ""
+"To get an e-mail when a new error appears, set ERROR_ALERT_EMAILS on the "
+"server."
+msgstr ""
+"لتصلك رسالة بريد عند ظهور خطأ جديد، اضبط ERROR_ALERT_EMAILS على الخادم."
+
 msgid "to move"
 msgstr "للتنقل"
 
@@ -11410,6 +11532,9 @@ msgstr "الإجماليات"
 
 msgid "Totals on their invoice"
 msgstr "إجماليات فاتورة المورد"
+
+msgid "Traceback"
+msgstr "تفاصيل الخطأ"
 
 msgid "Tracking"
 msgstr "طريقة التتبع"

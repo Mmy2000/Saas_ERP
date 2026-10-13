@@ -13,6 +13,8 @@ NOT_TENANT_SCOPED = {
     "tenants.TenantDomain",  # platform registry, read by host resolution
     "tenants.PlatformEvent",  # platform console audit log (platform staff only)
     "monitor.ServerSample",  # server readings for the console (no client data)
+    "monitor.ErrorEvent",  # server errors for platform staff (Console → Errors)
+    "monitor.BackupRun",  # backup runs of the whole database (Console → Backups)
     "jobs.Job",  # the job queue for every client: ids only; the worker sets the tenant per job
     "jobs.Worker",  # running worker processes (console)
     "market.MarketSource",  # public market price sources (no client data)

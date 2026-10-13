@@ -22,3 +22,12 @@ X_FRAME_OPTIONS = "DENY"
 if not (FIELD_ENCRYPTION_KEY and BLIND_INDEX_KEY):  # noqa: F405
     raise ImproperlyConfigured(
         "FIELD_ENCRYPTION_KEY and BLIND_INDEX_KEY must be set in production.")
+
+# Every web and worker process must see the same cache: a feature switched in the console, the
+# per-client request limits. A file cache does it on one server; several servers need a shared
+# one (CACHE_URL=rediscache://… with the redis package, or dbcache://gweb_cache after
+# `manage.py createcachetable --database owner`).
+CACHES = {"default": env.cache("CACHE_URL") if env("CACHE_URL", default="") else {
+    "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+    "LOCATION": BASE_DIR / "var" / "cache",  # noqa: F405
+}}

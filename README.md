@@ -100,6 +100,85 @@ The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer 
 
    `*.localhost` resolves to 127.0.0.1 in modern browsers, so no hosts-file edits are needed.
 
+## Production (Linux)
+
+The same steps as above, plus the services and the web server. Everything below runs as an
+unprivileged user (here `gweb`) from the project folder (here `/srv/gweb`).
+
+1. **Database roles**: `ops/db/bootstrap.sql` once, as the PostgreSQL superuser (it creates
+   `app_owner`, `app_rw` and `app_platform`). Install the PostgreSQL client tools on the app
+   server too (`pg_dump` for the backups).
+2. **Environment** (`.env`, readable by `gweb` only): `DJANGO_SETTINGS_MODULE=config.settings.prod`,
+   `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` (`.your-domain.com`), `TENANT_BASE_DOMAIN`,
+   `PLATFORM_HOSTS` (`admin.your-domain.com`), `DATABASE_URL` (app_rw), `DATABASE_OWNER_URL`
+   (app_owner), `BACKUP_DATABASE_URL` (app_platform), `FIELD_ENCRYPTION_KEY`, `BLIND_INDEX_KEY`,
+   `EMAIL_URL`, `DEFAULT_FROM_EMAIL`, `SITE_SCHEME=https`, `ERROR_ALERT_EMAILS`. Production refuses
+   to start without the secret key and the two encryption keys. **Keep a copy of the two
+   encryption keys outside the server**: they are not in the backups, and without them national
+   IDs cannot be read.
+3. **Install and update** (each release):
+
+   ```bash
+   python3 -m venv venv && venv/bin/pip install -r requirements/base.txt
+   venv/bin/python -m playwright install --with-deps chromium   # PDFs
+   venv/bin/python manage.py migrate --database owner
+   venv/bin/python manage.py collectstatic --noinput             # into var/static
+   ```
+
+   Translations (`locale/*.mo`) and the CSS are committed; nothing else is built on the server.
+4. **Services** (systemd units, `Restart=always`, `User=gweb`, `WorkingDirectory=/srv/gweb`,
+   `EnvironmentFile=/srv/gweb/.env`):
+
+   ```bash
+   venv/bin/gunicorn config.wsgi --bind 127.0.0.1:8000 --workers 4 --timeout 120   # gweb-web
+   venv/bin/python manage.py run_worker                                            # gweb-worker
+   venv/bin/python manage.py monitor_server                                        # gweb-monitor
+   ```
+
+   The worker sends e-mail and WhatsApp, runs the daily reminders, the market prices and the
+   nightly backup; Console → Jobs warns when none is running. `ops/wa-gateway` (Node) is a fourth
+   service only for clients using their own WhatsApp number.
+5. **Web server** (nginx): TLS for `*.your-domain.com` (a wildcard certificate: every client is a
+   subdomain) and the platform host; `client_max_body_size 10m;`; serve `/static/` from
+   `var/static/` with long caching; send everything else, **including `/media/`**, to
+   `127.0.0.1:8000` with `proxy_set_header Host $host;` and
+   `proxy_set_header X-Forwarded-Proto $scheme; proxy_set_header X-Forwarded-For
+   $proxy_add_x_forwarded_for;`. Uploads go through the application, which checks who may see
+   them: never let nginx serve `MEDIA_ROOT` directly. `/healthz/` on the platform host answers
+   `{"status": "ok"}` for uptime checks.
+6. **Cache**: the production settings use a file cache under `var/cache`, shared by the web
+   processes and the worker on one server. With several servers set `CACHE_URL` to a shared one.
+
+### Backups and restoring
+
+Every night at 02:30 the worker runs `manage.py backup` (also on demand: Console → **Backups** →
+Back up now, or the command itself). It writes two dated files to `BACKUP_DIR` (`var/backups`):
+`gweb-db-….dump` (pg_dump custom format, every client, as `app_platform`, the only role that
+sees all rows) and `gweb-media-….zip` (`MEDIA_ROOT`), and keeps the newest `BACKUP_KEEP` (14) of
+each. Console → Backups lists every run and warns when the last good one is more than a day old.
+**Copy `var/backups` off the server** every day (rsync, cloud storage): a backup on the same disk
+is lost with it.
+
+To restore on a new server: run `ops/db/bootstrap.sql`, then as the PostgreSQL superuser
+(`pg_restore` must bypass row-level security to load the rows):
+
+```bash
+pg_restore --no-owner --role=app_owner --dbname=gweb gweb-db-20261013-023000.dump
+unzip gweb-media-20261013-023000.zip -d var/media
+```
+
+then the same `.env` (with the **same encryption keys**), `migrate --database owner` (nothing
+to do if the code is the same version) and start the services.
+
+### Server errors
+
+Every server error (a 500 for a client, or a job that crashed) is kept in Console → **Errors**,
+grouped by kind and place in the code, with how many times, the first and last time, the client,
+user and page of the last one and its traceback (`apps/platform/monitor/errors.py`). Mark one
+resolved once fixed: it reopens if it happens again. A new or returning error is e-mailed to
+`ERROR_ALERT_EMAILS`. Errors are written on their own database connection ("errorlog" alias), so
+the rollback of the failed request does not erase them.
+
 ## Platform console
 
 Open `http://admin.localhost:8000/` (any host in `PLATFORM_HOSTS`) and sign in with the email

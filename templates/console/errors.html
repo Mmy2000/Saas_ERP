@@ -1,0 +1,70 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Errors" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Server errors" %}</h1>
+  <p class="mt-1.5 text-sm text-slate-500">{% translate "Every error a client or the worker ran into, grouped by kind and counted. Mark one resolved once it is fixed: it comes back here if it happens again." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not alerts %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+  {% icon "info" "size-5 shrink-0 text-slate-400" %}
+  <p>{% translate "To get an e-mail when a new error appears, set ERROR_ALERT_EMAILS on the server." %}</p>
+</div>
+{% endif %}
+<div class="mb-6 grid grid-cols-2 gap-4 sm:max-w-xl">
+  <div class="card card-body {% if open_count %}border-red-200 bg-red-50/40{% endif %}">
+    <p class="text-sm text-slate-500">{% translate "Open" %}</p>
+    <p class="mt-2 text-3xl font-semibold {% if open_count %}text-red-700{% else %}text-slate-900{% endif %}"><span class="num">{{ open_count }}</span></p>
+  </div>
+  <div class="card card-body">
+    <p class="text-sm text-slate-500">{% translate "Seen in the last 24 hours" %}</p>
+    <p class="mt-2 text-3xl font-semibold text-slate-900"><span class="num">{{ today }}</span></p>
+  </div>
+</div>
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap gap-1 border-b border-slate-100 p-3">
+    {% translate "Open" as l_open %}{% translate "Resolved" as l_resolved %}{% translate "All" as l_all %}
+    <a href="?view=open" class="tab{% if view == 'open' %} tab-active{% endif %}">{{ l_open }}</a>
+    <a href="?view=resolved" class="tab{% if view == 'resolved' %} tab-active{% endif %}">{{ l_resolved }}</a>
+    <a href="?view=all" class="tab{% if view == 'all' %} tab-active{% endif %}">{{ l_all }}</a>
+  </div>
+  {% if page.object_list %}
+  <ul class="divide-y divide-slate-100">
+    {% for e in page.object_list %}
+    <li class="px-5 py-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-medium text-slate-900" dir="ltr"><span class="num">{{ e.exc_type }}</span>{% if e.message %}: {{ e.message|truncatechars:160 }}{% endif %}</p>
+          <p class="mt-1 text-xs text-slate-500" dir="ltr"><span class="num">{{ e.where }}</span></p>
+          <p class="mt-1 text-xs text-slate-500">
+            {% blocktranslate trimmed count n=e.count %}{{ n }} time{% plural %}{{ n }} times{% endblocktranslate %}
+            · {% translate "last" %} <span class="num">{{ e.last_seen|date:"SHORT_DATETIME_FORMAT" }}</span>
+            · {% translate "first" %} <span class="num">{{ e.first_seen|date:"SHORT_DATETIME_FORMAT" }}</span>
+            {% if e.last_tenant %}· {{ e.last_tenant.name }}{% endif %}
+            {% if e.last_user %}· <span dir="ltr">{{ e.last_user }}</span>{% endif %}
+            {% if e.last_path %}· <span class="num" dir="ltr">{{ e.last_method }} {{ e.last_path|truncatechars:80 }}</span>{% endif %}
+          </p>
+        </div>
+        <form method="post" action="{% url 'console-error-state' e.pk %}" class="shrink-0">{% csrf_token %}
+          <input type="hidden" name="view" value="{{ view }}">
+          {% if e.resolved_at %}<button name="action" value="reopen" class="btn btn-ghost text-xs">{% translate "Reopen" %}</button>
+          {% else %}<button name="action" value="resolve" class="btn btn-secondary text-xs">{% icon "check" "size-4" %}{% translate "Resolved" %}</button>{% endif %}
+        </form>
+      </div>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-xs text-brand-700">{% translate "Traceback" %}</summary>
+        <pre class="mt-2 max-h-96 overflow-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100" dir="ltr">{{ e.traceback }}</pre>
+      </details>
+    </li>
+    {% endfor %}
+  </ul>
+  {% include "components/pager.html" with query="view="|add:view %}
+  {% else %}
+    {% translate "No errors" as empty_title %}
+    {% include "components/empty_state.html" with icon="circle-check" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}
