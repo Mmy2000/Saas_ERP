@@ -265,3 +265,127 @@ class DiamondSettings(_DiamondReport):
                 "_urls": {"number": f"/diamonds/settings/{setting.pk}/",
                           "piece": f"/stock/items/{piece.pk}/"}})
         return [table.add_totals("number", _("Total"))]
+
+
+def _diamond_categories():
+    from apps.catalog.models import ItemCategory
+
+    return [("", gettext_lazy("All categories"))] + [
+        (str(c.pk), f"{c.code} · {c.name}") for c in ItemCategory.objects.filter(
+            is_active=True, product_family__in=FAMILIES).order_by("code")]
+
+
+@register
+class DiamondCard(_DiamondReport):
+    """Legacy GHD51 كرت الصنف ماس: the stock card of diamond pieces and loose stones, counted in
+    pieces and carats with their cost, from the stock movements."""
+
+    code = "diamond_card"
+    section = "gold"
+    title = gettext_lazy("Diamond category card")
+    description = gettext_lazy("Opening, what came in and went out by kind, and closing per "
+                               "category in pieces, carats and cost, with every movement and "
+                               "a running balance of carats.")
+    filters = (*DATE_FILTERS, BRANCH_FILTER,
+               Filter("category", "choice", gettext_lazy("Category"), _diamond_categories, ""))
+    LIMIT = 2000
+
+    def run(self, params, scope):
+        from collections import defaultdict
+
+        from apps.core.documents import document_titles, document_url
+        from apps.inventory.models import MovementType, StockMovement
+
+        start, end = params.date("date_from"), params.date("date_to")
+        moves = _in_scope(StockMovement.objects.filter(
+            item__category__product_family__in=FAMILIES), scope)
+        if params.get("category"):
+            moves = moves.filter(item__category_id=int(params.get("category")))
+        moves = moves.select_related("item__category")
+
+        def sign(move):
+            return 1 if move.qty > 0 else -1 if move.qty < 0 else 0
+
+        def value(move):
+            return move.item.cost_amount + move.item.stone_cost_amount
+
+        cells = defaultdict(lambda: defaultdict(lambda: ZERO))
+        for move in moves.filter(business_date__lt=start):
+            cell, s = cells[move.item.category], sign(move)
+            cell["open_n"] += s
+            cell["open_ct"] += s * move.item.stone_weight_ct
+            cell["open_cost"] += s * value(move)
+        period = list(moves.filter(business_date__range=(start, end)).order_by(
+            "business_date", "id"))
+        for move in period:
+            cell, s = cells[move.item.category], sign(move)
+            side = "in" if s > 0 else "out"
+            cell[f"{side}_n"] += abs(s)
+            cell[f"{side}_ct"] += move.item.stone_weight_ct if s else ZERO
+            cell[f"{side}_cost"] += value(move) if s else ZERO
+
+        summary = Table(_("Opening and closing"), [
+            Column("category", _("Category")),
+            Column("open_n", _("Opening pieces"), "int"),
+            Column("open_ct", _("Opening carats"), "weight"),
+            Column("in_n", _("Pieces in"), "int"), Column("in_ct", _("Carats in"), "weight"),
+            Column("out_n", _("Pieces out"), "int"), Column("out_ct", _("Carats out"), "weight"),
+            Column("close_n", _("Closing pieces"), "int"),
+            Column("close_ct", _("Closing carats"), "weight"),
+            Column("close_cost", _("Closing cost"), "money")])
+        for category, cell in sorted(cells.items(), key=lambda pair: pair[0].code):
+            close_n = cell["open_n"] + cell["in_n"] - cell["out_n"]
+            if not any((cell["open_n"], cell["in_n"], cell["out_n"])):
+                continue
+            summary.rows.append({
+                "category": category.name, "open_n": int(cell["open_n"]),
+                "open_ct": cell["open_ct"], "in_n": int(cell["in_n"]), "in_ct": cell["in_ct"],
+                "out_n": int(cell["out_n"]), "out_ct": cell["out_ct"], "close_n": int(close_n),
+                "close_ct": cell["open_ct"] + cell["in_ct"] - cell["out_ct"],
+                "close_cost": cell["open_cost"] + cell["in_cost"] - cell["out_cost"]})
+        summary.add_totals("category", _("Total"))
+
+        labels = dict(MovementType.choices)
+        by_kind = defaultdict(lambda: {"count": 0, "n": 0, "ct": ZERO, "cost": ZERO})
+        for move in period:
+            row, s = by_kind[move.movement_type], sign(move)
+            row["count"] += 1
+            row["n"] += s
+            row["ct"] += s * move.item.stone_weight_ct
+            row["cost"] += s * value(move)
+        kinds = Table(_("By kind of movement"), [
+            Column("kind", _("Movement")), Column("count", _("Movements"), "int"),
+            Column("n", _("Pieces"), "int"), Column("ct", _("Carats"), "weight"),
+            Column("cost", _("Cost"), "money")], note=_("Positive: in. Negative: out."))
+        for kind, row in sorted(by_kind.items()):
+            kinds.rows.append({"kind": str(labels.get(kind, kind)), **row})
+        kinds.add_totals("kind", _("Total"))
+        kinds.totals.pop("count", None)
+
+        lines = Table(_("Movements"), [
+            Column("date", _("Date"), "date"), Column("kind", _("Movement")),
+            Column("document", _("Document"), "code"), Column("piece", _("Piece"), "code"),
+            Column("category", _("Category")), Column("n", _("Pieces"), "int"),
+            Column("ct", _("Carats"), "weight"), Column("cost", _("Cost"), "money"),
+            Column("balance", _("Balance (ct)"), "weight")])
+        opening = sum((cell["open_ct"] for cell in cells.values()), ZERO)
+        balance = opening
+        listed = period[:self.LIMIT]
+        titles = document_titles((m.document_type, m.document_id) for m in listed)
+        for move in listed:
+            s = sign(move)
+            balance += s * move.item.stone_weight_ct
+            label, number = titles.get((move.document_type, move.document_id), ("", ""))
+            url = document_url(move.document_type, move.document_id)
+            lines.rows.append({
+                "date": move.business_date, "kind": str(labels.get(move.movement_type, "")),
+                "document": f"{label} {number}".strip() or "—", "piece": move.item.barcode,
+                "category": move.item.category.name, "n": s,
+                "ct": s * move.item.stone_weight_ct, "cost": s * value(move),
+                "balance": balance,
+                "_urls": {"piece": f"/stock/items/{move.item_id}/",
+                          **({"document": url} if url else {})}})
+        lines.note = (_("Opening balance %(ct)s ct.") % {"ct": f"{opening:,.3f}"}
+                      + (" " + _("Only the first %(n)s movements are listed.")
+                         % {"n": self.LIMIT} if len(period) > self.LIMIT else ""))
+        return [summary, kinds, lines]

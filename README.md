@@ -552,6 +552,16 @@ Legacy WhatsappDashboard, `apps/messaging/usage.py`:
 - **Settings → Sent messages:** each shop sees its own WhatsApp count for this month by route,
   and last month's total.
 
+### Diamond category card (Reports → Diamond category card)
+
+Legacy GHD51 (كرت الصنف ماس), Diamonds feature, report `diamond_card`:
+- **The tables:** for diamond pieces and loose stones, the opening, what came in and went out
+  by kind of movement, and the closing per category, in pieces, carats and cost (making plus
+  stones). Then every movement of the period, with links to the document and the piece and a
+  running balance in carats. Filters: dates, branch and category.
+- **A limit:** carats and cost are the piece's current ones. A piece whose stones changed later
+  (set or taken out) shows today's figures on its earlier movements.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

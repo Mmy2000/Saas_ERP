@@ -1301,6 +1301,9 @@ msgstr "دينار بحريني"
 msgid "Balance"
 msgstr "الرصيد"
 
+msgid "Balance (ct)"
+msgstr "الرصيد (قيراط)"
+
 msgid "Balance (g)"
 msgstr "الرصيد (جم)"
 
@@ -1927,6 +1930,12 @@ msgstr "القيراط"
 
 msgid "Carats from"
 msgstr "قيراط من"
+
+msgid "Carats in"
+msgstr "قيراط وارد"
+
+msgid "Carats out"
+msgstr "قيراط صادر"
 
 msgid "Carats to"
 msgstr "قيراط إلى"
@@ -2708,6 +2717,12 @@ msgstr "الختامي عيار 21 (جم)"
 msgid "Closing balance"
 msgstr "الرصيد الختامي"
 
+msgid "Closing carats"
+msgstr "قيراط آخر المدة"
+
+msgid "Closing cost"
+msgstr "تكلفة آخر المدة"
+
 msgid "Closing periods"
 msgstr "إقفال الفترات"
 
@@ -3454,6 +3469,9 @@ msgstr "وضع التطوير: لم يُرسل شيء فعليًا."
 
 msgid "Diamond"
 msgstr "ألماس"
+
+msgid "Diamond category card"
+msgstr "كرت الصنف ماس"
 
 msgid "Diamond piece"
 msgstr "قطعة ألماس"
@@ -7106,6 +7124,9 @@ msgstr "أول المدة وآخرها"
 msgid "Opening balance"
 msgstr "رصيد افتتاحي"
 
+msgid "Opening balance %(ct)s ct."
+msgstr "رصيد أول المدة %(ct)s قيراط."
+
 msgid "Opening balance %(g)s g."
 msgstr "رصيد أول المدة %(g)s جم."
 
@@ -7118,11 +7139,17 @@ msgstr "أرصدة افتتاحية %(number)s"
 msgid "Opening balances posted."
 msgstr "سُجّلت الأرصدة الافتتاحية."
 
+msgid "Opening carats"
+msgstr "قيراط أول المدة"
+
 msgid "Opening pieces"
 msgstr "قطع أول المدة"
 
 msgid "Opening stock"
 msgstr "مخزون افتتاحي"
+
+msgid "Opening, what came in and went out by kind, and closing per category in pieces, carats and cost, with every movement and a running balance of carats."
+msgstr "أول المدة والوارد والصادر حسب نوع الحركة وآخر المدة لكل صنف بالقطع والقيراط والتكلفة، مع كل حركة ورصيد متحرك بالقيراط."
 
 msgid "Opening, what came in and went out by kind, and closing stock per category and karat (pieces, grams, 21K), with every movement of the period."
 msgstr "رصيد أول المدة والوارد والصادر حسب النوع ورصيد آخر المدة لكل صنف وعيار (قطع، جرامات، عيار 21)، مع كل حركات الفترة."
