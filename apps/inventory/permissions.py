@@ -12,4 +12,8 @@ register_permissions(_("Stock"), [
     ("inventory.stocktake.start", _("Start and cancel stocktakes")),
     ("inventory.stocktake.count", _("Count pieces and weigh bulk stock in a stocktake")),
     ("inventory.stocktake.post", _("Post stocktakes (mark missing pieces, adjust bulk stock)")),
+    ("inventory.blind_count.create", _("Do blind counts (pieces, gold weights and cash)")),
+    ("inventory.blind_count.view", _("See blind counts and which figures differed")),
+    # Owners by default ("admin."): the books' figures next to what was counted.
+    ("admin.blind_count.reveal", _("See the real figures in blind counts")),
 ])

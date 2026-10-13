@@ -39,7 +39,7 @@ const icons = [
   "trash-2", "wrench", "sun", "moon", "monitor", "palette", "panel-left-close", "panel-left-open", "arrow-up", "arrow-down", "grip-vertical", "copy", "redo-2", "mouse-pointer-click",
   "cpu", "memory-stick", "hard-drive", "server", "database", "bug", "activity", "triangle-alert", "arrow-down-up",
   "calendar-check", "lock-open", "banknote", "flame", "hammer", "sparkles", "file-down", "percent",
-  "bell", "bell-off", "star", "log-in", "check-check", "link", "megaphone", "qr-code",
+  "bell", "bell-off", "star", "log-in", "check-check", "link", "megaphone", "qr-code", "eye-off",
 ];
 const bundle = {};
 for (const name of icons) {

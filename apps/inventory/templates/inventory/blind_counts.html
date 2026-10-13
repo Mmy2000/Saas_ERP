@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Blind counts" %}{% endblock %}
+{% block page_header %}
+{% can "inventory.blind_count.create" as can_count %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Blind counts" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Count a branch's pieces, gold by weight and cash without seeing the books; each check is kept, and figures that differ are marked." %}</p>
+  </div>
+  {% if can_count %}<a href="{% url 'blind-count-new' %}" class="btn btn-primary">{% icon "eye-off" "size-4" %}{% translate "New blind count" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Counted by" %}</th><th>{% translate "What was counted" %}</th><th>{% translate "Result" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for count in page.object_list %}
+        <tr>
+          <td><span class="num font-medium text-slate-900">{{ count.number }}</span></td>
+          <td><span class="num">{{ count.posted_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{{ count.branch.name }}</td>
+          <td>{{ count.created_by.get_full_name|default:count.created_by|default:"—" }}</td>
+          <td class="text-slate-600">{% if count.pieces %}{% translate "Pieces" %}{% endif %}{% if count.weights %}{% if count.pieces %} · {% endif %}{% translate "Weights" %}{% endif %}{% if count.cash_currency %}{% if count.pieces or count.weights %} · {% endif %}{% translate "Cash" %}{% endif %}</td>
+          <td>{% if count.differences %}<span class="badge badge-danger">{% blocktranslate count n=count.differences %}{{ n }} difference{% plural %}{{ n }} differences{% endblocktranslate %}</span>{% else %}<span class="badge badge-success">{% translate "All matched" %}</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'blind-count' count.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" %}
+  {% else %}
+    {% translate "No blind counts yet" as empty_title %}
+    {% include "components/empty_state.html" with icon="eye-off" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

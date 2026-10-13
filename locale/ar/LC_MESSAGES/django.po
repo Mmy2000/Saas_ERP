@@ -239,6 +239,15 @@ msgstr[3] "%(n)s عملاء على هذه الباقة. سينتقلون إلى 
 msgstr[4] "%(n)s عميلاً على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهم الخاصة تبقى)."
 msgstr[5] "%(n)s عميل على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها (إعداداتهم الخاصة تبقى)."
 
+msgid "%(n)s difference"
+msgid_plural "%(n)s differences"
+msgstr[0] "لا اختلافات"
+msgstr[1] "اختلاف واحد"
+msgstr[2] "اختلافان"
+msgstr[3] "%(n)s اختلافات"
+msgstr[4] "%(n)s اختلافًا"
+msgstr[5] "%(n)s اختلاف"
+
 msgid "%(n)s failure in a row"
 msgid_plural "%(n)s failures in a row"
 msgstr[0] "%(n)s فشل متتالٍ"
@@ -926,6 +935,9 @@ msgstr "كل المجموعات"
 msgid "All karats"
 msgstr "كل الأعيرة"
 
+msgid "All matched"
+msgstr "مطابق بالكامل"
+
 msgid "All months are closed. Closing the year moves every income and expense balance, in money and in gold, to retained earnings."
 msgstr "كل الشهور مقفلة. إقفال السنة ينقل أرصدة الإيرادات والمصروفات كلها، نقدًا وذهبًا، إلى الأرباح المحتجزة."
 
@@ -1433,6 +1445,12 @@ msgstr "تاريخ الميلاد"
 msgid "Birthday"
 msgstr "عيد الميلاد"
 
+msgid "Blind count"
+msgstr "مطابقة جرد"
+
+msgid "Blind counts"
+msgstr "مطابقات الجرد"
+
 msgid "Blocks"
 msgstr "البلوكات"
 
@@ -1468,6 +1486,9 @@ msgstr "تسجيل على فرع"
 
 msgid "Booked."
 msgstr "تم التسجيل."
+
+msgid "books"
+msgstr "الدفاتر"
 
 msgid "Books: carats"
 msgstr "الدفاتر: قيراط"
@@ -1663,6 +1684,9 @@ msgstr "حسب العيار"
 
 msgid "By kind of movement"
 msgstr "حسب نوع الحركة"
+
+msgid "By main group"
+msgstr "حسب المجموعة الرئيسية"
 
 msgid "By memory"
 msgstr "حسب الذاكرة"
@@ -2141,6 +2165,9 @@ msgstr "دليل الحسابات"
 msgid "Check a stone's IGI report with the lab, open the report, and print certificate cards for diamond pieces."
 msgstr "تحقق من شهادة IGI للحجر لدى المعمل، وافتح الشهادة، واطبع كروت الشهادات لقطع الألماس."
 
+msgid "Check and save"
+msgstr "مطابقة وحفظ"
+
 msgid "Check any IGI report"
 msgstr "التحقق من أي شهادة IGI"
 
@@ -2485,6 +2512,9 @@ msgstr "اختر ما يقبله الحساب."
 
 msgid "Choose what to change and how."
 msgstr "اختر ما تريد تغييره وكيف."
+
+msgid "Choose what to count."
+msgstr "اختر ما سيتم جرده."
 
 msgid "Choose what to order."
 msgstr "اختر ما تريد طلبه."
@@ -2864,14 +2894,23 @@ msgstr "العدد"
 msgid "Count a branch's pieces and bulk gold, then record what is missing."
 msgstr "جرد قطع الفرع والذهب بالوزن، ثم تسجيل العجز."
 
+msgid "Count a branch's pieces, gold by weight and cash without seeing the books; each check is kept, and figures that differ are marked."
+msgstr "جرد قطع الفرع والذهب بالوزن والنقدية دون رؤية الدفاتر؛ كل مطابقة تُحفظ، والأرقام المختلفة تُعلَّم."
+
 msgid "Count a cash box"
 msgstr "جرد خزينة"
 
 msgid "Count a cash box at the end of the day to check it against the books."
 msgstr "اجرد الخزينة في نهاية اليوم لمطابقتها مع الدفاتر."
 
+msgid "Count again"
+msgstr "جرد مرة أخرى"
+
 msgid "Count at least one parcel."
 msgstr "اجرد برتيتة واحدة على الأقل."
+
+msgid "Count by"
+msgstr "الجرد حسب"
 
 msgid "Count cash boxes and book the difference"
 msgstr "جرد الخزائن وتسجيل الفرق"
@@ -3515,6 +3554,9 @@ msgstr "الأقراص"
 msgid "Display name"
 msgstr "الاسم الظاهر"
 
+msgid "Do blind counts (pieces, gold weights and cash)"
+msgstr "عمل مطابقات جرد (القطع وأوزان الذهب والنقدية)"
+
 msgid "Document"
 msgstr "المستند"
 
@@ -3649,6 +3691,9 @@ msgstr "مثال: © 2026 شركتك. جميع الحقوق محفوظة."
 
 msgid "Each category posts to an expense account in the chart of accounts."
 msgstr "كل بند يُرحَّل إلى حساب مصروف في دليل الحسابات."
+
+msgid "Each check is saved under its own number, whether it matches or not."
+msgstr "كل مطابقة تُحفظ برقم مسلسل خاص بها، مطابقة كانت أو لا."
 
 msgid "Each client is a separate workspace with its own data, users and address."
 msgstr "كل عميل مساحة عمل مستقلة ببياناتها ومستخدميها وعنوانها."
@@ -3865,6 +3910,9 @@ msgstr "أدخل رقم هاتف صحيحًا."
 
 msgid "Enter a weight of zero or more."
 msgstr "أدخل وزنًا صفرًا أو أكثر."
+
+msgid "Enter a whole number, zero or more."
+msgstr "أدخل رقمًا صحيحًا، صفر أو أكثر."
 
 msgid "Enter an amount of zero or more."
 msgstr "أدخل مبلغًا صفرًا أو أكثر."
@@ -4144,6 +4192,9 @@ msgstr "أجرة الفك"
 
 msgid "Female"
 msgstr "أنثى"
+
+msgid "Figures marked in red differ from the books. Count them again."
+msgstr "الأرقام المعلّمة بالأحمر تختلف عن الدفاتر. أعد جردها."
 
 msgid "Figures straight from the books, for any day, period or branch. Each can be printed or downloaded for Excel."
 msgstr "أرقام مباشرة من الدفاتر لأي يوم أو فترة أو فرع، ويمكن طباعة كل تقرير أو تنزيله لإكسل."
@@ -4601,6 +4652,9 @@ msgstr "جرام"
 msgid "grams"
 msgstr "جرام"
 
+msgid "Grams, as weighed (scrap, bullion and bulk gold)"
+msgstr "بالجرام كما وُزن (كسر وسبائك وذهب بالوزن)"
+
 msgid "Graphite"
 msgstr "جرافيت"
 
@@ -4774,6 +4828,9 @@ msgstr "العدد"
 
 msgid "How many %(home)s one unit of each currency is worth."
 msgstr "قيمة الوحدة من كل عملة بالـ %(home)s."
+
+msgid "How many pieces"
+msgstr "عدد القطع"
 
 msgid "How to fill the file"
 msgstr "كيف تملأ الملف"
@@ -5420,6 +5477,9 @@ msgstr "الفرع الرئيسي"
 msgid "Main cash"
 msgstr "الخزينة الرئيسية"
 
+msgid "Main group"
+msgstr "المجموعة الرئيسية"
+
 msgid "Main stone (ct, colour, clarity)"
 msgstr "الحجر الرئيسي (قيراط، لون، نقاء)"
 
@@ -5975,6 +6035,9 @@ msgstr "حساب جديد"
 msgid "New bank account"
 msgstr "حساب بنكي جديد"
 
+msgid "New blind count"
+msgstr "مطابقة جرد جديدة"
+
 msgid "New branch"
 msgstr "فرع جديد"
 
@@ -6122,6 +6185,9 @@ msgstr "لا يوجد حساب بنكي لهذا الفرع بعملة %(currenc
 msgid "No bank accounts yet"
 msgstr "لا توجد حسابات بنكية بعد"
 
+msgid "No blind counts yet"
+msgstr "لا توجد مطابقات جرد بعد"
+
 msgid "No bulk stock of this kind at %(branch)s."
 msgstr "لا يوجد رصيد من هذا الصنف في %(branch)s."
 
@@ -6139,6 +6205,12 @@ msgstr "لا توجد خزائن بعد"
 
 msgid "No cash on the way"
 msgstr "لا توجد نقدية في الطريق"
+
+msgid "No categories kept by weight."
+msgstr "لا توجد أصناف بالوزن."
+
+msgid "No categories sold by the piece."
+msgstr "لا توجد أصناف بالقطعة."
 
 msgid "No categories yet"
 msgstr "لا توجد بنود بعد"
@@ -6229,6 +6301,9 @@ msgstr "لا توجد مجموعات أصناف بعد"
 
 msgid "No jobs"
 msgstr "لا توجد مهام"
+
+msgid "No karat"
+msgstr "بدون عيار"
 
 msgid "No ledger commodity for %(metal)s."
 msgstr "لا توجد وحدة محاسبية لـ %(metal)s."
@@ -6595,6 +6670,9 @@ msgstr "لا توجد قطع غير متوقعة."
 
 msgid "nothing waiting"
 msgstr "لا شيء في الانتظار"
+
+msgid "Nothing was counted and the books held nothing."
+msgstr "لم يُجرد شيء ولا يوجد رصيد في الدفاتر."
 
 msgid "Nothing was ever posted to it, so it can be deleted."
 msgstr "لم يُسجَّل عليه أي قيد، لذا يمكن حذفه."
@@ -8450,6 +8528,9 @@ msgstr "استعادة"
 msgid "Restore access"
 msgstr "استعادة الدخول"
 
+msgid "Result"
+msgstr "النتيجة"
+
 msgid "Resume"
 msgstr "استئناف"
 
@@ -8927,6 +9008,9 @@ msgstr "الجناح الثاني"
 msgid "See all"
 msgstr "عرض الكل"
 
+msgid "See blind counts and which figures differed"
+msgstr "عرض مطابقات الجرد والأرقام المختلفة"
+
 msgid "See customers' national IDs"
 msgstr "الاطلاع على الأرقام القومية للعملاء"
 
@@ -8953,6 +9037,9 @@ msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
 
 msgid "See the messages sent to customers"
 msgstr "عرض الرسائل المرسلة للعملاء"
+
+msgid "See the real figures in blind counts"
+msgstr "عرض الأرقام الفعلية في مطابقات الجرد"
 
 msgid "See their"
 msgstr "اعرض"
@@ -10973,6 +11060,9 @@ msgstr "النوع"
 msgid "Type to search…"
 msgstr "اكتب للبحث…"
 
+msgid "Type what you count; leave a cell empty when there is nothing. The books are not shown: after checking, figures that differ are marked so they can be counted again."
+msgstr "اكتب ما تجرده، واترك الخانة فارغة إن لم يوجد شيء. الدفاتر لا تظهر: بعد المطابقة تُعلَّم الأرقام المختلفة لإعادة جردها."
+
 msgid "UAE dirham"
 msgstr "درهم إماراتي"
 
@@ -11393,6 +11483,9 @@ msgstr "الوزن المباع (جم)"
 msgid "Weight to (g)"
 msgstr "الوزن إلى (جم)"
 
+msgid "Weights"
+msgstr "الأوزان"
+
 msgid "Weights and karats handled precisely"
 msgstr "أوزان وعيارات بدقة تامة"
 
@@ -11468,11 +11561,17 @@ msgstr "تكلفة الكسر"
 msgid "What to change"
 msgstr "ما الذي يتغير"
 
+msgid "What to count"
+msgstr "ما سيتم جرده"
+
 msgid "What to print"
 msgstr "ما يُطبع"
 
 msgid "What was bought from suppliers and traders in a period: by supplier, and by category and karat, with weight, 21K equivalent and making cost; goods returned to them are taken off."
 msgstr "المشتريات من الموردين والتجار في فترة: حسب المورد، وحسب الصنف والعيار، مع الوزن ومعادل عيار 21 وتكلفة المصنعية؛ ويُخصم ما رُدّ إليهم."
+
+msgid "What was counted"
+msgstr "ما تم جرده"
 
 msgid "What was made"
 msgstr "ما تم تصنيعه"

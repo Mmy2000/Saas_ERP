@@ -1,0 +1,84 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "New blind count" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'blind-counts' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Blind counts" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if again %}{% translate "Count again" %}{% else %}{% translate "New blind count" %}{% endif %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Type what you count; leave a cell empty when there is nothing. The books are not shown: after checking, figures that differ are marked so they can be counted again." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="card mb-6 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+  <label><span class="form-label">{% translate "Branch" %}</span>
+    <select name="branch" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if branch_id == b.pk|stringformat:'s' %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+  <label><span class="form-label">{% translate "Count by" %}</span>
+    <select name="by" class="form-input"><option value="">{% translate "Category" %}</option><option value="group" {% if by_group %}selected{% endif %}>{% translate "Main group" %}</option></select></label>
+  <fieldset><span class="form-label">{% translate "What to count" %}</span>
+    <div class="flex flex-wrap gap-4 pt-2 text-sm">
+      <label class="flex items-center gap-2"><input type="checkbox" name="parts" value="pieces" class="size-4 rounded border-slate-300 accent-brand-600" {% if "pieces" in parts %}checked{% endif %}>{% translate "Pieces" %}</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="parts" value="weights" class="size-4 rounded border-slate-300 accent-brand-600" {% if "weights" in parts %}checked{% endif %}>{% translate "Weights" %}</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="parts" value="cash" class="size-4 rounded border-slate-300 accent-brand-600" {% if "cash" in parts %}checked{% endif %}>{% translate "Cash" %}</label>
+    </div></fieldset>
+  <button type="submit" class="btn btn-secondary">{% translate "Apply" %}</button>
+</form>
+
+<form method="post" class="space-y-6" novalidate data-blind-count>
+  {% csrf_token %}
+  <input type="hidden" name="branch" value="{{ branch_id }}">
+  <input type="hidden" name="by" value="{% if by_group %}group{% endif %}">
+  {% for part in parts %}<input type="hidden" name="parts" value="{{ part }}">{% endfor %}
+
+  {% if "pieces" in parts %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2><span class="text-xs text-slate-500">{% translate "How many pieces" %}</span></div>
+    {% if piece_grid %}
+    <div class="overflow-x-auto">
+      <table class="table text-sm">
+        <thead><tr><th>{% if by_group %}{% translate "Main group" %}{% else %}{% translate "Category" %}{% endif %}</th>{% for karat in layout.columns %}<th>{% if karat %}{{ karat.label }}{% else %}{% translate "No karat" %}{% endif %}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for line in piece_grid %}
+          <tr><td class="font-medium text-slate-900">{{ line.row.name }}</td>
+            {% for cell in line.cells %}<td><input name="{{ cell.name }}" value="{{ cell.value }}" class="form-input num w-24 py-1 text-start" inputmode="numeric" autocomplete="off" aria-label="{{ line.row.name }}"></td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<p class="px-5 py-6 text-sm text-slate-500">{% translate "No categories sold by the piece." %}</p>{% endif %}
+  </section>
+  {% endif %}
+
+  {% if "weights" in parts %}
+  <section class="card overflow-hidden">
+    <div class="card-header"><h2 class="card-title">{% translate "Weights" %}</h2><span class="text-xs text-slate-500">{% translate "Grams, as weighed (scrap, bullion and bulk gold)" %}</span></div>
+    {% if weight_grid %}
+    <div class="overflow-x-auto">
+      <table class="table text-sm">
+        <thead><tr><th>{% if by_group %}{% translate "Main group" %}{% else %}{% translate "Category" %}{% endif %}</th>{% for karat in layout.columns %}<th>{% if karat %}{{ karat.label }}{% else %}{% translate "No karat" %}{% endif %}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for line in weight_grid %}
+          <tr><td class="font-medium text-slate-900">{{ line.row.name }}</td>
+            {% for cell in line.cells %}<td><input name="{{ cell.name }}" value="{{ cell.value }}" class="form-input num w-28 py-1 text-start" inputmode="decimal" autocomplete="off" aria-label="{{ line.row.name }}"></td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<p class="px-5 py-6 text-sm text-slate-500">{% translate "No categories kept by weight." %}</p>{% endif %}
+  </section>
+  {% endif %}
+
+  <section class="card grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+    {% if "cash" in parts %}
+    <label><span class="form-label">{% translate "Cash" %} <span class="text-xs text-slate-500">{{ layout.cash_currency }}</span></span>
+      <input name="cash" value="{{ cash }}" class="form-input num w-full text-start" inputmode="decimal" autocomplete="off">
+      <p class="form-error">{{ errors.cash }}</p></label>
+    {% endif %}
+    <label class="{% if 'cash' in parts %}sm:col-span-2{% else %}sm:col-span-3{% endif %}"><span class="form-label">{% translate "Note" %}</span><input name="note" value="{{ note }}" maxlength="500" class="form-input w-full"></label>
+  </section>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p class="flex items-center gap-2 text-xs text-slate-500">{% icon "info" "size-4" %}{% translate "Each check is saved under its own number, whether it matches or not." %}</p>
+    <button type="submit" name="save" value="1" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Check and save" %}</button>
+  </div>
+</form>
+{% endblock %}

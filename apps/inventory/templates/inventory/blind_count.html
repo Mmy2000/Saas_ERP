@@ -1,0 +1,49 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Blind count" %} {{ count.number }}{% endblock %}
+{% block page_header %}
+{% can "inventory.blind_count.create" count.branch as can_count %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <a href="{% url 'blind-counts' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900" data-no-print><span class="rtl:rotate-180">←</span>{% translate "Blind counts" %}</a>
+    <h1 class="mt-2 flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight text-slate-900"><span class="num">{{ count.number }}</span>
+      {% if count.differences %}<span class="badge badge-danger">{% blocktranslate count n=count.differences %}{{ n }} difference{% plural %}{{ n }} differences{% endblocktranslate %}</span>{% else %}<span class="badge badge-success">{% translate "All matched" %}</span>{% endif %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ count.branch.name }} · <span class="num">{{ count.posted_at|date:"SHORT_DATETIME_FORMAT" }}</span> · {{ count.created_by.get_full_name|default:count.created_by|default:"—" }}{% if count.by_group %} · {% translate "By main group" %}{% endif %}</p>
+  </div>
+  <div class="flex gap-2" data-no-print>
+    <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+    {% if can_count and count.differences %}<a class="btn btn-primary" href="{% url 'blind-count-new' %}?again={{ count.pk }}">{% icon "repeat" "size-4" %}{% translate "Count again" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if not reveal and count.differences %}<p class="mb-4 flex items-center gap-2 text-sm text-slate-600">{% icon "eye-off" "size-4" %}{% translate "Figures marked in red differ from the books. Count them again." %}</p>{% endif %}
+{% with grid=pieces %}{% if grid.rows %}
+<section class="card mb-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Pieces" %}</h2></div>
+  <div class="overflow-x-auto"><table class="table text-sm">
+    <thead><tr><th>{% if count.by_group %}{% translate "Main group" %}{% else %}{% translate "Category" %}{% endif %}</th>{% for label in grid.columns %}<th class="text-end">{{ label|default:_("No karat") }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in grid.rows %}<tr><td class="font-medium text-slate-900">{{ row.name }}</td>
+      {% for cell in row.cells %}<td class="text-end">{% if cell %}<span class="num {% if not cell.ok %}rounded bg-red-50 px-1.5 py-0.5 font-semibold text-red-700{% endif %}" {% if not cell.ok %}data-differs{% endif %}>{{ cell.counted|floatformat:0 }}</span>{% if reveal and not cell.ok %}<span class="block text-xs text-slate-500" data-books>{% translate "books" %} <span class="num">{{ cell.actual|floatformat:0 }}</span></span>{% endif %}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}{% endwith %}
+{% with grid=weights %}{% if grid.rows %}
+<section class="card mb-6 overflow-hidden">
+  <div class="card-header"><h2 class="card-title">{% translate "Weights" %}</h2><span class="text-xs text-slate-500">{% translate "g" %}</span></div>
+  <div class="overflow-x-auto"><table class="table text-sm">
+    <thead><tr><th>{% if count.by_group %}{% translate "Main group" %}{% else %}{% translate "Category" %}{% endif %}</th>{% for label in grid.columns %}<th class="text-end">{{ label|default:_("No karat") }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in grid.rows %}<tr><td class="font-medium text-slate-900">{{ row.name }}</td>
+      {% for cell in row.cells %}<td class="text-end">{% if cell %}<span class="num {% if not cell.ok %}rounded bg-red-50 px-1.5 py-0.5 font-semibold text-red-700{% endif %}" {% if not cell.ok %}data-differs{% endif %}>{{ cell.counted|floatformat:2 }}</span>{% if reveal and not cell.ok %}<span class="block text-xs text-slate-500" data-books>{% translate "books" %} <span class="num">{{ cell.actual|floatformat:2 }}</span></span>{% endif %}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}{% endwith %}
+{% if count.cash_currency %}
+<section class="card mb-6 flex items-center justify-between px-5 py-4">
+  <span class="font-medium text-slate-900">{% translate "Cash" %}</span>
+  <span class="text-end"><span class="num {% if not cash_ok %}rounded bg-red-50 px-1.5 py-0.5 font-semibold text-red-700{% endif %}" {% if not cash_ok %}data-differs{% endif %}>{{ count.cash_counted|num:0 }} {{ count.cash_currency }}</span>{% if reveal and not cash_ok %}<span class="block text-xs text-slate-500" data-books>{% translate "books" %} <span class="num">{{ count.cash_actual|num:0 }}</span></span>{% endif %}</span>
+</section>
+{% endif %}
+{% if not count.pieces and not count.weights and not count.cash_currency %}<section class="card card-body text-sm text-slate-500">{% translate "Nothing was counted and the books held nothing." %}</section>{% endif %}
+{% if count.note %}<p class="text-sm text-slate-600">{% translate "Note" %}: {{ count.note }}</p>{% endif %}
+{% endblock %}

@@ -321,3 +321,106 @@ def in_transit(request):
         "totals": totals, "cash": cash, "cash_totals": sorted(cash_totals.items()),
         "branches": branches, "branch": branch, "direction": direction,
     })
+
+
+# --- blind counts (legacy GHS45a / GHS45b) ---------------------------------------------------
+
+def _visible_blind_counts(request):
+    from apps.inventory.models import BlindCount
+
+    counts = BlindCount.objects.select_related("branch", "created_by")
+    allowed = request.actor.branch_ids("inventory.blind_count.view")
+    return counts if allowed is None else counts.filter(branch_id__in=allowed)
+
+
+@permission_required("inventory.blind_count.view")
+def blind_counts(request):
+    page = Paginator(_visible_blind_counts(request).order_by("-posted_at", "-id"), 25).get_page(
+        request.GET.get("page"))
+    return render(request, "inventory/blind_counts.html", {"page": page})
+
+
+@permission_required("inventory.blind_count.create")
+def blind_count_new(request):
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from apps.core.errors import ValidationError
+    from apps.inventory import blind_counts as service
+
+    branches = _branches_for(request, "inventory.blind_count.create")
+    source = request.POST if request.method == "POST" else request.GET
+    again = _visible_blind_counts(request).filter(pk=request.GET.get("again") or 0).first()
+    branch_id = source.get("branch") or (again.branch_id if again else None) \
+        or request.membership.default_branch_id
+    by_group = source.get("by", "group" if again and again.by_group else "") == "group"
+    parts = [p for p in service.PARTS if p in source.getlist("parts")] or (
+        [p for p in service.PARTS if p != "cash" or not again or again.cash_currency]
+        if again else list(service.PARTS))
+    layout = service.sheet(by_group=by_group)
+    errors = {}
+    if request.method == "POST" and request.POST.get("save"):
+        def typed(prefix):
+            found = {}
+            for key, value in request.POST.items():
+                if key.startswith(prefix + "-") and value.strip():
+                    _p, row, karat = key.split("-")
+                    found[(int(row), int(karat) or None)] = value
+            return found
+
+        try:
+            made = service.record(service.BlindCountInput(
+                branch_id=int(branch_id or 0), by_group=by_group, parts=tuple(parts),
+                pieces=typed("p"), weights=typed("w"), cash=request.POST.get("cash"),
+                note=request.POST.get("note", "")), actor=request.actor)
+        except ValidationError as exc:
+            errors = {key: " ".join(str(m) for m in problems)
+                      for key, problems in exc.fields.items()}
+            messages.error(request, exc.message)
+        else:
+            return redirect("blind-count", pk=made.pk)
+    values = {}
+    if request.method == "POST":
+        values = {k: v for k, v in request.POST.items() if k[:2] in ("p-", "w-")}
+        values["cash"] = request.POST.get("cash", "")
+    elif again:
+        for kind, cells in (("p", again.pieces), ("w", again.weights)):
+            for cell in cells:
+                values[f"{kind}-{cell['category']}-{cell['karat'] or 0}"] = cell["counted"]
+        values["cash"] = again.cash_counted if again.cash_counted is not None else ""
+
+    def grid(rows, kind):
+        return [{"row": row, "cells": [
+            {"name": f"{kind}-{row.pk}-{karat.pk if karat else 0}",
+             "value": values.get(f"{kind}-{row.pk}-{karat.pk if karat else 0}", "")}
+            for karat in layout.columns]} for row in rows]
+
+    return render(request, "inventory/blind_count_form.html", {
+        "branches": branches, "branch_id": str(branch_id or ""), "by_group": by_group,
+        "parts": parts, "layout": layout, "errors": errors, "again": again,
+        "piece_grid": grid(layout.piece_rows, "p"), "weight_grid": grid(layout.weight_rows, "w"),
+        "cash": values.get("cash", ""), "note": source.get("note", ""),
+    })
+
+
+@permission_required("inventory.blind_count.view")
+def blind_count_detail(request, pk):
+    count = _visible_blind_counts(request).filter(pk=pk).first()
+    if count is None:
+        raise Http404
+
+    def table(cells):
+        columns, rows = [], {}
+        for cell in cells:
+            if cell["label"] not in columns:
+                columns.append(cell["label"])
+            rows.setdefault((cell["category"], cell["name"]), {})[cell["label"]] = cell
+        return {"columns": columns,
+                "rows": [{"name": name, "cells": [found.get(label) for label in columns]}
+                         for (_id, name), found in rows.items()]}
+
+    return render(request, "inventory/blind_count.html", {
+        "count": count, "pieces": table(count.pieces), "weights": table(count.weights),
+        "reveal": request.actor.can("admin.blind_count.reveal", branch=count.branch),
+        "cash_ok": count.cash_counted == count.cash_actual,
+    })

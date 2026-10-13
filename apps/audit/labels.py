@@ -34,6 +34,7 @@ TABLES = {
     "printing_labeltemplate": _("Label template"),
     "printing_documentdesign": _("Document design"),
     "inventory_item": _("Piece"),
+    "inventory_blindcount": _("Blind count"),
     "diamonds_itemstone": _("Stone details"),
     "diamonds_stonegrade": _("Stone grade"),
     "diamonds_stonecode": _("Stone code"),

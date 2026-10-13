@@ -484,6 +484,22 @@ every currency. Rates are published under Pricing → Exchange rates as before.
   When receiving, the stones' cost follows the codes' prices until it is typed in, as long as
   the codes are in the invoice currency.
 
+### Blind counts (Goods → Blind counts)
+
+Legacy GHS45a / GHS45b (مطابقة جرد اصناف الفرع), `apps/inventory/blind_counts.py`:
+- **What is counted:** the counter picks a branch and counts by category or by main group
+  (the top of the category tree). They type the pieces per karat, the bulk gold by weight
+  (scrap, bullion, bulk lots) and the cash in the company currency, without seeing the books.
+  Any of the three parts can be left out.
+- **Matching:** pieces must match exactly, weights to 0.01 g and cash to the whole unit, as in
+  Gweb. "Check and save" keeps every check under its own number (BC), matched or not, with
+  what was typed and what the books held at that moment.
+- **Who sees what:** figures that differ are marked in red. Only people with "See the real
+  figures in blind counts" (`admin.blind_count.reveal`, owners by default) see the books next
+  to them.
+- **Recounting and stock:** "Count again" starts from the typed figures. Nothing is posted: to
+  correct stock, use a stocktake.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

@@ -373,3 +373,28 @@ class StocktakeLotLine(TenantScopedModel):
         if self.counted_gross_weight_g is None:
             return None
         return self.counted_gross_weight_g - self.expected_gross_weight_g
+
+
+class BlindCount(Document):
+    """A blind count of a branch (legacy GHS45a / GHS45b مطابقة جرد): pieces per category and
+    karat, bulk gold by weight and the cash, typed without seeing the books. Each check is kept
+    under its own number; a wrong figure only shows as a difference, and only owners see the
+    real numbers next to what was counted."""
+
+    by_group = models.BooleanField(default=False)  # rows are main groups, not categories
+    # [{"category": id, "name": "…", "karat": id|None, "label": "21K", "counted": "12",
+    #   "actual": "12"}]; weights as gram strings.
+    pieces = models.JSONField(default=list, blank=True)
+    weights = models.JSONField(default=list, blank=True)
+    cash_currency = models.CharField(max_length=3, blank=True)  # "" = cash not counted
+    cash_counted = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    cash_actual = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    differences = models.PositiveIntegerField(default=0)
+
+    class Meta(Document.Meta):
+        ordering = ["-posted_at", "-id"]
+        indexes = [models.Index(fields=["tenant", "branch", "-business_date"],
+                                name="blindcount_date_idx")]
+
+    def __str__(self):
+        return self.number or f"#{self.pk}"
