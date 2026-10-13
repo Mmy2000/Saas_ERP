@@ -68,6 +68,7 @@ class Column:
     fixed: bool = False  # always printed
     fmt: str = "text"  # text | money | w3 (grams) | w4 (fine grams) | int
     cost: bool = False  # printed only for people who may see costs
+    hide_empty: bool = False  # left out when no row has a value (stones on a gold invoice)
 
 
 @dataclass
@@ -136,7 +137,8 @@ def make_doc(kind: DocumentType, design, *, company: dict, number, date, status=
     language = design.language
     labels = _labels(COMMON_LABELS, language)
     enabled = design.enabled_columns(kind.key)
-    columns = [c for c in kind.columns if c.key in enabled and (can_cost or not c.cost)]
+    columns = [c for c in kind.columns if c.key in enabled and (can_cost or not c.cost)
+               and not (c.hide_empty and not any(row.get(c.key) for row in rows))]
     column_labels = _labels({c.key: c.label for c in columns}, language)
     doc = Doc(title=_t(title or kind.label, language), number=number or "—", date=date,
               company=company, labels=labels, currency=currency,
@@ -221,6 +223,9 @@ SALES_COLUMNS = (
     Column("weight", _("Weight (g)"), "end", fmt="w3"),
     Column("gold_price", _("Gold / g"), "end", fmt="money"),
     Column("making", _("Making / g"), "end", fmt="money"),
+    # Diamond pieces and loose stones: each stone's carats, grading and certificate (legacy
+    # GHD15 / GHZ17 invoice designs). Not printed when nothing on the invoice has stones.
+    Column("stones", _("Stones"), hide_empty=True),
     Column("discount", _("Discount"), "end", default=False, fmt="money"),
     Column("total", _("Total"), "end", fixed=True, fmt="money"),
 )
@@ -263,6 +268,22 @@ def _sales_doc(design, *, company, number, date, status, customer, phone, seller
                     party=party, rows=rows, sections=sections, totals=totals, currency=currency)
 
 
+def stones_text(item) -> str:
+    """'1 × 0.50 ct D VS1 Excellent · GIA 2141438171 + 12 × 0.24 ct' for a printed line."""
+    if item is None:
+        return ""
+    parts = []
+    for stone in item.stones.all():
+        text = f"{stone.count} × {stone.carat.normalize():f} ct"
+        grade = " ".join(part for part in (stone.color, stone.clarity, stone.cut) if part)
+        if grade:
+            text += f" {grade}"
+        if stone.certificate_no:
+            text += f" · {' '.join(p for p in (stone.lab, stone.certificate_no) if p)}"
+        parts.append(text)
+    return " + ".join(parts)
+
+
 def build_sales_invoice(invoice, design, ctx=None):
     lang = design.language
     with translation.override(_lang_of(design)):
@@ -273,8 +294,10 @@ def build_sales_invoice(invoice, design, ctx=None):
                   "karat": line.karat.label if line.karat_id else "",
                   "weight": line.gross_weight_g, "gold_price": line.metal_price_per_g,
                   "making": line.making_rate_net, "discount": line.discount_amount,
+                  "stones": stones_text(line.item if line.item_id else None),
                   "total": line.line_total}
-                 for line in invoice.lines.select_related("item", "category", "karat__metal")]
+                 for line in invoice.lines.select_related("item", "category", "karat__metal")
+                 .prefetch_related("item__stones")]
         trade_ins = [{"karat": t.karat.label, "weight": t.net_weight_g, "price": t.price_per_g,
                       "amount": t.amount}
                      for t in invoice.trade_ins.select_related("karat__metal")]
@@ -299,6 +322,7 @@ def sample_sales_invoice(design, company):
     lines = [
         {"piece": "1010000041", "description": "خاتم سوليتير", "karat": "21K",
          "weight": D("4.250"), "gold_price": D("4560"), "making": D("150"),
+         "stones": "1 × 0.5 ct G VS1 Excellent · GIA 2141438171",
          "discount": ZERO, "total": D("20017.50")},
         {"piece": "1020000007", "description": "سلسلة كارتير", "karat": "18K",
          "weight": D("7.800"), "gold_price": D("3910"), "making": D("120"),
@@ -600,6 +624,10 @@ def build_settlement(s, design, ctx=None):
         totals.append((_("Amount"), f"{_num(s.amount)} {s.currency.code}", True))
         if s.currency.code != home:
             totals.append((_("Value"), f"{_num(s.functional_amount)} {home}", False))
+        if s.balance_currency_id:
+            code = s.balance_currency.code
+            totals += [(_("Agreed rate"), _num(s.balance_rate, 4), False),
+                       (_("Off their balance"), f"{_num(s.balance_amount)} {code}", True)]
     elif s.kind == "conversion":
         meta.append((_("Which way"), direction))
         totals += [(_("Fine gold"), f"{_num(s.fine_weight_g, 4)} {g}", False),
@@ -910,6 +938,64 @@ def sample_transfer(design, company):
         totals=[(_("Weight (g)"), _num(D("89.250"), 3), True)])
 
 
+# ---- work orders and production (legacy GHSH14 workshop document) --------------------------
+
+WORK_ORDER_COLUMNS = (
+    Column("way", _("Sent or back"), fixed=True), Column("piece", _("Item")),
+    Column("karat", _("Karat")), Column("weight", _("Weight (g)"), "end", fmt="w3"),
+    Column("fine", _("Fine gold"), "end", fmt="w4"),
+    Column("labour", _("Labour"), "end", default=False, fmt="money"),
+)
+
+
+def build_work_order(order, design, ctx=None):
+    lang = design.language
+    with translation.override(_lang_of(design)):
+        sent, back = _t(_("Sent"), lang), _t(_("Back"), lang)
+        rows = [{"way": sent, "piece": line.category.name,
+                 "karat": line.karat.label if line.karat_id else None,
+                 "weight": line.gross_weight_g, "fine": line.fine_weight_g}
+                for line in order.issue_lines.select_related("category", "karat__metal")]
+        rows += [{"way": f"{back} · {line.get_line_type_display()}", "piece": line.category.name,
+                  "karat": line.karat.label if line.karat_id else None,
+                  "weight": line.gross_weight_g, "fine": line.fine_weight_g,
+                  "labour": line.labour_amount or None}
+                 for line in order.receipt_lines.select_related("category", "karat__metal")]
+        who = (order.workshop.name if order.workshop_id
+               else order.craftsman.name if order.craftsman_id else _t(_("In-house"), lang))
+        kind = order.get_kind_display()
+    totals = [(_("Fine gold sent"), _num(order.issued_fine_weight_g, 4), False)]
+    if order.received_at:
+        totals += [(_("Fine gold back"), _num(order.received_fine_weight_g, 4), False)]
+        if order.loss_fine_weight_g:
+            totals.append((_("Loss (fine g)"), _num(order.loss_fine_weight_g, 4), True))
+        if order.gain_fine_weight_g:
+            totals.append((_("Gain (fine g)"), _num(order.gain_fine_weight_g, 4), True))
+        if order.labour_amount:
+            totals.append((_("Labour"), f"{_num(order.labour_amount)} {_home()}", False))
+    return make_doc(TYPES["work_order"], design, company=_record_company(order.branch),
+                    number=order.number, date=_when(order), status=order.status,
+                    meta=[(_("Work"), kind)],
+                    party=[(_("Workshop or craftsman"), who),
+                           (_("Received"), _day(order.received_on))],
+                    rows=rows, totals=totals, sections=_note(_("Note"), order.note))
+
+
+def sample_work_order(design, company):
+    sent, back = _t(_("Sent"), design.language), _t(_("Back"), design.language)
+    return make_doc(
+        TYPES["work_order"], design, company=company, number="WO-2026-000012",
+        date=SAMPLE_DATE, meta=[(_("Work"), "تصنيع قطع")],
+        party=[(_("Workshop or craftsman"), "ورشة عاطف للتصنيع")],
+        rows=[{"way": sent, "piece": "ذهب كسر", "karat": "21K", "weight": D("50.000"),
+               "fine": D("43.7500")},
+              {"way": back, "piece": "خواتم", "karat": "21K", "weight": D("49.200"),
+               "fine": D("43.0500"), "labour": D("2460.00")}],
+        totals=[(_("Fine gold sent"), _num(D("43.7500"), 4), False),
+                (_("Fine gold back"), _num(D("43.0500"), 4), False),
+                (_("Loss (fine g)"), _num(D("0.7000"), 4), True)])
+
+
 # ---- finding records: the same scoping as each document's own page --------------------------
 
 def _finder(path: str):
@@ -995,6 +1081,9 @@ TYPES: dict[str, DocumentType] = {t.key: t for t in [
                  sample_money_voucher, "treasury.view",
                  _finder("apps.treasury.views._visible_vouchers"),
                  signatures=(_("Received by"), _("Paid by"))),
+    DocumentType("work_order", _("Work order"), GOODS, WORK_ORDER_COLUMNS, build_work_order,
+                 sample_work_order, "manufacturing.order.view",
+                 _finder("apps.manufacturing.views._visible"), signatures=HANDOVER),
     DocumentType("transfer", _("Stock transfer"), GOODS, TRANSFER_COLUMNS, build_transfer,
                  sample_transfer, "inventory.stock.view",
                  _finder("apps.inventory.web.views._visible_transfers"), signatures=HANDOVER),

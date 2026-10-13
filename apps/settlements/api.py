@@ -32,6 +32,10 @@ class SettlementWriteSerializer(serializers.Serializer):
                                            default="")
     loss_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                           default="")
+    balance_currency = serializers.CharField(max_length=3, required=False, allow_blank=True,
+                                             default="")
+    balance_rate = serializers.CharField(max_length=30, required=False, allow_blank=True,
+                                         default="")
     fine_weight_g = serializers.CharField(max_length=30, required=False, allow_blank=True,
                                           default="")
     direction = serializers.ChoiceField(choices=ConversionDirection.choices, required=False,
@@ -108,6 +112,7 @@ class SettlementViewSet(viewsets.GenericViewSet):
             method=d["method"], currency_code=d["currency"], amount=d["amount"] or None,
             karat_id=d["karat"], gross_weight_g=d["gross_weight_g"] or None,
             loss_weight_g=d["loss_weight_g"] or None,
+            balance_currency_code=d["balance_currency"], balance_rate=d["balance_rate"] or None,
             fine_weight_g=d["fine_weight_g"] or None, direction=d["direction"],
             price_per_fine_g=d["price_per_fine_g"] or None, reference=d["reference"],
             note=d["note"], cash_box_id=d["cash_box"], bank_account_id=d["bank_account"],

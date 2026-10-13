@@ -30,6 +30,7 @@
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "How" %}</dt><dd>{{ settlement.get_method_display }}</dd></div>
       <div class="flex justify-between px-6 py-4 text-base font-semibold"><dt>{% translate "Amount" %}</dt><dd class="num">{{ settlement.amount|num:2 }} {{ settlement.currency.code }}</dd></div>
       {% if settlement.currency.code != home_currency %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Value" %}</dt><dd class="num">{{ settlement.functional_amount|num:2 }} {{ home_currency }} (× {{ settlement.fx_rate|num:4 }})</dd></div>{% endif %}
+      {% if settlement.balance_currency_id %}<div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Off their balance in" %} {{ settlement.balance_currency.code }}</dt><dd class="num">{{ settlement.balance_amount|num:2 }} {{ settlement.balance_currency.code }} ({% translate "agreed rate" %} {{ settlement.balance_rate|num:4 }})</dd></div>{% endif %}
       {% elif settlement.kind == "conversion" %}
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Which way" %}</dt><dd>{{ settlement.get_direction_display }}</dd></div>
       <div class="flex justify-between px-6 py-3"><dt class="text-slate-500">{% translate "Fine gold" %}</dt><dd class="num">{{ settlement.fine_weight_g|num:4 }} {% translate "g" %}</dd></div>

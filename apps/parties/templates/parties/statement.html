@@ -38,4 +38,42 @@
   </div>
   {% endfor %}
 </article>
+
+{% if agreements or can_agree %}
+<section class="card mt-6" data-no-print data-agreements>
+  <header class="border-b border-slate-100 px-6 py-4">
+    <h2 class="text-base font-semibold text-slate-900">{% translate "Agreed balances" %}</h2>
+    <p class="text-sm text-slate-500">{% translate "Save the balance the party confirmed. If later changes move the balance as of that date, it is flagged here." %}</p>
+  </header>
+  {% if can_agree %}
+  <form method="post" class="grid grid-cols-1 gap-3 border-b border-slate-100 p-6 sm:grid-cols-4 sm:items-end">
+    {% csrf_token %}
+    <label><span class="form-label">{% translate "As of" %}</span><input type="date" name="as_of" value="{% if date_to %}{{ date_to|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" class="form-input w-full" required></label>
+    <label><span class="form-label">{% translate "Agreed with" %}</span><input name="agreed_with" maxlength="120" class="form-input w-full" placeholder="{% translate 'Their name' %}"></label>
+    <label><span class="form-label">{% translate "Note" %}</span><input name="note" maxlength="300" class="form-input w-full"></label>
+    <button class="btn btn-primary" type="submit">{% icon "check" "size-4" %}{% translate "Save agreed balance" %}</button>
+  </form>
+  {% endif %}
+  {% if agreements %}
+  <ul class="divide-y divide-slate-100">
+    {% for view in agreements %}
+    <li class="flex flex-wrap items-start justify-between gap-3 px-6 py-4">
+      <div class="min-w-0">
+        <p class="font-medium text-slate-900"><span class="num">{{ view.agreement.as_of|date:"SHORT_DATE_FORMAT" }}</span>{% if view.agreement.agreed_with %} · {{ view.agreement.agreed_with }}{% endif %}</p>
+        <p class="mt-1 text-sm">
+          {% for code, agreed, now, places in view.lines %}<span class="me-3 num">{{ agreed|num:places }} {{ code }}{% if agreed != now %} <span class="text-red-700">→ {{ now|num:places }}</span>{% endif %}</span>{% empty %}<span class="text-slate-500">{% translate "Settled (nothing owed either way)" %}</span>{% endfor %}
+        </p>
+        <p class="text-xs text-slate-500">{% if view.agreement.note %}{{ view.agreement.note }} · {% endif %}{% translate "Saved by" %} {{ view.agreement.recorded_by.get_full_name|default:view.agreement.recorded_by|default:"—" }}, {{ view.agreement.recorded_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        {% if view.holds %}<span class="badge badge-success">{% translate "Still matches" %}</span>
+        {% else %}<span class="badge badge-danger">{% translate "Changed since agreed" %}</span>{% endif %}
+        {% if can_agree %}<form method="post">{% csrf_token %}<button class="btn btn-ghost" name="delete" value="{{ view.agreement.pk }}" title="{% translate 'Remove' %}" aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button></form>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endif %}
 {% endblock %}

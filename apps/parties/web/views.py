@@ -1,17 +1,20 @@
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Karat
+from apps.core.errors import ValidationError
 from apps.iam.authz import permission_required
 from apps.ledger.models import Account, Commodity
 from apps.ledger.selectors import party_balance
 from apps.ledger.statements import party_statement
 from apps.org.models import Branch, TenantProfile
 from apps.parties import crm
+from apps.parties.agreements import agree_statement, agreements_for, delete_agreement
 from apps.parties.models import BarcodeWeightRule, CustomerTier, Gender, PartyKind, PartyRoleType
 from apps.parties.selectors import parties_with_role, search
 
@@ -246,10 +249,31 @@ def _statement(request, role, pk):
         sheet = statement_sheet(role, party, date_from, date_to)
         return pdf_page(request, sheet["template"], sheet["context"], title=sheet["title"],
                         filename=sheet["filename"])
+    config = ROLES[role]
+    can_agree = request.actor.can(f"parties.{role}.edit")
+    if request.method == "POST":
+        if not can_agree:
+            raise Http404
+        if request.POST.get("delete"):
+            delete_agreement(int(request.POST["delete"]))
+            messages.success(request, _("Agreement removed."))
+        else:
+            try:
+                agree_statement(party, role, config["account_role"],
+                                as_of=_parse_date(request.POST.get("as_of")),
+                                agreed_with=request.POST.get("agreed_with", ""),
+                                note=request.POST.get("note", ""), actor=request.actor)
+            except ValidationError as exc:
+                messages.error(request, exc.message)
+            else:
+                messages.success(request, _("The agreed balance is saved."))
+        return redirect(request.get_full_path())
     data = statement_data(role, party, date_from, date_to)
     return render(request, "parties/statement.html", {
         **data, "profile": TenantProfile.objects.first(),
         "edit_url": reverse(data["config"]["edit_url"], args=[party.pk]),
+        "agreements": agreements_for(party, role, config["account_role"]),
+        "can_agree": can_agree,
     })
 
 

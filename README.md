@@ -447,6 +447,27 @@ every currency. Rates are published under Pricing → Exchange rates as before.
 - **Daily summary** over several days (Until) and a shift's hours (From / To hour; GHED11,
   GHS64): with hours, documents and cash movements count by the time they were posted.
 
+### Stones on invoices, printed work orders, cross-currency settling, agreed statements
+
+- **Stones on the sales invoice** (GHD15 / GHZ17): a Stones column prints each stone of a
+  diamond piece or loose stone ("1 × 0.5 ct D VS1 Excellent · GIA 2141438171 + 12 × 0.24 ct").
+  It is left out on invoices with no stones, and the client can switch it off in
+  Settings → Documents.
+- **Work order document** (GHSH14): Print and PDF on a work order: gold sent and pieces, bulk
+  gold and scrap back, fine gold each way, loss or gain, labour, and handover signature lines.
+  It has its own design under Settings → Documents.
+- **Paying against a balance in another currency** (GHSS33 / GHSS34): on a receipt or payment,
+  "Against their balance in" plus an agreed rate (units paid for one of theirs). For example,
+  5,000 EGP at 50 takes 100 USD off a trader's dollar balance. The cash or bank side stays in
+  the currency paid. The party line moves their currency by the agreed amount, valued at what
+  was paid. Shown on the settlement page and the printed receipt.
+- **Agreed balances** (Suu2_Match, GHSS40 / GHSS41): on every statement (customers, suppliers,
+  traders, workshops and partners), people who may edit that party save the balance the party
+  confirmed as of a date, with who agreed and a note. Each agreement is checked against the
+  ledger every time the statement opens. If a back-dated document or a void changes the balance
+  as of that date, it shows "Changed since agreed" and the new figure. Agreements are in the
+  audit trail.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

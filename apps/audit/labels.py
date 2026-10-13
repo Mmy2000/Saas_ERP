@@ -15,6 +15,7 @@ TABLES = {
     "parties_partyrole": _("Account role"),
     "parties_customerprofile": _("Customer details"),
     "parties_supplierprofile": _("Supplier details"),
+    "parties_statementagreement": _("Agreed statement"),
     "org_tenantprofile": _("Company"),
     "org_branch": _("Branch"),
     "iam_membership": _("User"),

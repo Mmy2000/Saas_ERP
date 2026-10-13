@@ -6,7 +6,7 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3" data-no-print>
   {% if order.in_house %}<a href="{% url 'production' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Production" %}</a>
   {% else %}<a href="{% url 'work-orders' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Work orders" %}</a>{% endif %}
-  <button type="button" class="btn btn-secondary" data-print>{% icon "printer" "size-4" %}{% translate "Print" %}</button>
+  <div class="flex gap-2">{% include "printing/_pdf_link.html" with doc_type="work_order" pk=order.pk %}<a href="{% url 'print-document' 'work_order' order.pk %}?print=1" target="_blank" rel="noopener" class="btn btn-primary">{% icon "printer" "size-4" %}{% translate "Print" %}</a></div>
 </div>
 {% endblock %}
 {% block content %}

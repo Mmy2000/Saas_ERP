@@ -141,3 +141,24 @@ class SupplierProfile(TenantScopedModel):
             models.UniqueConstraint(fields=["tenant", "party"],
                                     name="parties_supplierprofile_party_uniq"),
         ]
+
+
+class StatementAgreement(TenantScopedModel):
+    """A balance the party confirmed as of a date (legacy statement matching, Suu2_Match /
+    GHSS40-41). The balances are kept as agreed; if back-dated or voided documents later
+    change the balance as of that date, the statement shows the agreement no longer holds."""
+
+    party = models.ForeignKey(Party, on_delete=models.CASCADE,
+                              related_name="statement_agreements")
+    role = models.CharField(max_length=16, choices=PartyRoleType.choices)
+    as_of = models.DateField()
+    balances = models.JSONField(default=dict)  # {"EGP": "1250.00", "XAU": "-8.4000"}
+    agreed_with = models.CharField(max_length=120, blank=True)  # who confirmed on their side
+    note = models.CharField(max_length=300, blank=True)
+    recorded_by = models.ForeignKey("iam.User", null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name="+")
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["tenant", "party", "role", "as_of"],
+                                name="parties_agree_party_idx")]

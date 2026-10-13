@@ -64,6 +64,14 @@ class Settlement(Document):
     amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
     fx_rate = models.DecimalField(max_digits=18, decimal_places=8, default=1)
     functional_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    # Money paid in one currency against a balance kept in another, at a rate agreed on the
+    # spot (legacy GHSS33 / GHSS34): `amount` of `currency` takes `balance_amount` of
+    # `balance_currency` off (or onto) the party's balance; `balance_rate` = currency units per
+    # one balance-currency unit. Empty: the balance is in the currency paid.
+    balance_currency = models.ForeignKey("catalog.Currency", null=True, blank=True,
+                                         on_delete=models.PROTECT, related_name="+")
+    balance_amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    balance_rate = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
     cash_box = models.ForeignKey("treasury.CashBox", null=True, blank=True,
                                  on_delete=models.PROTECT, related_name="+")
     bank_account = models.ForeignKey("treasury.BankAccount", null=True, blank=True,

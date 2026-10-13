@@ -90,6 +90,17 @@
           <input id="f-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal">
           <p class="form-error" data-error-for="amount"></p></div>
         {% include "treasury/holder_selects.html" %}
+        <div class="grid grid-cols-1 gap-3 sm:col-span-3 sm:grid-cols-3" data-only="receipt payment">
+          <div><label class="form-label" for="f-balance-currency">{% translate "Against their balance in" %}</label>
+            <select id="f-balance-currency" name="balance_currency" class="form-input" data-balance-currency>
+              <option value="">{% translate "The same currency" %}</option>
+              {% for c in currencies %}<option value="{{ c.code }}">{{ c.code }}</option>{% endfor %}
+            </select><p class="form-error" data-error-for="balance_currency"></p></div>
+          <div class="hidden" data-balance-rate-box><label class="form-label" for="f-balance-rate">{% translate "Agreed rate" %} <span class="text-xs text-slate-500" data-balance-rate-hint></span></label>
+            <input id="f-balance-rate" name="balance_rate" class="form-input num w-full text-start" inputmode="decimal" data-balance-rate>
+            <p class="form-error" data-error-for="balance_rate"></p></div>
+          <p class="hidden self-end pb-2 text-sm text-slate-600 sm:col-span-1" data-balance-result></p>
+        </div>
       </div>
     </section>
 

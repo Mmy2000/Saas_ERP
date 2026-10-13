@@ -50,7 +50,29 @@ function syncLoss(event) {
   form.querySelector("[data-net]").textContent = net.toFixed(3);
 }
 
+// Paid in one currency against a balance in another: the agreed rate is how many of the paid
+// currency make one of theirs; show what comes off their balance.
+function syncBalance() {
+  const other = form.querySelector("[data-balance-currency]");
+  if (!other) return;
+  const paid = form.querySelector("[data-currency]").value;
+  const crossing = other.value && other.value !== paid;
+  form.querySelector("[data-balance-rate-box]").classList.toggle("hidden", !crossing);
+  form.querySelector("[data-balance-rate-hint]").textContent = crossing ? `(${paid} = 1 ${other.value})` : "";
+  const result = form.querySelector("[data-balance-result]");
+  const amount = Number(form.querySelector("#f-amount").value) || 0;
+  const rate = Number(form.querySelector("[data-balance-rate]").value) || 0;
+  result.classList.toggle("hidden", !(crossing && amount && rate));
+  if (crossing && amount && rate) result.textContent = `= ${(amount / rate).toFixed(2)} ${other.value}`;
+}
+
 if (form) {
+  form.addEventListener("input", (event) => {
+    if (event.target.matches("#f-amount, [data-balance-rate]")) syncBalance();
+  });
+  form.addEventListener("change", (event) => {
+    if (event.target.matches("[data-balance-currency], [data-currency]")) syncBalance();
+  });
   form.addEventListener("input", (event) => {
     if (event.target.matches("[data-loss-pct], [data-loss], #f-gross")) syncLoss(event);
   });
@@ -68,6 +90,10 @@ registerShaper("settlement", (values, formElement) => {
   if (which === "money") {
     Object.assign(body, { currency: values.currency, amount: values.amount ?? "" });
     if (!isBalance()) {
+      const other = formElement.querySelector("[data-balance-currency]")?.value || "";
+      if (other && other !== values.currency) {
+        Object.assign(body, { balance_currency: other, balance_rate: values.balance_rate ?? "" });
+      }
       const pick = (selector) => (formElement.querySelector(selector).value ? Number(formElement.querySelector(selector).value) : null);
       Object.assign(body, { method: values.method,
                             cash_box: values.method === "cash" ? pick("[data-box]") : null,

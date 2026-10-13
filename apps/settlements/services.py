@@ -96,6 +96,8 @@ class SettlementInput:
     cash_box_id: int | None = None
     bank_account_id: int | None = None
     terminal_id: int | None = None
+    balance_currency_code: str = ""  # receipts / payments against a balance in another currency
+    balance_rate: Decimal | str | None = None  # units paid per one unit of that currency
     asset: str = ""
     counter_side: str = ""
     counter_party_id: int | None = None
@@ -130,6 +132,20 @@ def _money(settlement: Settlement, data: SettlementInput) -> None:
     settlement.fx_rate = (Decimal(1) if currency.code == functional_currency()
                           else rate_in_force(currency.code))
     settlement.functional_amount = round_money(settlement.amount * settlement.fx_rate)
+    if data.balance_currency_code and data.balance_currency_code != currency.code:
+        other = Currency.objects.filter(code=data.balance_currency_code, is_active=True).first()
+        if other is None:
+            raise _field_error("balance_currency", _("Unknown currency."))
+        try:
+            rate = quantize(data.balance_rate, Decimal("0.000001"))
+        except (TypeError, ValueError, ArithmeticError):
+            raise _field_error("balance_rate", _("Enter the agreed rate.")) from None
+        if rate <= 0:
+            raise _field_error("balance_rate", _("Must be greater than zero."))
+        settlement.balance_currency, settlement.balance_rate = other, rate
+        settlement.balance_amount = round_money(settlement.amount / rate)
+        if settlement.balance_amount <= 0:
+            raise _field_error("amount", _("Too small for this rate."))
     holder = resolve_tender(data.method, settlement.branch, currency,
                             cash_box_id=data.cash_box_id, bank_account_id=data.bank_account_id,
                             terminal_id=data.terminal_id)
@@ -239,7 +255,12 @@ def _ledger_lines(settlement: Settlement) -> list[LedgerLine]:
         money_account = (settlement.cash_box or settlement.bank_account
                          or settlement.terminal).account
         add(money_account, money, sign * settlement.amount, sign * value)
-        add(party_account, money, -sign * settlement.amount, -sign * value, with_party=True)
+        if settlement.balance_currency_id:  # their balance is in another currency
+            add(party_account, money_commodity(settlement.balance_currency),
+                -sign * settlement.balance_amount, -sign * value, with_party=True)
+        else:
+            add(party_account, money, -sign * settlement.amount, -sign * value,
+                with_party=True)
     elif kind in (SettlementKind.TRANSFER, SettlementKind.ADJUSTMENT):
         if settlement.asset == BalanceAsset.GOLD:
             commodity, quantity = metal_commodity("gold"), settlement.fine_weight_g
