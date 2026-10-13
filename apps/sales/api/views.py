@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.api.idempotency import idempotent
-from apps.sales import codes, services
+from apps.sales import codes, services, walkins
 from apps.sales.models import SalesInvoice
 
 from .serializers import InvoiceSerializer, SaleSerializer, VoidSerializer
@@ -99,6 +99,7 @@ class SalesInvoiceViewSet(viewsets.GenericViewSet):
         "retrieve": "sales.invoice.view",
         "create": "sales.invoice.create",
         "void": "sales.invoice.void",
+        "make_customer": "parties.customer.create",
     }
 
     def get_queryset(self):
@@ -127,3 +128,13 @@ class SalesInvoiceViewSet(viewsets.GenericViewSet):
         invoice = services.void_sale(int(pk), reason=payload.validated_data["reason"],
                                      actor=request.actor)
         return Response(self.get_serializer(self.get_queryset().get(pk=invoice.pk)).data)
+
+    @action(detail=True, methods=["post"], url_path="make-customer")
+    @idempotent
+    def make_customer(self, request, pk=None):
+        """A walk-in buyer becomes a customer (and their walk-in sales with the same phone)."""
+        invoice = self.get_object()
+        party, linked = walkins.make_customer(invoice.pk, name=str(request.data.get("name") or ""),
+                                              actor=request.actor)
+        return Response({"customer": party.pk, "name": party.name, "linked": linked,
+                         "url": f"/customers/{party.pk}/"})

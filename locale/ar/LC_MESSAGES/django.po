@@ -1393,8 +1393,8 @@ msgstr "بادئة الباركود"
 msgid "Barcode to"
 msgstr "باركود إلى"
 
-msgid "Barcode, certificate or category"
-msgstr "الباركود أو الشهادة أو الصنف"
+msgid "Barcode, certificate, model or category"
+msgstr "الباركود أو الشهادة أو الموديل أو المجموعة"
 
 msgid "Base text size"
 msgstr "حجم النص الأساسي"
@@ -1516,6 +1516,9 @@ msgstr "أسفل"
 msgid "Bought"
 msgstr "المشترى"
 
+msgid "Bought (ct)"
+msgstr "المشترى (قيراط)"
+
 msgid "Bought 21K (g)"
 msgstr "المشترى عيار 21 (جم)"
 
@@ -1609,6 +1612,14 @@ msgstr "سبائك"
 
 msgid "Bullion and coins"
 msgstr "سبائك وعملات"
+
+msgid ""
+"Bullion, coins and other gold reserved for customers by weight: what is "
+"still to deliver, by category and karat, and every order with its deposit "
+"and due date."
+msgstr ""
+"السبائك والعملات وغيرها من الذهب المحجوز للعملاء بالوزن: ما زال مطلوبًا "
+"تسليمه حسب المجموعة والعيار، وكل طلب بعربونه وموعده."
 
 msgid ""
 "Bullion, sealed coins or other gold sold by weight, even if it is not in "
@@ -2381,6 +2392,9 @@ msgstr "اختر موردًا نشطًا."
 msgid "Choose an active trade account."
 msgstr "اختر حساب تاجر نشطًا."
 
+msgid "Choose an employee to see their statement."
+msgstr "اختر موظفًا لعرض كشف حسابه."
+
 msgid "Choose an employee."
 msgstr "اختر موظفًا."
 
@@ -2913,6 +2927,9 @@ msgstr ""
 "تكلفة المبيعات هي تكلفة البضاعة المباعة. أعمدة الذهب تعرض صافي الجرامات "
 "الصافية المسجلة (مثل الذهب المباع بالتكلفة، أو الهالك في الورش)."
 
+msgid "Cost of what was sold"
+msgstr "تكلفة المباع"
+
 msgid "Cost per 21K gram"
 msgstr "التكلفة لجرام عيار 21"
 
@@ -3273,6 +3290,12 @@ msgstr "إيقاف حسابات التجار"
 
 msgid "Deactivate workshops"
 msgstr "إيقاف الورش"
+
+msgid "Deal"
+msgstr "العملية"
+
+msgid "Deals"
+msgstr "العمليات"
 
 msgid ""
 "Dear %(name)s,\n"
@@ -3955,6 +3978,9 @@ msgstr "الموظفون"
 msgid "Employees and payroll"
 msgstr "الموظفون والرواتب"
 
+msgid "Employees' advances"
+msgstr "سلف الموظفين"
+
 msgid "Employees, advances, monthly payroll and sales commissions."
 msgstr "الموظفون والسلف ومسير الرواتب الشهري وعمولات المبيعات."
 
@@ -4554,6 +4580,9 @@ msgstr "سلّم القطع للعميل أولًا."
 
 msgid "Give the value in the company currency for %(commodity)s lines."
 msgstr "أدخل القيمة بعملة الشركة لسطور %(commodity)s."
+
+msgid "Given"
+msgstr "المصروف"
 
 msgid "Go to a screen…"
 msgstr "انتقل إلى شاشة…"
@@ -5677,8 +5706,18 @@ msgstr "الخزينة الرئيسية"
 msgid "Main stone (ct, colour, clarity)"
 msgstr "الحجر الرئيسي (قيراط، لون، نقاء)"
 
+msgid "Make a customer"
+msgstr "تسجيله كعميل"
+
 msgid "Make this record available on new documents again."
 msgstr "إتاحة هذا السجل للمستندات الجديدة مرة أخرى."
+
+msgid ""
+"Make this walk-in buyer a customer: their other walk-in sales with the same "
+"phone go on their account history too."
+msgstr ""
+"سجّل هذا المشتري النقدي كعميل: مبيعاته النقدية الأخرى بنفس رقم الهاتف تُضاف "
+"إلى سجله أيضًا."
 
 msgid "Making"
 msgstr "المصنعية"
@@ -5886,6 +5925,9 @@ msgstr "تطبيق الموبايل"
 
 msgid "Mobile devices"
 msgstr "أجهزة الموبايل"
+
+msgid "Model"
+msgstr "الموديل"
 
 msgid "Modern"
 msgstr "عصري"
@@ -7086,6 +7128,9 @@ msgstr "لا يمكن إعادة الإرسال إلا لرسالة لم تُر�
 msgid "Only a posted expense can be refunded."
 msgstr "يُسترد فقط من مصروف مسجَّل."
 
+msgid "Only a posted sale can be used."
+msgstr "يمكن استخدام فاتورة مسجَّلة فقط."
+
 msgid "Only a registered customer can buy on account."
 msgstr "يمكن البيع على الحساب لعميل مسجّل فقط."
 
@@ -7193,6 +7238,9 @@ msgstr "فتحه"
 
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open orders only: what has to be in stock to deliver them."
+msgstr "الطلبات المفتوحة فقط: ما يجب توفره في المخزون لتسليمها."
 
 msgid "Open position"
 msgstr "المركز المفتوح"
@@ -7305,6 +7353,12 @@ msgstr "مطلوب"
 msgid "Ordered gold now in stock: call the customer"
 msgstr "ذهب مطلوب وصل المخزون: اتصل بالعميل"
 
+msgid "Orders"
+msgstr "الطلبات"
+
+msgid "Orders by weight"
+msgstr "الطلبات بالوزن"
+
 msgid "Organisation"
 msgstr "المؤسسة"
 
@@ -7370,6 +7424,9 @@ msgstr ""
 "بعد تجاوز الحد، ترد مساحة العمل بـ «طلبات كثيرة جدًا» حتى تبدأ الدقيقة "
 "التالية. الاستخدام العادي يظل أقل منه بكثير، أما سكربت أو شاشة عالقة فلا."
 
+msgid "overdue"
+msgstr "متأخر"
+
 msgid "Overview"
 msgstr "نظرة عامة"
 
@@ -7378,6 +7435,9 @@ msgstr "مستحق"
 
 msgid "Owed in money"
 msgstr "المستحق نقدًا"
+
+msgid "Owed now"
+msgstr "المستحق الآن"
 
 msgid "Owes now"
 msgstr "عليه الآن"
@@ -7479,6 +7539,10 @@ msgstr "المدفوع"
 msgid "Paid back"
 msgstr "مردود"
 
+msgid ""
+"Paid back, settlements in their favour and payroll take-backs are negative."
+msgstr "المرتد والتسويات لصالح الموظف والخصم من المرتب بالسالب."
+
 msgid "Paid by"
 msgstr "توقيع الدافع"
 
@@ -7508,6 +7572,9 @@ msgstr "البرتيتة %(code)s بها %(carats)s قيراط فقط (%(count)s
 
 msgid "Parcel stones"
 msgstr "أحجار البرتيتة"
+
+msgid "Parcel stones bought and sold"
+msgstr "مشتريات ومبيعات البرتيتات"
 
 msgid "Parcels counted"
 msgstr "جرد البرتيتات"
@@ -7694,6 +7761,9 @@ msgstr "في الدقيقة: الآن / الأعلى"
 
 msgid "Per order"
 msgstr "حسب الأمر"
+
+msgid "Per parcel"
+msgstr "حسب البرتيتة"
 
 msgid "Per piece"
 msgstr "بالقطعة"
@@ -8809,6 +8879,9 @@ msgstr "مرتجع للمورد"
 msgid "Returned"
 msgstr "مردود"
 
+msgid "Returned (ct)"
+msgstr "المرتجع (قيراط)"
+
 msgid "Returned (g)"
 msgstr "المرتجع (جم)"
 
@@ -9089,6 +9162,9 @@ msgstr "حفظ الجرد"
 
 msgid "Save to get more empty rows."
 msgstr "احفظ لتظهر صفوف فارغة أخرى."
+
+msgid "Saved as a customer."
+msgstr "تم تسجيله كعميل."
 
 msgid "Saved as a draft. Nothing enters stock until you post it."
 msgstr "تُحفظ كمسودة، ولا يدخل شيء المخزون حتى الترحيل."
@@ -9769,6 +9845,14 @@ msgstr "الأبطأ"
 msgid "Slowest: %(n)s ms"
 msgstr "الأبطأ: %(n)s مللي ثانية"
 
+msgid ""
+"Small stones bought into parcels, sold from them and returned to suppliers "
+"in a period: carats, amounts, the cost of what was sold and the margin, per "
+"parcel and deal by deal."
+msgstr ""
+"الأحجار الصغيرة المشتراة في البرتيتات والمباعة منها والمرتجعة للموردين في "
+"فترة: القيراط والمبالغ وتكلفة المباع والربح، حسب البرتيتة وعملية بعملية."
+
 msgid "Small stones from a parcel"
 msgstr "أحجار صغيرة من برتيتة"
 
@@ -9789,6 +9873,9 @@ msgstr ""
 
 msgid "Sold"
 msgstr "مباع"
+
+msgid "Sold (ct)"
+msgstr "المباع (قيراط)"
 
 msgid "Sold (g)"
 msgstr "المباع (جم)"
@@ -10274,6 +10361,9 @@ msgstr "تُخصم من مسير الرواتب التالي للموظف."
 msgid "Taken back from the next payroll"
 msgstr "تُخصم من المسير التالي"
 
+msgid "Taken back in payroll"
+msgstr "مخصوم من المرتب"
+
 msgid "Taken from"
 msgstr "مسحوب من"
 
@@ -10725,6 +10815,9 @@ msgstr "العيار المرجعي نشط دائماً."
 msgid "The sale changed after the code was sent. Send a new one."
 msgstr "تغيّرت البيعة بعد إرسال الكود. أرسل كودًا جديدًا."
 
+msgid "The sale has no name or phone to make a customer from."
+msgstr "لا يوجد في الفاتورة اسم أو هاتف لتسجيل عميل."
+
 msgid "The same number twice"
 msgstr "الرقم مكرر"
 
@@ -11134,6 +11227,9 @@ msgstr "هذا التصليح مغلق."
 msgid "This reservation is not open."
 msgstr "هذا الحجز غير مفتوح."
 
+msgid "This sale already has a customer."
+msgstr "هذه الفاتورة لها عميل بالفعل."
+
 msgid "This sale needs the code sent to the customer's phone (%(why)s)."
 msgstr "هذه البيعة تحتاج الكود المرسل إلى هاتف العميل (%(why)s)."
 
@@ -11209,6 +11305,9 @@ msgstr "إلى (ث)"
 
 msgid "To close"
 msgstr "بانتظار الإقفال"
+
+msgid "To deliver"
+msgstr "المطلوب تسليمه"
 
 msgid "to move"
 msgstr "للتنقل"
@@ -11868,6 +11967,14 @@ msgid ""
 " what they owe now in money and gold."
 msgstr ""
 "ما اشتراه كل عميل وأرجعه في فترة، وآخر شراء له، وما عليه الآن نقدًا وذهبًا."
+
+msgid ""
+"What each employee owes in advances: given, paid back, settled and taken "
+"back in payroll in a period, with the balance before and after; and one "
+"employee's statement."
+msgstr ""
+"ما على كل موظف من سلف: المصروف والمرتد والتسويات والمخصوم من المرتب في فترة،"
+" مع الرصيد قبل وبعد، وكشف حساب موظف."
 
 msgid ""
 "What each one holds, in its own currency. A bank may be negative "

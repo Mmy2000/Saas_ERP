@@ -43,6 +43,7 @@
   {% if can_edit %}
   <div class="flex flex-wrap items-end gap-3 border-t border-slate-100 p-5">
     <label class="w-48"><span class="form-label">{% translate "Label price" %}</span><input name="label_price" class="form-input num text-start" inputmode="decimal" value="{{ item.label_price|default_if_none:''|stringformat:'s' }}"><p class="form-error" data-error-for="label_price"></p></label>
+    <label class="w-40"><span class="form-label">{% translate "Model" %}</span><input name="model_code" class="form-input" maxlength="40" value="{{ item.model_code }}"></label>
     <label class="w-56"><span class="form-label">{% translate "Discount class" %}</span>
       <select name="discount_class" class="form-input"><option value="">—</option>{% for c in discount_classes %}<option value="{{ c.pk }}" {% if c.pk == item.discount_class_id %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
       <p class="form-error" data-error-for="discount_class"></p></label>

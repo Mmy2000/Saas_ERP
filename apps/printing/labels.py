@@ -30,6 +30,7 @@ FIELDS = {
     "cut": gettext_lazy("Cut"),
     "certificate": gettext_lazy("Certificate"),
     "all_stones": gettext_lazy("All stones"),
+    "model": gettext_lazy("Model"),
     "price": gettext_lazy("Label price"),
     "branch": gettext_lazy("Branch"),
 }
@@ -100,6 +101,8 @@ def field_text(key: str, item, shop: str = "") -> str:
         return item.branch.name
     if key in ("main_stone", "grade", "cut", "certificate", "all_stones"):
         return _stone_text(key, item)
+    if key == "model":
+        return getattr(item, "model_code", "")
     return ""
 
 

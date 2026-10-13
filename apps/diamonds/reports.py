@@ -11,7 +11,15 @@ from django.utils.translation import gettext_lazy
 
 from apps.core.models import DocStatus
 from apps.inventory.models import ON_HAND, Item
-from apps.reports.registry import BRANCH_FILTER, DATE_FILTERS, Column, Report, Table, register
+from apps.reports.registry import (
+    BRANCH_FILTER,
+    DATE_FILTERS,
+    Column,
+    Filter,
+    Report,
+    Table,
+    register,
+)
 from apps.sales.models import SalesInvoiceLine
 
 from .models import ItemStone, StoneKind
@@ -108,3 +116,65 @@ class DiamondSales(_DiamondReport):
         if table.totals and table.totals.get("stones"):
             table.totals["margin_pct"] = table.totals["margin"] * 100 / table.totals["stones"]
         return [table]
+
+
+DEAL_KINDS = (("", gettext_lazy("Everything")), ("buy", gettext_lazy("Bought")),
+              ("sell", gettext_lazy("Sold")), ("return", gettext_lazy("Returned to the supplier")))
+
+
+@register
+class DiamondParcels(_DiamondReport):
+    code = "diamond_parcels"
+    section = "gold"
+    title = gettext_lazy("Parcel stones bought and sold")
+    description = gettext_lazy("Small stones bought into parcels, sold from them and returned to "
+                               "suppliers in a period: carats, amounts, the cost of what was sold "
+                               "and the margin, per parcel and deal by deal.")
+    filters = (*DATE_FILTERS, BRANCH_FILTER,
+               Filter("kind", "choice", gettext_lazy("Deals"), DEAL_KINDS))
+
+    def run(self, params, scope):
+        from .models import ParcelDeal
+
+        start, end = params.date("date_from"), params.date("date_to")
+        deals = _in_scope(ParcelDeal.objects.filter(
+            status=DocStatus.POSTED, business_date__range=(start, end))
+            .select_related("parcel", "party"), scope)
+        if params.get("kind") in ("buy", "sell", "return"):
+            deals = deals.filter(kind=params.get("kind"))
+        per_parcel = Table(_("Per parcel"), [
+            Column("parcel", _("Parcel")), Column("bought_ct", _("Bought (ct)"), "weight"),
+            Column("bought", _("Bought"), "money"), Column("sold_ct", _("Sold (ct)"), "weight"),
+            Column("sold", _("Sold"), "money"), Column("cost", _("Cost of what was sold"),
+                                                       "money"),
+            Column("margin", _("Margin"), "money"),
+            Column("returned_ct", _("Returned (ct)"), "weight"),
+            Column("returned", _("Returned"), "money")])
+        listed = Table(_("Deals"), [
+            Column("number", _("Number"), "code"), Column("date", _("Date"), "date"),
+            Column("kind", _("Deal")), Column("parcel", _("Parcel")), Column("party", _("With")),
+            Column("carats", _("Carats"), "weight"), Column("price", _("Price / ct"), "money"),
+            Column("amount", _("Amount"), "money")])
+        cells: dict[int, dict] = {}
+        labels = dict(DEAL_KINDS)
+        for deal in deals.order_by("business_date", "id"):
+            cell = cells.setdefault(deal.parcel_id, {"parcel": deal.parcel.code, **{
+                key: ZERO for key in ("bought_ct", "bought", "sold_ct", "sold", "cost",
+                                      "returned_ct", "returned")},
+                "_urls": {"parcel": f"/diamonds/parcels/{deal.parcel_id}/"}})
+            prefix = {"buy": "bought", "sell": "sold", "return": "returned"}[deal.kind]
+            cell[f"{prefix}_ct"] += deal.carats
+            cell[prefix] += deal.amount
+            if deal.kind == "sell":
+                cell["cost"] += deal.cost_amount
+            listed.rows.append({
+                "number": deal.number, "date": deal.business_date,
+                "kind": str(labels.get(deal.kind, deal.kind)), "parcel": deal.parcel.code,
+                "party": deal.party.name if deal.party_id else deal.party_name,
+                "carats": deal.carats, "price": deal.price_per_ct, "amount": deal.amount,
+                "_urls": {"number": f"/diamonds/parcels/{deal.parcel_id}/#deals"}})
+        for cell in sorted(cells.values(), key=lambda c: c["parcel"]):
+            cell["margin"] = cell["sold"] - cell["cost"]
+            per_parcel.rows.append(cell)
+        per_parcel.add_totals("parcel", _("Total"))
+        return [per_parcel, listed]

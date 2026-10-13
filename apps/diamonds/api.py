@@ -42,6 +42,8 @@ class PieceSerializer(serializers.Serializer):
                                         allow_null=True, default=None)
     stones = StoneSerializer(many=True, required=False, default=list)
     discount_class = serializers.IntegerField(required=False, allow_null=True, default=None)
+    model_code = serializers.CharField(max_length=40, required=False, allow_blank=True,
+                                       default="")
 
 
 class ReceiveSerializer(serializers.Serializer):
@@ -69,7 +71,8 @@ class ReceiveView(APIView):
                 category_id=p["category"], karat_id=p["karat"],
                 gross_weight_g=p["gross_weight_g"], making_cost_rate=p["making_cost_rate"] or "0",
                 stone_cost=p["stone_cost"] or "0", label_price=p["label_price"] or None,
-                stones=tuple(p["stones"]), discount_class_id=p["discount_class"])
+                stones=tuple(p["stones"]), discount_class_id=p["discount_class"],
+                model_code=p["model_code"])
                 for p in d["pieces"])), actor=request.actor)
         return Response({"id": invoice.pk, "number": invoice.number},
                         status=status.HTTP_201_CREATED)
@@ -80,6 +83,7 @@ class ItemStonesSerializer(serializers.Serializer):
     label_price = serializers.CharField(max_length=20, required=False, allow_blank=True,
                                         allow_null=True, default=None)
     discount_class = serializers.IntegerField(required=False, allow_null=True)
+    model_code = serializers.CharField(max_length=40, required=False, allow_blank=True)
 
 
 class ItemStonesView(APIView):
@@ -92,6 +96,7 @@ class ItemStonesView(APIView):
         item = services.update_item(pk, stones=d["stones"], label_price=d["label_price"],
                                     discount_class_id=d.get("discount_class",
                                                             services.UNCHANGED),
+                                    model_code=d.get("model_code", services.UNCHANGED),
                                     actor=request.actor)
         return Response({"id": item.pk, "label_price": item.label_price,
                          "stone_weight_ct": item.stone_weight_ct})

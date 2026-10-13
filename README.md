@@ -330,6 +330,24 @@ every currency. Rates are published under Pricing → Exchange rates as before.
   charges printed on the supplier's invoice, typed in and compared with the lines as they are
   entered and on the invoice page ("Matches" / "Differs"); differences are shown, not blocked.
 
+### Advances and orders reports, parcel deals, diamond models, walk-ins made customers
+
+- **Reports → Employees' advances** (`apps/reports/pack3.py`; legacy GHE22): per employee, the
+  balance before the period, advances given, paid back, settlements and payroll take-backs, and
+  what they owe now; choosing an employee gives their statement with a running balance.
+- **Reports → Orders by weight** (legacy GHC30 lists): bullion, coins and other gold reserved by
+  weight: what open orders still need in stock per category and karat (and 21K), and every order
+  with its customer, due date (overdue flagged), quoted value, deposit and state (open, delivered,
+  cancelled).
+- **Reports → Parcel stones bought and sold** (Diamonds feature, `diamonds.report_parcels`):
+  per parcel carats and amounts bought, sold (with the cost and margin) and returned to
+  suppliers, and every deal.
+- **Diamond model / style** (`Item.model_code`; legacy الموديل): typed when receiving (earlier
+  models suggested) or on the piece, shown and searched in the diamond stock, printable on labels.
+- **Make a customer** (a sale's page; walk-in buyer with a name or phone): finds the customer
+  that already has the phone or opens one, and puts every walk-in sale with the same phone (any
+  spacing or +20 form) on them. Walk-in sales were settled at the till, so no balance moves.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

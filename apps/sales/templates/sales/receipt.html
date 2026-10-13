@@ -82,6 +82,15 @@
   </article>
 
   <aside class="space-y-6" data-no-print>
+    {% can "parties.customer.create" as can_add_customer %}
+    {% if can_add_customer and walk_in %}
+    <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}make-customer/" data-success="{% translate 'Saved as a customer.' %}" class="card card-body space-y-3">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <p class="text-sm text-slate-600">{% translate "Make this walk-in buyer a customer: their other walk-in sales with the same phone go on their account history too." %}</p>
+      <input name="name" class="form-input" value="{{ invoice.customer_name }}" maxlength="200" aria-label="{% translate 'Name' %}">
+      <button type="submit" class="btn btn-secondary w-full">{% icon "user-plus" "size-4" %}{% translate "Make a customer" %}</button>
+    </form>
+    {% endif %}
     {% if invoice.status == "posted" %}
     {% can "sales.invoice.void" as can_void %}
     {% if can_void %}

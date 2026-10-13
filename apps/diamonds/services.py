@@ -147,6 +147,7 @@ UNCHANGED = object()
 
 
 def update_item(item_id: int, *, stones, label_price=None, discount_class_id=UNCHANGED,
+                model_code=UNCHANGED,
                 actor=None) -> Item:
     """Replace a piece's stone details and set its label price and discount class (stone
     weight follows)."""
@@ -172,6 +173,8 @@ def update_item(item_id: int, *, stones, label_price=None, discount_class_id=UNC
         if discount_class_id is not UNCHANGED:
             item.discount_class = (_discount_class(discount_class_id, "discount_class")
                                    if discount_class_id else None)
+        if model_code is not UNCHANGED:
+            item.model_code = (model_code or "").strip()[:40]
         item.stone_weight_ct = sum((s.carat for s in item.stones.all()), ZERO)
         item.updated_by = getattr(actor, "user", None)
         item.save()
@@ -301,6 +304,7 @@ class PieceInput:
     stone_cost: Decimal | str = "0"  # in the invoice currency
     label_price: Decimal | str | None = None  # selling price, company currency
     discount_class_id: int | None = None
+    model_code: str = ""  # the piece's model / style
 
 
 @dataclass(frozen=True)
@@ -395,10 +399,15 @@ def receive(data: ReceiveInput, *, actor=None) -> SupplierInvoice:
                 label_price=label, stones=stones)
         classes = {index: _discount_class(piece.discount_class_id, f"pieces.{index}")
                    for index, piece in enumerate(data.pieces) if piece.discount_class_id}
+        models = {index: piece.model_code.strip()[:40]
+                  for index, piece in enumerate(data.pieces) if piece.model_code.strip()}
         posted = post_invoice(invoice.pk, actor=actor)
         for line in posted.lines.filter(position__in=list(classes)):
             Item.objects.filter(pk=line.pieces.get().item_id).update(
                 discount_class=classes[line.position])
+        for line in posted.lines.filter(position__in=list(models)):
+            Item.objects.filter(pk=line.pieces.get().item_id).update(
+                model_code=models[line.position])
     return posted
 
 

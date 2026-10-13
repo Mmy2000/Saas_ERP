@@ -97,6 +97,8 @@ def invoice_detail(request, pk):
     returned = returned_line_ids(invoice)
     return render(request, "sales/receipt.html", {
         "invoice": invoice,
+        "walk_in": invoice.status != DocStatus.DRAFT and not invoice.customer_id
+        and bool(invoice.customer_name or invoice.customer_phone),
         "returned": returned,
         "returns": invoice.returns.order_by("id"),
         "returnable": invoice.status == DocStatus.POSTED

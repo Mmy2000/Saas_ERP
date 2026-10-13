@@ -37,7 +37,7 @@
         <option value="none" {% if current == "none" %}selected{% endif %}>{% translate "No class" %}</option>
         {% for c in classes %}<option value="{{ c.pk }}" {% if current == c.pk|stringformat:'s' %}selected{% endif %}>{{ c }}</option>{% endfor %}
       </select>
-      <input name="q" value="{{ term }}" class="form-input w-full lg:w-72" placeholder="{% translate 'Barcode, certificate or category' %}">
+      <input name="q" value="{{ term }}" class="form-input w-full lg:w-72" placeholder="{% translate 'Barcode, certificate, model or category' %}">
       {% for key, value in stone.items %}{% if value %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
       {% for key, value in carats.items %}{% if value != "" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
     </form>
@@ -69,7 +69,7 @@
       {% for item in page.object_list %}
         <tr>
           <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'stock-item' item.pk %}">{{ item.barcode }}</a></td>
-          <td><bdi>{{ item.category.name }}</bdi>{% if item.karat %} <span class="text-xs text-slate-500">{{ item.karat.label }}</span>{% endif %}<div class="text-xs text-slate-400">{{ item.branch.name }}</div></td>
+          <td><bdi>{{ item.category.name }}</bdi>{% if item.karat %} <span class="text-xs text-slate-500">{{ item.karat.label }}</span>{% endif %}{% if item.model_code %} <span class="badge badge-neutral" dir="ltr">{{ item.model_code }}</span>{% endif %}<div class="text-xs text-slate-400">{{ item.branch.name }}</div></td>
           <td class="max-w-xs text-sm text-slate-600"><bdi dir="ltr">{{ item.summary|default:"—" }}</bdi></td>
           <td class="text-end">{% if item.karat %}<span class="num">{{ item.metal_weight_g|num:3 }}</span>{% else %}—{% endif %}</td>
           <td class="text-end"><span class="num">{{ item.stone_weight_ct|num:3 }}</span></td>

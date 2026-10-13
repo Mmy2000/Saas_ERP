@@ -65,7 +65,8 @@ def stock(request):
         items = items.filter(category__product_family=family)
     if term:
         items = items.filter(Q(barcode=term) | Q(stones__certificate_no__icontains=term)
-                             | Q(category__name__icontains=term)).distinct()
+                             | Q(category__name__icontains=term)
+                             | Q(model_code__iexact=term)).distinct()
     if current == "none":
         items = items.filter(discount_class__isnull=True)
     elif current.isdigit():
@@ -158,6 +159,8 @@ def receive(request):
         "home_currency": functional_currency(),
         "kinds": StoneKind.choices, "shapes": StoneShape.choices,
         "classes": DiscountClass.objects.filter(is_active=True), "grades": grades.choices(),
+        "models": sorted(set(Item.objects.exclude(model_code="").values_list(
+            "model_code", flat=True)))[:500],
     })
 
 

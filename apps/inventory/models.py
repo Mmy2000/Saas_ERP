@@ -73,6 +73,8 @@ class Item(TenantScopedModel):
     barcode = models.CharField(max_length=32)
     rfid_epc = models.CharField(max_length=24, blank=True)
     external_code = models.CharField(max_length=64, blank=True)  # supplier's own code
+    # A diamond piece's model / style (legacy Fd2 d1so "الموديل"): searched and printed on labels.
+    model_code = models.CharField(max_length=40, blank=True)
     item_type = models.CharField(max_length=16, choices=ItemType.choices)
     category = models.ForeignKey("catalog.ItemCategory", on_delete=models.PROTECT,
                                  related_name="items")
