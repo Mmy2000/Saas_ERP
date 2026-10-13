@@ -11,7 +11,7 @@ that returns tables. One screen, CSV export and print serve them all.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from decimal import Decimal
 
 from django.utils import timezone
@@ -70,12 +70,12 @@ class Table:
 @dataclass(frozen=True)
 class Filter:
     key: str
-    kind: str  # date | branch | choice
+    kind: str  # date | time | branch | choice
     label: str = ""
     # (value, label) pairs, or a function returning them when the report opens (the shop's
     # own categories, say).
     choices: tuple[tuple[str, str], ...] | object = ()
-    default: str = ""
+    default: str = ""  # a date filter with default "none" stays empty when not given
 
 
 @dataclass
@@ -119,11 +119,17 @@ class Report:
         for spec in self.filters:
             raw = (query.get(spec.key) or "").strip()
             if spec.kind == "date":
-                fallback = (today.replace(day=1) if spec.key == "date_from" else today)
+                fallback = (None if spec.default == "none"
+                            else today.replace(day=1) if spec.key == "date_from" else today)
                 try:
                     values[spec.key] = date.fromisoformat(raw) if raw else fallback
                 except ValueError:
                     values[spec.key] = fallback
+            elif spec.kind == "time":
+                try:
+                    values[spec.key] = time.fromisoformat(raw) if raw else None
+                except ValueError:
+                    values[spec.key] = None
             elif spec.kind == "branch":
                 allowed = {str(b.pk): b for b in branches}
                 values[spec.key] = allowed.get(raw)  # None: every branch the viewer may see

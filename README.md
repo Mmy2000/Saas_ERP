@@ -427,6 +427,26 @@ every currency. Rates are published under Pricing → Exchange rates as before.
   that already has the phone or opens one, and puts every walk-in sale with the same phone (any
   spacing or +20 form) on them. Walk-in sales were settled at the till, so no balance moves.
 
+### Report filters and reports from the third pass
+
+- **Goods filter** (All goods / Gold / Diamonds and stones) on Net sales, Profit per piece and
+  Salespeople; for diamonds Net sales adds net carats and Salespeople ranks by net sales (no
+  21K grams). **Diamond sales** now deducts returns (net figures, with what came back in its own
+  column). **Diamond stock** has a by-branch table (diamond pieces and loose stones side by side).
+  Legacy GHD24/25/27/33/36/43, GHZ25/31/32/33.
+- **Payroll** (`apps/reports/pack4.py`, GHE21): any months, per employee and per month: salary,
+  commission, bonuses, deductions, advances taken back, net pay.
+- **Cash and bank balances** (GHV23/24, GHB23/24): every cash box and bank account at the end of
+  any day, per branch, in its currency and in the company currency.
+- **Purchases against their invoices** (GHS47): purchases with the supplier's own totals typed
+  in, entered − theirs per pieces, weight, fine gold and making; only those that differ, or all.
+- **Label price and discount changes** (GHD45): from the audit trail, every change to a piece's
+  label price or discount class: before, after, who and when.
+- **Stones set into pieces** (Diamonds feature, GHPR22): settings in a period with the piece,
+  setter, gold before and after, carats, stones' cost and labour.
+- **Daily summary** over several days (Until) and a shift's hours (From / To hour; GHED11,
+  GHS64): with hours, documents and cash movements count by the time they were posted.
+
 ### Automatic gold prices (market feed)
 
 The platform reads the Egyptian market price every `MARKET_POLL_MINUTES` (3) from iSagha, Gold

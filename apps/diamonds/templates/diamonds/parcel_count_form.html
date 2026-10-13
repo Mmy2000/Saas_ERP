@@ -12,7 +12,7 @@
 {% block content %}
 <form method="get" class="card card-body mb-6 flex flex-wrap items-end gap-3">
   <label class="min-w-56"><span class="form-label">{% translate "Branch" %}</span>
-    <select name="branch" class="form-input" data-native data-autosubmit>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == branch.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+    <select name="branch" class="form-input" data-autosubmit>{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == branch.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
   <noscript><button class="btn btn-secondary">{% translate "Show" %}</button></noscript>
 </form>
 {% if parcels %}

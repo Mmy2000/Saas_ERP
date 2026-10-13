@@ -131,8 +131,8 @@ def stated_check(invoice, computed: dict) -> list[dict]:
         theirs = getattr(invoice, name)
         if theirs is None:
             continue
-        rows.append({"label": label, "theirs": theirs, "ours": ours, "places": places,
-                     "difference": ours - theirs})
+        rows.append({"name": name, "label": label, "theirs": theirs, "ours": ours,
+                     "places": places, "difference": ours - theirs})
     return rows
 
 def _line_error(index: int, field: str, message: str) -> ValidationError:

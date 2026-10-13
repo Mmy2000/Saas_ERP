@@ -34,8 +34,6 @@ class NewAccountForm(forms.Form):
             (a.pk, f"{a.code} · {a.label}") for a in parent_choices()]
         self.fields["currency"].choices = [("", "—")] + [
             (c.code, f"{c.code} · {c.label}") for c in Currency.objects.filter(is_active=True)]
-        for name in ("is_group", "nature", "commodity_scope"):
-            self.fields[name].widget.attrs["data-native"] = ""
         _style(self)
 
 

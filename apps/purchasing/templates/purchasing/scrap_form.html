@@ -63,7 +63,7 @@
       <template id="scrap-line">
         <div class="grid grid-cols-2 items-start gap-3 p-4 sm:grid-cols-[1fr_7rem_7rem_8rem_7rem_auto]" data-line>
           <div class="col-span-2 space-y-2 sm:col-span-1">
-            {% if mode == "buy" and bullion %}<select class="form-input" data-category data-native aria-label="{% translate 'What' %}">
+            {% if mode == "buy" and bullion %}<select class="form-input" data-category aria-label="{% translate 'What' %}">
               <option value="">{% translate "Scrap gold" %}</option>
               {% for c in bullion %}<option value="{{ c.pk }}" {% if c.default_karat_id %}data-karat="{{ c.default_karat_id }}"{% endif %}>{{ c.name }}</option>{% endfor %}
             </select>{% endif %}

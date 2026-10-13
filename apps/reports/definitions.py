@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import date, datetime
+from datetime import time as dt_time
 from decimal import Decimal
 
 from django.db.models import Count, Q, Sum
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
@@ -41,17 +45,59 @@ def _equivalent_21k(fine: Decimal) -> Decimal:
 
 # --- daily summary ------------------------------------------------------------------------------
 
+@dataclass
+class Period:
+    """The days of a daily summary, and optionally a shift's hours (legacy GHED11, GHS64): with
+    hours, documents and cash movements count by the time they were posted."""
+
+    first: date
+    last: date
+    start: datetime | None = None
+    end: datetime | None = None
+
+    @classmethod
+    def from_params(cls, params) -> Period:
+        first = params.date("date")
+        last = max(params.get("until") or first, first)
+        begin, finish = params.get("from_time"), params.get("to_time")
+        if begin is None and finish is None:
+            return cls(first, last)
+        zone = timezone.get_current_timezone()
+        start = datetime.combine(first, begin or dt_time.min, tzinfo=zone)
+        end = datetime.combine(last, finish or dt_time(23, 59, 59), tzinfo=zone)
+        return cls(first, last, start, end)
+
+    def docs(self, queryset, prefix=""):
+        if self.start:
+            return queryset.filter(**{f"{prefix}posted_at__range": (self.start, self.end)})
+        return queryset.filter(**{f"{prefix}business_date__range": (self.first, self.last)})
+
+    def lines(self, queryset):
+        """Journal lines in the period."""
+        if self.start:
+            return queryset.filter(entry__posted_at__range=(self.start, self.end))
+        return queryset.filter(business_date__range=(self.first, self.last))
+
+    def before(self, queryset):
+        if self.start:
+            return queryset.filter(entry__posted_at__lt=self.start)
+        return queryset.filter(business_date__lt=self.first)
+
+
 @register
 class DailySummary(Report):
     code = "daily_summary"
     section = "sales"
     title = gettext_lazy("Daily summary")
-    description = gettext_lazy("One day at a branch: sales, scrap received, money in and out of "
-                               "every cash box and bank account.")
-    filters = (Filter("date", "date", gettext_lazy("Day")), BRANCH_FILTER)
+    description = gettext_lazy("A day (or several, or a shift's hours) at a branch: sales, scrap "
+                               "received, money in and out of every cash box and bank account.")
+    filters = (Filter("date", "date", gettext_lazy("Day")),
+               Filter("until", "date", gettext_lazy("Until (optional)"), default="none"),
+               Filter("from_time", "time", gettext_lazy("From hour")),
+               Filter("to_time", "time", gettext_lazy("To hour")), BRANCH_FILTER)
 
     def run(self, params, scope):
-        day = params.date("date")
+        day = Period.from_params(params)
         karats = _karat_labels()
         return [self._sales(day, scope, karats), self._scrap(day, scope, karats),
                 self._boxes(day, scope), self._counts(day, scope), self._banks(day, scope),
@@ -63,7 +109,7 @@ class DailySummary(Report):
             Column("expected", _("In the books"), "money"),
             Column("counted", _("Counted"), "money"),
             Column("difference", _("Difference"), "money")])
-        counts = _in_scope(CashCount.objects.filter(status=DocStatus.POSTED, business_date=day)
+        counts = _in_scope(day.docs(CashCount.objects.filter(status=DocStatus.POSTED))
                            .select_related("branch", "cash_box__currency"), scope)
         for count in counts.order_by("branch__code", "posted_at"):
             table.rows.append({"box": f"{count.branch.name} · {count.cash_box.label}",
@@ -73,9 +119,8 @@ class DailySummary(Report):
         return table
 
     def _sales(self, day, scope, karats):
-        lines = _in_scope(SalesInvoiceLine.objects.filter(
-            invoice__status=DocStatus.POSTED, invoice__business_date=day), scope,
-            "invoice__branch_id")
+        lines = _in_scope(day.docs(SalesInvoiceLine.objects.filter(
+            invoice__status=DocStatus.POSTED), "invoice__"), scope, "invoice__branch_id")
         table = Table(_("Sales"), [
             Column("karat", _("Karat")), Column("invoices", _("Sales"), "int"),
             Column("pieces", _("Pieces"), "int"), Column("gross", _("Weight (g)"), "weight"),
@@ -90,9 +135,8 @@ class DailySummary(Report):
         return table.add_totals("karat", _("Total"))
 
     def _scrap(self, day, scope, karats):
-        trades = _in_scope(SalesTradeIn.objects.filter(
-            invoice__status=DocStatus.POSTED, invoice__business_date=day), scope,
-            "invoice__branch_id")
+        trades = _in_scope(day.docs(SalesTradeIn.objects.filter(
+            invoice__status=DocStatus.POSTED), "invoice__"), scope, "invoice__branch_id")
         table = Table(_("Scrap gold received"), [
             Column("karat", _("Karat")), Column("gross", _("Weight (g)"), "weight"),
             Column("net", _("After loss (g)"), "weight"),
@@ -111,8 +155,8 @@ class DailySummary(Report):
             Column("out", _("Out"), "money"), Column("closing", _("Closing"), "money")])
         for box in boxes.order_by("branch__code", "currency__code"):
             lines = JournalLine.objects.filter(account_id=box.account_id)
-            opening = lines.filter(business_date__lt=day).aggregate(q=Sum("quantity"))["q"] or ZERO
-            moves = lines.filter(business_date=day).aggregate(
+            opening = day.before(lines).aggregate(q=Sum("quantity"))["q"] or ZERO
+            moves = day.lines(lines).aggregate(
                 i=Sum("quantity", filter=Q(quantity__gt=0)),
                 o=Sum("quantity", filter=Q(quantity__lt=0)))
             money_in, money_out = moves["i"] or ZERO, -(moves["o"] or ZERO)
@@ -133,8 +177,8 @@ class DailySummary(Report):
             "currency")] + [(t, t.currency.code) for t in CardTerminal.objects.select_related(
                 "bank_account__currency")])
         for holder, currency in holders:
-            lines = _in_scope(JournalLine.objects.filter(account_id=holder.account_id,
-                                                         business_date=day), scope)
+            lines = _in_scope(day.lines(JournalLine.objects.filter(
+                account_id=holder.account_id)), scope)
             moves = lines.aggregate(i=Sum("quantity", filter=Q(quantity__gt=0)),
                                     o=Sum("quantity", filter=Q(quantity__lt=0)))
             if moves["i"] or moves["o"]:
@@ -152,18 +196,17 @@ class DailySummary(Report):
             if totals["n"]:
                 table.rows.append({"what": label, "count": totals["n"], "amount": totals["a"]})
 
-        returns = SalesReturn.objects.filter(status=DocStatus.POSTED, business_date=day)
+        returns = day.docs(SalesReturn.objects.filter(status=DocStatus.POSTED))
         add(_("Customer returns (refunded)"), returns, "refund_amount")
-        settlements = Settlement.objects.filter(status=DocStatus.POSTED, business_date=day)
+        settlements = day.docs(Settlement.objects.filter(status=DocStatus.POSTED))
         add(_("Money received"), settlements.filter(kind=SettlementKind.RECEIPT),
             "functional_amount")
         add(_("Money paid"), settlements.filter(kind=SettlementKind.PAYMENT), "functional_amount")
-        add(_("Expenses"), ExpenseVoucher.objects.filter(status=DocStatus.POSTED,
-                                                        business_date=day), "functional_amount")
-        add(_("Expense refunds"), ExpenseRefund.objects.filter(status=DocStatus.POSTED,
-                                                              business_date=day),
+        add(_("Expenses"), day.docs(ExpenseVoucher.objects.filter(status=DocStatus.POSTED)),
             "functional_amount")
-        vouchers = MoneyVoucher.objects.filter(status=DocStatus.POSTED, business_date=day)
+        add(_("Expense refunds"), day.docs(ExpenseRefund.objects.filter(
+            status=DocStatus.POSTED)), "functional_amount")
+        vouchers = day.docs(MoneyVoucher.objects.filter(status=DocStatus.POSTED))
         add(_("Money in (other)"), vouchers.filter(direction="in"), "functional_amount")
         add(_("Money out (other)"), vouchers.filter(direction="out"), "functional_amount")
         return table

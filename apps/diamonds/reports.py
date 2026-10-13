@@ -46,7 +46,8 @@ class DiamondStock(_DiamondReport):
     section = "gold"
     title = gettext_lazy("Diamond stock")
     description = gettext_lazy("Diamond pieces and loose stones on hand: carats, what the "
-                               "stones cost and the label value, by category and by stone.")
+                               "stones cost and the label value, by category, by branch and by "
+                               "stone.")
     filters = (BRANCH_FILTER,)
 
     def run(self, params, scope):
@@ -64,6 +65,20 @@ class DiamondStock(_DiamondReport):
             by_category.rows.append({**row, "category": row.pop("category__name")})
         by_category.add_totals("category", _("Total"))
 
+        # Branches side by side (legacy GHD33 / GHZ25): diamond pieces and loose stones apart.
+        by_branch = Table(_("By branch"), [
+            Column("branch", _("Branch")), Column("pieces", _("Diamond pieces"), "int"),
+            Column("loose", _("Loose stones"), "int"), Column("carats", _("Carats"), "weight"),
+            Column("cost", _("Stones' cost"), "money"),
+            Column("label", _("Label value"), "money")])
+        for row in (items.values("branch__name").annotate(
+                pieces=Count("id", filter=Q(category__product_family="diamond")),
+                loose=Count("id", filter=Q(category__product_family="stone")),
+                carats=Sum("stone_weight_ct"), cost=Sum("stone_cost_amount"),
+                label=Sum("label_price")).order_by("branch__name")):
+            by_branch.rows.append({**row, "branch": row.pop("branch__name")})
+        by_branch.add_totals("branch", _("Total"))
+
         by_stone = Table(_("By stone"), [
             Column("kind", _("Stone")), Column("stones", _("Stones"), "int"),
             Column("carats", _("Carats"), "weight"),
@@ -75,7 +90,7 @@ class DiamondStock(_DiamondReport):
                                                    certified=certified).order_by("kind")):
             by_stone.rows.append({**row, "kind": str(kinds.get(row["kind"], row["kind"]))})
         by_stone.add_totals("kind", _("Total"))
-        return [by_category, by_stone]
+        return [by_category, by_branch, by_stone]
 
 
 @register
@@ -88,29 +103,58 @@ class DiamondSales(_DiamondReport):
     filters = (*DATE_FILTERS, BRANCH_FILTER)
 
     def run(self, params, scope):
+        from apps.sales.models import SalesReturnLine
+
         start, end = params.date("date_from"), params.date("date_to")
         lines = _in_scope(SalesInvoiceLine.objects.filter(
             invoice__status=DocStatus.POSTED, invoice__business_date__range=(start, end),
             category__product_family__in=FAMILIES), scope, "invoice__branch_id")
+        back = _in_scope(SalesReturnLine.objects.filter(
+            sales_return__status=DocStatus.POSTED,
+            sales_return__business_date__range=(start, end),
+            original_line__category__product_family__in=FAMILIES), scope,
+            "sales_return__branch_id")
         table = Table(_("Diamond sales"), [
             Column("category", _("Category")), Column("pieces", _("Pieces"), "int"),
-            Column("carats", _("Carats"), "weight"), Column("total", _("Sales total"), "money"),
+            Column("carats", _("Carats"), "weight"), Column("total", _("Net sales"), "money"),
+            Column("returned", _("Returned"), "money"),
             Column("discount", _("Discount"), "money"), Column("gold", _("Gold part"), "money"),
             Column("stones", _("Stones part"), "money"),
             Column("stone_cost", _("Stones' cost"), "money"),
             Column("margin", _("Margin on stones"), "money"),
             Column("margin_pct", _("Margin %"), "pct")],
-            note=_("Margin on stones = the stones part of the price − what the stones and the "
-                   "making cost. Returns are not deducted."))
-        for row in (lines.values("category__name").annotate(
-                pieces=Count("id"), carats=Sum("item__stone_weight_ct"),
-                total=Sum("line_total"), discount=Sum("discount_amount"),
-                gold=Sum("metal_amount"), stones=Sum("stones_amount"),
-                stone_cost=Sum("stone_cost_amount"), making_cost=Sum("cost_amount"))
-                .order_by("category__name")):
-            margin = row["stones"] - row["stone_cost"] - row.pop("making_cost")
-            table.rows.append({**row, "category": row.pop("category__name"), "margin": margin,
-                               "margin_pct": (margin * 100 / row["stones"]) if row["stones"]
+            note=_("Net of returns: what came back in the period is taken off at the figures "
+                   "of the original sale (Returned shows its price). Margin on stones = the "
+                   "stones part of the price − what the stones and the making cost."))
+        keys = ("pieces", "carats", "total", "discount", "gold", "stones", "stone_cost",
+                "making_cost")
+        cells = {}
+
+        def add(rows, sign, prefix=""):
+            for row in rows:
+                name = row.pop(f"{prefix}category__name")
+                cell = cells.setdefault(name, {key: ZERO for key in (*keys, "returned")})
+                for key in keys:
+                    cell[key] += sign * (row[key] or 0)
+                if sign < 0:
+                    cell["returned"] += row["total"] or 0
+
+        add(lines.values("category__name").annotate(
+            pieces=Count("id"), carats=Sum("item__stone_weight_ct"), total=Sum("line_total"),
+            discount=Sum("discount_amount"), gold=Sum("metal_amount"),
+            stones=Sum("stones_amount"), stone_cost=Sum("stone_cost_amount"),
+            making_cost=Sum("cost_amount")), 1)
+        add(back.values("original_line__category__name").annotate(
+            pieces=Count("id"), carats=Sum("original_line__item__stone_weight_ct"),
+            total=Sum("original_line__line_total"),
+            discount=Sum("original_line__discount_amount"),
+            gold=Sum("original_line__metal_amount"), stones=Sum("original_line__stones_amount"),
+            stone_cost=Sum("original_line__stone_cost_amount"),
+            making_cost=Sum("original_line__cost_amount")), -1, "original_line__")
+        for name, cell in sorted(cells.items()):
+            margin = cell["stones"] - cell["stone_cost"] - cell.pop("making_cost")
+            table.rows.append({**cell, "category": name, "margin": margin,
+                               "margin_pct": (margin * 100 / cell["stones"]) if cell["stones"]
                                else None})
         table.add_totals("category", _("Total"))
         if table.totals and table.totals.get("stones"):
@@ -178,3 +222,46 @@ class DiamondParcels(_DiamondReport):
             per_parcel.rows.append(cell)
         per_parcel.add_totals("parcel", _("Total"))
         return [per_parcel, listed]
+
+
+@register
+class DiamondSettings(_DiamondReport):
+    code = "diamond_settings"
+    section = "gold"
+    title = gettext_lazy("Stones set into pieces")
+    # Legacy GHPR22 (الماس المصنع من ذهب).
+    description = gettext_lazy("Diamond pieces made by setting stones into gold in a period: "
+                               "the piece, the setter, the gold before and after, the carats "
+                               "and what the stones and the labour cost.")
+    filters = (*DATE_FILTERS, BRANCH_FILTER)
+
+    def run(self, params, scope):
+        from .models import StoneSetting
+
+        start, end = params.date("date_from"), params.date("date_to")
+        settings = _in_scope(StoneSetting.objects.filter(
+            status=DocStatus.POSTED, business_date__range=(start, end))
+            .select_related("piece__category", "piece__karat__metal", "setter"), scope)
+        table = Table(_("Settings"), [
+            Column("number", _("Number"), "code"), Column("date", _("Date"), "date"),
+            Column("piece", _("Piece"), "code"), Column("category", _("Category")),
+            Column("karat", _("Karat")), Column("setter", _("Set by")),
+            Column("before", _("Gold before (g)"), "weight"),
+            Column("after", _("Weight after (g)"), "weight"),
+            Column("carats", _("Carats"), "weight"),
+            Column("stones", _("Stones' cost"), "money"), Column("labour", _("Labour"), "money"),
+            Column("cost", _("Added to the piece"), "money")])
+        for setting in settings.order_by("business_date", "id"):
+            piece = setting.piece
+            table.rows.append({
+                "number": setting.number, "date": setting.business_date,
+                "piece": piece.barcode, "category": piece.category.name,
+                "karat": piece.karat.label if piece.karat_id else "—",
+                "setter": setting.setter.name if setting.setter_id else _("In-house"),
+                "before": setting.gross_before_g, "after": setting.gross_after_g,
+                "carats": setting.stones_carat, "stones": setting.stones_cost,
+                "labour": setting.labour_amount,
+                "cost": setting.stones_cost + setting.labour_amount,
+                "_urls": {"number": f"/diamonds/settings/{setting.pk}/",
+                          "piece": f"/stock/items/{piece.pk}/"}})
+        return [table.add_totals("number", _("Total"))]

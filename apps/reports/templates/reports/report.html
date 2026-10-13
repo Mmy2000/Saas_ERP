@@ -19,6 +19,8 @@
   {% for spec in report.filters %}
     {% if spec.kind == "date" %}
       <label><span class="form-label">{{ spec.label }}</span><input type="date" name="{{ spec.key }}" class="form-input" value="{% for key, value in params.items %}{% if key == spec.key %}{{ value|date:'Y-m-d' }}{% endif %}{% endfor %}"></label>
+    {% elif spec.kind == "time" %}
+      <label><span class="form-label">{{ spec.label }}</span><input type="time" name="{{ spec.key }}" class="form-input" value="{% for key, value in params.items %}{% if key == spec.key and value %}{{ value|time:'H:i' }}{% endif %}{% endfor %}"></label>
     {% elif spec.kind == "branch" %}
       <label class="sm:w-56"><span class="form-label">{{ spec.label }}</span>
         <select name="{{ spec.key }}" class="form-input">
@@ -42,7 +44,7 @@
       <p class="text-sm text-slate-500">{{ report.title }}</p>
     </div>
     <div class="text-end text-sm text-slate-500">
-      {% if params.date %}<p class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}</p>{% endif %}
+      {% if params.date %}<p class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}{% if params.until and params.until != params.date %} → {{ params.until|date:"SHORT_DATE_FORMAT" }}{% endif %}{% if params.from_time or params.to_time %} · {{ params.from_time|time:"H:i"|default:"00:00" }}–{{ params.to_time|time:"H:i"|default:"23:59" }}{% endif %}</p>{% endif %}
       {% if params.date_from %}<p class="num">{{ params.date_from|date:"SHORT_DATE_FORMAT" }} → {{ params.date_to|date:"SHORT_DATE_FORMAT" }}</p>{% endif %}
       <p>{% if params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>
       <p class="text-xs text-slate-400">{% translate "Printed" %} <span class="num">{% now "SHORT_DATETIME_FORMAT" %}</span></p>

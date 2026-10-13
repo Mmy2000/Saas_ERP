@@ -484,6 +484,14 @@
     @apply -mx-1 -mt-1 mb-1 border-b border-slate-100 bg-surface px-3 py-2.5 text-sm text-slate-900 outline-none
            placeholder:text-slate-400;
   }
+  /* Tom Select's own sheet hard-codes white and light greys for an open select, chips and
+     group headers: use the theme's colours so dark mode stays dark. */
+  .ts-wrapper.single.input-active .ts-control, .ts-wrapper.full .ts-control,
+  .ts-wrapper.dropdown-active .ts-control { @apply bg-surface text-slate-900; }
+  .ts-wrapper.multi .ts-control > div { @apply rounded-md bg-slate-100 text-slate-800; }
+  .ts-wrapper.multi .ts-control > div.active { @apply bg-slate-200 text-slate-900; }
+  .ts-dropdown .optgroup-header { @apply bg-surface text-xs font-semibold text-slate-500; }
+  .ts-dropdown .optgroup + .optgroup { @apply border-slate-100; }
 }
 
 /* Loading (static/core/js/loading.js): a spinner where something is being done (a button, a

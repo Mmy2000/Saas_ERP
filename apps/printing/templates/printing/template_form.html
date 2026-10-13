@@ -20,9 +20,9 @@
         <div class="sm:col-span-2"><label class="form-label" for="f-name">{% translate "Name" %}</label>
           <input id="f-name" name="name" class="form-input" maxlength="100" value="{{ template.name }}"><p class="form-error" data-error-for="name"></p></div>
         <div><label class="form-label" for="f-media">{% translate "Printer" %}</label>
-          <select id="f-media" name="media" class="form-input" data-native>{% for v, l in medias %}<option value="{{ v }}" {% if v == template.media %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+          <select id="f-media" name="media" class="form-input">{% for v, l in medias %}<option value="{{ v }}" {% if v == template.media %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
         <div><label class="form-label" for="f-layout">{% translate "Layout" %}</label>
-          <select id="f-layout" name="layout" class="form-input" data-native>{% for v, l in layouts %}<option value="{{ v }}" {% if v == template.layout %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+          <select id="f-layout" name="layout" class="form-input">{% for v, l in layouts %}<option value="{{ v }}" {% if v == template.layout %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
         <div><label class="form-label" for="f-w">{% translate "Label width (mm)" %}</label><input id="f-w" name="width_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.width_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="width_mm"></p></div>
         <div><label class="form-label" for="f-h">{% translate "Label height (mm)" %}</label><input id="f-h" name="height_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.height_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="height_mm"></p></div>
         <div data-when-layout="split"><label class="form-label" for="f-tail">{% translate "Fold between the wings (mm)" %}</label><input id="f-tail" name="tail_mm" class="form-input num w-full text-start" inputmode="decimal" value="{{ template.tail_mm|floatformat:'-2' }}"><p class="form-error" data-error-for="tail_mm"></p></div>

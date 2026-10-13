@@ -463,6 +463,12 @@ msgstr "انتهى <strong class=\"font-semibold\">%(month)s</strong> وما ز�
 msgid "A backup was already asked for this minute."
 msgstr "تم طلب نسخة احتياطية في هذه الدقيقة بالفعل."
 
+msgid ""
+"A bank account serves several branches: each line is what was booked through"
+" it at that branch."
+msgstr ""
+"الحساب البنكي يخدم أكثر من فرع: كل سطر هو ما سُجّل من خلاله في ذلك الفرع."
+
 msgid "A big gold price change is waiting for you"
 msgstr "تغيّر كبير في سعر الذهب ينتظر موافقتك"
 
@@ -499,6 +505,13 @@ msgstr "أُرسل كود إلى {phone}."
 
 msgid "A code will be sent to the customer's phone"
 msgstr "سيُرسل كود إلى هاتف العميل"
+
+msgid ""
+"A day (or several, or a shift's hours) at a branch: sales, scrap received, "
+"money in and out of every cash box and bank account."
+msgstr ""
+"يوم (أو عدة أيام، أو ساعات وردية) في فرع: المبيعات والكسر المستلم والوارد "
+"والصادر لكل خزينة وحساب بنكي."
 
 msgid ""
 "A discount applies to the making charge only (the gold is always at the "
@@ -845,6 +858,9 @@ msgstr "أضاف"
 
 msgid "Added to the advances the employee owes, with no money moving."
 msgstr "أُضيفت إلى سلف الموظف دون حركة نقدية."
+
+msgid "Added to the piece"
+msgstr "المضاف للقطعة"
 
 msgid "Address"
 msgstr "العنوان"
@@ -1369,6 +1385,9 @@ msgstr "الحسابات البنكية"
 msgid "Bank accounts and card terminals"
 msgstr "الحسابات البنكية وماكينات الدفع"
 
+msgid "Bank accounts per branch"
+msgstr "الحسابات البنكية حسب الفرع"
+
 msgid "Bank charges"
 msgstr "مصروفات بنكية"
 
@@ -1716,6 +1735,9 @@ msgstr "بواسطة"
 msgid "By age"
 msgstr "حسب العمر"
 
+msgid "By branch"
+msgstr "حسب الفرع"
+
 msgid "By category"
 msgstr "حسب الصنف"
 
@@ -2022,6 +2044,9 @@ msgstr "نقدي"
 msgid "Cash & banks"
 msgstr "الخزائن والبنوك"
 
+msgid "Cash and bank balances"
+msgstr "أرصدة الخزائن والبنوك"
+
 msgid "Cash and bank movement"
 msgstr "حركة خزينة وبنك"
 
@@ -2211,6 +2236,9 @@ msgstr "معدّل"
 
 msgid "changed"
 msgstr "عدّل"
+
+msgid "Changes"
+msgstr "التعديلات"
 
 msgid "Changes to master data appear here as they happen."
 msgstr "تظهر هنا التعديلات على البيانات الأساسية فور حدوثها."
@@ -3567,6 +3595,9 @@ msgstr "ألماس"
 msgid "Diamond piece"
 msgstr "قطعة ألماس"
 
+msgid "Diamond pieces"
+msgstr "قطع الماس"
+
 msgid ""
 "Diamond pieces and loose stones from a supplier, each with its stones, "
 "certificate and selling price. The gold is owed in fine grams, the stones "
@@ -3577,10 +3608,10 @@ msgstr ""
 
 msgid ""
 "Diamond pieces and loose stones on hand: carats, what the stones cost and "
-"the label value, by category and by stone."
+"the label value, by category, by branch and by stone."
 msgstr ""
-"قطع الألماس والأحجار السائبة في المخزون: القيراط وتكلفة الأحجار وقيمة "
-"الملصقات، حسب الصنف وحسب الحجر."
+"قطع الماس والأحجار السائبة في المخزون: القيراط وتكلفة الأحجار وقيمة الليبل، "
+"حسب المجموعة والفرع ونوع الحجر."
 
 msgid ""
 "Diamond pieces and loose stones sold in a period: the gold part, the stones "
@@ -3596,6 +3627,14 @@ msgstr "قطع الألماس والأحجار السائبة: أحجارها و
 
 msgid "Diamond pieces are sold at their label price, not by weight."
 msgstr "تُباع قطع الألماس بسعر الملصق وليس بالوزن."
+
+msgid ""
+"Diamond pieces made by setting stones into gold in a period: the piece, the "
+"setter, the gold before and after, the carats and what the stones and the "
+"labour cost."
+msgstr ""
+"قطع الماس المصنعة بتركيب الأحجار على الذهب في فترة: القطعة والمركّب والذهب "
+"قبل وبعد والقيراط وتكلفة الأحجار والمصنعية."
 
 msgid "Diamond sales"
 msgstr "مبيعات الألماس"
@@ -3623,6 +3662,9 @@ msgstr "الفرق (قيراط)"
 
 msgid "Difference (g)"
 msgstr "الفرق (جم)"
+
+msgid "Difference = entered − their total; empty where they gave no total."
+msgstr "الفرق = المُدخل − إجمالي المورد؛ فارغ حيث لم يُذكر إجمالي."
 
 msgid "Difference with other branches"
 msgstr "فرق مع الفروع الأخرى"
@@ -4211,6 +4253,13 @@ msgid "Every change made from the platform console, and by whom."
 msgstr "كل تغيير تم من لوحة المنصة، ومن قام به."
 
 msgid ""
+"Every change to a piece's label price or discount class in a period: the "
+"piece, before and after, who and when."
+msgstr ""
+"كل تعديل على سعر الليبل أو فئة الخصم لقطعة في فترة: القطعة وقبل وبعد ومن "
+"ومتى."
+
+msgid ""
 "Every change to prices, customers and suppliers, pieces, users, roles, cash "
 "boxes and settings: who made it, when, and what it was before."
 msgstr ""
@@ -4232,6 +4281,9 @@ msgstr ""
 
 msgid "Every finished month is closed."
 msgstr "كل الشهور المنتهية مقفلة."
+
+msgid "Every invoice with their totals"
+msgstr "كل فاتورة بها إجماليات المورد"
 
 msgid "Every message sent is listed in Settings → Sent messages."
 msgstr "كل رسالة مرسلة تظهر في الإعدادات ← الرسائل المرسلة."
@@ -4448,6 +4500,9 @@ msgstr "ذهب صافٍ (جم)"
 msgid "Fine gold credited (g)"
 msgstr "الذهب الصافي المخصوم (جم)"
 
+msgid "Fine gold difference (g)"
+msgstr "فرق الذهب الصافي (جم)"
+
 msgid "Fine gold in the goods"
 msgstr "الذهب الصافي في المشغولات"
 
@@ -4550,6 +4605,9 @@ msgstr "المساحة على كل قرص"
 
 msgid "From"
 msgstr "من"
+
+msgid "From hour"
+msgstr "من الساعة"
 
 msgid "From or to"
 msgstr "من / إلى"
@@ -4691,6 +4749,9 @@ msgstr "أرصدة الذهب"
 
 msgid "Gold balances settled in money"
 msgstr "تسوية أرصدة ذهب نقدًا"
+
+msgid "Gold before (g)"
+msgstr "الذهب قبل (جم)"
 
 msgid "Gold by weight"
 msgstr "ذهب بالوزن"
@@ -5414,6 +5475,9 @@ msgstr "سعر الملصق"
 msgid "Label price (diamonds)"
 msgstr "سعر التيكت (ألماس)"
 
+msgid "Label price and discount changes"
+msgstr "تعديلات سعر الليبل والخصم"
+
 msgid "Label sizes and what is printed on each piece's tag."
 msgstr "مقاسات الملصقات وما يُطبع على ملصق كل قطعة."
 
@@ -5827,6 +5891,9 @@ msgstr "تكلفة المصنعية"
 msgid "Making cost / g"
 msgstr "تكلفة المصنعية / جم"
 
+msgid "Making difference"
+msgstr "فرق المصنعية"
+
 msgid "Making per gram"
 msgstr "المصنعية للجرام"
 
@@ -5891,13 +5958,6 @@ msgstr ""
 
 msgid "Margin on stones"
 msgstr "هامش الأحجار"
-
-msgid ""
-"Margin on stones = the stones part of the price − what the stones and the "
-"making cost. Returns are not deducted."
-msgstr ""
-"هامش الأحجار = جزء الأحجار من السعر − تكلفة الأحجار والمصنعية. لا تُخصم "
-"المرتجعات."
 
 msgid "Mark all as read"
 msgstr "تحديد الكل كمقروء"
@@ -6127,6 +6187,9 @@ msgstr "التقرير الشهري · %(company)s · %(month)s"
 msgid "Monthly salary"
 msgstr "الراتب الشهري"
 
+msgid "Months"
+msgstr "الشهور"
+
 msgid "Months are closed in order: close %(month)s first."
 msgstr "تُقفل الشهور بالترتيب: أقفل %(month)s أولًا."
 
@@ -6303,6 +6366,9 @@ msgstr "الصافي عيار 21 (جم)"
 msgid "Net by karat"
 msgstr "الصافي حسب العيار"
 
+msgid "Net carats"
+msgstr "صافي القيراط"
+
 msgid "Net fine (g)"
 msgstr "صافي الذهب (جم)"
 
@@ -6311,6 +6377,14 @@ msgstr "صافي الخسارة"
 
 msgid "Net making"
 msgstr "صافي المصنعية"
+
+msgid ""
+"Net of returns: what came back in the period is taken off at the figures of "
+"the original sale (Returned shows its price). Margin on stones = the stones "
+"part of the price − what the stones and the making cost."
+msgstr ""
+"صافي بعد المرتجعات: ما عاد في الفترة يُخصم بأرقام البيع الأصلي (المرتجع يعرض"
+" سعره). ربح الأحجار = جزء الأحجار من السعر − تكلفة الأحجار والمصنعية."
 
 msgid "Net other income"
 msgstr "صافي الإيرادات الأخرى"
@@ -7157,13 +7231,6 @@ msgid "One currency only"
 msgstr "عملة واحدة فقط"
 
 msgid ""
-"One day at a branch: sales, scrap received, money in and out of every cash "
-"box and bank account."
-msgstr ""
-"يوم واحد في فرع: المبيعات، والكسر المستلم، والوارد والمنصرف من كل خزينة "
-"وحساب بنكي."
-
-msgid ""
 "One message to many customers from the shop's WhatsApp number, sent slowly, "
 "during the day, a limited number a day."
 msgstr ""
@@ -7295,6 +7362,9 @@ msgstr "يعدّله فريق المنصة فقط"
 
 msgid "Only these barcodes"
 msgstr "هذه الباركودات فقط"
+
+msgid "Only those that differ"
+msgstr "التي بها فروق فقط"
 
 msgid "Only work done by a workshop has a labour charge."
 msgstr "المصنعية تُحسب فقط للعمل الذي تنفذه ورشة."
@@ -7831,11 +7901,17 @@ msgstr "لجرام عيار 21"
 msgid "per customer/supplier"
 msgstr "لكل عميل/مورد"
 
+msgid "Per employee"
+msgstr "حسب الموظف"
+
 msgid "per gram"
 msgstr "لكل جرام"
 
 msgid "Per minute: now / busiest"
 msgstr "في الدقيقة: الآن / الأعلى"
+
+msgid "Per month"
+msgstr "حسب الشهر"
 
 msgid "Per order"
 msgstr "حسب الأمر"
@@ -7959,6 +8035,9 @@ msgid ""
 "Pieces customers brought back, newest first. A return is made from its sale."
 msgstr ""
 "القطع التي أرجعها العملاء، الأحدث أولًا. يتم الإرجاع من الفاتورة نفسها."
+
+msgid "Pieces difference"
+msgstr "فرق القطع"
 
 msgid "Pieces get barcodes starting with it."
 msgstr "باركود القطع يبدأ به."
@@ -8415,8 +8494,18 @@ msgstr "فاتورة شراء"
 msgid "Purchases"
 msgstr "المشتريات"
 
+msgid "Purchases against their invoices"
+msgstr "المشتريات مقابل فواتير الموردين"
+
 msgid "Purchases not posted yet"
 msgstr "مشتريات لم تُرحَّل بعد"
+
+msgid ""
+"Purchases whose supplier's own totals were typed in, compared with what was "
+"entered line by line: pieces, weight, fine gold and making charges."
+msgstr ""
+"المشتريات التي أُدخلت لها إجماليات فاتورة المورد، مقارنة بما أُدخل بندًا "
+"بندًا: القطع والوزن والذهب الصافي والمصنعية."
 
 msgid "Purchasing"
 msgstr "المشتريات"
@@ -9102,6 +9191,13 @@ msgstr "سارية الآن"
 msgid "Salaries"
 msgstr "المرتبات"
 
+msgid ""
+"Salaries paid over any months: per employee and per month, the salary, "
+"commission, bonuses, deductions, advances taken back and net pay."
+msgstr ""
+"المرتبات المصروفة عن أي شهور: حسب الموظف وحسب الشهر، المرتب والعمولة "
+"والمكافآت والخصومات والسلف المخصومة وصافي المرتب."
+
 msgid "Salary"
 msgstr "الراتب"
 
@@ -9202,11 +9298,11 @@ msgid "Salespeople"
 msgstr "تقييم الموظفين"
 
 msgid ""
-"Salespeople ranked by net gold sold (21K equivalent): sales, returns, net "
-"sales, profit and profit per gram."
+"Salespeople ranked by net gold sold (21K equivalent), or by net sales for "
+"diamonds and stones: sales, returns, net sales, profit and profit per gram."
 msgstr ""
-"ترتيب الموظفين حسب صافي الذهب المباع (معادل عيار 21): المبيعات والمرتجعات "
-"وصافي المبيعات والربح والربح للجرام."
+"ترتيب البائعين حسب صافي الذهب المباع (معادل عيار 21)، أو حسب صافي المبيعات "
+"للماس والأحجار: المبيعات والمرتجعات وصافي المبيعات والربح وربح الجرام."
 
 msgid "Salesperson"
 msgstr "البائع"
@@ -9698,6 +9794,9 @@ msgid ""
 msgstr ""
 "اضبط BACKUP_DATABASE_URL على دور المنصة الذي يقرأ كل العملاء (app_platform)،"
 " وثبّت أدوات PostgreSQL (pg_dump) على الخادم."
+
+msgid "Set by"
+msgstr "ركّبها"
 
 msgid ""
 "Set how gold prices follow the market, update them now, approve big changes"
@@ -10265,6 +10364,9 @@ msgstr "تركيب أحجار في %(barcode)s"
 
 msgid "Stones set in it"
 msgstr "الأحجار المركّبة فيها"
+
+msgid "Stones set into pieces"
+msgstr "تركيب الأحجار على القطع"
 
 msgid "Stones set."
 msgstr "تم تركيب الأحجار."
@@ -10838,6 +10940,9 @@ msgstr[3] "أحدث %(n)s"
 msgstr[4] "أحدث %(n)s"
 msgstr[5] "أحدث %(n)s"
 
+msgid "The newest 2,000 changes of the period at most."
+msgstr "أحدث 2,000 تعديل في الفترة كحد أقصى."
+
 msgid "The Owner role cannot be changed."
 msgstr "لا يمكن تعديل دور المالك."
 
@@ -11101,6 +11206,9 @@ msgstr "رقمهم"
 
 msgid "Their no."
 msgstr "رقمهم"
+
+msgid "Their number"
+msgstr "رقم فاتورة المورد"
 
 msgid "Theirs"
 msgstr "عند المورد"
@@ -11430,6 +11538,9 @@ msgid ""
 "server."
 msgstr ""
 "لتصلك رسالة بريد عند ظهور خطأ جديد، اضبط ERROR_ALERT_EMAILS على الخادم."
+
+msgid "To hour"
+msgstr "إلى الساعة"
 
 msgid "to move"
 msgstr "للتنقل"
@@ -11775,6 +11886,9 @@ msgstr "غير مُسوّى"
 msgid "Until"
 msgstr "حتى"
 
+msgid "Until (optional)"
+msgstr "حتى (اختياري)"
+
 msgid ""
 "Up to %(cap)s a day, between 9:00 and 21:00, every %(low)s–%(high)s seconds."
 msgstr "حتى %(cap)s يوميًا، بين 9:00 و21:00، كل %(low)s–%(high)s ثانية."
@@ -11881,6 +11995,9 @@ msgstr "القيمة"
 
 msgid "Value today"
 msgstr "القيمة اليوم"
+
+msgid "Value: in the company currency, at what the money was booked at."
+msgstr "القيمة: بعملة الشركة، بالسعر الذي سُجّلت به."
 
 msgid "VAT payable"
 msgstr "ضريبة القيمة المضافة المستحقة"
@@ -12033,6 +12150,9 @@ msgstr "الوزن بعد (جم)"
 msgid "Weight after setting (g)"
 msgstr "الوزن بعد التركيب (جم)"
 
+msgid "Weight difference (g)"
+msgstr "فرق الوزن (جم)"
+
 msgid "Weight from (g)"
 msgstr "الوزن من (جم)"
 
@@ -12131,6 +12251,12 @@ msgstr ""
 
 msgid "What each workshop holds"
 msgstr "ما لدى كل ورشة"
+
+msgid ""
+"What every cash box and bank account held at the end of any day, per branch,"
+" in its own currency and in the company currency."
+msgstr ""
+"رصيد كل خزينة وحساب بنكي في نهاية أي يوم، حسب الفرع، بعملته وبعملة الشركة."
 
 msgid "What happened"
 msgstr "الحركة"

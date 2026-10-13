@@ -1,7 +1,7 @@
 {% extends "printing/sheet.html" %}
 {% load i18n ui %}
 {% block meta %}
-    {% if params.date %}<p><span class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}</span></p>{% endif %}
+    {% if params.date %}<p><span class="num">{{ params.date|date:"SHORT_DATE_FORMAT" }}{% if params.until and params.until != params.date %} → {{ params.until|date:"SHORT_DATE_FORMAT" }}{% endif %}{% if params.from_time or params.to_time %} · {{ params.from_time|time:"H:i"|default:"00:00" }}–{{ params.to_time|time:"H:i"|default:"23:59" }}{% endif %}</span></p>{% endif %}
     {% if params.date_from %}<p><bdi dir="ltr"><span class="num">{{ params.date_from|date:"SHORT_DATE_FORMAT" }}</span> → <span class="num">{{ params.date_to|date:"SHORT_DATE_FORMAT" }}</span></bdi></p>{% endif %}
     <p>{% if params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>
 {% endblock %}

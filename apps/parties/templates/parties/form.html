@@ -105,7 +105,7 @@
         </div>
         <div>
           <label class="form-label" for="f-tier">{% translate "Customer class" %}</label>
-          <select id="f-tier" name="tier" class="form-input" data-native>
+          <select id="f-tier" name="tier" class="form-input">
             <option value="">—</option>
             {% for value, label in tiers %}<option value="{{ value }}" {% if profile.tier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>

@@ -36,19 +36,19 @@
     <form method="get" class="grid grid-cols-2 gap-3 px-4 pb-4 sm:grid-cols-3 lg:grid-cols-5 lg:items-end">
       <input type="hidden" name="q" value="{{ term }}"><input type="hidden" name="status" value="{{ status }}">
       <label><span class="form-label">{% translate "Customer class" %}</span>
-        <select name="tier" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for value, label in tiers %}<option value="{{ value }}" {% if crm.tier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <select name="tier" class="form-input"><option value="">{% translate "Any" %}</option>{% for value, label in tiers %}<option value="{{ value }}" {% if crm.tier == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
       <label><span class="form-label">{% translate "City" %}</span>
-        <select name="city" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for city in cities %}<option value="{{ city }}" {% if crm.city == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
+        <select name="city" class="form-input"><option value="">{% translate "Any" %}</option>{% for city in cities %}<option value="{{ city }}" {% if crm.city == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
       {% if branches|length > 1 %}<label><span class="form-label">{% translate "Branch" %}</span>
-        <select name="branch" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for b in branches %}<option value="{{ b.pk }}" {% if crm.branch == b.pk|stringformat:"d" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
+        <select name="branch" class="form-input"><option value="">{% translate "Any" %}</option>{% for b in branches %}<option value="{{ b.pk }}" {% if crm.branch == b.pk|stringformat:"d" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
       <label><span class="form-label">{% translate "Gender" %}</span>
-        <select name="gender" class="form-input" data-native><option value="">{% translate "Any" %}</option>{% for value, label in genders %}<option value="{{ value }}" {% if crm.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <select name="gender" class="form-input"><option value="">{% translate "Any" %}</option>{% for value, label in genders %}<option value="{{ value }}" {% if crm.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
       <label><span class="form-label">{% translate "Birthday" %}</span>
-        <select name="birthday" class="form-input" data-native><option value="">{% translate "Any time" %}</option>
+        <select name="birthday" class="form-input"><option value="">{% translate "Any time" %}</option>
           <option value="week" {% if crm.birthday == "week" %}selected{% endif %}>{% translate "In the next 7 days" %}</option>
           <option value="month" {% if crm.birthday == "month" %}selected{% endif %}>{% translate "In the next 30 days" %}</option></select></label>
       <label><span class="form-label">{% translate "Anniversary" %}</span>
-        <select name="anniversary" class="form-input" data-native><option value="">{% translate "Any time" %}</option>
+        <select name="anniversary" class="form-input"><option value="">{% translate "Any time" %}</option>
           <option value="week" {% if crm.anniversary == "week" %}selected{% endif %}>{% translate "In the next 7 days" %}</option>
           <option value="month" {% if crm.anniversary == "month" %}selected{% endif %}>{% translate "In the next 30 days" %}</option></select></label>
       <label><span class="form-label">{% translate "Bought in the last (days)" %}</span>
@@ -58,7 +58,7 @@
       <label><span class="form-label">{% translate "Bought at least" %}</span>
         <input name="min_total" value="{{ crm.min_total }}" class="form-input num w-full text-start" inputmode="decimal"></label>
       <label><span class="form-label">{% translate "Balance" %}</span>
-        <select name="balance" class="form-input" data-native><option value="">{% translate "Any" %}</option>
+        <select name="balance" class="form-input"><option value="">{% translate "Any" %}</option>
           <option value="owes" {% if crm.balance == "owes" %}selected{% endif %}>{% translate "They owe us" %}</option>
           <option value="owed" {% if crm.balance == "owed" %}selected{% endif %}>{% translate "We owe them" %}</option></select></label>
       <div class="col-span-2 flex gap-2 sm:col-span-3 lg:col-span-5">

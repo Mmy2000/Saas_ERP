@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
+from apps.catalog.models import ProductFamily
 from apps.core.documents import document_url
 from apps.core.models import DocStatus
 from apps.ledger.models import BalanceProjection
@@ -36,24 +37,41 @@ def eq21(fine) -> Decimal:
     return ((fine or ZERO) * 1000 / REFERENCE_FINENESS).quantize(Decimal("0.001"))
 
 
+# Goods: everything, gold (and silver, bullion…) only, or diamonds and stones only.
+FAMILIES = (("", gettext_lazy("All goods")), ("gold", gettext_lazy("Gold")),
+            ("diamonds", gettext_lazy("Diamonds and stones")))
+DIAMOND_FAMILIES = (ProductFamily.DIAMOND, ProductFamily.STONE)
+FAMILY_FILTER = Filter("family", "choice", gettext_lazy("Goods"), FAMILIES)
+
+
+def _family(queryset, value, field):
+    if value == "gold":
+        return queryset.exclude(**{f"{field}__in": DIAMOND_FAMILIES})
+    if value == "diamonds":
+        return queryset.filter(**{f"{field}__in": DIAMOND_FAMILIES})
+    return queryset
+
+
 def _profit(line) -> Decimal:
     return line.line_total - line.metal_amount - line.cost_amount - line.stone_cost_amount
 
 
-def _sold(start, end, scope):
+def _sold(start, end, scope, family=""):
     lines = (SalesInvoiceLine.objects.filter(invoice__status=DocStatus.POSTED,
                                              invoice__business_date__range=(start, end))
              .select_related("invoice__sold_by", "invoice__branch", "item", "category",
                              "karat__metal"))
+    lines = _family(lines, family, "category__product_family")
     return lines if scope is None else lines.filter(invoice__branch_id__in=scope)
 
 
-def _returned(start, end, scope):
+def _returned(start, end, scope, family=""):
     lines = (SalesReturnLine.objects.filter(sales_return__status=DocStatus.POSTED,
                                             sales_return__business_date__range=(start, end))
              .select_related("sales_return__branch", "original_line__invoice__sold_by",
                              "original_line__item", "original_line__category",
                              "original_line__karat__metal"))
+    lines = _family(lines, family, "original_line__category__product_family")
     return lines if scope is None else lines.filter(sales_return__branch_id__in=scope)
 
 
@@ -78,7 +96,8 @@ class SalesProfit(Report):
     filters = (*DATE_FILTERS, BRANCH_FILTER,
                Filter("show", "choice", gettext_lazy("Show"),
                       (("all", gettext_lazy("All pieces")),
-                       ("losses", gettext_lazy("Sold at a loss"))), "all"))
+                       ("losses", gettext_lazy("Sold at a loss"))), "all"),
+               FAMILY_FILTER)
 
     COLUMNS = (("date", gettext_lazy("Date"), "date"),
                ("document", gettext_lazy("Invoice"), "text"),
@@ -113,7 +132,9 @@ class SalesProfit(Report):
         sold = Table(_("Pieces sold"), columns)
         by_karat = defaultdict(lambda: {"pieces": 0, "weight": ZERO, "fine": ZERO,
                                         "sales": ZERO, "profit": ZERO})
-        for line in _sold(start, end, scope).order_by("invoice__business_date", "invoice_id",
+        family = params.get("family") or ""
+        for line in _sold(start, end, scope, family).order_by("invoice__business_date",
+                                                              "invoice_id",
                                                        "position"):
             if losses and _profit(line) >= 0:
                 continue
@@ -132,7 +153,8 @@ class SalesProfit(Report):
 
         back = Table(_("Returned in the period"), columns,
                      note=_("Taken off at the figures of the original sale."))
-        for return_line in _returned(start, end, scope).order_by("sales_return__business_date"):
+        for return_line in _returned(start, end, scope, family).order_by(
+                "sales_return__business_date"):
             line = return_line.original_line
             if losses and _profit(line) >= 0:
                 continue
@@ -174,7 +196,7 @@ NET_GROUPS = (("karat", gettext_lazy("Karat")), ("category", gettext_lazy("Categ
               ("day", gettext_lazy("Day")))
 
 
-def _net_rows(start, end, scope, group: str) -> dict:
+def _net_rows(start, end, scope, group: str, family: str = "") -> dict:
     """{group label: sold and returned figures}. Returns count on their own day and branch."""
     def key(line, day, branch):
         if group == "karat":
@@ -189,7 +211,7 @@ def _net_rows(start, end, scope, group: str) -> dict:
         return day
 
     rows = defaultdict(lambda: defaultdict(lambda: ZERO))
-    for line in _sold(start, end, scope):
+    for line in _sold(start, end, scope, family):
         cell = rows[key(line, line.invoice.business_date, line.invoice.branch)]
         cell["invoices_set"] = cell.get("invoices_set") or set()
         cell["invoices_set"].add(line.invoice_id)
@@ -198,7 +220,8 @@ def _net_rows(start, end, scope, group: str) -> dict:
         cell["sold21"] += eq21(line.fine_weight_g) if _is_gold(line) else ZERO
         cell["sold"] += line.line_total
         cell["profit"] += _profit(line)
-    for return_line in _returned(start, end, scope):
+        cell["carats"] += line.item.stone_weight_ct if line.item_id else ZERO
+    for return_line in _returned(start, end, scope, family):
         line, sales_return = return_line.original_line, return_line.sales_return
         cell = rows[key(line, sales_return.business_date, sales_return.branch)]
         cell["returned_pieces"] += line.qty
@@ -206,6 +229,7 @@ def _net_rows(start, end, scope, group: str) -> dict:
         cell["returned21"] += eq21(line.fine_weight_g) if _is_gold(line) else ZERO
         cell["returned"] += line.line_total
         cell["profit"] -= _profit(line)
+        cell["carats"] -= line.item.stone_weight_ct if line.item_id else ZERO
     for cell in rows.values():
         cell["invoices"] = len(cell.pop("invoices_set", None) or ())
         cell["net_g"] = cell["sold_g"] - cell["returned_g"]
@@ -222,12 +246,15 @@ class NetSales(Report):
     description = gettext_lazy("Sold, returned and net in a period by karat, category, branch, "
                                "salesperson or day, in grams, 21K equivalent and money.")
     filters = (*DATE_FILTERS, BRANCH_FILTER,
-               Filter("group", "choice", gettext_lazy("Group by"), NET_GROUPS, "karat"))
+               Filter("group", "choice", gettext_lazy("Group by"), NET_GROUPS, "karat"),
+               FAMILY_FILTER)
 
     def run(self, params, scope):
         group = params.get("group") or "karat"
         label = str(dict(NET_GROUPS)[group])
-        rows = _net_rows(params.date("date_from"), params.date("date_to"), scope, group)
+        family = params.get("family") or ""
+        rows = _net_rows(params.date("date_from"), params.date("date_to"), scope, group,
+                         family)
         table = Table(_("Net sales"), [
             Column("group", label, "date" if group == "day" else "text"),
             Column("pieces", _("Pieces sold"), "int"), Column("sold_g", _("Sold (g)"), "weight"),
@@ -237,6 +264,8 @@ class NetSales(Report):
             Column("returned", _("Returned"), "money"),
             Column("net_g", _("Net (g)"), "weight"), Column("net21", _("Net 21K (g)"), "weight"),
             Column("net", _("Net sales"), "money"), Column("profit", _("Net profit"), "money")])
+        if family == "diamonds":  # stones are counted in carats, not grams of gold
+            table.columns.insert(-2, Column("carats", _("Net carats"), "weight"))
         for name, cell in sorted(rows.items(), key=lambda pair: str(pair[0])):
             table.rows.append({"group": name, **cell})
         return [table.add_totals("group", _("Total"))]
@@ -247,12 +276,15 @@ class Salespeople(Report):
     code = "salespeople"
     section = "sales"
     title = gettext_lazy("Salespeople")
-    description = gettext_lazy("Salespeople ranked by net gold sold (21K equivalent): sales, "
-                               "returns, net sales, profit and profit per gram.")
-    filters = (*DATE_FILTERS, BRANCH_FILTER)
+    description = gettext_lazy("Salespeople ranked by net gold sold (21K equivalent), or by "
+                               "net sales for diamonds and stones: sales, returns, net sales, "
+                               "profit and profit per gram.")
+    filters = (*DATE_FILTERS, BRANCH_FILTER, FAMILY_FILTER)
 
     def run(self, params, scope):
-        rows = _net_rows(params.date("date_from"), params.date("date_to"), scope, "seller")
+        family = params.get("family") or ""
+        rows = _net_rows(params.date("date_from"), params.date("date_to"), scope, "seller",
+                         family)
         table = Table(_("Salespeople"), [
             Column("rank", _("Rank"), "int"), Column("seller", _("Salesperson")),
             Column("invoices", _("Sales"), "int"), Column("pieces", _("Pieces"), "int"),
@@ -263,7 +295,15 @@ class Salespeople(Report):
             Column("profit", _("Net profit"), "money"), Column("margin", _("Profit %"), "pct"),
             Column("per_g", _("Profit per 21K gram"), "money")],
             note=_("Returns count against whoever made the sale, on the day they came back."))
-        ranked = sorted(rows.items(), key=lambda pair: (-pair[1]["net21"], -pair[1]["net"]))
+        if family == "diamonds":  # no gold weight to rank by: net sales, then carats
+            table.columns = [c for c in table.columns
+                             if c.key not in ("sold21", "returned21", "net21", "per_g")]
+            table.columns.insert(-2, Column("carats", _("Net carats"), "weight"))
+            ranked = sorted(rows.items(), key=lambda pair: (-pair[1]["net"],
+                                                            -pair[1]["carats"]))
+        else:
+            ranked = sorted(rows.items(), key=lambda pair: (-pair[1]["net21"],
+                                                            -pair[1]["net"]))
         for rank, (name, cell) in enumerate(ranked, start=1):
             table.rows.append({"rank": rank, "seller": name, **cell,
                                "margin": cell["profit"] * 100 / cell["net"] if cell["net"]

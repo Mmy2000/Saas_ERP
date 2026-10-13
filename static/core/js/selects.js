@@ -1,7 +1,7 @@
 // Every <select> becomes searchable (Tom Select, loaded as window.TomSelect before this module).
 //
 //   <select>                         searchable list of its own options
-//   <select data-native>             left as a plain browser select
+//   <select data-native>             left as a browser select (avoid: it ignores the theme)
 //   <select data-remote="/api/v1/parties/customers/" data-label-field="name">
 //                                    options come from the API (?q=… search, first page)
 //
@@ -65,11 +65,36 @@ export function enhanceSelects(root = document) {
       ...(select.dataset.remote ? remoteOptions(select) : {}),
     };
     const control = new TomSelect(select, options);
+    keepInSync(select, control);
     // Mirror server-side validation state (forms.js sets aria-invalid on the <select>).
     new MutationObserver(() => {
       if (select.getAttribute("aria-invalid") === "true") control.wrapper.setAttribute("aria-invalid", "true");
       else control.wrapper.removeAttribute("aria-invalid");
     }).observe(select, { attributes: true, attributeFilter: ["aria-invalid"] });
+  });
+}
+
+// Scripts set `select.value = …` (a group's next code, a branch's default…): the enhanced
+// control follows, so every select can be enhanced and keep working with plain DOM code.
+const NATIVE_VALUE = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
+
+function keepInSync(select, control) {
+  let syncing = false;
+  Object.defineProperty(select, "value", {
+    configurable: true,
+    get() {
+      return NATIVE_VALUE.get.call(this);
+    },
+    set(value) {
+      NATIVE_VALUE.set.call(this, value);
+      if (syncing) return;
+      syncing = true;
+      try {
+        control.setValue(value, true);
+      } finally {
+        syncing = false;
+      }
+    },
   });
 }
 

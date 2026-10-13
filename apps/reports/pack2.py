@@ -13,11 +13,11 @@ from django.db.models import Count, Q, Sum
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
-from apps.catalog.models import Karat, ProductFamily
+from apps.catalog.models import Karat
 from apps.core.models import DocStatus
 
 from .registry import BRANCH_FILTER, DATE_FILTERS, Column, Filter, Report, Table, register
-from .sales_reports import eq21
+from .sales_reports import DIAMOND_FAMILIES, FAMILIES, _family, eq21  # noqa: F401
 
 ZERO = Decimal(0)
 
@@ -40,17 +40,6 @@ def _parties(role):
     return choices
 
 
-FAMILIES = (("", gettext_lazy("All goods")), ("gold", gettext_lazy("Gold")),
-            ("diamonds", gettext_lazy("Diamonds and stones")))
-DIAMOND_FAMILIES = (ProductFamily.DIAMOND, ProductFamily.STONE)
-
-
-def _family(queryset, value, field):
-    if value == "gold":
-        return queryset.exclude(**{f"{field}__in": DIAMOND_FAMILIES})
-    if value == "diamonds":
-        return queryset.filter(**{f"{field}__in": DIAMOND_FAMILIES})
-    return queryset
 
 
 # --- purchases --------------------------------------------------------------------------------

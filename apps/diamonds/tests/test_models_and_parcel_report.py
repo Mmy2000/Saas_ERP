@@ -60,3 +60,20 @@ def test_parcel_report(tenant_a, melee):
     assert len(tables["Deals"].rows) == 4
     client = login(tenant_a, language="en")
     assert client.get("/reports/diamond_parcels/").status_code == 200
+
+
+def test_stock_by_branch_and_settings_report(tenant_a, shop):
+    with tenant_context(tenant_a.id):
+        receive_model(shop, "")
+        with translation.override("en"):
+            report = REPORTS["diamond_stock"]()
+            tables = {str(t.title): t for t in report.run(
+                report.parse({}, Branch.objects.all()), None)}
+            [branch] = tables["By branch"].rows
+            assert branch["pieces"] == 1 and branch["carats"] == Decimal("0.740")
+            settings = REPORTS["diamond_settings"]()
+            [table] = settings.run(settings.parse({}, Branch.objects.all()), None)
+            assert table.rows == []
+    client = login(tenant_a, language="en")
+    for code in ("diamond_settings", "diamond_sales"):
+        assert client.get(f"/reports/{code}/").status_code == 200, code

@@ -45,3 +45,20 @@ def test_detail_page(tenant_a, shop):
     assert listing.status_code == 200 and invoice.number is None
     form = client.get(f"/purchasing/{invoice.pk}/edit/").content.decode()
     assert "Totals on their invoice" in form and 'value="11.000"' in form
+
+
+def test_coding_differences_report(shop):
+    from apps.org.models import Branch
+    from apps.reports.registry import REPORTS
+
+    draft(shop, stated_pieces=2, stated_weight_g="11")  # matches
+    differs = draft(shop, stated_weight_g="12.250")
+    with translation.override("en"):
+        report = REPORTS["coding_differences"]()
+        [table] = report.run(report.parse({"date_from": str(DAY)}, Branch.objects.all()), None)
+        [row] = table.rows
+        assert row["weight"] == Decimal("-1.250") and "pieces" not in row
+        assert row["_urls"]["number"] == f"/purchasing/{differs.pk}/"
+        [every] = report.run(report.parse({"date_from": str(DAY), "show": "all"},
+                                          Branch.objects.all()), None)
+        assert len(every.rows) == 2

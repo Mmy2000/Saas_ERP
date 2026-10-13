@@ -52,14 +52,14 @@
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div>
           <label class="form-label" for="f-method">{% translate "Cash box or bank" %}</label>
-          <select id="f-method" name="method" class="form-input" data-method-select data-native>
+          <select id="f-method" name="method" class="form-input" data-method-select>
             <option value="cash">{% translate "Cash" %}</option>
             <option value="bank_transfer">{% translate "Bank account" %}</option>
           </select>
         </div>
         <div>
           <label class="form-label" for="f-currency">{% translate "Currency" %}</label>
-          <select id="f-currency" name="currency" class="form-input" data-currency data-native>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select>
+          <select id="f-currency" name="currency" class="form-input" data-currency>{% for c in currencies %}<option value="{{ c.code }}" {% if c.code == home_currency %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="currency"></p>
         </div>
         <div>

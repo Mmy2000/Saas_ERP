@@ -8,6 +8,7 @@ from . import (  # noqa: F401  (fill the registry)
     gold_reports,
     pack2,
     pack3,
+    pack4,
     receivables,
     sales_reports,
     statements,
