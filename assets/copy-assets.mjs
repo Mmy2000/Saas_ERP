@@ -40,6 +40,7 @@ const icons = [
   "cpu", "memory-stick", "hard-drive", "server", "database", "bug", "activity", "triangle-alert", "arrow-down-up",
   "calendar-check", "lock-open", "banknote", "flame", "hammer", "sparkles", "file-down", "percent",
   "bell", "bell-off", "star", "log-in", "check-check", "link", "megaphone", "qr-code", "eye-off", "image", "image-off", "upload",
+  "user", "lock-keyhole", "eye", "mail", "arrow-right", "chart-line", "badge-check",
 ];
 const bundle = {};
 for (const name of icons) {

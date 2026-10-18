@@ -11,6 +11,7 @@ from apps.diamonds import views as diamonds
 from apps.expenses import views as expenses
 from apps.hr import views as hr
 from apps.iam.web import views as iam
+from apps.iam.web.forms import WorkspaceLoginForm
 from apps.inventory.web import views as inventory
 from apps.ledger.web import views as ledger
 from apps.manufacturing import views as manufacturing
@@ -39,7 +40,8 @@ from apps.treasury import views as treasury
 
 urlpatterns = [
     path("", org.home, name="home"),
-    path("login/", auth_views.LoginView.as_view(redirect_authenticated_user=True), name="login"),
+    path("login/", auth_views.LoginView.as_view(
+        redirect_authenticated_user=True, authentication_form=WorkspaceLoginForm), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("i18n/", include("django.conf.urls.i18n")),
     path("media/<path:path>", media.serve, name="media"),

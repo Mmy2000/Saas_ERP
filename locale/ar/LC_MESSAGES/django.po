@@ -1931,6 +1931,9 @@ msgstr "لا يمكن أن يكون في المستقبل."
 msgid "Cannot be negative."
 msgstr "لا يمكن أن يكون سالبًا."
 
+msgid "Caps Lock is on"
+msgstr "مفتاح الأحرف الكبيرة (Caps Lock) مفعّل"
+
 msgid "Carat"
 msgstr "القيراط"
 
@@ -4867,6 +4870,9 @@ msgstr "الباقات المخفية تحتفظ بعملائها لكنها ل�
 
 msgid "Hide inactive"
 msgstr "إخفاء الموقوف"
+
+msgid "Hide password"
+msgstr "إخفاء كلمة المرور"
 
 msgid "High"
 msgstr "مرتفع"
@@ -9569,6 +9575,9 @@ msgstr "عرض الكل"
 msgid "Show labels"
 msgstr "إظهار العناوين"
 
+msgid "Show password"
+msgstr "إظهار كلمة المرور"
+
 msgid "Show payments"
 msgstr "إظهار المدفوعات"
 
@@ -9646,6 +9655,9 @@ msgstr "دخول"
 
 msgid "Signed out"
 msgstr "خروج"
+
+msgid "Signing in…"
+msgstr "جارٍ تسجيل الدخول…"
 
 msgid "Silver"
 msgstr "فضة"
@@ -9784,6 +9796,9 @@ msgstr "مسافة من اليمين"
 
 msgid "Spacing"
 msgstr "المسافات"
+
+msgid "Staff only"
+msgstr "للفريق فقط"
 
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
@@ -10271,11 +10286,17 @@ msgstr "هذا التغيير غير مسموح."
 msgid "That document already uses this one's design."
 msgstr "هذا المستند يستخدم بالفعل تصميم هذا المستند."
 
+msgid "That email and password do not match. Check them and try again."
+msgstr "البريد الإلكتروني وكلمة المرور غير متطابقين. تأكد منهما وحاول مرة أخرى."
+
 msgid "That is not the code. %(n)s tries left."
 msgstr "الكود غير صحيح. المحاولات المتبقية: %(n)s."
 
 msgid "That parcel holds another kind of stone."
 msgstr "هذه البرتيتة لنوع آخر من الأحجار."
+
+msgid "That username or email and password do not match. Check them and try again."
+msgstr "اسم المستخدم أو البريد الإلكتروني وكلمة المرور غير متطابقين. تأكد منهما وحاول مرة أخرى."
 
 msgid "The agreed balance is saved."
 msgstr "تم حفظ الرصيد المتفق عليه."

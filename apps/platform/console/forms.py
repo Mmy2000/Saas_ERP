@@ -49,6 +49,7 @@ class StaffLoginForm(Styled, AuthenticationForm):
         attrs={"autofocus": True, "autocomplete": "email"}))
     error_messages = {
         **AuthenticationForm.error_messages,
+        "invalid_login": _("That email and password do not match. Check them and try again."),
         "not_staff": _("This account cannot use the platform console."),
     }
 

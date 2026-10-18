@@ -395,19 +395,99 @@
   .cmdk-item[aria-selected="true"] { @apply bg-slate-100 text-slate-900; }
 }
 
+/* Sign-in pages (registration/login.html, console/login.html, static/core/js/login.js). */
+@keyframes login-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -3%, 0) scale(1.08); }
+  100% { transform: translate3d(-3%, 4%, 0) scale(1); }
+}
+@keyframes login-float { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -18px, 0); } }
+@keyframes login-rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes login-shake {
+  10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-5px); } 40%, 60% { transform: translateX(5px); }
+}
+@keyframes login-sheen { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes login-halo { 0%, 100% { opacity: 0.45; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.08); } }
 @layer components {
   .login-glow {
+    position: absolute; inset: -12%;
     background:
-      radial-gradient(60% 50% at 20% 15%, color-mix(in oklab, var(--accent-500) 35%, transparent), transparent 70%),
-      radial-gradient(50% 40% at 85% 90%, color-mix(in oklab, var(--accent-400) 22%, transparent), transparent 70%);
+      radial-gradient(55% 45% at 20% 15%, color-mix(in oklab, var(--accent-500) 38%, transparent), transparent 70%),
+      radial-gradient(45% 40% at 85% 90%, color-mix(in oklab, var(--accent-400) 24%, transparent), transparent 70%);
+    animation: login-drift 22s ease-in-out infinite alternate;
   }
   .login-grid {
     background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(70% 60% at 30% 40%, black, transparent);
   }
+  .login-grid-center { mask-image: radial-gradient(60% 55% at 50% 45%, black, transparent); }
+  .login-orb {
+    position: absolute; border-radius: 9999px; filter: blur(70px); pointer-events: none;
+    background: color-mix(in oklab, var(--accent-500) 55%, transparent);
+    animation: login-float 11s ease-in-out infinite;
+  }
+  .login-orb-a { width: 18rem; height: 18rem; inset-inline-end: -5rem; top: 18%; opacity: 0.35; }
+  .login-orb-b { width: 12rem; height: 12rem; inset-inline-start: 8%; bottom: 6%; opacity: 0.25; animation-delay: -5s; animation-duration: 14s; }
+
+  /* Children come in one after another. */
+  .login-stagger > * { animation: login-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .login-stagger > :nth-child(2) { animation-delay: 70ms; } .login-stagger > :nth-child(3) { animation-delay: 140ms; }
+  .login-stagger > :nth-child(4) { animation-delay: 210ms; } .login-stagger > :nth-child(5) { animation-delay: 280ms; }
+  .login-stagger > :nth-child(n+6) { animation-delay: 350ms; }
+
+  .login-feature {
+    @apply flex items-center gap-3.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-zinc-300
+           backdrop-blur-sm transition-colors duration-200 hover:border-white/15 hover:bg-white/[0.06];
+  }
+  .login-feature-icon { @apply size-9 shrink-0 rounded-lg bg-brand-500/15 p-2 text-brand-300 ring-1 ring-brand-400/20; }
+
+  /* The workspace's or platform's mark, with a soft breathing halo. */
+  .login-mark { @apply relative inline-flex w-fit; }
+  .login-mark::before {
+    content: ""; position: absolute; inset: -10px; z-index: -1; border-radius: 1.25rem;
+    background: radial-gradient(closest-side, color-mix(in oklab, var(--accent-500) 45%, transparent), transparent);
+    animation: login-halo 4s ease-in-out infinite;
+  }
+  .login-side {
+    background:
+      radial-gradient(60% 40% at 50% 0%, color-mix(in oklab, var(--accent-500) 7%, transparent), transparent 70%);
+  }
+  .login-card {
+    @apply rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_12px_32px_-12px_rgb(0_0_0/0.12)] sm:p-7;
+  }
+  .login-card-dark {
+    @apply border-white/10 shadow-[0_0_0_1px_rgb(255_255_255/0.04),0_30px_60px_-20px_rgb(0_0_0/0.6)];
+  }
+  [data-login-form].is-busy input { @apply pointer-events-none opacity-70; }
+
+  /* An input with an icon at its start. */
+  .login-field { @apply relative; }
+  .login-field .form-input { @apply h-11 ps-10 text-[15px]; }
+  .login-field-icon {
+    @apply pointer-events-none absolute start-3.5 top-1/2 size-[17px] -translate-y-1/2 text-slate-400 transition-colors;
+  }
+  .login-field:focus-within .login-field-icon { @apply text-brand-600; }
+  .login-reveal {
+    @apply absolute inset-y-0 end-0 grid w-11 place-items-center rounded-e-lg text-slate-400 transition-colors
+           hover:text-slate-700 focus-visible:text-slate-700;
+  }
+  .login-shake { animation: login-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+  /* A light passing over the button on hover. */
+  .login-submit { position: relative; overflow: hidden; }
+  .login-submit::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.28) 50%, transparent 65%) no-repeat;
+    background-size: 200% 100%; background-position: 150% 0;
+  }
+  .login-submit:hover:not(:disabled)::after { animation: login-sheen 0.9s ease-out; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-glow, .login-orb, .login-stagger > *, .login-mark::before, .login-shake, .login-submit::after { animation: none !important; }
 }
 
 /* The collapsed rail sits outside the layers so it beats the w-64 / px-* utilities on the same

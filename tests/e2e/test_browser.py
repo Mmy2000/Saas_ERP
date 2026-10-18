@@ -311,3 +311,35 @@ def test_print_table_picks_columns_and_every_page(signed_in):
     assert "Customer 00" in html and "Customer 29" in html  # both pages
     assert "Phone" not in html and "0100000" not in html  # the column left out
     assert errors == []
+
+
+def test_sign_in_form_reveals_password_and_shows_it_is_busy(live_server, make_tenant, browser):
+    make_tenant("e2e")
+    base = live_server.url.replace("://localhost", "://e2e.localhost")
+    context = browser.new_context()
+    context.add_cookies([{"name": "django_language", "value": "en", "url": base}])
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+    page.goto(f"{base}/login/")
+    submit = page.locator("[data-login-form] [type=submit]")
+
+    # An empty field is not sent: it shakes and is marked.
+    page.fill("#id_username", "owner")
+    submit.click()
+    assert page.url.endswith("/login/")
+    assert page.get_attribute("#id_password", "aria-invalid") == "true"
+
+    page.fill("#id_password", PASSWORD)
+    page.click("[data-reveal]")
+    assert page.get_attribute("#id_password", "type") == "text"
+    page.click("[data-reveal]")
+    assert page.get_attribute("#id_password", "type") == "password"
+
+    # While the server checks the password: a spinner and "Signing in…".
+    page.evaluate("() => document.addEventListener('submit', (e) => e.preventDefault())")
+    submit.click()
+    assert submit.get_attribute("aria-busy") == "true"
+    assert submit.locator(".busy-spinner").count() == 1 and "Signing in" in submit.inner_text()
+    assert errors == []
+    context.close()

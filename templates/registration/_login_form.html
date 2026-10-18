@@ -1,0 +1,39 @@
+{% load i18n ui %}{% comment %}
+The sign-in form of a workspace and of the console (static/core/js/login.js).
+with username_label="…" username_icon="user|mail"
+{% endcomment %}
+<form method="post" class="space-y-5" novalidate data-login-form data-busy-label="{% translate 'Signing in…' %}">
+  {% csrf_token %}
+  {% if form.errors %}
+    <div class="login-shake flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/80 px-3.5 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
+      {% icon "circle-alert" "size-5 mt-px shrink-0" %}<div>{% for field, errors in form.errors.items %}{{ errors|join:" " }} {% endfor %}</div>
+    </div>
+  {% endif %}
+  <div>
+    <label for="id_username" class="form-label">{{ username_label }}</label>
+    <div class="login-field">
+      {% icon username_icon "login-field-icon" %}
+      <input id="id_username" name="username" class="form-input" autocomplete="username" required autofocus
+             value="{{ form.username.value|default:'' }}" dir="auto"{% if form.errors %} aria-invalid="true"{% endif %}>
+    </div>
+  </div>
+  <div>
+    <label for="id_password" class="form-label">{% translate "Password" %}</label>
+    <div class="login-field">
+      {% icon "lock-keyhole" "login-field-icon" %}
+      <input id="id_password" name="password" type="password" class="form-input pe-11" autocomplete="current-password" required
+             dir="ltr"{% if form.errors %} aria-invalid="true"{% endif %}>
+      <button type="button" class="login-reveal" data-reveal aria-pressed="false"
+              aria-label="{% translate 'Show password' %}" data-show="{% translate 'Show password' %}" data-hide="{% translate 'Hide password' %}">
+        {% icon "eye" "size-[18px]" %}{% icon "eye-off" "size-[18px] hidden" %}
+      </button>
+    </div>
+    <p class="mt-2 hidden items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400" data-capslock role="status">
+      {% icon "circle-alert" "size-3.5" %}{% translate "Caps Lock is on" %}
+    </p>
+  </div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="btn btn-primary login-submit group h-11 w-full text-[15px]">
+    <span data-label>{% translate "Sign in" %}</span>{% icon "arrow-right" "size-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" %}
+  </button>
+</form>
