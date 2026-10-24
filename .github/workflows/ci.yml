@@ -1,0 +1,92 @@
+# Quality gates for every pull request and every push to main. The same checks run locally with
+# `python ops/check.py` (docs/standards/testing.md). Make "checks" and "assets" required in
+# GitHub → Settings → Branches → main so nothing merges without them.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays: new advisories against unchanged dependencies
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, translations, migrations, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      # Tests connect as app_owner (never a superuser: superusers bypass row-level security).
+      DATABASE_OWNER_URL: postgres://app_owner:ci-owner@localhost:5432/gweb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+      - run: pip install -r requirements/dev.txt
+      - name: Database roles (ops/db/bootstrap.sql, as in README.md)
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          psql -h localhost -U postgres -d postgres -f ops/db/bootstrap.sql
+          -v dbname=gweb -v owner_pw=ci-owner -v rw_pw=ci-rw -v platform_pw=ci-platform
+      - name: Chromium for the PDF tests
+        run: python -m playwright install --with-deps chromium
+      - run: python ops/check.py
+
+  assets:
+    name: Committed CSS, icons and vendored files are up to date
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: No difference after rebuilding
+        run: |
+          changes="$(git status --porcelain -- static apps/core/ui_icons.json)"
+          if [ -n "$changes" ]; then
+            echo "$changes"
+            echo "::error::Run 'npm run build' and commit the result."
+            exit 1
+          fi
+
+  dependencies:
+    name: Known vulnerabilities (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Advisory: a new advisory against a pinned package must not block unrelated work. Read the
+    # result on every run and on the Monday schedule; upgrade in its own pull request.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pip-audit
+      - run: pip-audit -r requirements/base.txt -r requirements/dev.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --audit-level=high

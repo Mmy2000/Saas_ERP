@@ -3,6 +3,11 @@
 Multi-tenant jewelry/gold ERP that replaces the per-client Gweb installations.
 The design is in `PROJECT_PLAN.md`; section numbers (§) in code comments refer to it.
 
+**Documentation:** [docs/](docs/README.md) (architecture, standards, how-tos, operations,
+decisions, the technical debt register) and [CONTRIBUTING.md](CONTRIBUTING.md) (branches,
+pull requests, review, Definition of Done). Before pushing, run every check with
+`.\venv\Scripts\python.exe ops\check.py`.
+
 ## What exists so far
 
 | Area | Where | Plan |
@@ -137,22 +142,27 @@ unprivileged user (here `gweb`) from the project folder (here `/srv/gweb`).
 
    The worker sends e-mail and WhatsApp, runs the daily reminders, the market prices and the
    nightly backup; Console → Jobs warns when none is running. `ops/wa-gateway` (Node) is a fourth
-   service only for clients using their own WhatsApp number.
+   service only for clients using their own WhatsApp number. Add a daily cron (or timer) for
+   `manage.py prune_traffic`: the worker does not run it.
 5. **Web server** (nginx): TLS for `*.your-domain.com` (a wildcard certificate: every client is a
    subdomain) and the platform host; `client_max_body_size 10m;`; serve `/static/` from
    `var/static/` with long caching; send everything else, **including `/media/`**, to
    `127.0.0.1:8000` with `proxy_set_header Host $host;` and
    `proxy_set_header X-Forwarded-Proto $scheme; proxy_set_header X-Forwarded-For
    $proxy_add_x_forwarded_for;`. Uploads go through the application, which checks who may see
-   them: never let nginx serve `MEDIA_ROOT` directly. `/healthz/` on the platform host answers
-   `{"status": "ok"}` for uptime checks.
+   them: never let nginx serve `MEDIA_ROOT` directly. Point the uptime monitor at `/readyz/` on
+   the platform host: it answers 503 when the database is unreachable, no worker is alive or the
+   last good backup is over 26 hours old (`/healthz/` only says the web process answers).
 6. **Cache**: the production settings use a file cache under `var/cache`, shared by the web
    processes and the worker on one server. With several servers set `CACHE_URL` to a shared one.
 
 ### Backups and restoring
 
-Every night at 02:30 the worker runs `manage.py backup` (also on demand: Console → **Backups** →
-Back up now, or the command itself). It writes two dated files to `BACKUP_DIR` (`var/backups`):
+Every night at 02:30 the worker runs the backup (the same as `manage.py backup`; also on demand:
+Console → **Backups** → Back up now, or the command itself). A failed run is kept in the list too.
+Each new dump is read back with `pg_restore --list` (and the media archive tested) before it
+counts as good. `manage.py verify_backup --into <empty scratch database>` rehearses a restore and
+counts the rows: do it monthly (docs/operations/README.md). It writes two dated files to `BACKUP_DIR` (`var/backups`):
 `gweb-db-….dump` (pg_dump custom format, every client, as `app_platform`, the only role that
 sees all rows) and `gweb-media-….zip` (`MEDIA_ROOT`), and keeps the newest `BACKUP_KEEP` (14) of
 each. Console → Backups lists every run and warns when the last good one is more than a day old.
@@ -172,7 +182,7 @@ to do if the code is the same version) and start the services.
 
 ### Server errors
 
-Every server error (a 500 for a client, or a job that crashed) is kept in Console → **Errors**,
+Every server error (a 500 for a client, or a job that failed its last attempt) is kept in Console → **Errors**,
 grouped by kind and place in the code, with how many times, the first and last time, the client,
 user and page of the last one and its traceback (`apps/platform/monitor/errors.py`). Mark one
 resolved once fixed: it reopens if it happens again. A new or returning error is e-mailed to
@@ -932,7 +942,7 @@ Tailwind CSS v4 through its CLI (Node is needed only to rebuild; the built CSS i
 
 ```powershell
 npm install
-npm install       # copy fonts, icons and Tom Select, then build static/core/css/app.css
+npm run build     # copy fonts, icons, Tom Select and CodeMirror, then build static/core/css/app.css
 npm run watch:css    # while editing templates
 ```
 
