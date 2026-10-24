@@ -14,7 +14,7 @@ from apps.pricing.services import record_fx_rate
 from apps.sales.tests.test_sales import Shop
 from apps.treasury.holders import CashBoxInput, balance, create_cash_box, default_cash_box
 from apps.treasury.vouchers import VoucherInput, counter_accounts, post_voucher, void_voucher
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -38,7 +38,7 @@ def test_money_in_and_out(shop):
     with pytest.raises(ValidationError):  # nothing in the box yet
         voucher(shop, "out", "100")
     put = voucher(shop, "in", "5000", counterparty="Mahmoud")
-    assert put.number == "01-MV-2026-000001" and put.status == DocStatus.POSTED
+    assert put.number == f"01-MV-{this_year()}-000001" and put.status == DocStatus.POSTED
     box = put.cash_box
     assert balance(box.account_id)[0] == Decimal("5000")
     owner = JournalLine.objects.filter(account=shop.capital).get()

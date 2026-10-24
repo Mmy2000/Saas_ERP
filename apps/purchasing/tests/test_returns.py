@@ -16,7 +16,7 @@ from apps.purchasing.returns import (
     post_supplier_return,
     void_supplier_return,
 )
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -41,7 +41,7 @@ def test_pieces_and_weight_go_back(stock):
     doc = send_back(stock, ReturnLineInput(barcode=stock.ring_a.barcode),
                     ReturnLineInput(category_id=stock.chain.pk, karat_id=stock.k21.pk,
                                     gross_weight_g="5", qty=1))
-    assert doc.number == "01-PR-2026-000001"
+    assert doc.number == f"01-PR-{this_year()}-000001"
     assert (doc.total_qty, doc.total_gross_weight_g) == (2, Decimal("10.000"))
     stock.ring_a.refresh_from_db()
     assert stock.ring_a.status == ItemStatus.RETURNED_TO_SUPPLIER

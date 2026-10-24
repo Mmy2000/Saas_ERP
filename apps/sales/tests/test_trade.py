@@ -21,7 +21,7 @@ from apps.sales.trade import (
     void_trade_sale,
 )
 from apps.settlements.services import SettlementInput, post_settlement
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -55,7 +55,7 @@ def balanced():
 
 def test_settled_in_gold(stock):
     doc = sell(stock, TradeLineInput(barcode=stock.ring_a.barcode, making_rate="50"), chain(stock))
-    assert doc.number == "01-TS-2026-000001" and doc.status == DocStatus.POSTED
+    assert doc.number == f"01-TS-{this_year()}-000001" and doc.status == DocStatus.POSTED
     assert (doc.total_qty, doc.total_gross_weight_g) == (2, Decimal("10.000"))
     assert doc.total_fine_weight_g == Decimal("8.125")
     assert (doc.making_amount, doc.money_amount) == (Decimal("400.00"), Decimal("400.00"))
@@ -72,7 +72,7 @@ def test_settled_in_gold(stock):
     # Take the chain back: the trader owes that gold and making charge no more.
     chain_line = doc.lines.get(lot__isnull=False)
     back = post_trade_return(doc.pk, [chain_line.pk])
-    assert back.number == "01-TR-2026-000001" and back.money_amount == Decimal("150.00")
+    assert back.number == f"01-TR-{this_year()}-000001" and back.money_amount == Decimal("150.00")
     assert stock.lot(stock.branch).gross_weight_g == Decimal("20.000")
     assert party_balance(stock.trader) == {"XAU": Decimal("3.75"), "EGP": Decimal("250")}
     with pytest.raises(DomainError):  # a line comes back once
@@ -225,7 +225,8 @@ class TestBuyingFromTraders:
         # Everything is on the trader's one statement.
         sections = party_statement(stock.trader, Account.objects.get(role="trade_accounts"))
         numbers = {row.document_number for s in sections for row in s.rows}
-        assert {"01-TS-2026-000001", invoice.number, "01-PR-2026-000001"} <= numbers
+        year = this_year()
+        assert {f"01-TS-{year}-000001", invoice.number, f"01-PR-{year}-000001"} <= numbers
 
     def test_seller_must_have_the_chosen_role(self, stock):
         from datetime import date

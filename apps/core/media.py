@@ -133,14 +133,18 @@ def _allowed(request, parts: tuple[str, ...]) -> tuple[bool, bool]:
 @require_GET
 def serve(request, path: str):
     parts = PurePosixPath(path).parts
-    if not parts or any(part in ("..", ".") or part.startswith(".") for part in parts):
+    # "\\" and ":" are path syntax on Windows ("a\..\..\6" would climb into another
+    # client's folder after the checks below), never part of a stored name.
+    if not parts or any(part in ("..", ".") or part.startswith(".") or "\\" in part
+                        or ":" in part for part in parts):
         raise Http404
     allowed, public = _allowed(request, parts)
     if not allowed:
         raise Http404  # never confirm that another client's file exists
     root = Path(settings.MEDIA_ROOT).resolve()
     target = (root / Path(*parts)).resolve()
-    if root not in target.parents or not target.is_file():
+    if (root not in target.parents or target.relative_to(root).parts[:2] != parts[:2]
+            or not target.is_file()):
         raise Http404
     content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
     response = FileResponse(target.open("rb"), content_type=content_type)

@@ -89,8 +89,16 @@ def outflow_value(account_id: int, currency: Currency, amount: Decimal) -> Decim
     return round_money(amount * rate_in_force(currency.code))
 
 
+def lock_holder(holder: CashBox | BankAccount | CardTerminal) -> None:
+    """Hold the holder's row until the transaction ends, before checking what it holds: a
+    second payout (or settlement) from it waits, then sees the first one's balance. Without
+    it two cashiers paying out 800 each from a 1,000 drawer both pass the check."""
+    type(holder).objects.select_for_update(of=("self",)).filter(pk=holder.pk).exists()
+
+
 def ensure_cash_available(box: CashBox, amount: Decimal, field: str) -> None:
     """A drawer cannot pay out money it does not hold."""
+    lock_holder(box)
     quantity, _value = balance(box.account_id)
     if amount > quantity:
         raise _field_error(field, _("Only %(amount)s %(currency)s in %(box)s.") % {

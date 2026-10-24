@@ -29,7 +29,7 @@ from django.utils.translation import gettext as _
 
 from apps.catalog.models import Currency
 from apps.core.crypto import encrypt
-from apps.core.errors import DomainError, NotFound, ValidationError
+from apps.core.errors import Conflict, DomainError, NotFound, PermissionDenied, ValidationError
 from apps.core.models import DocStatus
 from apps.core.numeric import MONEY, UNIT_PRICE, quantize, round_money
 from apps.core.sequences import allocate_number
@@ -98,6 +98,37 @@ class EmployeeInput:
     notes: str = ""
 
 
+# --- who may see and change whom ---------------------------------------------------------------
+# An employee belongs to their branch: a role limited to some branches sees and changes only
+# those branches' employees (with their advances, adjustments and payslips). An employee with
+# no branch belongs to the whole company, as does a monthly payroll (it pays everyone): those
+# need the permission for every branch.
+
+def visible_employees(actor, code: str = "hr.employee.view"):
+    branches = actor.branch_ids(code) if actor is not None else None
+    queryset = Employee.objects.all()
+    return queryset if branches is None else queryset.filter(branch_id__in=branches)
+
+
+def require_all_branches(actor, code: str) -> None:
+    if actor is None:
+        return
+    actor.require(code)
+    if actor.branch_ids(code) is not None:
+        raise PermissionDenied(_("This needs the permission for every branch."),
+                               code="PERMISSION_DENIED")
+
+
+def require_for_employee(actor, code: str, branch_id: int | None) -> None:
+    """`code` over an employee of `branch_id` (None: the whole company's)."""
+    if actor is None:
+        return
+    if branch_id is None:
+        require_all_branches(actor, code)
+    else:
+        actor.require(code, branch=branch_id)
+
+
 def _apply(employee: Employee, data: EmployeeInput) -> None:
     from apps.iam.models import Membership
 
@@ -148,8 +179,7 @@ def _save(employee: Employee) -> Employee:
 
 
 def create_employee(data: EmployeeInput, *, actor=None) -> Employee:
-    if actor is not None:
-        actor.require("hr.employee.manage")
+    require_for_employee(actor, "hr.employee.manage", data.branch_id)
     with transaction.atomic():
         employee = Employee(created_by=getattr(actor, "user", None))
         _apply(employee, data)
@@ -158,12 +188,13 @@ def create_employee(data: EmployeeInput, *, actor=None) -> Employee:
 
 
 def update_employee(employee_id: int, data: EmployeeInput, *, actor=None) -> Employee:
-    if actor is not None:
-        actor.require("hr.employee.manage")
     with transaction.atomic():
         employee = Employee.objects.select_for_update().filter(pk=employee_id).first()
         if employee is None:
             raise NotFound(_("Not found."))
+        # Both where they are and where they would be moved to.
+        require_for_employee(actor, "hr.employee.manage", employee.branch_id)
+        require_for_employee(actor, "hr.employee.manage", data.branch_id)
         _apply(employee, data)
         return _save(employee)
 
@@ -209,6 +240,7 @@ def give_advance(employee_id: int, amount, *, branch_id: int, method: str = Tend
         employee = Employee.objects.filter(pk=employee_id, is_active=True).first()
         if employee is None:
             raise _field("employee", _("Choose an active employee."))
+        require_for_employee(actor, "hr.advance.create", employee.branch_id)
         value = _amount(amount, "amount", positive=True)
         holder = _holder(branch, method, cash_box_id, bank_account_id)
         if holder.cash_box is not None:
@@ -248,6 +280,7 @@ def _post_movement(employee_id: int, kind: str, amount, *, branch_id: int, metho
         employee = Employee.objects.select_for_update().filter(pk=employee_id).first()
         if employee is None:
             raise _field("employee", _("Choose an employee."))
+        require_for_employee(actor, "hr.advance.create", employee.branch_id)
         value = _amount(amount, "amount", positive=True)
         if ADVANCE_SIGN[kind] < 0:
             owed = outstanding_advance(employee)
@@ -306,6 +339,7 @@ def void_advance(advance_id: int, *, reason: str = "", actor=None) -> EmployeeAd
             raise NotFound(_("Not found."))
         if actor is not None:
             actor.require("hr.advance.void", branch=advance.branch)
+        require_for_employee(actor, "hr.advance.void", advance.employee.branch_id)
         if advance.status != DocStatus.POSTED:
             raise DomainError(_("Only posted documents can be cancelled."), code="DOC_NOT_POSTED")
         if advance.sign > 0 and outstanding_advance(advance.employee) < advance.amount:
@@ -324,14 +358,13 @@ def void_advance(advance_id: int, *, reason: str = "", actor=None) -> EmployeeAd
 
 def add_adjustment(employee_id: int, kind: str, amount, year: int, month: int, *,
                    note: str = "", actor=None) -> PayAdjustment:
-    if actor is not None:
-        actor.require("hr.advance.create")
     if kind not in AdjustmentKind.values:
         raise _field("kind", _("Choose bonus or deduction."))
     period_bounds(year, month)
     employee = Employee.objects.filter(pk=employee_id).first()
     if employee is None:
         raise NotFound(_("Not found."))
+    require_for_employee(actor, "hr.advance.create", employee.branch_id)
     if PayrollRun.objects.filter(year=year, month=month, status=DocStatus.POSTED).exists():
         raise _field("period", _("This month's payroll is already paid. Cancel it first, or "
                                  "choose the next month."))
@@ -342,15 +375,17 @@ def add_adjustment(employee_id: int, kind: str, amount, year: int, month: int, *
 
 
 def delete_adjustment(adjustment_id: int, *, actor=None) -> None:
-    if actor is not None:
-        actor.require("hr.advance.create")
-    adjustment = PayAdjustment.objects.filter(pk=adjustment_id).first()
-    if adjustment is None:
-        raise NotFound(_("Not found."))
-    if adjustment.payroll_line_id is not None:
-        raise DomainError(_("This was paid in a payroll. Cancel that payroll first."),
-                          code="HR_ADJUSTMENT_PAID")
-    adjustment.delete()
+    with transaction.atomic():
+        # Locked: a payroll being posted links it first, and then this sees it was paid.
+        adjustment = (PayAdjustment.objects.select_for_update(of=("self",))
+                      .select_related("employee").filter(pk=adjustment_id).first())
+        if adjustment is None:
+            raise NotFound(_("Not found."))
+        require_for_employee(actor, "hr.advance.create", adjustment.employee.branch_id)
+        if adjustment.payroll_line_id is not None:
+            raise DomainError(_("This was paid in a payroll. Cancel that payroll first."),
+                              code="HR_ADJUSTMENT_PAID")
+        adjustment.delete()
 
 
 # --- commissions ---------------------------------------------------------------------------------
@@ -473,6 +508,7 @@ def post_payroll(year: int, month: int, *, branch_id: int, method: str = TenderK
             raise _field("branch", _("Unknown branch."))
         if actor is not None:
             actor.require("hr.payroll.post", branch=branch)
+        require_all_branches(actor, "hr.payroll.post")  # it pays every branch's employees
         plan = plan_payroll(year, month, advances)
         if plan.paid is not None:
             raise DomainError(_("The payroll for this month is already paid (%(number)s).")
@@ -503,8 +539,12 @@ def post_payroll(year: int, month: int, *, branch_id: int, method: str = TenderK
                 commission_base=quantize(line.commission.base, Decimal("0.001")),
                 commission=line.commission.amount, bonus=line.bonus, deduction=line.deduction,
                 advance=line.advance, net=line.net)
-            PayAdjustment.objects.filter(pk__in=[a.pk for a in line.adjustments]).update(
-                payroll_line=saved)
+            linked = PayAdjustment.objects.filter(
+                pk__in=[a.pk for a in line.adjustments], payroll_line__isnull=True,
+            ).update(payroll_line=saved)
+            if linked != len(line.adjustments):  # one was deleted (or paid) meanwhile
+                raise Conflict(_("A bonus or deduction changed while the payroll was being "
+                                 "posted. Prepare it again."), code="HR_ADJUSTMENTS_CHANGED")
 
         home = functional_commodity()
         wages = run.total_salary + run.total_bonus - run.total_deduction
@@ -535,6 +575,7 @@ def void_payroll(run_id: int, *, reason: str = "", actor=None) -> PayrollRun:
             raise NotFound(_("Not found."))
         if actor is not None:
             actor.require("hr.payroll.void", branch=run.branch)
+        require_all_branches(actor, "hr.payroll.void")
         if run.status != DocStatus.POSTED:
             raise DomainError(_("Only posted documents can be cancelled."), code="DOC_NOT_POSTED")
         if run.journal_entry_id:

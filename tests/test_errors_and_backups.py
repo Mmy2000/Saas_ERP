@@ -3,11 +3,14 @@
 import logging
 import subprocess
 import sys
+from io import StringIO
 from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core import mail
 from django.test import Client, RequestFactory, override_settings
+from django.utils import timezone
 
 from apps.platform.monitor import backups, errors
 from apps.platform.monitor.models import BackupRun, ErrorEvent
@@ -76,7 +79,12 @@ def test_errors_page(staff):
     assert "price board missing" in staff.get("/errors/?view=resolved").content.decode()
 
 
+TOC = "3412; 0 16390 TABLE DATA public ledger_journalline app_owner\n"
+
+
 def fake_pg_dump(command, **kwargs):
+    if "--list" in command:  # every new dump is read back with pg_restore
+        return subprocess.CompletedProcess(command, 0, TOC, "")
     target = Path(command[command.index("--file") + 1])
     target.write_bytes(b"PGDMP fake dump")
     assert kwargs["env"]["PGPASSWORD"] == "secret"
@@ -101,12 +109,82 @@ def test_backup(tmp_path, monkeypatch):
         assert backups.prune(tmp_path / "backups", 1) == ["gweb-db-20000101-000000.dump"]
 
 
+BACKUP_SETTINGS = {"BACKUP_KEEP": 3,
+                   "BACKUP_DATABASE_URL": "postgres://app_platform:secret@db:5432/gweb"}
+
+
+def test_a_dump_that_does_not_read_back_is_a_failed_backup(tmp_path, monkeypatch):
+    def damaged(command, **kwargs):
+        if "--list" in command:
+            return subprocess.CompletedProcess(command, 1, "", "unexpected end of file")
+        return fake_pg_dump(command, **kwargs)
+
+    monkeypatch.setattr(backups.subprocess, "run", damaged)
+    with override_settings(BACKUP_DIR=tmp_path / "b", MEDIA_ROOT=tmp_path / "m",
+                           **BACKUP_SETTINGS):
+        with pytest.raises(backups.BackupError):
+            backups.run_backup()
+    run = BackupRun.objects.get()
+    assert not run.ok and "unexpected end of file" in run.error
+    assert not list((tmp_path / "b").glob("*"))  # the useless files are not kept
+
+
+def test_verify_backup_reads_back_and_restores_elsewhere(tmp_path, monkeypatch):
+    from django.core.management import CommandError, call_command
+
+    from apps.platform.monitor.management.commands import verify_backup
+
+    restored = []
+
+    def tools(command, **kwargs):
+        if "--exit-on-error" in command:
+            restored.append(command[command.index("--dbname") + 1])
+            return subprocess.CompletedProcess(command, 0, "", "")
+        return fake_pg_dump(command, **kwargs)
+
+    monkeypatch.setattr(backups.subprocess, "run", tools)
+    monkeypatch.setattr(verify_backup, "count_rows", lambda url: {"tenants_tenant": 2})
+    with override_settings(BACKUP_DIR=tmp_path / "b", MEDIA_ROOT=tmp_path / "m",
+                           **BACKUP_SETTINGS):
+        with pytest.raises(CommandError):  # nothing backed up yet
+            call_command("verify_backup")
+        backups.run_backup()
+        out = StringIO()
+        call_command("verify_backup", stdout=out)
+        assert "1 tables with rows" in out.getvalue() and "reads back" in out.getvalue()
+        call_command("verify_backup", into="postgres://postgres:pw@scratch:5432/restore_test",
+                     stdout=out)
+        assert restored == ["restore_test"] and "restored tenants_tenant: 2 rows" in out.getvalue()
+        live = settings.DATABASES["default"]
+        with pytest.raises(CommandError):  # never over a database the site uses
+            call_command("verify_backup", into=f"postgres://x:y@{live.get('HOST') or 'localhost'}"
+                                                f":{live.get('PORT') or 5432}/{live['NAME']}")
+
+
 def test_backup_failures_are_recorded(tmp_path):
     with override_settings(BACKUP_DIR=tmp_path, BACKUP_DATABASE_URL=""):
         with pytest.raises(backups.BackupError):
             backups.run_backup()
     run = BackupRun.objects.get()
     assert not run.ok and "BACKUP_DATABASE_URL" in run.error and run.finished_at
+
+
+def test_a_failed_nightly_backup_is_kept_and_reported(tmp_path):
+    """Through the worker (as every night): the failed runs stay in Console → Backups (they
+    used to roll back with the job's transaction) and the last attempt is a server error."""
+    from apps.platform.jobs.models import Job, JobStatus
+    from apps.platform.jobs.registry import enqueue
+    from apps.platform.jobs.worker import run_pending
+
+    with override_settings(BACKUP_DIR=tmp_path, BACKUP_DATABASE_URL=""):
+        job = enqueue("monitor.backup")
+        for _attempt in range(job.max_attempts):
+            Job.objects.filter(pk=job.pk).update(run_at=timezone.now())
+            run_pending()
+    job.refresh_from_db()
+    assert job.status == JobStatus.FAILED
+    assert [run.ok for run in BackupRun.objects.all()] == [False, False]
+    assert ErrorEvent.objects.get().exc_type.endswith(".BackupError")
 
 
 def test_backups_page(staff, tmp_path):

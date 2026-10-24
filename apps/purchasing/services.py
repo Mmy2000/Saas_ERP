@@ -263,14 +263,19 @@ def save_draft(data: InvoiceInput, *, invoice_id: int | None = None,
 
 
 def delete_draft(invoice_id: int, *, actor=None) -> None:
-    invoice = SupplierInvoice.objects.filter(pk=invoice_id).first()
-    if invoice is None:
-        raise NotFound(_("Not found."))
-    if actor is not None:
-        actor.require("purchasing.invoice.create", branch=invoice.branch)
-    if not invoice.is_draft:
-        raise DomainError(_("Posted invoices are cancelled, not deleted."), code="DOC_NOT_DRAFT")
-    invoice.delete()
+    with transaction.atomic():
+        # Locked like post_invoice locks it: a delete racing a post waits for it, then sees a
+        # posted invoice (deleting it would orphan its journal entry and pieces).
+        invoice = (SupplierInvoice.objects.select_for_update(of=("self",))
+                   .select_related("branch").filter(pk=invoice_id).first())
+        if invoice is None:
+            raise NotFound(_("Not found."))
+        if actor is not None:
+            actor.require("purchasing.invoice.create", branch=invoice.branch)
+        if not invoice.is_draft:
+            raise DomainError(_("Posted invoices are cancelled, not deleted."),
+                              code="DOC_NOT_DRAFT")
+        invoice.delete()
 
 
 # --- posting ----------------------------------------------------------------------------------

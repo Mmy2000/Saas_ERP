@@ -15,10 +15,11 @@ from django.views.decorators.http import require_POST
 from apps.platform.jobs.models import Job, JobStatus, Worker
 from apps.platform.jobs.registry import TASKS
 from apps.platform.jobs.worker import retry
+from apps.platform.monitor.health import WORKER_SEEN_WITHIN
 
 from .views import record, staff_required
 
-ALIVE_WITHIN = timedelta(seconds=60)
+ALIVE_WITHIN = WORKER_SEEN_WITHIN  # the same rule as /readyz/
 VIEWS = ("problems", "waiting", "done", "all")
 
 

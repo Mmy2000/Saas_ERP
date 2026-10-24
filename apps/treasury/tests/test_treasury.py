@@ -28,7 +28,7 @@ from apps.treasury.services import (
     receive_transfer,
     void_treasury_document,
 )
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -104,7 +104,7 @@ class TestDocuments:
                  amount="20000")
         deposit = move(kind="transfer", source_box_id=box.pk, dest_bank_id=shop.bank.pk,
                        amount="10000")
-        assert deposit.number == "01-TR-2026-000001"
+        assert deposit.number == f"01-TR-{this_year()}-000001"
         with translation.override("en"):
             assert deposit.title == "Bank deposit"
         assert held(box) == RING_A_TOTAL - 10000 and held(shop.bank) == 10000
@@ -144,6 +144,29 @@ class TestDocuments:
         with pytest.raises(ValidationError):  # same currency: that is a transfer
             move(kind="exchange", source_box_id=egp.pk, dest_box_id=egp.pk, amount="1",
                  dest_amount="1")
+
+    def test_the_holder_is_locked_before_its_balance_is_checked(self, shop):
+        """Two payouts from one drawer at once must not both pass the check (1,000 held, 800
+        paid out twice): the box, or the terminal being settled, is locked first, so the
+        second waits and then sees what the first left."""
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        cash_sale(shop)
+        ring_b = str(quote_sale(shop.sale(shop.line(shop.ring_b))).total)
+        cash_sale(shop, shop.ring_b, kind="card", amount=ring_b)
+        box = CashBox.objects.get()
+        for kind, holder, table in (
+                ("transfer", {"source_box_id": box.pk, "dest_bank_id": shop.bank.pk},
+                 "treasury_cashbox"),
+                ("card_settlement", {"source_terminal_id": shop.terminal.pk,
+                                     "branch_id": shop.branch.pk}, "treasury_cardterminal")):
+            with CaptureQueriesContext(connection) as queries:
+                move(kind=kind, amount="100", **holder)
+            sql = [q["sql"] for q in queries.captured_queries]
+            lock = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q and table in q)
+            check = next(i for i, q in enumerate(sql) if "ledger_balanceprojection" in q)
+            assert lock < check, kind
 
     def test_card_settlement_takes_the_fee(self, shop):
         cash_sale(shop, kind="card")

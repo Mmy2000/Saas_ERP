@@ -70,6 +70,18 @@ def test_create_a_client(console):
     taken = console.post("/clients/new/", {"name": "Again", "slug": "nile"})
     assert taken.status_code == 200 and "This address is taken" in taken.content.decode()
 
+    # Sara's login is added to a second shop only when staff tick the box (ADR-022).
+    second = {"name": "Nile Two", "slug": "nile-two", "locale": "ar", "country": "EG",
+              "functional_currency": "EGP", "timezone": "Africa/Cairo", "fineness_24k": "999.9",
+              "owner_display_name": "Sara", "owner_username": "sara",
+              "owner_email": "sara@nile.test", "plan": "trial"}
+    refused = console.post("/clients/new/", second)
+    assert refused.status_code == 200 and not Tenant.objects.filter(slug="nile-two").exists()
+    assert "owner_email" in refused.context["form"].errors
+    assert console.post("/clients/new/", {**second, "link_existing_owner": "on"}
+                        ).status_code == 302
+    assert login(Tenant.objects.get(slug="nile-two"), username="sara").get("/").status_code == 200
+
 
 def test_limits_are_enforced_in_the_workspace(console, tenant_a):
     from apps.iam.services import MemberInput, create_member

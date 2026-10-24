@@ -20,6 +20,7 @@ from django.utils.translation import gettext_lazy
 
 from apps.catalog.models import ItemCategory, Karat
 from apps.core.documents import document_titles, document_url
+from apps.core.errors import DomainError
 from apps.core.models import DocStatus
 from apps.inventory.models import LotBalance, MovementType, StockMovement
 from apps.inventory.services import SCRAP_CATEGORY_CODE
@@ -88,7 +89,7 @@ class ScrapGold(Report):
                 boards[board.pk] = board
             try:
                 price = boards[board.pk].price(line.karat, PriceSide.SELL)
-            except Exception:  # noqa: BLE001 (a karat missing on that board: no comparison)
+            except DomainError:  # a karat or side missing on that board: no comparison
                 return
             cell["value"] += (line.net_weight_g * price).quantize(Decimal("0.01"))
 

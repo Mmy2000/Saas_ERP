@@ -16,7 +16,7 @@ from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
 from apps.treasury.holders import balance
 from apps.treasury.models import CashBox
 from apps.treasury.tests.test_treasury import cash_sale
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -46,7 +46,7 @@ def test_cash_expense_posts_and_cancels(shop):
     cash_sale(shop)
     box = CashBox.objects.get()
     voucher = expense(shop, rent, "500", payee="Landlord")
-    assert voucher.number == "01-EX-2026-000001" and voucher.cash_box == box
+    assert voucher.number == f"01-EX-{this_year()}-000001" and voucher.cash_box == box
     assert balance(box.account_id)[0] == RING_A_TOTAL - 500
     costs = next(r for r in trial_balance().rows if r.account.role == "expenses")
     assert costs.debit == Decimal("500")

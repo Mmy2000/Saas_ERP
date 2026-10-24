@@ -23,7 +23,7 @@ from apps.repairs.services import (
 from apps.sales.services import PaymentInput
 from apps.sales.tests.test_sales import Shop
 from apps.treasury.holders import balance, default_cash_box
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -76,7 +76,7 @@ def balanced():
 
 def test_full_flow_through_a_workshop(shop):
     order = take_in(shop, deposit="100")
-    assert order.number == "01-RP-2026-000001" and order.bag_number == 1
+    assert order.number == f"01-RP-{this_year()}-000001" and order.bag_number == 1
     assert order.state == "received" and order.charge_amount == Decimal("250")
     assert held(shop) == 100 and cash(shop) == 100
     assert take_in(shop).bag_number == 2  # bag numbers count up per branch

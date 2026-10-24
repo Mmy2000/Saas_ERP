@@ -228,6 +228,8 @@ BACKUP_DIR = Path(env("BACKUP_DIR", default="") or BASE_DIR / "var" / "backups")
 BACKUP_KEEP = env.int("BACKUP_KEEP", default=14)
 BACKUP_DATABASE_URL = env("BACKUP_DATABASE_URL", default="")
 BACKUP_PG_DUMP = env("BACKUP_PG_DUMP", default="pg_dump")
+# Reads every new dump back (and `manage.py verify_backup` restores one): same client tools.
+BACKUP_PG_RESTORE = env("BACKUP_PG_RESTORE", default="pg_restore")
 
 # PII encryption (apps.core.crypto). Keep these outside the database and back them up:
 # losing FIELD_ENCRYPTION_KEY makes encrypted values (national IDs) unreadable.

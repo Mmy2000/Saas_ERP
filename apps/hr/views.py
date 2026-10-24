@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
@@ -15,7 +16,7 @@ from apps.pricing.selectors import functional_currency
 from apps.treasury.selectors import holder_choices
 
 from . import services
-from .models import AdjustmentKind, CommissionBasis, Employee, EmployeeAdvance, PayrollRun
+from .models import AdjustmentKind, CommissionBasis, EmployeeAdvance, PayrollRun
 
 
 def _period(request) -> tuple[int, int]:
@@ -28,6 +29,13 @@ def _period(request) -> tuple[int, int]:
     except (TypeError, ValueError, Exception):  # noqa: BLE001 - any bad value: this month
         today = timezone.localdate()
         return today.year, today.month
+
+
+def _company_wide(request, code: str) -> None:
+    """A payroll pays every branch's employees: seeing or handling one needs `code` for every
+    branch (a branch-limited role sees its employees' payslips on their own pages)."""
+    if request.actor.branch_ids(code) is not None:
+        raise PermissionDenied
 
 
 def _months(around: tuple[int, int], count: int = 12) -> list[tuple[str, date]]:
@@ -47,7 +55,8 @@ def _months(around: tuple[int, int], count: int = 12) -> list[tuple[str, date]]:
 def employees(request):
     status = request.GET.get("status", "active")
     term = request.GET.get("q", "").strip()
-    queryset = Employee.objects.select_related("branch", "user").order_by("code")
+    queryset = (services.visible_employees(request.actor)
+                .select_related("branch", "user").order_by("code"))
     if status in ("active", "inactive"):
         queryset = queryset.filter(is_active=status == "active")
     if term:
@@ -81,7 +90,8 @@ def employee_new(request):
 
 @permission_required("hr.employee.view")
 def employee(request, pk):
-    employee = Employee.objects.select_related("branch", "user").filter(pk=pk).first()
+    employee = (services.visible_employees(request.actor).select_related("branch", "user")
+                .filter(pk=pk).first())
     if employee is None:
         raise Http404
     year, month = _period(request)
@@ -105,7 +115,7 @@ def employee(request, pk):
 def advance(request, pk):
     advance = (EmployeeAdvance.objects.select_related("employee", "branch", "cash_box",
                                                       "bank_account", "journal_entry")
-               .filter(pk=pk).first())
+               .filter(pk=pk, employee__in=services.visible_employees(request.actor)).first())
     if advance is None:
         raise Http404
     return render(request, "hr/advance.html", {
@@ -117,6 +127,7 @@ def advance(request, pk):
 
 @permission_required("hr.payroll.view")
 def payrolls(request):
+    _company_wide(request, "hr.payroll.view")
     page = Paginator(PayrollRun.objects.select_related("posted_by").order_by(
         "-year", "-month", "-id"), 24).get_page(request.GET.get("page"))
     year, month = _period(request)
@@ -127,6 +138,7 @@ def payrolls(request):
 
 @permission_required("hr.payroll.post")
 def payroll_new(request):
+    _company_wide(request, "hr.payroll.post")
     year, month = _period(request)
     allowed = request.actor.branch_ids("hr.payroll.post")
     branches = Branch.objects.filter(is_active=True).order_by("code")
@@ -146,6 +158,7 @@ def payroll_new(request):
 
 @permission_required("hr.payroll.view")
 def payroll(request, pk):
+    _company_wide(request, "hr.payroll.view")
     run = (PayrollRun.objects.select_related("branch", "cash_box", "bank_account",
                                              "journal_entry", "posted_by")
            .filter(pk=pk).first())
@@ -163,7 +176,7 @@ def payroll(request, pk):
 def commissions(request):
     year, month = _period(request)
     rows = []
-    for employee in Employee.objects.filter(
+    for employee in services.visible_employees(request.actor, "hr.payroll.view").filter(
             Q(is_active=True) | Q(payslips__run__year=year, payslips__run__month=month)
     ).exclude(commission_basis=CommissionBasis.NONE, user__isnull=True).distinct().order_by(
             "code"):

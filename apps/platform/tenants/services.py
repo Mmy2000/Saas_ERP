@@ -14,6 +14,24 @@ from apps.core.tenancy import tenant_context
 from .models import RESERVED_SLUGS, Tenant, TenantDomain, TenantStatus, ensure_plans
 
 
+def _check_link(user, cmd: ProvisionTenantCommand) -> None:
+    """An existing login becomes this workspace's owner only when asked, never a staff login,
+    and never with a password typed for it (it would be ignored)."""
+    if user.is_platform_staff:
+        raise ValidationError(_("Gweb staff logins can't own a workspace. Use another email."),
+                              fields={"owner_email": [_("A Gweb staff login.")]},
+                              code="TENANT_OWNER_IS_STAFF")
+    if not cmd.link_existing_owner:
+        raise ValidationError(
+            _("This email already has a Gweb login. Add this workspace to that login, or use "
+              "another email."), fields={"owner_email": [_("Already has a login.")]},
+            code="TENANT_OWNER_EXISTS")
+    if cmd.owner_password:
+        raise ValidationError(
+            _("That login keeps its own password: leave the password empty."),
+            fields={"owner_password": [_("Leave empty.")]}, code="TENANT_OWNER_PASSWORD")
+
+
 @dataclass(frozen=True)
 class ProvisionTenantCommand:
     slug: str
@@ -22,6 +40,9 @@ class ProvisionTenantCommand:
     owner_username: str
     owner_password: str | None
     owner_email: str | None = None
+    # The owner already has a Gweb login (same email) and this workspace is added to it: it keeps
+    # its own password. Never implied: a login is only shared when asked for (ADR-022).
+    link_existing_owner: bool = False
     owner_display_name: str = ""
     head_office_name: str | None = None  # defaults to "Head office" in the tenant's language
     functional_currency: str = "EGP"
@@ -36,8 +57,9 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
     """Create a tenant with its primary domain, profile, head-office branch, reference data,
     system roles and owner.
 
-    The owner is a global User (reused if one with that email exists; the password is then
-    left untouched) plus a Membership carrying the tenant-local username and the Owner role.
+    The owner is a global User plus a Membership carrying the tenant-local username and the
+    Owner role. An existing login with that email is used only with `link_existing_owner`
+    (it keeps its password), and never a staff login (ADR-022).
     Seeded names (karats, roles, head office) are written in the tenant's language.
     """
     from apps.catalog.services import seed_reference_data
@@ -50,6 +72,10 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
     if slug in RESERVED_SLUGS:
         raise ValidationError(_("'%(slug)s' is reserved.") % {"slug": slug},
                               fields={"slug": [_("Reserved.")]})
+    existing = (User.objects.filter(email__iexact=cmd.owner_email).first()
+                if cmd.owner_email else None)
+    if existing is not None:
+        _check_link(existing, cmd)
 
     with transaction.atomic(), translation.override(cmd.locale):
         ensure_plans()
@@ -77,9 +103,7 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
             seed_ledger(cmd.functional_currency)
             roles = seed_system_roles()
 
-            user = None
-            if cmd.owner_email:
-                user = User.objects.filter(email__iexact=cmd.owner_email).first()
+            user = existing
             if user is None:
                 user = User.objects.create_user(
                     email=cmd.owner_email,

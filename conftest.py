@@ -1,6 +1,7 @@
 import pytest
 from django.core.cache import cache
 from django.test import Client
+from django.utils import timezone
 
 from apps.core.tenancy import tenant_context
 from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
@@ -71,6 +72,12 @@ def make_member(db):
             return membership
 
     return _make
+
+
+def this_year() -> int:
+    """The fiscal year in the number of a document dated today ("01-SI-<year>-000001").
+    Never write the year into an expected number: the test breaks on 1 January."""
+    return timezone.localdate().year
 
 
 def login(tenant, username: str = "owner", *, language: str | None = None,

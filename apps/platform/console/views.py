@@ -155,6 +155,7 @@ def tenant_new(request):
                 slug=d["slug"], name=d["name"], domain=domain_for(d["slug"]),
                 owner_username=d["owner_username"], owner_password=d["owner_password"] or None,
                 owner_email=d["owner_email"], owner_display_name=d["owner_display_name"],
+                link_existing_owner=d["link_existing_owner"],
                 functional_currency=d["functional_currency"], timezone=d["timezone"],
                 locale=d["locale"], country=d["country"], fineness_24k=d["fineness_24k"]))
         except ValidationError as exc:

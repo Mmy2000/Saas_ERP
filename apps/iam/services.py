@@ -184,6 +184,18 @@ class MemberInput:
     roles: tuple[RoleAssignmentInput, ...] = ()
 
 
+def _ensure_not_shared(user: User, field: str) -> None:
+    """A login also used for another workspace, or by Gweb's staff, is changed only by its
+    owner: one workspace changing its password or email would let it into the others
+    (ADR-022). The count comes from the database (a trigger keeps it)."""
+    count = User.objects.filter(pk=user.pk).values_list("membership_count", flat=True).first()
+    if user.is_platform_staff or (count or 0) > 1:
+        raise ValidationError(
+            _("Please correct the highlighted fields."), code="IAM_SHARED_LOGIN",
+            fields={field: [_("This person uses the same login outside this workspace, so only "
+                              "they can change its password or email.")]})
+
+
 def _validate_member(data: MemberInput, user: User | None) -> dict:
     from apps.org.models import Branch
 
@@ -210,6 +222,9 @@ def _validate_member(data: MemberInput, user: User | None) -> dict:
             others = User.objects.filter(email__iexact=email).exclude(pk=getattr(user, "pk", None))
             if others.exists():
                 errors["email"] = [_("This email already belongs to another account.")]
+    phone = data.phone.strip()
+    if phone and User.objects.filter(phone=phone).exclude(pk=getattr(user, "pk", None)).exists():
+        errors["phone"] = [_("This phone number already belongs to another account.")]
 
     default_branch = None
     if data.default_branch_id is not None:
@@ -283,6 +298,8 @@ def update_member(membership_id: int, data: MemberInput, *, actor=None) -> Membe
             raise NotFound(_("Not found."))
         clean = _validate_member(data, membership.user)
         user = membership.user
+        if clean["email"] != user.email or (data.phone.strip() or None) != user.phone:
+            _ensure_not_shared(user, "email")
         user.display_name = data.display_name.strip()
         user.email = clean["email"]
         user.phone = data.phone.strip() or None
@@ -324,6 +341,7 @@ def set_member_password(membership_id: int, password: str, *, actor=None) -> Non
         raise NotFound(_("Not found."))
     for assignment in membership.roles.select_related("role"):
         _ensure_can_grant(actor, _role_codes(assignment.role))
+    _ensure_not_shared(membership.user, "password")
     try:
         validate_password(password, user=membership.user)
     except DjangoValidationError as exc:

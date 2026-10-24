@@ -16,11 +16,12 @@ from django.views.decorators.http import require_POST
 
 from apps.platform.jobs.registry import enqueue
 from apps.platform.monitor.backups import last_good
+from apps.platform.monitor.health import BACKUP_STALE_AFTER
 from apps.platform.monitor.models import BackupRun, ErrorEvent
 
 from .views import record, staff_required
 
-STALE_AFTER = timedelta(hours=26)  # a nightly backup, with some slack
+STALE_AFTER = BACKUP_STALE_AFTER  # the same rule as /readyz/
 
 
 @staff_required

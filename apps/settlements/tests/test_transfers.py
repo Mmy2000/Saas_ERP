@@ -13,7 +13,7 @@ from apps.sales.services import post_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL
 from apps.settlements.services import void_settlement
 from apps.settlements.tests.test_settlements import settle, shop  # noqa: F401 (fixture)
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -27,7 +27,7 @@ def test_a_customers_credit_pays_another_customers_debt(shop):  # noqa: F811
     transfer = settle(shop, "transfer", "customer", mona, asset="money", currency_code="EGP",
                       amount=str(RING_A_TOTAL), counter_side="customer",
                       counter_party_id=sara.pk)
-    assert transfer.number == "01-BT-2026-000001"
+    assert transfer.number == f"01-BT-{this_year()}-000001"
     assert party_balance(sara) == {}
     assert party_balance(mona) == {"EGP": RING_A_TOTAL - 20000}
     tb = trial_balance()

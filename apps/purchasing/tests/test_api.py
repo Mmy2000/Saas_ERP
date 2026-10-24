@@ -5,7 +5,7 @@ from apps.catalog.services import CreateItemCategoryCommand, create_item_categor
 from apps.core.tenancy import tenant_context
 from apps.org.models import Branch
 from apps.parties.services import PartyData, create_supplier
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -49,7 +49,7 @@ def test_draft_edit_post_void(tenant_a, ids):
     posted = client.post(f"/api/v1/purchasing/invoices/{invoice['id']}/post/")
     assert posted.status_code == 200, posted.content
     body = posted.json()
-    assert body["status"] == "posted" and body["number"].endswith("-PI-2026-000001")
+    assert body["status"] == "posted" and body["number"].endswith(f"-PI-{this_year()}-000001")
     barcodes = [p["barcode"] for p in body["lines"][0]["pieces"]]
     assert barcodes == ["1010000001", "1010000002"]
 

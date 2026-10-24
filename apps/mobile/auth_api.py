@@ -35,6 +35,14 @@ class LoginView(LegacyView):
                    if not value}
         if missing:
             return Response(missing, status=status.HTTP_400_BAD_REQUEST)
+        from apps.iam import throttle
+
+        wait = throttle.locked_for(request._request, username)
+        if wait:  # too many wrong passwords (the backend would refuse too, without saying why)
+            response = detail(_("Too many wrong passwords. Wait a few minutes, then try again."),
+                              status.HTTP_429_TOO_MANY_REQUESTS)
+            response["Retry-After"] = str(wait)
+            return response
         account = authenticate(request._request, username=username, password=password)
         if account is None:  # recorded as a failed sign-in by apps.iam.signals
             return detail(_("Wrong name or password."), status.HTTP_401_UNAUTHORIZED)
@@ -48,6 +56,7 @@ class LoginView(LegacyView):
             return detail(_("The mobile app is not available for this account."),
                           status.HTTP_403_FORBIDDEN)
         _record(request._request, SignInOutcome.SIGNED_IN, membership=membership)
+        throttle.succeeded(request._request, username)
         account.last_login = timezone.now()
         account.save(update_fields=["last_login"])
         agent, ip = _client(request._request)

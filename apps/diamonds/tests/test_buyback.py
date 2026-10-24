@@ -14,7 +14,7 @@ from apps.inventory.models import ItemStatus
 from apps.ledger.selectors import party_balance
 from apps.parties.services import PartyData, create_customer
 from apps.sales.services import post_sale
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -32,7 +32,8 @@ def test_an_old_ring_becomes_a_piece_in_stock(shop):  # noqa: F811
         branch_id=shop.branch.pk, pieces=(ring(shop),), payment="bank_transfer",
         seller_name="Hassan", seller_phone="01011112222", seller_id_number="29001011234567",
         bank_account_id=shop.bank.pk))
-    assert bought.number == "01-DB-2026-000001" and bought.total_amount == Decimal("30000")
+    assert bought.number == f"01-DB-{this_year()}-000001"
+    assert bought.total_amount == Decimal("30000")
     item = bought.lines.get().item
     # 5 g with 0.5 ct of stones (0.1 g): 4.9 g of 18K = 3.675 fine g.
     assert item.status == ItemStatus.IN_STOCK and item.fine_weight_g == Decimal("3.6750")

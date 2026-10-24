@@ -152,7 +152,8 @@ class EmployeeViewSet(viewsets.GenericViewSet):
     }
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(
+            pk__in=services.visible_employees(self.request.actor))
         term = self.request.query_params.get("q", "").strip()
         return queryset.filter(name__icontains=term) if term else queryset
 
@@ -226,6 +227,10 @@ class AdvanceViewSet(viewsets.GenericViewSet):
     required_permissions = {"list": "hr.employee.view", "retrieve": "hr.employee.view",
                             "void": "hr.advance.void"}
 
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            employee__in=services.visible_employees(self.request.actor))
+
     def list(self, request):
         page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
         return self.get_paginated_response(self.get_serializer(page, many=True).data)
@@ -275,6 +280,14 @@ class PayrollViewSet(viewsets.GenericViewSet):
     required_permissions = {"list": "hr.payroll.view", "retrieve": "hr.payroll.view",
                             "preview": "hr.payroll.view", "create": "hr.payroll.post",
                             "void": "hr.payroll.void"}
+
+    def check_permissions(self, request):
+        """A payroll pays every branch's employees: every action needs its permission for
+        every branch (services.require_all_branches)."""
+        super().check_permissions(request)
+        code = self.required_permissions.get(self.action)
+        if code is not None:
+            services.require_all_branches(request.actor, code)
 
     def list(self, request):
         page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))

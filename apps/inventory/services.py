@@ -166,6 +166,14 @@ def move_lot(lot: StockLot, *, qty: int, gross_weight_g, cost_amount="0",
         raise DomainError(
             _("Not enough stock: %(available)s g available.")
             % {"available": balance.gross_weight_g}, code="INVENTORY_INSUFFICIENT_STOCK")
+    if gross < 0:
+        # Each movement's fine weight is rounded on its own, so the parts can add up to a
+        # little more than the lot holds: what empties the lot takes exactly what is left, and
+        # nothing takes more than that.
+        if balance.gross_weight_g + gross == 0:
+            fine = -balance.fine_weight_g
+        else:
+            fine = max(fine, -balance.fine_weight_g)
     LotBalance.objects.filter(pk=balance.pk).update(
         qty=F("qty") + qty, gross_weight_g=F("gross_weight_g") + gross,
         fine_weight_g=F("fine_weight_g") + fine, cost_amount=F("cost_amount") + cost)

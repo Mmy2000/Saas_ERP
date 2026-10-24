@@ -17,7 +17,7 @@ from apps.sales.returns import create_return, void_return
 from apps.sales.services import TradeInInput, post_sale, void_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
 from apps.settlements.services import SettlementInput, post_settlement, void_settlement
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -45,7 +45,7 @@ class TestReturns:
         invoice = post_sale(shop.sale(shop.line(shop.ring_a), payments=[shop.cash(RING_A_TOTAL)]))
         line = invoice.lines.get()
         sales_return = create_return(invoice.pk, [line.pk], refund_method="cash")
-        assert sales_return.number == "01-SR-2026-000001"
+        assert sales_return.number == f"01-SR-{this_year()}-000001"
         assert sales_return.refund_amount == RING_A_TOTAL
         shop.ring_a.refresh_from_db()
         assert shop.ring_a.status == ItemStatus.IN_STOCK
@@ -91,7 +91,7 @@ class TestSettlements:
                             customer_id=customer.pk))
         receipt = settle(shop, "receipt", "customer", customer, method="cash",
                          currency_code="EGP", amount=str(RING_A_TOTAL))
-        assert receipt.number == "01-RC-2026-000001"
+        assert receipt.number == f"01-RC-{this_year()}-000001"
         assert party_balance(customer) == {}
 
     def test_paying_the_supplier_money_and_gold(self, shop):

@@ -68,6 +68,9 @@ def record_failed_sign_in(sender, credentials, request=None, **kwargs):
     from .models import Membership, SignInOutcome
 
     typed = str(credentials.get("username", ""))[:150]  # never the password
+    from . import throttle
+
+    throttle.failed(request, typed)  # every host: workspaces, console, Django admin, the app
     if not _on_workspace(request):
         return
     members = Membership.objects.all()

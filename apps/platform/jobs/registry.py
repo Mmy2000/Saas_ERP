@@ -10,7 +10,9 @@
 
 and asks for one with `enqueue("messaging.send_email", message_id=5)`, inside the transaction
 of the work that needs it. A client task runs in that client's tenant_context, language and
-time zone; a platform task (`per_tenant=False`) runs with no tenant.
+time zone; a platform task (`per_tenant=False`) runs with no tenant, in one transaction unless
+it says `atomic=False` (a backup: what it records must survive its own failure, and no
+transaction should stay open while pg_dump runs).
 """
 
 from __future__ import annotations
@@ -39,6 +41,11 @@ class Task:
     # client's tenant_context): e.g. mark the message "failed" so the shop can see it.
     on_error: Callable | None = None
     label: object = ""  # shown in the console
+    atomic: bool = True  # platform tasks only: False runs it without a wrapping transaction
+    # How long a run may take before it counts as abandoned by a dead worker and is queued
+    # again (None: worker.STALE_AFTER). Set it above the task's longest run, or a second
+    # worker starts it again while the first is still at it.
+    stale_after: timedelta | None = None
 
 
 @dataclass(frozen=True)
@@ -55,11 +62,16 @@ SCHEDULES: list[Schedule] = []
 
 
 def task(name: str, *, label="", max_attempts: int = 5, per_tenant: bool = True,
-         on_error: Callable | None = None):
+         on_error: Callable | None = None, atomic: bool = True,
+         stale_after: timedelta | None = None):
+    if per_tenant and not atomic:
+        raise ValueError(f"Task {name!r}: a client task runs in tenant_context, a transaction.")
+
     def register(func):
         if name in TASKS and TASKS[name].func is not func:
             raise RuntimeError(f"Task {name!r} is registered twice.")
-        TASKS[name] = Task(name, func, max_attempts, per_tenant, on_error, label or name)
+        TASKS[name] = Task(name, func, max_attempts, per_tenant, on_error, label or name, atomic,
+                           stale_after)
         return func
     return register
 

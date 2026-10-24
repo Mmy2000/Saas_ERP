@@ -1,10 +1,14 @@
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView
 
+from apps.core.api.permissions import HasTenantPermission
 from apps.iam.catalog import AUTHENTICATED
 
 
 class SchemaView(SpectacularAPIView):
+    # drf-spectacular sets its own permission_classes (AllowAny by default), which would
+    # skip the project's default and publish the schema to anyone: keep ours.
+    permission_classes = [HasTenantPermission]
     required_permissions = {"GET": AUTHENTICATED}
 
 

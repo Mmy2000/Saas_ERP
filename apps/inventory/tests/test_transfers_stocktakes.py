@@ -36,7 +36,7 @@ from apps.org.services import BranchInput, create_branch
 from apps.purchasing.services import InvoiceInput, LineInput, post_invoice, save_draft
 from apps.sales.services import post_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -81,7 +81,7 @@ class TestTransfers:
         transfer = send(stock, TransferLineInput(barcode=stock.ring_a.barcode),
                         TransferLineInput(category_id=stock.chain.pk, karat_id=stock.k21.pk,
                                           gross_weight_g="5", qty=1))
-        assert transfer.number == "01-TF-2026-000001" and transfer.in_transit
+        assert transfer.number == f"01-TF-{this_year()}-000001" and transfer.in_transit
         assert transfer.total_qty == 2 and transfer.total_gross_weight_g == Decimal("10.000")
         stock.ring_a.refresh_from_db()
         assert (stock.ring_a.status, stock.ring_a.branch) == (ItemStatus.IN_TRANSIT, stock.other)
@@ -136,7 +136,7 @@ class TestTransfers:
 class TestStocktake:
     def test_count_and_post(self, stock):
         take = start_stocktake(stock.branch.pk)
-        assert take.number == "01-SK-2026-000001"
+        assert take.number == f"01-SK-{this_year()}-000001"
         assert summary(take).expected == 2 and summary(take).lots == 1
         with pytest.raises(DomainError):  # one open count per branch
             start_stocktake(stock.branch.pk)

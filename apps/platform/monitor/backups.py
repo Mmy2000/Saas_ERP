@@ -9,6 +9,10 @@ The dump runs as BACKUP_DATABASE_URL's role, which must bypass row-level securit
 dump nothing or fail. Copy the files off the server too (another disk, cloud storage): a backup
 on the same disk is lost with it. The encryption keys (FIELD_ENCRYPTION_KEY, BLIND_INDEX_KEY)
 are not in the dump and must be kept safe separately.
+
+Every new pair is read back before the run counts as good: the dump's table of contents
+(pg_restore --list) and the archive's checksums. `manage.py verify_backup --into <scratch
+database>` goes further and restores one (docs/operations/README.md, TD-04).
 """
 
 from __future__ import annotations
@@ -34,16 +38,9 @@ def _dump_database(target: Path) -> None:
     if not url:
         raise BackupError("BACKUP_DATABASE_URL is not set: give it a role that bypasses "
                           "row-level security (app_platform).")
-    db = environ.Env.db_url_config(url)
+    arguments, environment = _connection_args(url)
     command = [settings.BACKUP_PG_DUMP, "--format=custom", "--no-owner", "--file", str(target),
-               "--dbname", db["NAME"]]
-    if db.get("HOST"):
-        command += ["--host", str(db["HOST"])]
-    if db.get("PORT"):
-        command += ["--port", str(db["PORT"])]
-    if db.get("USER"):
-        command += ["--username", str(db["USER"])]
-    environment = {**os.environ, "PGPASSWORD": str(db.get("PASSWORD") or "")}
+               *arguments]
     try:
         done = subprocess.run(command, env=environment, capture_output=True, text=True,
                               timeout=60 * 60, check=False)
@@ -52,6 +49,65 @@ def _dump_database(target: Path) -> None:
                           "client tools or set BACKUP_PG_DUMP to pg_dump's full path.") from None
     if done.returncode != 0:
         raise BackupError((done.stderr or done.stdout or "pg_dump failed").strip()[-4000:])
+
+
+def _connection_args(url: str) -> tuple[list[str], dict]:
+    db = environ.Env.db_url_config(url)
+    args = ["--dbname", db["NAME"]]
+    if db.get("HOST"):
+        args += ["--host", str(db["HOST"])]
+    if db.get("PORT"):
+        args += ["--port", str(db["PORT"])]
+    if db.get("USER"):
+        args += ["--username", str(db["USER"])]
+    return args, {**os.environ, "PGPASSWORD": str(db.get("PASSWORD") or "")}
+
+
+def _pg_restore(arguments: list[str], *, env=None, timeout: int = 600):
+    try:
+        return subprocess.run([settings.BACKUP_PG_RESTORE, *arguments], env=env,
+                              capture_output=True, text=True, timeout=timeout, check=False)
+    except FileNotFoundError:
+        raise BackupError(f"{settings.BACKUP_PG_RESTORE} was not found: install the PostgreSQL "
+                          "client tools or set BACKUP_PG_RESTORE to pg_restore's full path."
+                          ) from None
+
+
+def check_dump(path: Path) -> int:
+    """Read a dump's table of contents back: a truncated or damaged file fails here, not on the
+    day it is needed. Returns how many tables' rows it holds."""
+    done = _pg_restore(["--list", str(path)])
+    if done.returncode != 0:
+        raise BackupError("The dump can't be read back: "
+                          + (done.stderr or done.stdout or "pg_restore failed").strip()[-2000:])
+    tables = sum(1 for line in done.stdout.splitlines() if " TABLE DATA " in line)
+    if not tables:
+        raise BackupError("The dump holds no table rows.")
+    return tables
+
+
+def check_media(path: Path) -> int:
+    """Every file in the media archive reads back with its checksum. Returns how many."""
+    try:
+        with zipfile.ZipFile(path) as archive:
+            damaged = archive.testzip()
+            names = archive.namelist()
+    except (OSError, zipfile.BadZipFile) as exc:
+        raise BackupError(f"The media archive can't be read: {exc}") from exc
+    if damaged:
+        raise BackupError(f"The media archive is damaged at {damaged}.")
+    return len(names)
+
+
+def restore_into(dump: Path, url: str) -> None:
+    """Restore `dump` into the (empty) database at `url`: a rehearsal of the real thing. The
+    role must bypass row-level security to load the rows (a superuser on the scratch server)."""
+    arguments, env = _connection_args(url)
+    done = _pg_restore(["--no-owner", "--exit-on-error", *arguments, str(dump)], env=env,
+                       timeout=4 * 60 * 60)
+    if done.returncode != 0:
+        raise BackupError("The restore failed: "
+                          + (done.stderr or done.stdout or "pg_restore failed").strip()[-4000:])
 
 
 def _zip_media(target: Path) -> None:
@@ -85,6 +141,8 @@ def run_backup() -> BackupRun:
         directory.mkdir(parents=True, exist_ok=True)
         _dump_database(database)
         _zip_media(media)
+        check_dump(database)
+        check_media(media)
     except Exception as exc:  # noqa: BLE001 - recorded, then raised
         for partial in (database, media):
             partial.unlink(missing_ok=True)

@@ -28,7 +28,7 @@ from apps.sales.returns import create_return
 from apps.sales.services import post_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
 from apps.treasury.holders import balance, default_cash_box
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 TODAY = timezone.localdate()
@@ -74,7 +74,8 @@ def test_monthly_payroll(shop):
     assert commission_for(shop.omar, Y, M).amount == 0  # no login, no commission
 
     advance = give_advance(shop.sara.pk, "1000", branch_id=shop.branch.pk)
-    assert advance.number == "01-EA-2026-000001" and outstanding_advance(shop.sara) == 1000
+    assert advance.number == f"01-EA-{this_year()}-000001"
+    assert outstanding_advance(shop.sara) == 1000
     add_adjustment(shop.sara.pk, AdjustmentKind.BONUS, "300", Y, M, note="Eid")
     add_adjustment(shop.sara.pk, AdjustmentKind.DEDUCTION, "100", Y, M)
 
@@ -86,7 +87,7 @@ def test_monthly_payroll(shop):
     assert plan.total("net") == Decimal("7325")
 
     run = post_payroll(Y, M, branch_id=shop.branch.pk, actor=shop.actor)
-    assert run.number == "01-PRL-2026-000001"
+    assert run.number == f"01-PRL-{this_year()}-000001"
     assert (run.total_salary, run.total_commission, run.total_net) == (
         Decimal("8000"), Decimal("125"), Decimal("7325"))
     ledger = roles()
@@ -135,6 +136,36 @@ def test_limits_and_rules(shop):
     advance = give_advance(shop.omar.pk, "100", branch_id=shop.branch.pk)
     void_advance(advance.pk)
     assert outstanding_advance(shop.omar) == 500
+
+
+def test_an_adjustment_deleted_while_posting_is_not_paid(shop, monkeypatch):
+    """The payroll plans its bonuses and deductions without locking them: one deleted between
+    the plan and the posting must not be paid (the whole payroll is refused instead)."""
+    from apps.core.errors import Conflict
+    from apps.hr import services
+
+    bonus = add_adjustment(shop.sara.pk, AdjustmentKind.BONUS, "300", Y, M)
+    real_plan = services.plan_payroll
+
+    def plan_then_delete(*args, **kw):
+        plan = real_plan(*args, **kw)
+        PayAdjustment.objects.filter(pk=bonus.pk).delete()  # another user, meanwhile
+        return plan
+
+    monkeypatch.setattr(services, "plan_payroll", plan_then_delete)
+    with pytest.raises(Conflict):
+        post_payroll(Y, M, branch_id=shop.branch.pk)
+
+
+def test_deleting_an_adjustment_locks_it_first(shop):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    bonus = add_adjustment(shop.sara.pk, AdjustmentKind.BONUS, "300", Y, M)
+    with CaptureQueriesContext(connection) as queries:
+        delete_adjustment(bonus.pk)
+    first = next(q["sql"] for q in queries.captured_queries if "SAVEPOINT" not in q["sql"])
+    assert "FOR UPDATE" in first
 
 
 def test_hired_after_the_month_is_not_paid(shop):

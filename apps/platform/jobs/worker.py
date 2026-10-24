@@ -52,12 +52,13 @@ def claim(name: str) -> Job | None:
 
 
 @contextmanager
-def _client(tenant_id: int | None):
+def _client(tenant_id: int | None, *, atomic: bool = True):
     """The client's tenant_context with its language and time zone (or, for a platform job,
-    a plain transaction)."""
+    a plain transaction, unless the task asked for none)."""
     with ExitStack() as stack:
         if tenant_id is None:
-            stack.enter_context(transaction.atomic())
+            if atomic:
+                stack.enter_context(transaction.atomic())
         else:
             from apps.org.models import TenantProfile
 
@@ -93,7 +94,7 @@ def execute(job: Job) -> bool:
     try:
         if spec is None:
             raise JobFailed(f"Unknown task {job.name!r}.")
-        with _client(job.tenant_id):
+        with _client(job.tenant_id, atomic=spec.atomic):
             spec.func(**job.payload)
     except Exception as exc:  # noqa: BLE001 - every failure is recorded on the job
         _failed(job, spec, exc)
@@ -116,8 +117,11 @@ def _failed(job: Job, spec: Task | None, exc: Exception) -> None:
     error = f"{type(exc).__name__}: {exc}"[:2000]
     final = isinstance(exc, JobFailed) or job.attempts >= job.max_attempts
     if not isinstance(exc, JobFailed):
-        logger.warning("job %s #%s attempt %s failed: %s", job.name, job.pk, job.attempts, error,
-                       exc_info=exc)
+        # The last attempt is an error (Console → Errors and the alert e-mail); earlier ones
+        # will be retried, so they are only warnings.
+        log = logger.error if final else logger.warning
+        log("job %s #%s attempt %s failed: %s", job.name, job.pk, job.attempts, error,
+            exc_info=exc)
     if spec is not None and spec.on_error is not None:
         try:
             with _client(job.tenant_id):
@@ -146,10 +150,24 @@ def run_pending(limit: int = 1000, name: str = "inline") -> int:
     return count
 
 
+def stale_after(name: str) -> timedelta:
+    spec = TASKS.get(name)
+    return (spec.stale_after if spec is not None and spec.stale_after else None) or STALE_AFTER
+
+
+def longest_run() -> timedelta:
+    """The longest any task may run before it counts as abandoned."""
+    return max([STALE_AFTER, *(spec.stale_after for spec in TASKS.values() if spec.stale_after)])
+
+
 def release_stale(now=None) -> int:
-    """Jobs left running by a worker that died go back in the queue (the attempt counts)."""
+    """Jobs left running by a worker that died go back in the queue (the attempt counts), each
+    after its task's own time (`stale_after`)."""
     now = now or timezone.now()
-    return Job.objects.filter(status=JobStatus.RUNNING, locked_at__lt=now - STALE_AFTER).update(
+    running = Job.objects.filter(status=JobStatus.RUNNING, locked_at__lt=now - STALE_AFTER)
+    stale = [job.pk for job in running.only("pk", "name", "locked_at")
+             if job.locked_at < now - stale_after(job.name)]
+    return Job.objects.filter(pk__in=stale, status=JobStatus.RUNNING).update(
         status=JobStatus.QUEUED, locked_by="", locked_at=None, run_at=timezone.now(),
         last_error="The worker stopped while running it.")
 

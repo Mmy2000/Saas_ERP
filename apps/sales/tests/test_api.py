@@ -3,7 +3,7 @@ import pytest
 from apps.core.tenancy import tenant_context
 from apps.sales.models import SalesInvoice
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -34,7 +34,7 @@ def test_quote_then_sell(tenant_a, shop):
 
     created = _post(client, "/api/v1/sales/invoices/", _sale(shop), "sale-1")
     assert created.status_code == 201, created.content
-    assert created.json()["number"].endswith("-SI-2026-000001")
+    assert created.json()["number"].endswith(f"-SI-{this_year()}-000001")
 
 
 def test_same_key_never_posts_twice(tenant_a, shop):

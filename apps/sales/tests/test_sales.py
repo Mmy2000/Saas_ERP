@@ -38,6 +38,7 @@ from apps.treasury.holders import (
     create_bank_account,
     create_terminal,
 )
+from conftest import this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -88,7 +89,7 @@ def shop(tenant_a):
 def test_cash_sale_posts_everything(shop):
     before = trial_balance()
     invoice = post_sale(shop.sale(shop.line(shop.ring_a), payments=[shop.cash(RING_A_TOTAL)]))
-    assert invoice.number == "01-SI-2026-000001" and invoice.status == DocStatus.POSTED
+    assert invoice.number == f"01-SI-{this_year()}-000001" and invoice.status == DocStatus.POSTED
     assert invoice.total_amount == RING_A_TOTAL and invoice.change_amount == 0
     line = invoice.lines.get()
     assert (line.metal_amount, line.making_amount) == (Decimal("17142.85"), Decimal("1250.00"))

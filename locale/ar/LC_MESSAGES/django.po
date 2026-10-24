@@ -452,6 +452,9 @@ msgstr "الحساب البنكي يخدم أكثر من فرع: كل سطر ه�
 msgid "A big gold price change is waiting for you"
 msgstr "تغيّر كبير في سعر الذهب ينتظر موافقتك"
 
+msgid "A bonus or deduction changed while the payroll was being posted. Prepare it again."
+msgstr "تغيّرت مكافأة أو خصم أثناء ترحيل المرتبات. جهّزها من جديد."
+
 msgid "A branch's cash box opens with its first cash sale, or set one up in Cash & banks."
 msgstr "تُفتح خزينة الفرع مع أول بيع نقدي، أو أنشئها من الخزائن والبنوك."
 
@@ -490,6 +493,9 @@ msgstr "الخصم على المصنعية فقط (الذهب دائمًا بس�
 
 msgid "A group of accounts"
 msgstr "مجموعة حسابات"
+
+msgid "A Gweb staff login."
+msgstr "حساب من فريق Gweb."
 
 msgid "A karat appears twice."
 msgstr "تكرر أحد العيارات."
@@ -1003,6 +1009,9 @@ msgstr "مُدخل من قبل في %(number)s؛ ألغِه لإدخاله من 
 
 msgid "Already exists."
 msgstr "موجود بالفعل."
+
+msgid "Already has a login."
+msgstr "لديه حساب بالفعل."
 
 msgid "Already in the list."
 msgstr "موجودة في القائمة."
@@ -4808,6 +4817,9 @@ msgstr "التجميع حسب"
 msgid "Groups of items with their default karat and making charges."
 msgstr "مجموعات الأصناف مع العيار والمصنعية الافتراضية."
 
+msgid "Gweb staff logins can't own a workspace. Use another email."
+msgstr "لا يمكن لحسابات فريق Gweb امتلاك مساحة عمل. استخدم بريدًا آخر."
+
 msgid "Hand it back"
 msgstr "رد الشيك"
 
@@ -5417,8 +5429,11 @@ msgstr "اترك القائمة فارغة للكل"
 msgid "Leave empty for no limit."
 msgstr "اتركه فارغًا لعدم التقييد."
 
-msgid "Leave empty when the owner already has an account (same email)."
-msgstr "اتركها فارغة إن كان للمالك حساب بالفعل (نفس البريد)."
+msgid "Leave empty when adding this workspace to the owner's existing login."
+msgstr "اتركها فارغة عند إضافة مساحة العمل هذه إلى حساب المالك الحالي."
+
+msgid "Leave empty."
+msgstr "اتركها فارغة."
 
 msgid "Leave the rest on the customer's account"
 msgstr "ترك الباقي على حساب العميل"
@@ -10382,6 +10397,12 @@ msgstr "البريد الإلكتروني وكلمة المرور غير متط�
 msgid "That is not the code. %(n)s tries left."
 msgstr "الكود غير صحيح. المحاولات المتبقية: %(n)s."
 
+msgid "That login keeps its own password: leave the password empty."
+msgstr "هذا الحساب يحتفظ بكلمة مروره: اترك كلمة المرور فارغة."
+
+msgid "That login keeps its own password: leave this empty."
+msgstr "هذا الحساب يحتفظ بكلمة مروره: اترك هذا الحقل فارغًا."
+
 msgid "That parcel holds another kind of stone."
 msgstr "هذه البرتيتة لنوع آخر من الأحجار."
 
@@ -10586,6 +10607,9 @@ msgstr "لم يعد الرابط يعمل."
 msgid "The list shows the users of this workspace."
 msgstr "القائمة تعرض مستخدمي مساحة العمل."
 
+msgid "The login keeps its own password. Only for the same person (one owner, several shops)."
+msgstr "يحتفظ الحساب بكلمة مروره. للشخص نفسه فقط (مالك واحد لعدة محلات)."
+
 msgid "The logo appears in the sidebar, on the sign-in page and in the browser tab. Only your company can see your files."
 msgstr "يظهر الشعار في القائمة الجانبية وصفحة تسجيل الدخول وتبويب المتصفح. ملفاتك لا يراها إلا شركتك."
 
@@ -10630,6 +10654,9 @@ msgstr[5] "أحدث %(n)s"
 
 msgid "The newest 2,000 changes of the period at most."
 msgstr "أحدث 2,000 تعديل في الفترة كحد أقصى."
+
+msgid "The owner already has a Gweb login: add this workspace to it"
+msgstr "المالك لديه حساب Gweb بالفعل: أضف مساحة العمل هذه إليه"
 
 msgid "The Owner role cannot be changed."
 msgstr "لا يمكن تعديل دور المالك."
@@ -10967,6 +10994,12 @@ msgstr "هذا النطاق مستخدم بالفعل."
 msgid "This email already belongs to another account."
 msgstr "هذا البريد الإلكتروني مسجل لحساب آخر."
 
+msgid "This email already has a Gweb login. Add this workspace to that login, or use another email."
+msgstr "هذا البريد له حساب Gweb بالفعل. أضف مساحة العمل هذه إلى ذلك الحساب، أو استخدم بريدًا آخر."
+
+msgid "This email already has a Gweb login. Tick “add this workspace to it” below, or use another email."
+msgstr "هذا البريد له حساب Gweb بالفعل. فعّل «أضف مساحة العمل هذه إليه» بالأسفل، أو استخدم بريدًا آخر."
+
 msgid "This entry was already reversed."
 msgstr "تم عكس هذا القيد من قبل."
 
@@ -11036,6 +11069,9 @@ msgstr "مسير هذا الشهر مصروف بالفعل. ألغِه أولً�
 msgid "This needs the permission for all branches."
 msgstr "يتطلب هذا الصلاحية على كل الفروع."
 
+msgid "This needs the permission for every branch."
+msgstr "هذا يتطلب الصلاحية على كل الفروع."
+
 msgid "This number is not on WhatsApp."
 msgstr "هذا الرقم ليس على واتساب."
 
@@ -11056,6 +11092,12 @@ msgstr "هذه البرتيتة موقوفة."
 
 msgid "This period"
 msgstr "هذه الفترة"
+
+msgid "This person uses the same login outside this workspace, so only they can change its password or email."
+msgstr "هذا الشخص يستخدم الحساب نفسه خارج مساحة العمل هذه، لذا يغيّر كلمة المرور أو البريد بنفسه فقط."
+
+msgid "This phone number already belongs to another account."
+msgstr "رقم الهاتف هذا مسجّل لحساب آخر."
 
 msgid "This piece belongs to another branch."
 msgstr "هذه القطعة تابعة لفرع آخر."
@@ -11218,6 +11260,9 @@ msgstr "طلبات كثيرة جدًا الآن"
 
 msgid "Too many requests. Please wait a minute and try again."
 msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مرة أخرى."
+
+msgid "Too many wrong passwords. Wait a few minutes, then try again."
+msgstr "كلمات مرور خاطئة كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى."
 
 msgid "Too many wrong tries. Send a new code."
 msgstr "محاولات خاطئة كثيرة. أرسل كودًا جديدًا."

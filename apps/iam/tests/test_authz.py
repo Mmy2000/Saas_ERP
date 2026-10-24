@@ -104,6 +104,27 @@ def test_every_api_action_declares_a_permission():
     assert missing == []
 
 
+def test_every_api_view_enforces_the_declared_permissions():
+    """Declaring `required_permissions` is not enough: a view (or a library base class) that
+    sets its own `permission_classes` skips HasTenantPermission. drf-spectacular's schema view
+    did, and published the API schema to anyone."""
+    from apps.core.api.permissions import HasTenantPermission
+
+    skipping = sorted({route for route, callback in _api_views()
+                       if route.startswith("api/v1/") and getattr(callback, "cls", None)
+                       and HasTenantPermission not in callback.cls.permission_classes})
+    assert skipping == []
+
+
+@pytest.mark.django_db
+def test_the_api_schema_is_for_signed_in_members_only(tenant_a):
+    from django.test import Client
+
+    anonymous = Client(HTTP_HOST="alpha.localhost").get("/api/v1/schema/")
+    assert anonymous.status_code in (401, 403)
+    assert login(tenant_a).get("/api/v1/schema/").status_code == 200
+
+
 @pytest.mark.django_db
 class TestEnforcement:
     def test_viewer_cannot_publish_prices(self, tenant_a, make_member):

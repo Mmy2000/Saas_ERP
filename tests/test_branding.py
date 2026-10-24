@@ -111,6 +111,14 @@ def test_files_never_cross_between_clients(tenant_a, tenant_b, media, console):
     for path in ("/media/../manage.py", "/media/tenants/../../manage.py",
                  f"/media/tenants/{tenant_a.id}/branding/.hidden"):
         assert client_a.get(path).status_code == 404
+    # Nor into B's folder through Windows path syntax (B's own file exists and is served).
+    theirs = media / f"tenants/{tenant_b.id}/documents/theirs.png"
+    theirs.parent.mkdir(parents=True)
+    theirs.write_bytes(PNG)
+    assert client_b.get(f"/media/tenants/{tenant_b.id}/documents/theirs.png").status_code == 200
+    climb = rf"x\..\..\..\{tenant_b.id}\documents\theirs.png"
+    for sneaky in (climb, "C:theirs.png"):
+        assert client_a.get(f"/media/tenants/{tenant_a.id}/documents/{sneaky}").status_code == 404
 
 
 def test_platform_settings(console, tenant_a, media):

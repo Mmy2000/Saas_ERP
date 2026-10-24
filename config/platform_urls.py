@@ -11,6 +11,7 @@ from apps.platform.console import jobs as console_jobs
 from apps.platform.console import market as console_market
 from apps.platform.console import operations as console_ops
 from apps.platform.console import views as console
+from apps.platform.monitor.health import readyz
 
 
 def healthz(request):
@@ -19,6 +20,7 @@ def healthz(request):
 
 urlpatterns = [
     path("healthz/", healthz),
+    path("readyz/", readyz),  # database, worker, backup: for the uptime monitor
     path("i18n/", include("django.conf.urls.i18n")),
     path("media/<path:path>", media.serve, name="media"),
     path("login/", console.LoginView.as_view(), name="login"),

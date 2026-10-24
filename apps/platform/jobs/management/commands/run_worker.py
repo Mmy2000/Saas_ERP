@@ -5,12 +5,13 @@ app; start more than one for more throughput:
     python manage.py run_worker --once       # queue what is scheduled, run what is due, stop
 """
 
+import logging
 import signal
 import time
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import close_old_connections
+from django.db import close_old_connections, connection
 from django.utils import timezone
 
 from apps.platform.jobs.models import Worker
@@ -23,6 +24,9 @@ from apps.platform.jobs.worker import (
     run_pending,
     worker_name,
 )
+
+logger = logging.getLogger(__name__)
+ERROR_PAUSE = 5  # seconds before trying again after a pass failed (the database restarting…)
 
 
 class Command(BaseCommand):
@@ -54,30 +58,41 @@ class Command(BaseCommand):
         self.stdout.write(f"Worker {name} running. Ctrl+C to stop.")
         try:
             while not self._stop:
-                close_old_connections()
-                now = time.monotonic()
-                if now - last_beat >= 15:
-                    heartbeat(name, started, done=done, failed=failed)
-                    done = failed = 0
-                    last_beat = now
-                if now - last_tick >= 30:
-                    scheduler.tick()
-                    last_tick = now
-                if now - last_stale >= 300:
-                    release_stale()
-                    last_stale = now
-                job = claim(name)
-                if job is None:
-                    time.sleep(poll)
-                    continue
-                if execute(job):
-                    done += 1
-                else:
-                    failed += 1
+                # One pass failing (the database restarting, a lost connection) must not stop
+                # the worker: nothing would send, schedule or back up until someone noticed.
+                try:
+                    close_old_connections()
+                    now = time.monotonic()
+                    if now - last_beat >= 15:
+                        heartbeat(name, started, done=done, failed=failed)
+                        done = failed = 0
+                        last_beat = now
+                    if now - last_tick >= 30:
+                        scheduler.tick()
+                        last_tick = now
+                    if now - last_stale >= 300:
+                        release_stale()
+                        last_stale = now
+                    job = claim(name)
+                    if job is None:
+                        time.sleep(poll)
+                        continue
+                    if execute(job):
+                        done += 1
+                    else:
+                        failed += 1
+                except Exception:  # noqa: BLE001 - logged (Console → Errors), then retried
+                    logger.exception("Worker %s: a pass failed; trying again in %s s", name,
+                                     ERROR_PAUSE)
+                    connection.close()  # a broken connection is opened again next pass
+                    time.sleep(ERROR_PAUSE)
         except KeyboardInterrupt:
             pass
         finally:
-            Worker.objects.filter(name=name).delete()
+            try:
+                Worker.objects.filter(name=name).delete()
+            except Exception:  # noqa: BLE001 - stopping anyway; the row just ages out
+                logger.warning("Worker %s: could not remove its heartbeat row", name)
             self.stdout.write("Stopped.")
 
     def _request_stop(self, *args):

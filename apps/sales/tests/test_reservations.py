@@ -22,7 +22,7 @@ from apps.sales.reservations import (
 from apps.sales.services import PaymentInput, post_sale, quote_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
 from apps.treasury.holders import balance, default_cash_box
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -54,12 +54,12 @@ def cash(shop) -> Decimal:
 class TestReserve:
     def test_pieces_are_held_and_the_deposit_is_a_liability(self, shop):
         reservation = reserve(shop, shop.ring_a)
-        assert reservation.number == "01-RS-2026-000001" and reservation.state == "open"
+        assert reservation.number == f"01-RS-{this_year()}-000001" and reservation.state == "open"
         assert reservation.quoted_total == RING_A_TOTAL
         shop.ring_a.refresh_from_db()
         assert shop.ring_a.status == ItemStatus.RESERVED
         assert deposits_held(shop) == 5000 and cash(shop) == 5000
-        assert reservation.deposits.get().number == "01-RD-2026-000001"
+        assert reservation.deposits.get().number == f"01-RD-{this_year()}-000001"
         # Still owned stock, but nobody can sell it at the counter.
         assert sum(line.pieces for line in stock_by_karat()) == 2
         with pytest.raises(ValidationError):

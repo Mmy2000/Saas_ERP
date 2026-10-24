@@ -15,7 +15,7 @@ from apps.diamonds.tests.test_diamonds import balanced, net, shop, switch_on  # 
 from apps.inventory.models import Item, ItemStatus
 from apps.ledger.selectors import party_balance
 from apps.parties.services import PartyData, create_workshop
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -43,7 +43,7 @@ def line(shop, item):  # noqa: F811
 
 
 def test_handing_over_moves_the_goods_to_the_workshop(job):
-    assert job.job.number == "01-SJ-2026-000001"
+    assert job.job.number == f"01-SJ-{this_year()}-000001"
     for item in (job.ring_a, job.stone):
         item.refresh_from_db()
         assert item.status == ItemStatus.AT_WORKSHOP
@@ -107,7 +107,7 @@ def test_stones_taken_out_come_back_with_their_cost(job):
     removal = jobs.remove_stones(jobs.RemovalInput(
         setting_id=setting.pk, stone_ids=(job.stone.pk,), gross_after_g="5.000",
         fee_amount="100", setter_id=job.setter.pk))
-    assert removal.number == "01-SU-2026-000001"
+    assert removal.number == f"01-SU-{this_year()}-000001"
     stone = Item.objects.get(pk=job.stone.pk)
     ring = Item.objects.get(pk=job.ring_a.pk)
     assert stone.status == ItemStatus.IN_STOCK and stone.stone_cost_amount == Decimal("8000")

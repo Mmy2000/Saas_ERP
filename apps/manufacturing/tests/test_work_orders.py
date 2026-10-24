@@ -20,7 +20,7 @@ from apps.manufacturing.services import (
 )
 from apps.parties.services import PartyData, create_customer
 from apps.sales.services import post_sale
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -55,7 +55,7 @@ def balanced():
 
 def test_send_receive_with_loss(stock):
     order = send(stock)
-    assert order.number == "01-WO-2026-000001" and order.at_workshop
+    assert order.number == f"01-WO-{this_year()}-000001" and order.at_workshop
     assert (order.issued_fine_weight_g, order.carried_cost) == (Decimal("8.75"), Decimal("1000"))
     assert stock.lot(stock.branch).gross_weight_g == Decimal("10.000")
     assert party_balance(stock.workshop) == {"XAU": Decimal("8.75")}  # they hold our gold

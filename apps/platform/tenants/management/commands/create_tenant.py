@@ -16,15 +16,20 @@ class Command(BaseCommand):
         parser.add_argument("--owner-username", required=True)
         parser.add_argument("--owner-email")
         parser.add_argument("--owner-password", help="Prompted for when omitted.")
+        parser.add_argument("--link-existing-owner", action="store_true",
+                            help="The owner's email already has a login: add this tenant to it "
+                                 "(it keeps its password; no password is asked).")
         parser.add_argument("--currency", default="EGP")
         parser.add_argument("--timezone", default="Africa/Cairo")
         parser.add_argument("--locale", default="ar", choices=["ar", "en"])
         parser.add_argument("--country", default="EG")
 
     def handle(self, *args, **opts):
-        password = opts["owner_password"] or getpass("Owner password: ")
-        if not password:
-            raise CommandError("An owner password is required.")
+        password = None
+        if not opts["link_existing_owner"]:
+            password = opts["owner_password"] or getpass("Owner password: ")
+            if not password:
+                raise CommandError("An owner password is required.")
         try:
             tenant = provision_tenant(
                 ProvisionTenantCommand(
@@ -34,6 +39,7 @@ class Command(BaseCommand):
                     owner_username=opts["owner_username"],
                     owner_email=opts["owner_email"],
                     owner_password=password,
+                    link_existing_owner=opts["link_existing_owner"],
                     functional_currency=opts["currency"],
                     timezone=opts["timezone"],
                     locale=opts["locale"],

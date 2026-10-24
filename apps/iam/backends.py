@@ -1,6 +1,15 @@
 from django.contrib.auth.backends import BaseBackend, ModelBackend
+from django.core.exceptions import PermissionDenied
 
+from . import throttle
 from .models import Membership, MembershipStatus, User
+
+
+def _refuse_while_locked(request, username) -> None:
+    """Too many wrong passwords (apps.iam.throttle): refused without checking this one.
+    PermissionDenied makes Django's authenticate() stop and report a failed sign-in."""
+    if throttle.locked_for(request, username or ""):
+        raise PermissionDenied
 
 
 class TenantMembershipBackend(BaseBackend):
@@ -11,6 +20,7 @@ class TenantMembershipBackend(BaseBackend):
         tenant = getattr(request, "tenant", None)
         if tenant is None or not username or password is None:
             return None
+        _refuse_while_locked(request, username)
 
         members = Membership.objects.select_related("user").filter(status=MembershipStatus.ACTIVE)
         membership = members.filter(username=username).first()
@@ -35,4 +45,5 @@ class PlatformEmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if request is None or getattr(request, "tenant", None) is not None:
             return None
+        _refuse_while_locked(request, username)
         return super().authenticate(request, username=username, password=password, **kwargs)

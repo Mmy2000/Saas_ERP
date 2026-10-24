@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.appearance import ACCENT_CHOICES
 from apps.core.media import ImageUploadInput, validate_image
+from apps.iam.web.forms import ThrottledLoginMixin
 from apps.platform.tenants.models import (
     RESERVED_SLUGS,
     Plan,
@@ -42,7 +43,7 @@ class Styled:
             field.widget.attrs.setdefault("class", css)
 
 
-class StaffLoginForm(Styled, AuthenticationForm):
+class StaffLoginForm(ThrottledLoginMixin, Styled, AuthenticationForm):
     """Email + password; only platform staff get in."""
 
     username = forms.EmailField(label=_("Email"), widget=forms.EmailInput(
@@ -105,12 +106,17 @@ class TenantCreateForm(_Limits):
     owner_password = forms.CharField(
         label=_("Owner's password"), required=False, strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-        help_text=_("Leave empty when the owner already has an account (same email)."))
+        help_text=_("Leave empty when adding this workspace to the owner's existing login."))
+    link_existing_owner = forms.BooleanField(
+        label=_("The owner already has a Gweb login: add this workspace to it"), required=False,
+        help_text=_("The login keeps its own password. Only for the same person (one owner, "
+                    "several shops)."))
 
     field_order = ["name", "slug", "locale", "country", "functional_currency", "timezone",
                    "fineness_24k", "owner_display_name", "owner_username", "owner_email",
-                   "owner_password", "plan", "trial_ends_on", "max_branches", "max_users",
-                   "contact_name", "contact_email", "contact_phone", "notes"]
+                   "owner_password", "link_existing_owner", "plan", "trial_ends_on",
+                   "max_branches", "max_users", "contact_name", "contact_email",
+                   "contact_phone", "notes"]
 
     def clean_slug(self):
         slug = self.cleaned_data["slug"].strip().lower()
@@ -127,7 +133,19 @@ class TenantCreateForm(_Limits):
         from apps.iam.models import User
 
         email = data.get("owner_email")
-        exists = email and User.objects.filter(email__iexact=email).exists()
+        existing = User.objects.filter(email__iexact=email).first() if email else None
+        exists = existing is not None
+        # A login is shared between workspaces only when asked for (ADR-022).
+        if existing is not None and existing.is_platform_staff:
+            self.add_error("owner_email", _("Gweb staff logins can't own a workspace. Use "
+                                            "another email."))
+        elif exists and not data.get("link_existing_owner"):
+            self.add_error("owner_email", _("This email already has a Gweb login. Tick “add "
+                                            "this workspace to it” below, or use another "
+                                            "email."))
+        elif exists and data.get("owner_password"):
+            self.add_error("owner_password", _("That login keeps its own password: leave this "
+                                               "empty."))
         if email and not exists and not data.get("owner_password"):
             self.add_error("owner_password", _("A new owner needs a password."))
         if data.get("owner_password") and not exists:

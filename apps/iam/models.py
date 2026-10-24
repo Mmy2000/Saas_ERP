@@ -44,6 +44,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_platform_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    # Workspaces this login belongs to, kept by a trigger on iam_membership (migration 0009):
+    # a workspace can't see another's memberships (row-level security), only this number. A
+    # login shared with another workspace can't have its password or email changed by one of
+    # them (apps.iam.services, ADR-022).
+    membership_count = models.PositiveIntegerField(default=0, editable=False)
 
     objects = UserManager()
 

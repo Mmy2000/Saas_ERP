@@ -38,7 +38,13 @@ from apps.notifications import events
 from apps.org.models import Branch
 from apps.pricing.selectors import functional_currency
 
-from .holders import balance, banks_usable_at, ensure_cash_available, outflow_value
+from .holders import (
+    balance,
+    banks_usable_at,
+    ensure_cash_available,
+    lock_holder,
+    outflow_value,
+)
 from .models import BankAccount, CardTerminal, CashBox, TreasuryDocument, TreasuryKind
 
 DOC_TYPE = "treasury.TreasuryDocument"
@@ -131,6 +137,7 @@ def _prepare(data: TreasuryInput, actor) -> TreasuryDocument:
         doc.to_branch = doc.branch
         doc.currency = doc.dest_currency = terminal.bank_account.currency
         doc.amount = _money(data.amount, "amount")
+        lock_holder(terminal)  # one settlement at a time: the second sees what is left
         outstanding, _value = balance(terminal.account_id)
         if doc.amount > outstanding:
             raise _field_error("amount", _("More than the terminal's unsettled %(amount)s.")

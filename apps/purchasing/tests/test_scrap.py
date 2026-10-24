@@ -15,7 +15,7 @@ from apps.purchasing.scrap import ScrapInput, ScrapLineInput, buy_scrap, sell_sc
 from apps.sales.services import post_sale
 from apps.sales.tests.test_sales import RING_A_TOTAL, Shop
 from apps.treasury.holders import balance, default_cash_box
-from conftest import login
+from conftest import login, this_year
 
 pytestmark = pytest.mark.django_db
 
@@ -54,7 +54,7 @@ def sell(shop, weight, price="4100", **kw):
 class TestBuy:
     def test_walk_in_paid_in_cash(self, shop):
         purchase = buy(shop, seller_phone="01012345678", seller_id_number="2900-101 01234.56")
-        assert purchase.number == "01-SB-2026-000001"
+        assert purchase.number == f"01-SB-{this_year()}-000001"
         assert purchase.total_amount == Decimal("15600.00")  # 4 g × 3900 scrap price
         assert purchase.total_fine_weight_g == Decimal("3.5000")
         assert scrap_g(shop) == Decimal("4.000")

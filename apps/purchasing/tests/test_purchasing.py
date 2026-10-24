@@ -30,6 +30,7 @@ from apps.purchasing.services import (
     save_draft,
     void_invoice,
 )
+from conftest import this_year
 
 pytestmark = pytest.mark.django_db
 DAY = timezone.localdate()  # rates and boards are looked up as of the invoice date
@@ -74,7 +75,7 @@ def test_posting_serialized_pieces(shop):
     draft = shop.invoice(shop.rings_line("5.25", "6.10"))
     assert (draft.status, draft.number) == (DocStatus.DRAFT, None)
     invoice = post_invoice(draft.pk)
-    assert invoice.number == "01-PI-2026-000001"
+    assert invoice.number == f"01-PI-{this_year()}-000001"
 
     items = list(Item.objects.order_by("barcode"))
     assert [i.barcode for i in items] == ["1010000001", "1010000002"]
@@ -142,6 +143,19 @@ def test_only_drafts_are_edited_or_deleted(shop):
         delete_draft(draft.pk)
     other = shop.invoice(shop.rings_line("3"))
     delete_draft(other.pk)
+
+
+def test_deleting_a_draft_locks_it_before_checking(shop):
+    """post_invoice locks the invoice; a delete racing it must wait and then see it posted
+    (deleting a posted invoice would orphan its journal entry and pieces)."""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    draft = shop.invoice(shop.rings_line("3"))
+    with CaptureQueriesContext(connection) as queries:
+        delete_draft(draft.pk)
+    first = next(q["sql"] for q in queries.captured_queries if "SAVEPOINT" not in q["sql"])
+    assert "FOR UPDATE" in first and "purchasing_supplierinvoice" in first
 
 
 def test_void_reverses_stock_and_ledger(shop):

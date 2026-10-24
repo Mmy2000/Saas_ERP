@@ -120,6 +120,24 @@ def test_a_failure_is_retried_later_then_given_up(tenant_a):
     assert [retry_delay(n).total_seconds() for n in (1, 2, 3)] == [30, 120, 480]
 
 
+def test_only_the_last_failed_attempt_is_a_server_error(tenant_a):
+    from apps.platform.monitor.models import ErrorEvent
+
+    FLAKY["left"] = 5
+    job = enqueue("test.flaky", tenant_id=tenant_a.id)
+    for attempt in range(1, 4):
+        _due(job)
+        run_pending()
+        # Retried attempts are warnings; the one that gives up reaches Console → Errors.
+        assert ErrorEvent.objects.count() == (1 if attempt == 3 else 0)
+    assert ErrorEvent.objects.get().message == "SMTP is down"
+
+
+def test_a_client_task_cannot_skip_its_transaction():
+    with pytest.raises(ValueError):
+        task("test.client_not_atomic", atomic=False)(lambda: None)
+
+
 def test_a_hopeless_job_fails_at_once_and_an_inactive_client_is_skipped(tenant_a, tenant_b):
     job = enqueue("test.hopeless", tenant_id=tenant_a.id)
     run_pending()
@@ -151,6 +169,48 @@ def test_a_job_left_running_goes_back_in_the_queue(tenant_a):
     assert release_stale(timezone.now() + timedelta(minutes=20)) == 1
     job.refresh_from_db()
     assert job.status == JobStatus.QUEUED and execute(claim("w2"))
+
+
+def test_a_long_task_is_not_started_twice(tenant_a):
+    """The backup may run for an hour: it is not taken for abandoned (and started by another
+    worker) after the usual 15 minutes, only after its own stale_after."""
+    enqueue("monitor.backup")
+    claim("busy-worker")
+    assert release_stale(timezone.now() + timedelta(minutes=30)) == 0
+    assert release_stale(timezone.now() + timedelta(hours=3)) == 1
+
+
+def test_one_failed_pass_does_not_stop_the_worker(tenant_a, monkeypatch):
+    """A database error in one pass is logged (Console → Errors) and the worker goes on: the
+    job queued before still runs."""
+    from django.db import OperationalError
+
+    from apps.platform.jobs.management.commands import run_worker
+    from apps.platform.monitor.models import ErrorEvent
+
+    job = enqueue("test.note", tenant_id=tenant_a.id, text="after the error")
+    failures = iter([OperationalError("server closed the connection unexpectedly")])
+
+    def tick(self, now=None):
+        error = next(failures, None)
+        if error is not None:
+            raise error
+        return 0
+
+    sleeps = []
+
+    def sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 2:  # the queue is empty again: stop the loop here
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(run_worker.Scheduler, "tick", tick)
+    monkeypatch.setattr(run_worker.time, "sleep", sleep)
+    monkeypatch.setattr(run_worker.connection, "close", lambda: None)  # keep the test's
+    call_command("run_worker")
+    job.refresh_from_db()
+    assert job.status == JobStatus.DONE and sleeps[0] == run_worker.ERROR_PAUSE
+    assert ErrorEvent.objects.get().exc_type.endswith("OperationalError")
 
 
 def test_daily_schedules_follow_each_clients_clock(tenant_a, tenant_b, monkeypatch):
