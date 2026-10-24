@@ -1,5 +1,7 @@
 """The platform console (platform hosts only, platform staff only)."""
 
+from io import StringIO
+
 import pytest
 from django.test import Client
 
@@ -139,3 +141,14 @@ def test_suspend_domains_and_settings(console, tenant_a):
             "Alpha Jewellers", "en", "emerald")
     actions = list(PlatformEvent.objects.filter(tenant=tenant_a).values_list("action", flat=True))
     assert {"tenant.status", "domain.added", "domain.removed", "profile.updated"} <= set(actions)
+
+
+def test_create_tenant_uses_the_platforms_domain(db, settings):
+    """`manage.py create_tenant` gives a new shop <slug>.TENANT_BASE_DOMAIN, as the console does
+    (it used to be <slug>.localhost: unreachable on a server)."""
+    from django.core.management import call_command
+
+    settings.TENANT_BASE_DOMAIN = "gweb-erp.com"
+    call_command("create_tenant", slug="cairo", name="Cairo Gold", owner_username="owner",
+                 owner_email="owner@cairo.test", owner_password=PASSWORD, stdout=StringIO())
+    assert Tenant.objects.get(slug="cairo").domains.get().domain == "cairo.gweb-erp.com"

@@ -1,5 +1,6 @@
 from getpass import getpass
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.core.errors import AppError
@@ -12,7 +13,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--slug", required=True)
         parser.add_argument("--name", required=True)
-        parser.add_argument("--domain", help="Defaults to <slug>.localhost")
+        parser.add_argument("--domain", help="Defaults to <slug>.TENANT_BASE_DOMAIN (as the "
+                                              "console does)")
         parser.add_argument("--owner-username", required=True)
         parser.add_argument("--owner-email")
         parser.add_argument("--owner-password", help="Prompted for when omitted.")
@@ -35,7 +37,7 @@ class Command(BaseCommand):
                 ProvisionTenantCommand(
                     slug=opts["slug"],
                     name=opts["name"],
-                    domain=opts["domain"] or f"{opts['slug']}.localhost",
+                    domain=opts["domain"] or f"{opts['slug']}.{settings.TENANT_BASE_DOMAIN}",
                     owner_username=opts["owner_username"],
                     owner_email=opts["owner_email"],
                     owner_password=password,
