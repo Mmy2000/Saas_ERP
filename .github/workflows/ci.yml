@@ -34,8 +34,8 @@ jobs:
       # Tests connect as app_owner (never a superuser: superusers bypass row-level security).
       DATABASE_OWNER_URL: postgres://app_owner:ci-owner@localhost:5432/gweb
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -56,14 +56,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
+      - name: Keep the committed CSS to compare with
+        run: cp static/core/css/app.css "$RUNNER_TEMP/committed.css"
       - run: npm ci
       - run: npm run build
-      - name: No difference after rebuilding
+      - name: The CSS matches a fresh build
+        # Not byte for byte: Windows and Linux round precomputed colours differently in the last
+        # digit, so numbers are compared with a tolerance (ops/compare_css.py).
+        run: |
+          python3 ops/compare_css.py "$RUNNER_TEMP/committed.css" static/core/css/app.css
+          git checkout -- static/core/css/app.css
+      - name: Icons and vendored files are exactly what the build makes
         run: |
           changes="$(git status --porcelain -- static apps/core/ui_icons.json)"
           if [ -n "$changes" ]; then
@@ -80,13 +88,16 @@ jobs:
     # result on every run and on the Monday schedule; upgrade in its own pull request.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - run: pip install pip-audit
       - run: pip-audit -r requirements/base.txt -r requirements/dev.txt
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm audit --audit-level=high
+      - name: npm audit (WhatsApp gateway, runs on the server)
+        run: npm audit --audit-level=high
+        working-directory: ops/wa-gateway
