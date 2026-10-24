@@ -640,8 +640,23 @@ def _client_accent(tenant) -> str:
         return (TenantProfile.objects.values_list("accent", flat=True).first()) or "gold"
 
 
+def _starter_layouts() -> list[dict]:
+    """The built-in layouts' source, as text, for "Start from …" in the editor. Thermal's row
+    include is written out: a custom design cannot include files."""
+    import apps.printing
+    from apps.printing.models import DocLayout
+
+    folder = Path(apps.printing.__file__).parent / "templates" / "printing" / "documents"
+    row = (folder / "_narrow_row.html").read_text(encoding="utf-8").split("\n", 1)[1].strip()
+    return [{"key": layout.value, "label": str(layout.label),
+             "html": (folder / "layouts" / f"{layout.value}.html").read_text(encoding="utf-8")
+             .replace('{% include "printing/documents/_narrow_row.html" %}', row)}
+            for layout in (DocLayout.CLASSIC, DocLayout.MODERN, DocLayout.THERMAL)]
+
+
 @staff_required
 def tenant_document(request, pk, doc_type):
+    from apps.printing.custom_reference import reference
     from apps.printing.design_forms import CustomHtmlForm, DesignForm
     from apps.printing.documents import TYPES
     from apps.printing.models import DocumentDesignVersion
@@ -673,14 +688,10 @@ def tenant_document(request, pk, doc_type):
             messages.success(request, _("Saved."))
             return redirect("console-tenant-document", pk, doc_type)
         versions = list(design.versions.all()[:20]) if design.pk else []
-    # "Start from the classic layout": its source, as text, for the editor.
-    import apps.printing
-
-    starter = (Path(apps.printing.__file__).parent / "templates" / "printing" / "documents"
-               / "layouts" / "classic.html").read_text(encoding="utf-8")
     return render(request, "console/tenant_document.html", {
         "tenant": tenant, "kind": TYPES[doc_type], "form": form, "custom": custom,
-        "design": design, "versions": versions, "starter": starter,
+        "design": design, "versions": versions, "starters": _starter_layouts(),
+        "reference": reference(doc_type),
         "preview_url": reverse("console-tenant-document-preview", args=[pk, doc_type]),
         "section": "tenants"})
 

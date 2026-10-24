@@ -650,3 +650,100 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500)
   header[data-no-print] { display: none !important; }
   .receipt { grid-column: 1 / -1; }
 }
+
+/* The console's custom-design code editor (CodeMirror 5, templates/console/tenant_document.html,
+   static/printing/js/code-editor.js). Its colours follow the theme, so dark mode stays dark. */
+:root {
+  --code-tag: #0b63c4; --code-attr: #8a4fd1; --code-string: #0f7b55; --code-comment: #8b8b94;
+  --code-django: #c2410c; --code-var: #b4235a; --code-number: #a16207; --code-error: #dc2626;
+}
+@media screen {
+  [data-theme="dark"] {
+    --code-tag: #6cb2ff; --code-attr: #c39bff; --code-string: #5fd3a0; --code-comment: #7c7c86;
+    --code-django: #ff9a5c; --code-var: #ff7eb0; --code-number: #f0c45a; --code-error: #f87171;
+  }
+}
+@layer components {
+  .code-shell { @apply overflow-hidden rounded-lg border border-slate-200 bg-surface; }
+  .code-shell:focus-within { @apply border-brand-400 ring-2 ring-brand-500/15; }
+  .code-toolbar { @apply flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50/70 px-2 py-1.5; }
+  .code-tool { @apply inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-slate-600
+                      hover:bg-slate-200/60 hover:text-slate-900 aria-pressed:bg-slate-200/80 aria-pressed:text-slate-900
+                      aria-expanded:bg-slate-200/80 aria-expanded:text-slate-900; }
+  .code-tool-divider { @apply mx-1 h-5 w-px bg-slate-200; }
+  .code-main { @apply relative; }
+  .code-status { @apply flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-200 bg-slate-50/70 px-3 py-1.5
+                        text-xs text-slate-500; }
+  .code-check { @apply inline-flex items-center gap-1.5; }
+  .code-check-error { @apply cursor-pointer text-red-600 hover:underline; }
+  .code-check-ok { @apply text-emerald-600; }
+  .code-reference { @apply absolute inset-y-0 end-0 z-10 flex w-72 max-w-[85%] flex-col border-s border-slate-200 bg-surface
+                           shadow-pop; }
+  .code-reference-list { @apply flex-1 space-y-3 overflow-y-auto p-2; }
+  .code-ref-item { @apply flex w-full flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-start text-xs text-slate-800
+                          hover:bg-brand-50 focus-visible:bg-brand-50 focus-visible:outline-none; }
+  .code-ref-item code { @apply font-mono text-[11px] text-slate-500; }
+  .code-ref-item small { @apply text-[11px] text-slate-400; }
+  .code-menu-item { @apply block w-full rounded-md px-3 py-2 text-start text-sm text-slate-800 hover:bg-slate-100; }
+}
+
+.code-main .CodeMirror {
+  height: 34rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+  line-height: 1.6; background: var(--color-surface); color: var(--color-slate-900);
+}
+.code-main .CodeMirror-gutters { background: var(--color-slate-50); border-inline-end: 1px solid var(--color-slate-200); }
+.code-main .CodeMirror-linenumber { color: var(--color-slate-400); padding: 0 6px 0 10px; }
+.code-main .CodeMirror-cursor { border-left-color: var(--color-slate-900); }
+.code-main .CodeMirror-activeline-background { background: color-mix(in oklab, var(--color-slate-200) 45%, transparent); }
+.code-main .CodeMirror-activeline-gutter { background: var(--color-slate-100); }
+.code-main .CodeMirror-selected, .code-main .CodeMirror-focused .CodeMirror-selected,
+.code-main .CodeMirror-line::selection, .code-main .CodeMirror-line > span::selection {
+  background: color-mix(in oklab, var(--color-brand-500) 22%, transparent);
+}
+.code-main .CodeMirror-matchingbracket, .code-main .CodeMirror-matchingtag {
+  background: color-mix(in oklab, var(--color-brand-500) 18%, transparent); color: inherit !important;
+}
+.code-main .cm-tag, .code-main .cm-bracket { color: var(--code-tag); }
+.code-main .cm-attribute, .code-main .cm-property { color: var(--code-attr); }
+.code-main .cm-string, .code-main .cm-string-2 { color: var(--code-string); }
+.code-main .cm-comment { color: var(--code-comment); font-style: italic; }
+.code-main .cm-keyword, .code-main .cm-def, .code-main .cm-qualifier, .code-main .cm-builtin { color: var(--code-django); }
+.code-main .cm-variable, .code-main .cm-variable-2, .code-main .cm-variable-3 { color: var(--code-var); }
+.code-main .cm-number, .code-main .cm-atom { color: var(--code-number); }
+.code-main .cm-error { color: var(--code-error); }
+.code-main .code-error-line { background: color-mix(in oklab, var(--code-error) 12%, transparent); }
+.code-main .code-error-gutter { width: 14px; }
+.code-error-dot {
+  display: block; width: 8px; height: 8px; margin: 6px 3px; border-radius: 9999px; background: var(--code-error);
+}
+.code-main .CodeMirror-dialog { background: var(--color-slate-50); color: var(--color-slate-800); font-size: 12px; }
+.code-main .CodeMirror-dialog input { color: inherit; font-family: inherit; }
+.CodeMirror-hints {
+  z-index: 60; padding: 4px; border: 1px solid var(--color-slate-200); border-radius: 8px;
+  background: var(--color-surface); box-shadow: var(--shadow-pop); font-size: 12px; max-height: 16rem;
+}
+.CodeMirror-hint { display: flex; gap: 10px; justify-content: space-between; padding: 4px 8px; border-radius: 6px; color: var(--color-slate-800); }
+li.CodeMirror-hint-active { background: var(--color-brand-600); color: #fff; }
+.code-hint-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.code-hint-label { opacity: 0.65; }
+
+/* Full screen: the code beside the live preview (the form gets .design-focus). Outside the layers
+   so it beats the form's own grid utilities. */
+.design-focus {
+  position: fixed; inset: 0; z-index: 45; display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr); gap: 1rem; padding: 1rem; overflow: hidden;
+  background: var(--color-slate-50);
+}
+/* The page's entrance animation leaves a transform, which would pin "fixed" to the page box. */
+.motion-safe\:animate-enter:has(.design-focus) { animation: none; transform: none; }
+@media (min-width: 1024px) { .design-focus { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+@media (max-width: 1023.98px) { .design-focus > [data-preview-column] { display: none; } }
+.design-focus [data-focus-hide] { display: none !important; }
+.design-focus > [data-editor-column] { display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
+.design-focus > [data-editor-column] > * { margin: 0 !important; }
+.design-focus [data-code-card] { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.design-focus [data-code-card] > .card-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.design-focus .code-shell { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.design-focus .code-main { flex: 1; min-height: 0; }
+.design-focus .code-host, .design-focus .code-main .CodeMirror { height: 100%; }
+.design-focus > [data-preview-column] { min-height: 0; overflow-y: auto; }

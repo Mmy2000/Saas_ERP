@@ -52,7 +52,7 @@
 </head>
 <body>
 {% if toolbar %}<div class="toolbar"><button type="button" class="primary" onclick="window.print()">{% translate "Print" %}</button><button type="button" class="ghost" onclick="window.close()">{% translate "Close" %}</button></div>{% endif %}
-{% if custom_error %}<div class="custom-error">{% blocktranslate trimmed with error=custom_error %}The custom design has an error, so the standard layout is shown: {{ error }}{% endblocktranslate %}</div>{% endif %}
+{% if custom_error %}<div class="custom-error" data-custom-error data-line="{{ custom_error_line|default:'' }}" data-message="{{ custom_error }}">{% blocktranslate trimmed with error=custom_error %}The custom design has an error, so the standard layout is shown: {{ error }}{% endblocktranslate %}</div>{% endif %}
 {% if custom_body %}{{ custom_body|safe }}{% elif builder_body %}{% for _copy in design.copies %}<div class="sheet builder">{{ builder_body|safe }}</div>{% endfor %}{% else %}
 {% for _copy in design.copies %}<div class="sheet">{% if design.layout == "thermal" %}{% include "printing/documents/layouts/thermal.html" %}{% elif design.layout == "modern" %}{% include "printing/documents/layouts/modern.html" %}{% else %}{% include "printing/documents/layouts/classic.html" %}{% endif %}</div>{% endfor %}
 {% endif %}

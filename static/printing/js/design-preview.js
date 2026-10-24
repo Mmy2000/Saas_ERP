@@ -1,5 +1,7 @@
 // Live preview of a document design: every change posts the (unsaved) form to the preview URL
 // and shows the page it returns in the iframe, scaled to fit. Nothing is saved until "Save".
+// Each shown page is announced as a "design:preview" event on the form, with the custom
+// design's error (and its line) if it had one: the console's code editor marks it.
 
 const DELAY = 300;
 
@@ -49,6 +51,12 @@ function init(form) {
     timer = setTimeout(refresh, DELAY);
   }
 
+  frame.addEventListener("load", () => {
+    const note = frame.contentDocument?.querySelector("[data-custom-error]");
+    form.dispatchEvent(new CustomEvent("design:preview", {
+      detail: { error: note?.dataset.message || "", line: Number(note?.dataset.line) || 0 },
+    }));
+  });
   form.addEventListener("input", queue);
   form.addEventListener("change", queue);
   window.addEventListener("resize", fit);

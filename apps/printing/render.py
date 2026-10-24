@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 # Custom HTML is rendered by its own engine: no template loaders (so no {% include %} or
 # {% extends %} of server files), only the i18n and ui (num) tags, autoescaping on, and a
 # context of plain data built by apps.printing.documents. It cannot reach models or queries.
+# debug=True only marks errors with the line they are on (shown in the console's editor).
 CUSTOM_ENGINE = Engine(
-    loaders=[], app_dirs=False, autoescape=True, string_if_invalid="",
+    loaders=[], app_dirs=False, autoescape=True, string_if_invalid="", debug=True,
     libraries={"ui": "apps.core.templatetags.ui", "i18n": "django.templatetags.i18n"},
 )
 
@@ -127,7 +128,7 @@ def document_html(request, doc: Doc, design: DocumentDesign, *, accent_key: str,
     context = _context(doc, design, accent_key)
     html = design.custom_html if custom_html is None else custom_html
     wants_custom = design.use_custom if use_custom is None else use_custom
-    body, error = "", ""
+    body, error, error_line = "", "", None
     if wants_custom and html.strip():
         try:
             one = render_custom(html, context)
@@ -135,6 +136,7 @@ def document_html(request, doc: Doc, design: DocumentDesign, *, accent_key: str,
             body = "".join(f'<div class="sheet">{one}</div>' for _copy in copies)
         except Exception as exc:  # a broken custom design must not stop the shop printing
             error = str(exc)
+            error_line = (getattr(exc, "template_debug", None) or {}).get("line")
             logger.warning("custom document template failed: %s", exc)
     builder_body = ""
     if not body and context["design"]["layout"] == DocLayout.BUILDER:
@@ -143,7 +145,7 @@ def document_html(request, doc: Doc, design: DocumentDesign, *, accent_key: str,
         blocks = clean_blocks(design.blocks) or preset("classic")
         builder_body = render_blocks(blocks, context, designer=designer)
     return render_to_string("printing/documents/page.html", {
-        **context, "custom_body": body, "custom_error": error,
+        **context, "custom_body": body, "custom_error": error, "custom_error_line": error_line,
         "toolbar": toolbar and not for_pdf, "for_pdf": for_pdf,
         "builder_body": builder_body, "designer": designer and not for_pdf,
         "auto_print": (request is not None and request.GET.get("print") == "1"

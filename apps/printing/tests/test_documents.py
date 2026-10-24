@@ -107,7 +107,13 @@ BASE = {"layout": "classic", "paper": "a4", "lang": "en", "copies": "1", "show_l
 def test_staff_write_a_custom_design(console, owner, tenant_a, sale):
     url = f"/clients/{tenant_a.pk}/documents/sales_invoice/"
     page = console.get(url)
-    assert page.status_code == 200 and "Start from the classic layout" in page.content.decode()
+    assert page.status_code == 200
+    # The editor offers the three layouts to start from (thermal's row include written out)
+    # and what a design can use, this document's own row values among them.
+    starters = page.context["starters"]
+    assert [s["key"] for s in starters] == ["classic", "modern", "thermal"]
+    assert all("{% include" not in s["html"] for s in starters)
+    assert 'data-code="row.karat"' in page.content.decode()
     assert "documents/sales_invoice/" in console.get(f"/clients/{tenant_a.pk}/").content.decode()
 
     html = '<h1 class="mine">{{ doc.company.name }} · {{ doc.number }}</h1>' \
@@ -146,8 +152,9 @@ def test_custom_designs_are_sandboxed(console, owner, tenant_a, sale):
     assert "standard layout is shown" in body and "cl-table" in body
     # ...a broken template falls back to the layout instead of failing the shop...
     broken = console.post(url + "preview/", {**BASE, "use_custom": "on",
-                                             "custom_html": "{% for x in %}"})
+                                             "custom_html": "<h1>ok</h1>\n\n{% for x in %}"})
     assert broken.status_code == 200 and "cl-table" in broken.content.decode()
+    assert 'data-line="3"' in broken.content.decode()  # the editor marks the line
     # ...and values are escaped.
     with tenant_context(tenant_a.id):
         sale.customer_phone = "<script>alert(1)</script>"

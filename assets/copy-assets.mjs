@@ -28,6 +28,25 @@ const vendor = copy([
   ["tom-select/LICENSE", "LICENSE"],
 ], join(root, "static", "vendor", "tom-select"));
 
+// CodeMirror 5 (the console's custom-design editor): its classic scripts joined into one file,
+// in load order (each one attaches itself to window.CodeMirror).
+function bundleFiles(files, dest) {
+  writeFileSync(dest, files.map((f) => readFileSync(join(nm, "codemirror", f), "utf8")).join("\n;\n"));
+}
+const cmDir = join(root, "static", "vendor", "codemirror");
+mkdirSync(cmDir, { recursive: true });
+bundleFiles([
+  "lib/codemirror.js", "addon/mode/overlay.js", "mode/xml/xml.js", "mode/javascript/javascript.js",
+  "mode/css/css.js", "mode/htmlmixed/htmlmixed.js", "mode/django/django.js",
+  "addon/fold/xml-fold.js", "addon/edit/closetag.js", "addon/edit/matchtags.js",
+  "addon/edit/matchbrackets.js", "addon/edit/closebrackets.js", "addon/selection/active-line.js",
+  "addon/comment/comment.js", "addon/search/searchcursor.js", "addon/dialog/dialog.js",
+  "addon/search/search.js", "addon/search/jump-to-line.js", "addon/hint/show-hint.js",
+], join(cmDir, "codemirror.bundle.js"));
+bundleFiles(["lib/codemirror.css", "addon/dialog/dialog.css", "addon/hint/show-hint.css"],
+  join(cmDir, "codemirror.bundle.css"));
+copyFileSync(join(nm, "codemirror", "LICENSE"), join(cmDir, "LICENSE"));
+
 const icons = [
   "layout-dashboard", "store", "gem", "layers", "coins", "arrow-left-right", "users", "truck",
   "settings", "log-out", "languages", "menu", "x", "chevron-down", "circle-alert",
@@ -41,6 +60,7 @@ const icons = [
   "calendar-check", "lock-open", "banknote", "flame", "hammer", "sparkles", "file-down", "percent",
   "bell", "bell-off", "star", "log-in", "check-check", "link", "megaphone", "qr-code", "eye-off", "image", "image-off", "upload",
   "user", "lock-keyhole", "eye", "mail", "arrow-right", "chart-line", "badge-check",
+  "maximize-2", "minimize-2", "wrap-text", "braces", "file-code", "text-search",
 ];
 const bundle = {};
 for (const name of icons) {

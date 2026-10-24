@@ -2792,6 +2792,9 @@ msgstr "الأعمدة"
 msgid "Columns and details"
 msgstr "الأعمدة والتفاصيل"
 
+msgid "Columns follow the options below"
+msgstr "الأعمدة حسب الخيارات بالأسفل"
+
 msgid "Coming and going"
 msgstr "الوارد والصادر"
 
@@ -2800,6 +2803,9 @@ msgstr "وارد إلى هذا الفرع"
 
 msgid "Coming up"
 msgstr "قادمة"
+
+msgid "Comment"
+msgstr "تعليق"
 
 msgid "Commission"
 msgstr "العمولة"
@@ -3473,11 +3479,17 @@ msgstr "صمّمها بنفسك"
 msgid "Design label templates"
 msgstr "تصميم قوالب الملصقات"
 
+msgid "Design settings"
+msgstr "إعدادات التصميم"
+
 msgid "Designer"
 msgstr "المصمم"
 
 msgid "Details"
 msgstr "البيانات"
+
+msgid "Details (number, date, branch…)"
+msgstr "البيانات (الرقم، التاريخ، الفرع…)"
 
 msgid "Development mode: no real WhatsApp. Linking is simulated with a made-up number and messages are only logged. Run the WhatsApp gateway (ops/wa-gateway) and set WA_GATEWAY_URL and WA_GATEWAY_KEY to link a real phone."
 msgstr "وضع التطوير: لا يوجد واتساب حقيقي. الربط هنا تجريبي برقم وهمي والرسائل تُسجّل فقط. شغّل بوابة واتساب (ops/wa-gateway) واضبط WA_GATEWAY_URL وWA_GATEWAY_KEY لربط هاتف حقيقي."
@@ -3559,6 +3571,9 @@ msgstr "أرقام فقط، بحد أقصى %(n)s."
 
 msgid "Direction"
 msgstr "الاتجاه"
+
+msgid "Direction (rtl / ltr)"
+msgstr "الاتجاه (rtl / ltr)"
 
 msgid "Disable"
 msgstr "إيقاف"
@@ -3767,6 +3782,9 @@ msgstr "كل خيط معالجة"
 msgid "Each diamond piece can belong to a class. The sales screen starts it at the label price less the class's usual discount; a seller may go up to the largest one (and their own limit), never below what the piece cost."
 msgstr "لكل قطعة ألماس فئة خصم. تبدأ شاشة البيع بسعر الملصق ناقص الخصم المعتاد للفئة؛ ويمكن للبائع الوصول إلى الحد الأقصى (وحده الشخصي)، دون النزول عن تكلفة القطعة."
 
+msgid "Each item"
+msgstr "كل صنف"
+
 msgid "Each new price board, by hand or from the market. Only the latest one is kept."
 msgstr "كل نشرة أسعار جديدة، يدويًا أو من السوق. يبقى أحدثها فقط."
 
@@ -3907,6 +3925,9 @@ msgstr "فارغ: بلا حد. حد العميل نفسه له الأولوية.
 
 msgid "Empty: shown as “21K” in each user's language."
 msgstr "فارغ: يظهر «عيار 21» بلغة كل مستخدم."
+
+msgid "Empty: start from a layout or write HTML."
+msgstr "فارغ: ابدأ من تصميم جاهز أو اكتب HTML."
 
 msgid "Empty: the platform default. 0: no limit."
 msgstr "فارغ: الافتراضي للمنصة. 0: بلا حد."
@@ -4229,6 +4250,9 @@ msgstr "منتهي"
 msgid "Extra details"
 msgstr "تفاصيل إضافية"
 
+msgid "Extra sections (scrap received…)"
+msgstr "أقسام إضافية (الكسر المستلم…)"
+
 msgid "Failed"
 msgstr "فشلت"
 
@@ -4282,6 +4306,12 @@ msgstr "التصفية"
 
 msgid "Financial year %(year)s"
 msgstr "السنة المالية %(year)s"
+
+msgid "Find"
+msgstr "بحث"
+
+msgid "Find and replace"
+msgstr "بحث واستبدال"
 
 msgid "Find customers to follow up"
 msgstr "البحث عن عملاء للمتابعة"
@@ -4364,6 +4394,9 @@ msgstr "أول 5 من آخر 15 رقمًا"
 msgid "First wing"
 msgstr "الجناح الأول"
 
+msgid "Fixed words"
+msgstr "كلمات ثابتة"
+
 msgid "Fixed: the category has stock."
 msgstr "ثابت: على المجموعة بضاعة."
 
@@ -4399,6 +4432,9 @@ msgstr "الخطوط"
 
 msgid "Footer links"
 msgstr "روابط التذييل"
+
+msgid "Footer note"
+msgstr "ملاحظة التذييل"
 
 msgid "Footer text"
 msgstr "نص التذييل"
@@ -4459,6 +4495,9 @@ msgstr "صلاحيات كاملة على كل شيء، بما فيها المس�
 
 msgid "Full name"
 msgstr "الاسم الكامل"
+
+msgid "Full screen, beside the preview"
+msgstr "ملء الشاشة بجانب المعاينة"
 
 msgid "g"
 msgstr "جم"
@@ -4823,6 +4862,9 @@ msgstr "الفرع الرئيسي"
 msgid "Header background"
 msgstr "خلفية الرأس"
 
+msgid "Header note"
+msgstr "ملاحظة الرأس"
+
 msgid "Header text"
 msgstr "نص الرأس"
 
@@ -4940,6 +4982,9 @@ msgstr "رقم الآيبان"
 msgid "Idle a month"
 msgstr "متوقف منذ شهر"
 
+msgid "If … end if"
+msgstr "إذا … نهاية إذا"
+
 msgid "Import"
 msgstr "استيراد"
 
@@ -5050,6 +5095,9 @@ msgstr "تلقائي"
 
 msgid "Initial password"
 msgstr "كلمة المرور الأولى"
+
+msgid "Insert"
+msgstr "إدراج"
 
 msgid "Insert:"
 msgstr "إدراج:"
@@ -5435,6 +5483,12 @@ msgstr "السطر تحت اسم كل عميل"
 msgid "Line under the header"
 msgstr "سطر تحت الترويسة"
 
+msgid "Line {line}"
+msgstr "السطر {line}"
+
+msgid "Line {line}, column {column}"
+msgstr "السطر {line}، العمود {column}"
+
 msgid "Lines"
 msgstr "السطور"
 
@@ -5512,6 +5566,9 @@ msgstr "مثبّت على سعر يوم الحجز"
 
 msgid "Log out"
 msgstr "تسجيل الخروج"
+
+msgid "Logic"
+msgstr "المنطق"
 
 msgid "Logo"
 msgstr "الشعار"
@@ -6061,6 +6118,12 @@ msgstr "يحتاج متابعة"
 
 msgid "Needs attention today:"
 msgstr "يحتاج انتباهك اليوم:"
+
+msgid "Needs “load i18n” at the top"
+msgstr "يحتاج «load i18n» في أول الكود"
+
+msgid "Needs “load ui” at the top"
+msgstr "يحتاج «load ui» في أول الكود"
 
 msgid "Negative: money you hold for the customer until the reservation is completed or cancelled."
 msgstr "السالب: مبلغ تحتفظ به للعميل حتى إتمام الحجز أو إلغائه."
@@ -6686,6 +6749,9 @@ msgstr "غير موجود."
 msgid "Not in stock yet"
 msgstr "ليس في المخزون بعد"
 
+msgid "Not in use: the preview shows the standard layout."
+msgstr "غير مستخدم: المعاينة تعرض التصميم العادي."
+
 msgid "Not in your plan"
 msgstr "غير متاحة في باقتك"
 
@@ -6814,6 +6880,9 @@ msgstr "عدد الأحجار"
 
 msgid "Number or trade account"
 msgstr "الرقم أو اسم التاجر"
+
+msgid "Number with 2 decimals"
+msgstr "رقم بخانتين عشريتين"
 
 msgid "Number, bag, customer, phone or piece"
 msgstr "الرقم أو الكيس أو العميل أو الهاتف أو القطعة"
@@ -7043,6 +7112,9 @@ msgstr "فقط لـ"
 msgid "Only IGI reports can be checked here."
 msgstr "يمكن التحقق هنا من شهادات IGI فقط."
 
+msgid "Only inside the loop over doc.rows"
+msgstr "داخل حلقة doc.rows فقط"
+
 msgid "Only loose stones go into a piece."
 msgstr "تُركّب الأحجار السائبة فقط في القطعة."
 
@@ -7217,6 +7289,9 @@ msgstr "أو اسم"
 msgid "Or mark it ready below if the work is done in the shop."
 msgstr "أو جهّزه للتسليم بالأسفل إن تم العمل في المحل."
 
+msgid "Or var(--accent) in CSS"
+msgstr "أو var(--accent) في CSS"
+
 msgid "Order"
 msgstr "الترتيب"
 
@@ -7378,6 +7453,9 @@ msgstr "خلفية الصفحة"
 
 msgid "Page height (mm)"
 msgstr "ارتفاع الصفحة (مم)"
+
+msgid "Page margin"
+msgstr "هامش الصفحة"
 
 msgid "Page margin bottom"
 msgstr "هامش الصفحة السفلي"
@@ -8594,11 +8672,11 @@ msgstr "تصليحات تجاوزت موعدها"
 msgid "Repairs ready for pickup"
 msgstr "تصليحات جاهزة للاستلام"
 
+msgid "Repeat (for)"
+msgstr "تكرار (for)"
+
 msgid "Replace the whole design with this starting point?"
 msgstr "استبدال التصميم كله بنقطة البداية هذه؟"
-
-msgid "Replaces the HTML above."
-msgstr "يستبدل الـ HTML أعلاه."
 
 msgid "Report"
 msgstr "الشهادة"
@@ -9154,6 +9232,9 @@ msgstr "تحويل لكسر"
 
 msgid "Search"
 msgstr "بحث"
+
+msgid "Search what a design can use"
+msgstr "ابحث فيما يمكن استخدامه في التصميم"
 
 msgid "Searching…"
 msgstr "جارٍ البحث…"
@@ -9803,6 +9884,9 @@ msgstr "للفريق فقط"
 msgid "Stainless steel"
 msgstr "ستانلس ستيل"
 
+msgid "Stamp (e.g. Cancelled)"
+msgstr "الختم (مثل: ملغاة)"
+
 msgid "Standard"
 msgstr "أساسي"
 
@@ -9818,8 +9902,8 @@ msgstr "بدء الجرد وإلغاؤه"
 msgid "Start from"
 msgstr "ابدأ من"
 
-msgid "Start from the classic layout"
-msgstr "ابدأ من التصميم الكلاسيكي"
+msgid "Start from a layout"
+msgstr "ابدأ من تصميم جاهز"
 
 msgid "Start from…"
 msgstr "ابدأ من…"
@@ -9844,6 +9928,9 @@ msgstr "بدأ"
 
 msgid "Started by %(who)s, %(when)s"
 msgstr "بدأها %(who)s، %(when)s"
+
+msgid "Started from the {name} layout. Ctrl+Z brings back what was there."
+msgstr "تم البدء من تصميم {name}. اضغط Ctrl+Z لاسترجاع ما كان مكتوبًا."
 
 msgid "Starting"
 msgstr "جارٍ البدء"
@@ -10070,6 +10157,9 @@ msgstr "الإجمالي قبل الخصم"
 msgid "Sudanese pound"
 msgstr "جنيه سوداني"
 
+msgid "Suggest"
+msgstr "اقتراحات"
+
 msgid "Summary"
 msgstr "الملخص"
 
@@ -10138,9 +10228,6 @@ msgstr "جدول"
 
 msgid "Tables"
 msgstr "الجداول"
-
-msgid "Tags: if, for, with, translate, num. No include, extends or server files; only this client's document data."
-msgstr "الوسوم المتاحة: if وfor وwith وtranslate وnum. لا include ولا extends ولا ملفات من الخادم؛ بيانات مستند هذا العميل فقط."
 
 msgid "Tail tag 70 × 12 mm"
 msgstr "ملصق بذيل 70 × 12 مم"
@@ -10249,6 +10336,9 @@ msgstr "الفريق"
 
 msgid "Tell me about"
 msgstr "أبلغني عن"
+
+msgid "Terms"
+msgstr "الشروط"
 
 msgid "Terms and conditions"
 msgstr "الشروط والأحكام"
@@ -11240,6 +11330,9 @@ msgstr "تحويلات بانتظار الاستلام"
 msgid "Transfers, deposits, withdrawals, currency exchanges and card settlements."
 msgstr "التحويلات والإيداعات والسحوبات وتحويل العملات وتسويات البطاقات."
 
+msgid "Translated text"
+msgstr "نص مترجم"
+
 msgid "Treasury"
 msgstr "الخزينة"
 
@@ -11263,6 +11356,9 @@ msgstr "جرّب جزءًا من الاسم أو رقم الهاتف أو الك
 
 msgid "Turkish lira"
 msgstr "ليرة تركية"
+
+msgid "Turn on"
+msgstr "تشغيل"
 
 msgid "Two wings (jewellery tail tag)"
 msgstr "جناحان (ملصق مجوهرات بذيل)"
@@ -11723,9 +11819,6 @@ msgstr "مرحبًا بعودتك، %(name)s"
 msgid "What"
 msgstr "البيان"
 
-msgid "What a design can use"
-msgstr "ما يمكن للتصميم استخدامه"
-
 msgid "What another branch owes this one, or this one owes it, in money or in gold. Enter it once, at either branch: the other branch's side is booked at the same time."
 msgstr "ما على فرع آخر لهذا الفرع أو ما على هذا الفرع له، نقدية أو ذهب. أدخله مرة واحدة في أي من الفرعين: يُسجَّل طرف الفرع الآخر في نفس الوقت."
 
@@ -12016,6 +12109,9 @@ msgstr "الورش التي تصنع أو تصلح البضاعة من ذهبك.
 
 msgid "Workspace"
 msgstr "الحساب"
+
+msgid "Wrap long lines"
+msgstr "التفاف الأسطر الطويلة"
 
 msgid "Write down who is buying."
 msgstr "اكتب اسم المشتري."

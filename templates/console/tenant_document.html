@@ -1,7 +1,10 @@
 {% extends "console/layout.html" %}
 {% load i18n ui static %}
 {% block title %}{{ kind.label }} · {{ tenant.name }}{% endblock %}
-{% block head %}<script type="module" src="{% static 'printing/js/design-preview.js' %}"></script>{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'vendor/codemirror/codemirror.bundle.css' %}">
+<script src="{% static 'vendor/codemirror/codemirror.bundle.js' %}"></script>
+<script type="module" src="{% static 'printing/js/design-preview.js' %}"></script>
+<script type="module" src="{% static 'printing/js/code-editor.js' %}"></script>{% endblock %}
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'console-tenant' tenant.pk %}#documents" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ tenant.name }}</a>
@@ -15,35 +18,67 @@
 {% block content %}
 <form method="post" class="grid grid-cols-1 gap-6 xl:grid-cols-2" data-design-form data-preview-url="{{ preview_url }}" novalidate>
   {% csrf_token %}
-  <div class="space-y-6">
-    <section class="card">
+  <div class="space-y-6" data-editor-column>
+    <section class="card" data-code-card>
       <div class="card-header"><h2 class="card-title">{% translate "Custom design" %}</h2><span class="text-xs text-slate-500">{% translate "Only the platform team can change it" %}</span></div>
       <div class="card-body space-y-4">
         <label class="flex items-start gap-3">{{ custom.use_custom }}<span><span class="block text-sm text-slate-900">{{ custom.use_custom.label }}</span><span class="block text-xs text-slate-500">{% translate "When off, the layout and options below are used. A design with an error falls back to them when printing." %}</span></span></label>
-        {{ custom.custom_html }}
-        <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="btn btn-secondary text-xs" data-insert-starter>{% icon "layers" "size-4" %}{% translate "Start from the classic layout" %}</button>
-          <span class="text-xs text-slate-500">{% translate "Replaces the HTML above." %}</span>
-        </div>
-        <details class="rounded-lg border border-slate-200 bg-slate-50/70 text-xs text-slate-600">
-          <summary class="cursor-pointer px-3 py-2 font-medium text-slate-800">{% translate "What a design can use" %}</summary>
-          <div class="space-y-2 px-3 pb-3 leading-6" dir="ltr">
-            <p><code>doc.title</code>, <code>doc.number</code>, <code>doc.date</code>, <code>doc.status</code>, <code>doc.currency</code>, <code>doc.lang</code>, <code>doc.dir</code></p>
-            <p><code>doc.company</code>: <code>name legal_name phone whatsapp address tax_no logo branch</code></p>
-            <p><code>doc.meta</code>, <code>doc.party</code>: <code>{% templatetag openblock %} for label, value in doc.party {% templatetag closeblock %}</code></p>
-            <p><code>doc.columns</code> (<code>label align</code>) · <code>doc.rows</code>: <code>row.cells</code> (<code>value align</code>), <code>row.piece row.description row.karat row.weight row.total</code></p>
-            <p><code>doc.sections</code> (<code>title lines</code>) · <code>doc.totals</code> (<code>label value strong</code>) · <code>doc.labels.*</code></p>
-            <p><code>design.color show_logo header_note footer_note terms signatures paper</code> · <code>page.size page.margin</code> · CSS <code>var(--accent)</code></p>
-            <p>{% translate "Tags: if, for, with, translate, num. No include, extends or server files; only this client's document data." %}</p>
+        <div class="code-shell" data-code-shell
+             data-msg-ok="{% translate 'No errors' %}"
+             data-msg-off="{% translate 'Not in use: the preview shows the standard layout.' %}"
+             data-msg-turn-on="{% translate 'Turn on' %}"
+             data-msg-empty="{% translate 'Empty: start from a layout or write HTML.' %}"
+             data-msg-line="{% translate 'Line {line}' %}"
+             data-msg-position="{% translate 'Line {line}, column {column}' %}"
+             data-msg-unsaved="{% translate 'Unsaved changes' %}"
+             data-msg-started="{% translate 'Started from the {name} layout. Ctrl+Z brings back what was there.' %}">
+          <div class="code-toolbar">
+            <div class="relative" data-menu>
+              <button type="button" class="code-tool" data-menu-button aria-expanded="false" aria-haspopup="true">{% icon "layers" "size-4" %}{% translate "Start from a layout" %}{% icon "chevron-down" "size-3.5" %}</button>
+              <div class="menu-panel start-0 end-auto w-60 p-1" data-menu-panel hidden>
+                {% for starter in starters %}<button type="button" class="code-menu-item" data-starter="{{ starter.key }}">{{ starter.label }}</button>{% endfor %}
+              </div>
+            </div>
+            <button type="button" class="code-tool" data-reference-toggle aria-expanded="false">{% icon "braces" "size-4" %}{% translate "Insert" %}</button>
+            <span class="flex-1"></span>
+            <button type="button" class="code-tool" data-code-action="find" title="{% translate 'Find and replace' %} (Ctrl+F)" aria-label="{% translate 'Find and replace' %}">{% icon "text-search" "size-4" %}</button>
+            <button type="button" class="code-tool" data-code-action="wrap" aria-pressed="false" title="{% translate 'Wrap long lines' %}" aria-label="{% translate 'Wrap long lines' %}">{% icon "wrap-text" "size-4" %}</button>
+            <span class="code-tool-divider"></span>
+            <button type="button" class="code-tool" data-code-action="focus" aria-pressed="false" title="{% translate 'Full screen, beside the preview' %} (Esc)" aria-label="{% translate 'Full screen, beside the preview' %}"><span data-focus-off>{% icon "maximize-2" "size-4" %}</span><span data-focus-on hidden>{% icon "minimize-2" "size-4" %}</span></button>
           </div>
-        </details>
+          <div class="code-main">
+            <div class="code-host" dir="ltr">{{ custom.custom_html }}</div>
+            <aside class="code-reference" data-reference hidden aria-label="{% translate 'Insert' %}">
+              <div class="border-b border-slate-200 p-2"><input type="search" class="form-input text-xs" placeholder="{% translate 'Search what a design can use' %}" data-reference-search></div>
+              <div class="code-reference-list">
+                {% for group in reference %}<div data-reference-group>
+                  <p class="menu-label px-2 pb-1">{{ group.title }}</p>
+                  {% for item in group.items %}<button type="button" class="code-ref-item" data-insert="{{ item.insert }}"{% if item.code %} data-code="{{ item.code }}"{% endif %} data-label="{{ item.label }}"><span>{{ item.label }}</span>{% if item.code %}<code dir="ltr">{{ item.code }}</code>{% endif %}{% if item.hint %}<small>{{ item.hint }}</small>{% endif %}</button>{% endfor %}
+                </div>{% endfor %}
+              </div>
+            </aside>
+          </div>
+          <div class="code-status" aria-live="polite">
+            <span class="code-check" data-code-check></span>
+            <span class="flex-1"></span>
+            <span class="font-medium text-amber-600" data-code-dirty hidden>{% translate "Unsaved changes" %}</span>
+            <span class="num" dir="ltr" data-code-position></span>
+          </div>
+        </div>
+        <p class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500" data-focus-hide>
+          <span><kbd class="kbd">Ctrl</kbd> <kbd class="kbd">S</kbd> {% translate "Save" %}</span>
+          <span><kbd class="kbd">Ctrl</kbd> <kbd class="kbd">Space</kbd> {% translate "Suggest" %}</span>
+          <span><kbd class="kbd">Ctrl</kbd> <kbd class="kbd">F</kbd> {% translate "Find" %}</span>
+          <span><kbd class="kbd">Ctrl</kbd> <kbd class="kbd">/</kbd> {% translate "Comment" %}</span>
+          <span><kbd class="kbd">Ctrl</kbd> <kbd class="kbd">Z</kbd> {% translate "Undo" %}</span>
+        </p>
       </div>
     </section>
-    {% include "printing/documents/_design_fields.html" %}
+    <div class="space-y-6" data-focus-hide>{% include "printing/documents/_design_fields.html" %}</div>
     <div class="flex gap-2"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
       <a href="{% url 'console-tenant' tenant.pk %}#documents" class="btn btn-secondary">{% translate "Cancel" %}</a></div>
   </div>
-  <div>{% include "printing/documents/_preview.html" %}</div>
+  <div data-preview-column>{% include "printing/documents/_preview.html" %}</div>
 </form>
 
 {% if versions %}
@@ -60,13 +95,5 @@
   </ul>
 </section>
 {% endif %}
-{{ starter|json_script:"design-starter" }}
-<script type="module">
-  const button = document.querySelector("[data-insert-starter]");
-  const area = document.querySelector("textarea[name=custom_html]");
-  button?.addEventListener("click", () => {
-    area.value = JSON.parse(document.getElementById("design-starter").textContent);
-    area.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-</script>
+{{ starters|json_script:"design-starters" }}
 {% endblock %}
