@@ -1,0 +1,14 @@
+# Deletes request counters older than 30 days (the worker doesn't). Run by gweb-prune-traffic.timer.
+[Unit]
+Description=Gweb: prune old traffic counters
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=@APP_USER@
+Group=@APP_USER@
+WorkingDirectory=@APP_DIR@
+EnvironmentFile=@APP_DIR@/.env
+# Chromium (PDFs) writes under $HOME: a writable one inside the app folder.
+Environment=HOME=@APP_DIR@/var/home
+ExecStart=@APP_DIR@/venv/bin/python manage.py prune_traffic

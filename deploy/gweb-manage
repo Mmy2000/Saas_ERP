@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# manage.py on the server: as the app user, in the app folder, with the production settings
+# (installed as /usr/local/bin/gweb-manage by deploy/install.sh).
+#
+#   gweb-manage createsuperuser
+#   gweb-manage verify_backup --into postgres://…
+set -euo pipefail
+# shellcheck source=/dev/null
+source /etc/gweb/deploy.conf
+cd "$APP_DIR"
+exec sudo -u "$APP_USER" -H env DJANGO_SETTINGS_MODULE=config.settings.prod \
+    HOME="$APP_DIR/var/home" PLAYWRIGHT_BROWSERS_PATH="$APP_DIR/var/ms-playwright" \
+    "$APP_DIR/venv/bin/python" manage.py "$@"

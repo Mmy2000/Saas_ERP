@@ -1,0 +1,22 @@
+# The shops' own WhatsApp numbers (ops/wa-gateway, Node): one linked session per shop, kept in
+# var/wa-sessions (backed up off-site by deploy/offsite-backup.sh). Local only: 127.0.0.1:3002.
+[Unit]
+Description=Gweb WhatsApp gateway
+After=network.target
+
+[Service]
+User=@APP_USER@
+Group=@APP_USER@
+WorkingDirectory=@APP_DIR@/ops/wa-gateway
+EnvironmentFile=@APP_DIR@/.env
+Environment=HOST=127.0.0.1 PORT=3002 DATA_DIR=@APP_DIR@/var/wa-sessions
+ExecStart=/usr/bin/node server.mjs
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

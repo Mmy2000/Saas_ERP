@@ -1,7 +1,8 @@
 # Operations runbook
 
-Running Gweb in production. Installing a server is covered in README "Production (Linux)"; this
-page covers keeping it running. Everything here is what the code supports today. **Missing
+Running Gweb in production. Setting up a server is covered step by step in
+[Deploying, from A to Z](deploy.md) (scripts in `deploy/`); this page covers keeping it
+running. Everything here is what the code supports today. **Missing
 safeguards are listed at the end**: read them before relying on this setup.
 
 ## Configuration
@@ -49,7 +50,9 @@ worker (say, the database restarting) is logged as an error and retried; it does
 ## Releasing a new version
 
 There are no release tags or packaged builds yet. A release is a commit on `main` that passed
-CI. On the server, as the `gweb` user in `/srv/gweb`:
+CI. **`sudo bash /srv/gweb/deploy/release.sh` does all of the steps below** ([deploy guide,
+M](deploy.md#m-releasing-a-new-version)); they are listed so you know what it does, or can do
+them by hand. On the server, as the `gweb` user in `/srv/gweb`:
 
 1. **Back up first:** `venv/bin/python manage.py backup`. Note the file names it prints.
 2. **Get the code:** `git fetch && git checkout <commit>`. Write down the commit you're leaving:

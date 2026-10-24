@@ -1,0 +1,26 @@
+# Background jobs and schedules: e-mail, WhatsApp, reminders, market prices, the nightly backup
+# (apps/platform/jobs). SIGTERM lets it finish the job it is running.
+[Unit]
+Description=Gweb background worker
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+User=@APP_USER@
+Group=@APP_USER@
+WorkingDirectory=@APP_DIR@
+EnvironmentFile=@APP_DIR@/.env
+# Chromium (PDFs) writes under $HOME: a writable one inside the app folder.
+Environment=HOME=@APP_DIR@/var/home
+ExecStart=@APP_DIR@/venv/bin/python manage.py run_worker
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=300
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

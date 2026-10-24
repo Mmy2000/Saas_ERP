@@ -1,0 +1,16 @@
+# Copies the nightly backups and the WhatsApp sessions to the encrypted off-site remote
+# (deploy/offsite-backup.sh). Run by gweb-offsite.timer. rclone's config is in the app user's
+# home (~/.config/rclone/rclone.conf), so this unit can read the home directory.
+[Unit]
+Description=Gweb: copy backups off the server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=@APP_USER@
+Group=@APP_USER@
+WorkingDirectory=@APP_DIR@
+ExecStart=/bin/bash @APP_DIR@/deploy/offsite-backup.sh
+Nice=10
+IOSchedulingClass=idle

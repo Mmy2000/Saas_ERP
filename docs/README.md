@@ -47,6 +47,8 @@ Start here if you're new to the project.
 
 ## Operations
 
+- [Deploying, from A to Z](operations/deploy.md): domain, Cloudflare, the server, the scripts in
+  `deploy/`, e-mail, the first shop, monitoring, the restore drill, releases.
 - [Operations runbook](operations/README.md): configuration, processes, releases, rollback,
   monitoring, backups, incidents, missing safeguards.
 

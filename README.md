@@ -107,6 +107,10 @@ pull requests, review, Definition of Done). Before pushing, run every check with
 
 ## Production (Linux)
 
+**Step by step, with scripts:** [docs/operations/deploy.md](docs/operations/deploy.md)
+(`deploy/bootstrap.sh`, `deploy/install.sh`, `deploy/release.sh`: Ubuntu 24.04, PostgreSQL,
+nginx, a wildcard certificate through Cloudflare, encrypted off-site backups). What they set up:
+
 The same steps as above, plus the services and the web server. Everything below runs as an
 unprivileged user (here `gweb`) from the project folder (here `/srv/gweb`).
 

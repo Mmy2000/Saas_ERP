@@ -1,0 +1,24 @@
+# The server's deployment settings: copy to /etc/gweb/deploy.conf and fill in. Read by every
+# script in deploy/ (no secrets here: the secrets are generated into /srv/gweb/.env).
+
+# The domain the platform runs on. Shops get <slug>.DOMAIN, the console is admin.DOMAIN.
+DOMAIN=example.com
+# Let's Encrypt account e-mail (expiry warnings) and where server errors are e-mailed.
+ADMIN_EMAIL=you@example.com
+
+REPO_URL=https://github.com/Mmy2000/Saas_ERP.git
+BRANCH=main
+
+APP_USER=gweb
+APP_DIR=/srv/gweb
+
+# gunicorn worker processes. Empty: 2 × CPU cores + 1.
+WEB_WORKERS=
+
+# yes: install Node.js and run ops/wa-gateway (shops sending WhatsApp from their own number).
+WA_GATEWAY=yes
+
+# rclone remote the backups are copied to every night (deploy/offsite-backup.sh), and how many
+# days they are kept there. Empty: off-site copies are off.
+OFFSITE_REMOTE=gweb-offsite:
+OFFSITE_KEEP_DAYS=60
