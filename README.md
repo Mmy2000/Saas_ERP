@@ -96,8 +96,18 @@ pull requests, review, Definition of Done). Before pushing, run every check with
    ```powershell
    .\venv\Scripts\python.exe manage.py create_tenant --slug demo --name "Demo Jewelry" --owner-username admin
    .\venv\Scripts\python.exe manage.py createsuperuser
-   .\venv\Scripts\python.exe manage.py runserver
    ```
+
+5. **Run everything** in one terminal: the web server, the background worker and the CSS
+   watcher, each line prefixed with its process. Ctrl+C stops them all.
+
+   ```powershell
+   .\venv\Scripts\python.exe ops\dev.py              # add --migrate after pulling new code
+   .\venv\Scripts\python.exe ops\dev.py --monitor    # also Console → Server samples
+   ```
+
+   (`manage.py runserver` alone still works, but then e-mails, reminders and other jobs wait
+   for a worker.)
 
    - Tenant: <http://demo.localhost:8000/> (log in as `admin`). `--locale en` makes English the
      tenant's default language; each user can switch in the top bar.

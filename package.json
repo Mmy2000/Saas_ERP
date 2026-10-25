@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build:css": "tailwindcss -i ./assets/css/app.css -o ./static/core/css/app.css --minify",
-    "watch:css": "tailwindcss -i ./assets/css/app.css -o ./static/core/css/app.css --watch --minify",
+    "watch:css": "tailwindcss -i ./assets/css/app.css -o ./static/core/css/app.css --watch=always --minify",
     "assets": "node ./assets/copy-assets.mjs",
     "build": "npm run assets && npm run build:css"
   },

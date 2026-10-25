@@ -1,5 +1,10 @@
 # Common tasks
 
+Run the development servers with one command: `.\venv\Scripts\python.exe ops\dev.py`. It
+starts the web server, the background worker and the CSS watcher, prefixes each line with its
+process, and Ctrl+C stops all of them. Options: `--migrate`, `--monitor`, `--whatsapp`,
+`--port`, `--no-css`.
+
 Short recipes. Each links to the standard that explains the rules. For a whole feature, follow
 the [feature playbook](feature-playbook.md).
 

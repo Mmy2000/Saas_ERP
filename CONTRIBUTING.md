@@ -19,6 +19,9 @@ Follow README "Local setup (Windows / PowerShell)". In short:
 Check the setup with `.\venv\Scripts\python.exe ops\check.py`. Everything should pass on a
 clean checkout.
 
+Then, every day: `.\venv\Scripts\python.exe ops\dev.py` runs the web server, the background
+worker and the CSS watcher together (`--migrate` after pulling, `--help` for the rest).
+
 ## Branches
 
 - **`main` is always releasable.** Nobody pushes to it directly; changes arrive by pull request
