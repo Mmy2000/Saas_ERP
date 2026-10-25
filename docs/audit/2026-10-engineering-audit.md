@@ -141,7 +141,7 @@ Well protected (keep these; see [database standards](../standards/database.md)):
 |---|---|---|---|---|
 | A1 | High | App dependencies form cycles. Counting only module-level imports there are four: {core, tenants}, {catalog, iam, ledger, org, parties, pricing}, {settlements, treasury}, {diamonds, reports, sales, repairs}. Foundation apps import higher ones: `core` imports org, parties and notifications; `ledger` imports treasury, expenses, hr, inventory and purchasing for the closing checklist. 29% of cross-app imports are inside functions to dodge cycles. | [modules](../architecture/modules.md#dependencies) | Open: [TD-08](../tech-debt.md#td-08) |
 | A2 | High | **Duplicated business flows.** The cancel skeleton is repeated in 33 `void_/cancel_` functions. Taking a deposit through a box, bank or terminal is copied between repairs and reservations. Those two value outgoing foreign currency at the spot rate, while expenses and vouchers use the box's average carrying value: the same act is valued two ways. | `apps/repairs/services.py:133-157`; `apps/sales/reservations.py:88-110`; `apps/expenses/services.py:150` | Open: [TD-09](../tech-debt.md#td-09) |
-| A3 | High | Very large functions carry core money rules: `plan_receipt` (complexity 32, 121 lines), `quote_sale` (29, 150 lines). 43 functions exceed complexity 10. | `apps/manufacturing/services.py:326`; `apps/sales/services.py:216` | Open: [TD-10](../tech-debt.md#td-10) |
+| A3 | High | Very large functions carry core money rules: `plan_receipt` (complexity 32, 121 lines), `quote_sale` (29, 150 lines). 43 functions exceed complexity 10. | `apps/manufacturing/services.py:326`; `apps/sales/services.py:216` | **Fixed** for both (third pass, below); 41 others remain: [TD-10](../tech-debt.md#td-10) |
 | A4 | High | `platform/console/views.py` is a fat controller: 822 lines, 39 POST handlers, its own transactions, design versioning done inline, no service layer. | `apps/platform/console/views.py:599-624,683,738` | Open: [TD-11](../tech-debt.md#td-11) |
 | A5 | Medium | The print-document registry is centralised and finds records through string paths to *private* view functions (`"apps.sales.web.views._visible"`). Other registries are filled by each app in `ready()`. | `apps/printing/documents.py:1005-1042` | Open: [TD-19](../tech-debt.md#td-19) |
 | A6 | Medium | Two packaging styles: `web/` + `api/` packages in 9 apps, flat `views.py`/`api.py` in 13. All 207 web routes are in `config/urls.py`. | — | Doc: [architecture standards](../standards/architecture.md#app-layout). Open: [TD-36](../tech-debt.md#td-36) |
@@ -219,6 +219,32 @@ and passes on the new.
 | O4 | **Backups read themselves back** (`pg_restore --list`, the zip's checksums) before counting as good. **`manage.py verify_backup [--into URL]`** checks or restores the newest one; it refuses the live database. | `apps/platform/monitor/backups.py`, `management/commands/verify_backup.py`, `config/settings/base.py` (`BACKUP_PG_RESTORE`) | A dump that can't be read back is a failed backup |
 | O6, O7 | **The worker survives a failed pass** (logged as an error, retried after 5 s). **Each task has its own time limit** before it counts as abandoned (`@task(stale_after=…)`); the backup's is 2 hours. | `apps/platform/jobs/management/commands/run_worker.py`, `worker.py`, `registry.py`, `apps/platform/monitor/jobs.py` | None |
 | A2 (valuation) | **No change needed:** deposits are paid back only in the home currency (`cancel_reservation`, `cancel_repair`), where spot and average rates are both 1. The decision is recorded in TD-09 for when foreign-currency refunds are added. | — | — |
+
+## Third pass (2026-10-26)
+
+`quote_sale` and `plan_receipt` were split into named steps, with no change in behaviour.
+
+| | Before | After |
+|---|---|---|
+| `quote_sale` | 150 lines, complexity 29 | 29 lines, plus 11 steps of 5–22 lines (`_reservation_and_board`, `_price_lines`, `_price_bulk`, `_price_piece`, `_price_trade_ins`, `_price_payments`, `_add_up`, `_check_payment`…) |
+| `plan_receipt` | 121 lines, complexity 32 | 18 lines, plus 8 steps of 7–21 lines (`_plan_line`, `_received_weights`, `_cast_bars`, `_piece_weights`, `_labour`, `_weigh_metal`, `_spread_carried_cost`…) |
+| Functions over complexity 10 | 43 | 41 |
+
+**How it was proven unchanged:**
+- **Snapshots recorded from the original code** (`tests/snapshot.py`):
+  - 40 sale scenarios in `apps/sales/tests/snapshots/quote_sale.json`: pieces, bulk gold,
+    diamonds, offers and cashback, discounts and limits, trade-ins and overrides, currencies,
+    cash and credit terms, reservations with a locked price, and every error.
+  - 31 receipt scenarios in `apps/manufacturing/tests/snapshots/plan_receipt.json`: pieces,
+    cast bars, bulk, scrap, silver, loss and gain, fixed fees, the carried cost and its
+    rounding, and every input error.
+- **The refactored code reproduces them exactly**, alone and in the full suite.
+- **Each snapshot catches a planted bug.** Removing the "change from a trade-in" rule, or the
+  last line's rounding remainder, fails it and names the scenario. The first try showed the
+  rounding was not yet covered (the weights added up evenly), so a scenario was added for it.
+
+Two functions my own fixes had pushed just over the limit were split as well:
+`post_payroll` (into `_save_payslips`) and the worker's `handle` (into `_pass`).
 
 ## Verification
 

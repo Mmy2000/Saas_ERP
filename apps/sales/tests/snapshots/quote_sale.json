@@ -1,0 +1,1743 @@
+{
+ "a deposit in dollars": {
+  "code": "SALES_PAYMENT",
+  "error": "ValidationError",
+  "fields": {
+   "payments": {
+    "0": [
+     "Deposits are used only by completing their reservation."
+    ]
+   }
+  },
+  "message": "Deposits are used only by completing their reservation."
+ },
+ "a deposit larger than the reservation's": {
+  "code": "SALES_PAYMENT",
+  "error": "ValidationError",
+  "fields": {
+   "payments": {
+    "0": [
+     "Deposits are used only by completing their reservation."
+    ]
+   }
+  },
+  "message": "Deposits are used only by completing their reservation."
+ },
+ "a deposit without a reservation": {
+  "code": "SALES_PAYMENT",
+  "error": "ValidationError",
+  "fields": {
+   "payments": {
+    "0": [
+     "Deposits are used only by completing their reservation."
+    ]
+   }
+  },
+  "message": "Deposits are used only by completing their reservation."
+ },
+ "a reservation that is not open": {
+  "code": "SALES_RESERVATION_CLOSED",
+  "error": "DomainError",
+  "fields": {},
+  "message": "This reservation is not open."
+ },
+ "a reserved piece outside its reservation": {
+  "code": "SALES_ITEM_UNAVAILABLE",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": [
+     "Piece 1010000002 is not available here (Reserved, الفرع الرئيسي)."
+    ]
+   }
+  },
+  "message": "Piece 1010000002 is not available here (Reserved, الفرع الرئيسي)."
+ },
+ "a zero payment is skipped": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "18821.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "bank transfer and cash, cash short": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "10100.00",
+   "payments": [
+    {
+     "amount": "10000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "10000.00",
+     "fx_rate": "1",
+     "kind": "bank_transfer",
+     "reference": "",
+     "source": {
+      "amount": "10000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "bank_transfer",
+      "reference": "",
+      "terminal_id": null
+     }
+    },
+    {
+     "amount": "100.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "100.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "100",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "8721.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "bulk of a kind not in stock": {
+  "code": "SALES_BULK_NONE",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": [
+     "No gold of this kind in stock here."
+    ]
+   }
+  },
+  "message": "No gold of this kind in stock here."
+ },
+ "bulk with an offer and a discount": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "27.00",
+   "due": "21013.00",
+   "items": [
+    "<StockLot>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "",
+     "cashback": "0",
+     "cashback_name": "",
+     "cost_amount": "500.00",
+     "description": "Chain",
+     "discount_amount": "27.00",
+     "discount_rate": "0.050000",
+     "fine_weight_g": "4.3750",
+     "gross_weight_g": "5.000",
+     "karat_label": "21K",
+     "label_price": null,
+     "line_total": "21013.00",
+     "making_amount": "513.00",
+     "making_rate": "108.0000",
+     "making_rate_net": "102.6000",
+     "metal_amount": "20500.00",
+     "metal_price_per_g": "4100.0000",
+     "offer_name": "Chain week",
+     "offer_saving": "360.00",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "360.00",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "21013.00",
+   "reservation": null,
+   "subtotal": "21040.00",
+   "total": "21013.00",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "bulk, more pieces than the lot": {
+  "code": "SALES_BULK_SHORT",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": [
+     "Only 20.000 g (4 pieces) of Chain here."
+    ]
+   }
+  },
+  "message": "Only 20.000 g (4 pieces) of Chain here."
+ },
+ "bulk, more than the lot in two lines": {
+  "code": "SALES_BULK_SHORT",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "1": [
+     "Only 20.000 g (4 pieces) of Chain here."
+    ]
+   }
+  },
+  "message": "Only 20.000 g (4 pieces) of Chain here."
+ },
+ "card pays too much": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "81177.55",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "99999.00",
+   "payments": [
+    {
+     "amount": "99999.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "99999.00",
+     "fx_rate": "1",
+     "kind": "card",
+     "reference": "",
+     "source": {
+      "amount": "99999",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "card",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_OVERPAID"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "completing the reservation": {
+  "board_21k": "4000.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "200.00",
+   "change": "2928.58",
+   "customer": "<Party Mona>",
+   "discount": "0.00",
+   "due": "22071.42",
+   "items": [
+    "<Item 1010000002>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000002",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "900.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "4.5000",
+     "gross_weight_g": "6.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "22071.42",
+     "making_amount": "1500.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "20571.42",
+     "metal_price_per_g": "3428.5700",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "25000.00",
+   "payments": [
+    {
+     "amount": "5000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "5000.00",
+     "fx_rate": "1",
+     "kind": "deposit",
+     "reference": "",
+     "source": {
+      "amount": "5000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "deposit",
+      "reference": "",
+      "terminal_id": null
+     }
+    },
+    {
+     "amount": "20000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "20000.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "20000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [],
+   "remaining": "0",
+   "reservation": "<Reservation>",
+   "subtotal": "22071.42",
+   "total": "22071.42",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": true
+ },
+ "credit paid too much": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "200.00",
+   "change": "0",
+   "customer": "<Party Mona>",
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "99999.00",
+   "payments": [
+    {
+     "amount": "99999.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "99999.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "99999",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_OVERPAID"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "credit without a customer": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "18821.45",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_CUSTOMER_REQUIRED"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "credit, customer, part paid": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "13821.45",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "200.00",
+   "change": "0",
+   "customer": "<Party Mona>",
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "5000.00",
+   "payments": [
+    {
+     "amount": "5000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "5000.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "5000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "diamond piece with a discount, customer": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": "<Party Mona>",
+   "discount": "3000.00",
+   "due": "57000.00",
+   "items": [
+    "<Item 3010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "3010000001",
+     "cashback": "0",
+     "cashback_name": "",
+     "cost_amount": "505.20",
+     "description": "Diamond rings",
+     "discount_amount": "3000.00",
+     "discount_rate": "0.050000",
+     "fine_weight_g": "3.7890",
+     "gross_weight_g": "5.200",
+     "karat_label": "18K",
+     "label_price": "60000.00",
+     "line_total": "57000.00",
+     "making_amount": "0",
+     "making_rate": "0",
+     "making_rate_net": "0",
+     "metal_amount": "17754.19",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "30000.00",
+     "stones_amount": "39245.81"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "57000.00",
+   "reservation": null,
+   "subtotal": "60000.00",
+   "total": "57000.00",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "diamond piece, seller": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "60000.00",
+   "items": [
+    "<Item 3010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "3010000001",
+     "cashback": "0",
+     "cashback_name": "",
+     "cost_amount": "505.20",
+     "description": "Diamond rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7890",
+     "gross_weight_g": "5.200",
+     "karat_label": "18K",
+     "label_price": "60000.00",
+     "line_total": "60000.00",
+     "making_amount": "0",
+     "making_rate": "0",
+     "making_rate_net": "0",
+     "metal_amount": "17754.19",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "30000.00",
+     "stones_amount": "42245.81"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "60000.00",
+   "reservation": null,
+   "subtotal": "60000.00",
+   "total": "60000.00",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "dollars and pounds": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "15000.00",
+   "payments": [
+    {
+     "amount": "200.00",
+     "currency": "<Currency USD>",
+     "functional_amount": "10000.00",
+     "fx_rate": "50.00000000",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "200",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "USD",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    },
+    {
+     "amount": "5000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "5000.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "5000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "3821.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "nothing on the sale": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0",
+   "due": "0",
+   "items": [],
+   "lines": [],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_EMPTY"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "0",
+   "total": "0",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "nothing on the sale, a payment": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "100.00",
+   "customer": null,
+   "discount": "0",
+   "due": "0",
+   "items": [],
+   "lines": [],
+   "offer_saving": "0",
+   "paid": "100.00",
+   "payments": [
+    {
+     "amount": "100.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "100.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "100",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_EMPTY"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "0",
+   "total": "0",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "one piece, discount to the floor, owner": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "500.00",
+   "due": "18321.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": true,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "500.00",
+     "discount_rate": "0.900000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18321.45",
+     "making_amount": "750.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "150.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "18321.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18321.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "one piece, discount, limited seller": {
+  "code": "SALES_DISCOUNT_LIMIT",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": [
+     "The largest discount you may give is 0%."
+    ]
+   }
+  },
+  "message": "The largest discount you may give is 0%."
+ },
+ "one piece, no payment": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "18821.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "one piece, paid in cash with change": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "11178.55",
+   "customer": null,
+   "discount": "0.00",
+   "due": "18821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "30000.00",
+   "payments": [
+    {
+     "amount": "30000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "30000.00",
+     "fx_rate": "1",
+     "kind": "cash",
+     "reference": "",
+     "source": {
+      "amount": "30000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "cash",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": false
+ },
+ "pieces, trade-in and card, customer": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "200.00",
+   "change": "0",
+   "customer": "<Party Mona>",
+   "discount": "0.00",
+   "due": "46250.03",
+   "items": [
+    "<Item 1010000001>",
+    "<Item 3010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    },
+    {
+     "at_cost_floor": false,
+     "barcode": "3010000001",
+     "cashback": "0",
+     "cashback_name": "",
+     "cost_amount": "505.20",
+     "description": "Diamond rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7890",
+     "gross_weight_g": "5.200",
+     "karat_label": "18K",
+     "label_price": "60000.00",
+     "line_total": "60000.00",
+     "making_amount": "0",
+     "making_rate": "0",
+     "making_rate_net": "0",
+     "metal_amount": "17754.19",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "30000.00",
+     "stones_amount": "42245.81"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "10000.00",
+   "payments": [
+    {
+     "amount": "10000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "10000.00",
+     "fx_rate": "1",
+     "kind": "card",
+     "reference": "",
+     "source": {
+      "amount": "10000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "card",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "36250.03",
+   "reservation": null,
+   "subtotal": "78821.45",
+   "total": "78821.45",
+   "trade_in": "32571.42",
+   "trade_ins": [
+    [
+     "<Karat 18>",
+     {
+      "amount": "32571.42",
+      "fine_weight_g": "7.1250",
+      "gross_weight_g": "10.000",
+      "karat_label": "18K",
+      "loss_weight_g": "0.500",
+      "net_weight_g": "9.500",
+      "price_overridden": false,
+      "price_per_g": "3428.5700"
+     }
+    ]
+   ]
+  },
+  "reservation": false
+ },
+ "the reservation for another customer": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "customer": [
+    "A reservation is sold to its own customer."
+   ]
+  },
+  "message": "A reservation is sold to its own customer."
+ },
+ "the reservation without a customer": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "customer": [
+    "A reservation is sold to its own customer."
+   ]
+  },
+  "message": "A reservation is sold to its own customer."
+ },
+ "the reservation, plus another piece": {
+  "board_21k": "4000.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "400.00",
+   "change": "0",
+   "customer": "<Party Mona>",
+   "discount": "0.00",
+   "due": "40464.27",
+   "items": [
+    "<Item 1010000002>",
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000002",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "900.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "4.5000",
+     "gross_weight_g": "6.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "22071.42",
+     "making_amount": "1500.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "20571.42",
+     "metal_price_per_g": "3428.5700",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    },
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18392.85",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17142.85",
+     "metal_price_per_g": "3428.5700",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "5000.00",
+   "payments": [
+    {
+     "amount": "5000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "5000.00",
+     "fx_rate": "1",
+     "kind": "deposit",
+     "reference": "",
+     "source": {
+      "amount": "5000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "deposit",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "35464.27",
+   "reservation": "<Reservation>",
+   "subtotal": "40464.27",
+   "total": "40464.27",
+   "trade_in": "0",
+   "trade_ins": []
+  },
+  "reservation": true
+ },
+ "the same piece twice": {
+  "code": "SALES_DUPLICATE_ITEM",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "1": [
+     "Piece 1010000001 is already on this sale."
+    ]
+   }
+  },
+  "message": "Piece 1010000001 is already on this sale."
+ },
+ "trade-in with a price override, owner": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "6821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "6821.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "12000.00",
+   "trade_ins": [
+    [
+     "<Karat 18>",
+     {
+      "amount": "12000.00",
+      "fine_weight_g": "3.0000",
+      "gross_weight_g": "4.000",
+      "karat_label": "18K",
+      "loss_weight_g": "0.000",
+      "net_weight_g": "4.000",
+      "price_overridden": true,
+      "price_per_g": "3000.0000"
+     }
+    ]
+   ]
+  },
+  "reservation": false
+ },
+ "trade-in with a price override, seller": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "0",
+   "customer": null,
+   "discount": "0.00",
+   "due": "6821.45",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [
+    "SALES_NOT_FULLY_PAID"
+   ],
+   "remaining": "6821.45",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "12000.00",
+   "trade_ins": [
+    [
+     "<Karat 18>",
+     {
+      "amount": "12000.00",
+      "fine_weight_g": "3.0000",
+      "gross_weight_g": "4.000",
+      "karat_label": "18K",
+      "loss_weight_g": "0.000",
+      "net_weight_g": "4.000",
+      "price_overridden": true,
+      "price_per_g": "3000.0000"
+     }
+    ]
+   ]
+  },
+  "reservation": false
+ },
+ "trade-in worth more than the goods": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "61178.55",
+   "customer": null,
+   "discount": "0.00",
+   "due": "-61178.55",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "0",
+   "payments": [],
+   "problems": [],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "80000.00",
+   "trade_ins": [
+    [
+     "<Karat 21>",
+     {
+      "amount": "80000.00",
+      "fine_weight_g": "17.5000",
+      "gross_weight_g": "20.000",
+      "karat_label": "21K",
+      "loss_weight_g": "0.000",
+      "net_weight_g": "20.000",
+      "price_overridden": false,
+      "price_per_g": "4000.0000"
+     }
+    ]
+   ]
+  },
+  "reservation": false
+ },
+ "trade-in worth more, and a card": {
+  "board_21k": "4100.0000",
+  "quote": {
+   "balance": "0",
+   "board": "<MetalPriceBoard>",
+   "branch": "<Branch 1>",
+   "cashback": "0",
+   "change": "62178.55",
+   "customer": null,
+   "discount": "0.00",
+   "due": "-61178.55",
+   "items": [
+    "<Item 1010000001>"
+   ],
+   "lines": [
+    {
+     "at_cost_floor": false,
+     "barcode": "1010000001",
+     "cashback": "200.00",
+     "cashback_name": "Ring gift",
+     "cost_amount": "750.00",
+     "description": "Rings",
+     "discount_amount": "0.00",
+     "discount_rate": "0.000000",
+     "fine_weight_g": "3.7500",
+     "gross_weight_g": "5.000",
+     "karat_label": "18K",
+     "label_price": null,
+     "line_total": "18821.45",
+     "making_amount": "1250.00",
+     "making_rate": "250.0000",
+     "making_rate_net": "250.0000",
+     "metal_amount": "17571.45",
+     "metal_price_per_g": "3514.2900",
+     "offer_name": "",
+     "offer_saving": "0",
+     "qty": 1,
+     "stone_cost": "0",
+     "stones_amount": "0"
+    }
+   ],
+   "offer_saving": "0",
+   "paid": "1000.00",
+   "payments": [
+    {
+     "amount": "1000.00",
+     "currency": "<Currency EGP>",
+     "functional_amount": "1000.00",
+     "fx_rate": "1",
+     "kind": "card",
+     "reference": "",
+     "source": {
+      "amount": "1000",
+      "bank_account_id": null,
+      "cash_box_id": null,
+      "currency_code": "EGP",
+      "kind": "card",
+      "reference": "",
+      "terminal_id": null
+     }
+    }
+   ],
+   "problems": [
+    "SALES_OVERPAID"
+   ],
+   "remaining": "0",
+   "reservation": null,
+   "subtotal": "18821.45",
+   "total": "18821.45",
+   "trade_in": "80000.00",
+   "trade_ins": [
+    [
+     "<Karat 21>",
+     {
+      "amount": "80000.00",
+      "fine_weight_g": "17.5000",
+      "gross_weight_g": "20.000",
+      "karat_label": "21K",
+      "loss_weight_g": "0.000",
+      "net_weight_g": "20.000",
+      "price_overridden": false,
+      "price_per_g": "4000.0000"
+     }
+    ]
+   ]
+  },
+  "reservation": false
+ },
+ "unknown barcode": {
+  "code": "SALES_ITEM_NOT_FOUND",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": [
+     "No piece with barcode 999999."
+    ]
+   }
+  },
+  "message": "No piece with barcode 999999."
+ },
+ "unknown branch": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "branch": [
+    "Unknown branch."
+   ]
+  },
+  "message": "Unknown branch."
+ },
+ "unknown customer": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "customer": [
+    "Unknown customer."
+   ]
+  },
+  "message": "Unknown customer."
+ },
+ "unknown payment currency": {
+  "code": "SALES_PAYMENT",
+  "error": "ValidationError",
+  "fields": {
+   "payments": {
+    "0": [
+     "Unknown payment method."
+    ]
+   }
+  },
+  "message": "Unknown payment method."
+ },
+ "unknown payment method": {
+  "code": "SALES_PAYMENT",
+  "error": "ValidationError",
+  "fields": {
+   "payments": {
+    "1": [
+     "Unknown payment method."
+    ]
+   }
+  },
+  "message": "Unknown payment method."
+ },
+ "unknown trade-in karat": {
+  "code": "SALES_TRADE_IN_KARAT",
+  "error": "ValidationError",
+  "fields": {
+   "trade_ins": {
+    "0": [
+     "Unknown karat."
+    ]
+   }
+  },
+  "message": "Unknown karat."
+ }
+}

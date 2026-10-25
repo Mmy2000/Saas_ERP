@@ -324,7 +324,11 @@ def cancel_work_order(order_id: int, *, reason: str = "", actor=None) -> WorkOrd
 # --- receiving -----------------------------------------------------------------------------------
 
 def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
-    """Check what came back and work out loss, gain and costs. Never writes."""
+    """Check what came back and work out loss, gain and costs. Never writes.
+
+    Each line is checked in turn (the first error names its line); then the fine gold back is
+    weighed against the gold sent, per metal, and the making cost carried in the gold sent
+    moves into the worked goods."""
     if not data.lines:
         message = _("Add what came back.")
         raise ValidationError(message, fields={"lines": [message]})
@@ -332,86 +336,122 @@ def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
         pk__in=[ln.category_id for ln in data.lines], is_active=True)}
     karats = {k.pk: k for k in Karat.objects.select_related("metal").filter(
         pk__in=[ln.karat_id for ln in data.lines], is_active=True)}
-    plan = ReceiptPlan()
-    for index, line in enumerate(data.lines):
-        category, karat = categories.get(line.category_id), karats.get(line.karat_id)
-        if category is None:
-            raise _line_error(index, _("Unknown category."), "category")
-        if karat is None:
-            raise _line_error(index, _("Choose the karat."), "karat")
-        if _is_scrap(category):
-            line_type = ReceiptLineType.SCRAP
-        elif category.tracking == Tracking.SERIALIZED:
-            line_type = ReceiptLineType.PIECES
-        else:
-            line_type = ReceiptLineType.BULK
+    plan = ReceiptPlan(lines=[_plan_line(index, line, categories, karats)
+                              for index, line in enumerate(data.lines)])
+    _weigh_metal(order, plan, accept_gain=data.accept_gain)
+    _spread_carried_cost(order, plan)
+    return plan
 
-        pieces: list[Decimal] = []
-        bars: list[tuple[Decimal, Decimal, str]] = []
-        if line_type == ReceiptLineType.PIECES and line.bars:
-            serials = set()
-            for bar in line.bars:
-                try:
-                    weight = quantize(bar.get("weight_g") or "0", WEIGHT)
-                    fineness = quantize(bar.get("fineness") or karat.fineness, Decimal("0.1"))
-                except (TypeError, ValueError, ArithmeticError):
-                    raise _line_error(index, _("Enter each bar's weight and fineness."),
-                                      "bars") from None
-                serial = str(bar.get("serial") or "").strip()[:40]
-                if weight <= 0 or not 0 < fineness <= 1000:
-                    raise _line_error(index, _("Enter each bar's weight and fineness."), "bars")
-                if serial and serial.casefold() in serials:
-                    raise _line_error(index, _("Serial %(serial)s is entered twice.")
-                                      % {"serial": serial}, "bars")
-                serials.add(serial.casefold())
-                bars.append((weight, fineness, serial))
-            pieces = [weight for weight, _f, _s in bars]
-            qty, gross = len(pieces), sum(pieces, ZERO)
-        elif line_type == ReceiptLineType.PIECES:
-            try:
-                pieces = [quantize(w, WEIGHT) for w in line.piece_weights]
-            except (TypeError, ValueError):
-                pieces = []
-            if not pieces or any(w <= 0 for w in pieces):
-                raise _line_error(index, _("Enter the weight of each piece."), "piece_weights")
-            qty, gross = len(pieces), sum(pieces, ZERO)
-        else:
-            try:
-                gross = quantize(line.gross_weight_g or "0", WEIGHT)
-            except (TypeError, ValueError):
-                gross = ZERO
-            if gross <= 0:
-                raise _line_error(index, _("Enter the total weight."), "gross_weight_g")
-            qty = max(int(line.qty or 0), 0) if line_type == ReceiptLineType.BULK else 0
+
+def _receipt_line_type(category) -> str:
+    """The category decides: the scrap category, pieces (serialized) or bulk gold."""
+    if _is_scrap(category):
+        return ReceiptLineType.SCRAP
+    if category.tracking == Tracking.SERIALIZED:
+        return ReceiptLineType.PIECES
+    return ReceiptLineType.BULK
+
+
+def _plan_line(index: int, line: ReceiptLineInput, categories, karats) -> PlannedLine:
+    category, karat = categories.get(line.category_id), karats.get(line.karat_id)
+    if category is None:
+        raise _line_error(index, _("Unknown category."), "category")
+    if karat is None:
+        raise _line_error(index, _("Choose the karat."), "karat")
+    line_type = _receipt_line_type(category)
+    pieces, bars, qty, gross = _received_weights(index, line, line_type, karat)
+    labour_rate, list_rate, labour_amount = _labour(index, line, gross)
+    if line_type == ReceiptLineType.SCRAP:
+        labour_rate = list_rate = labour_amount = ZERO  # scrap is not worked goods
+    if bars:
+        fine = sum((fine_weight(w, f) for w, f, _s in bars), ZERO)
+    else:
+        fine = (sum((fine_weight(w, karat.fineness) for w in pieces), ZERO) if pieces
+                else fine_weight(gross, karat.fineness))
+    return PlannedLine(
+        line_type=line_type, category=category, karat=karat, qty=qty, gross_weight_g=gross,
+        fine_weight_g=fine, labour_rate=labour_rate, labour_amount=labour_amount,
+        list_making_rate=list_rate, pieces=pieces, metal_value=metal_value(karat, fine),
+        bars=bars)
+
+
+def _received_weights(index: int, line: ReceiptLineInput, line_type: str, karat):
+    """(piece weights, cast bars, quantity, gross weight) of one line: pieces are weighed one
+    by one (or are cast bars, each with its own fineness); bulk and scrap by their total."""
+    if line_type == ReceiptLineType.PIECES and line.bars:
+        bars = _cast_bars(index, line, karat)
+        pieces = [weight for weight, _f, _s in bars]
+        return pieces, bars, len(pieces), sum(pieces, ZERO)
+    if line_type == ReceiptLineType.PIECES:
+        pieces = _piece_weights(index, line)
+        return pieces, [], len(pieces), sum(pieces, ZERO)
+    try:
+        gross = quantize(line.gross_weight_g or "0", WEIGHT)
+    except (TypeError, ValueError):
+        gross = ZERO
+    if gross <= 0:
+        raise _line_error(index, _("Enter the total weight."), "gross_weight_g")
+    qty = max(int(line.qty or 0), 0) if line_type == ReceiptLineType.BULK else 0
+    return [], [], qty, gross
+
+
+def _cast_bars(index: int, line: ReceiptLineInput, karat) -> list[tuple[Decimal, Decimal, str]]:
+    """(weight, fineness ‰, serial) of each bar; a serial may appear once on the line."""
+    bars: list[tuple[Decimal, Decimal, str]] = []
+    serials = set()
+    for bar in line.bars:
         try:
-            labour_rate = quantize(line.labour_rate or "0", UNIT_PRICE)
-            list_rate = quantize(line.list_making_rate or "0", UNIT_PRICE)
-        except (TypeError, ValueError):
-            raise _line_error(index, _("Enter a number."), "labour_rate") from None
-        if labour_rate < 0 or list_rate < 0:
-            raise _line_error(index, _("Must not be negative."), "labour_rate")
-        labour_amount = round_money(labour_rate * gross)
-        if line.labour_amount not in (None, ""):
-            try:
-                labour_amount = quantize(line.labour_amount, MONEY)
-            except (TypeError, ValueError, ArithmeticError):
-                raise _line_error(index, _("Enter a number."), "labour_amount") from None
-            if labour_amount < 0:
-                raise _line_error(index, _("Must not be negative."), "labour_amount")
-            labour_rate = quantize(labour_amount / gross, UNIT_PRICE)
-        if line_type == ReceiptLineType.SCRAP:
-            labour_rate = list_rate = labour_amount = ZERO  # scrap is not worked goods
-        if bars:
-            fine = sum((fine_weight(w, f) for w, f, _s in bars), ZERO)
-        else:
-            fine = (sum((fine_weight(w, karat.fineness) for w in pieces), ZERO) if pieces
-                    else fine_weight(gross, karat.fineness))
-        plan.lines.append(PlannedLine(
-            line_type=line_type, category=category, karat=karat, qty=qty, gross_weight_g=gross,
-            fine_weight_g=fine, labour_rate=labour_rate, labour_amount=labour_amount,
-            list_making_rate=list_rate, pieces=pieces, metal_value=metal_value(karat, fine),
-            bars=bars))
+            weight = quantize(bar.get("weight_g") or "0", WEIGHT)
+            fineness = quantize(bar.get("fineness") or karat.fineness, Decimal("0.1"))
+        except (TypeError, ValueError, ArithmeticError):
+            raise _line_error(index, _("Enter each bar's weight and fineness."),
+                              "bars") from None
+        serial = str(bar.get("serial") or "").strip()[:40]
+        if weight <= 0 or not 0 < fineness <= 1000:
+            raise _line_error(index, _("Enter each bar's weight and fineness."), "bars")
+        if serial and serial.casefold() in serials:
+            raise _line_error(index, _("Serial %(serial)s is entered twice.")
+                              % {"serial": serial}, "bars")
+        serials.add(serial.casefold())
+        bars.append((weight, fineness, serial))
+    return bars
 
+
+def _piece_weights(index: int, line: ReceiptLineInput) -> list[Decimal]:
+    try:
+        pieces = [quantize(w, WEIGHT) for w in line.piece_weights]
+    except (TypeError, ValueError):
+        pieces = []
+    if not pieces or any(w <= 0 for w in pieces):
+        raise _line_error(index, _("Enter the weight of each piece."), "piece_weights")
+    return pieces
+
+
+def _labour(index: int, line: ReceiptLineInput, gross: Decimal):
+    """(labour per gram, selling making charge per gram, labour amount): per gram, or a fixed
+    fee for the line (a casting fee), from which the rate per gram follows."""
+    try:
+        labour_rate = quantize(line.labour_rate or "0", UNIT_PRICE)
+        list_rate = quantize(line.list_making_rate or "0", UNIT_PRICE)
+    except (TypeError, ValueError):
+        raise _line_error(index, _("Enter a number."), "labour_rate") from None
+    if labour_rate < 0 or list_rate < 0:
+        raise _line_error(index, _("Must not be negative."), "labour_rate")
+    labour_amount = round_money(labour_rate * gross)
+    if line.labour_amount not in (None, ""):
+        try:
+            labour_amount = quantize(line.labour_amount, MONEY)
+        except (TypeError, ValueError, ArithmeticError):
+            raise _line_error(index, _("Enter a number."), "labour_amount") from None
+        if labour_amount < 0:
+            raise _line_error(index, _("Must not be negative."), "labour_amount")
+        labour_rate = quantize(labour_amount / gross, UNIT_PRICE)
+    return labour_rate, list_rate, labour_amount
+
+
+def _weigh_metal(order: WorkOrder, plan: ReceiptPlan, *, accept_gain: bool) -> None:
+    """Fine gold sent against fine gold back, per metal: the difference is a loss, or a gain
+    that must be confirmed."""
     issued: dict[str, Decimal] = defaultdict(lambda: ZERO)
     for line in order.issue_lines.select_related("karat__metal"):
         issued[line.karat.metal.code] += line.fine_weight_g
@@ -425,11 +465,14 @@ def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
             plan.loss[metal_code] = difference
         elif difference < 0:
             plan.gain[metal_code] = -difference
-    if plan.gain and not data.accept_gain:
+    if plan.gain and not accept_gain:
         raise DomainError(_("More gold came back than was sent. Confirm the gain to continue."),
                           code="MFG_GAIN_UNCONFIRMED")
 
-    # The making cost carried in the gold sent out moves into the worked goods, by weight.
+
+def _spread_carried_cost(order: WorkOrder, plan: ReceiptPlan) -> None:
+    """The making cost carried in the gold sent out moves into the worked goods, by weight (the
+    last line takes what rounding leaves); with only scrap back it is written off."""
     plan.labour = sum((ln.labour_amount for ln in plan.lines), ZERO)
     worked = [ln for ln in plan.lines if ln.line_type != ReceiptLineType.SCRAP]
     weight = sum((ln.gross_weight_g for ln in worked), ZERO)
@@ -443,7 +486,6 @@ def plan_receipt(order: WorkOrder, data: ReceiptInput) -> ReceiptPlan:
         plan.carried_to_goods = order.carried_cost
     else:
         plan.carried_written_off = order.carried_cost
-    return plan
 
 
 def _receipt_ledger(order: WorkOrder, plan: ReceiptPlan) -> list[LedgerLine]:

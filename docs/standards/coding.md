@@ -48,8 +48,8 @@ against 7 `cancel_` and 4 `undo_`.
 ## Functions and modules
 
 - **Aim for functions under about 60 lines, with cyclomatic complexity under 15.** If a
-  function grows past that, extract named steps. Today 43 functions exceed complexity 10 (the
-  worst are in TD-10). Don't add to the list.
+  function grows past that, extract named steps. Today 41 functions exceed complexity 10
+  (`ruff check apps --select C901`; the worst are in TD-10). Don't add to the list.
 - **More than about four parameters:** make them keyword-only (`*,`) or pass an `XInput`.
 - **Don't nest conditions three or more deep.** Return early, or raise.
 - **One module, one subject.** Split a module past about 600 lines by business act (as

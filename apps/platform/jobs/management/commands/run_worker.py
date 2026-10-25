@@ -52,35 +52,16 @@ class Command(BaseCommand):
         poll = sleep or settings.JOBS_POLL_SECONDS
         self._stop = False
         signal.signal(signal.SIGTERM, self._request_stop)
-        started = timezone.now()
-        last_beat = last_tick = last_stale = 0.0
-        done = failed = 0
+        self._started = timezone.now()
+        self._last = {"beat": 0.0, "tick": 0.0, "stale": 0.0}  # monotonic time of each chore
+        self._done = self._failed = 0
         self.stdout.write(f"Worker {name} running. Ctrl+C to stop.")
         try:
             while not self._stop:
                 # One pass failing (the database restarting, a lost connection) must not stop
                 # the worker: nothing would send, schedule or back up until someone noticed.
                 try:
-                    close_old_connections()
-                    now = time.monotonic()
-                    if now - last_beat >= 15:
-                        heartbeat(name, started, done=done, failed=failed)
-                        done = failed = 0
-                        last_beat = now
-                    if now - last_tick >= 30:
-                        scheduler.tick()
-                        last_tick = now
-                    if now - last_stale >= 300:
-                        release_stale()
-                        last_stale = now
-                    job = claim(name)
-                    if job is None:
-                        time.sleep(poll)
-                        continue
-                    if execute(job):
-                        done += 1
-                    else:
-                        failed += 1
+                    self._pass(name, scheduler, poll)
                 except Exception:  # noqa: BLE001 - logged (Console → Errors), then retried
                     logger.exception("Worker %s: a pass failed; trying again in %s s", name,
                                      ERROR_PAUSE)
@@ -94,6 +75,29 @@ class Command(BaseCommand):
             except Exception:  # noqa: BLE001 - stopping anyway; the row just ages out
                 logger.warning("Worker %s: could not remove its heartbeat row", name)
             self.stdout.write("Stopped.")
+
+    def _pass(self, name: str, scheduler: Scheduler, poll: float) -> None:
+        """The chores that are due (heartbeat every 15 s, schedules every 30 s, abandoned jobs
+        every 5 min: each one's clock moves only once it succeeded), then one job, or a wait."""
+        close_old_connections()
+        now = time.monotonic()
+        if now - self._last["beat"] >= 15:
+            heartbeat(name, self._started, done=self._done, failed=self._failed)
+            self._done = self._failed = 0
+            self._last["beat"] = now
+        if now - self._last["tick"] >= 30:
+            scheduler.tick()
+            self._last["tick"] = now
+        if now - self._last["stale"] >= 300:
+            release_stale()
+            self._last["stale"] = now
+        job = claim(name)
+        if job is None:
+            time.sleep(poll)
+        elif execute(job):
+            self._done += 1
+        else:
+            self._failed += 1
 
     def _request_stop(self, *args):
         self._stop = True  # finish the current job, then stop

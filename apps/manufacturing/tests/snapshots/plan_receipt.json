@@ -1,0 +1,802 @@
+{
+ "a bar with fineness over 1000": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "bars": [
+      "Enter each bar's weight and fineness."
+     ]
+    }
+   }
+  },
+  "message": "Enter each bar's weight and fineness."
+ },
+ "a bar without weight": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "bars": [
+      "Enter each bar's weight and fineness."
+     ]
+    }
+   }
+  },
+  "message": "Enter each bar's weight and fineness."
+ },
+ "a bar's serial twice": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "bars": [
+      "Serial b1 is entered twice."
+     ]
+    }
+   }
+  },
+  "message": "Serial b1 is entered twice."
+ },
+ "a bar's weight not a number": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "bars": [
+      "Enter each bar's weight and fineness."
+     ]
+    }
+   }
+  },
+  "message": "Enter each bar's weight and fineness."
+ },
+ "a piece of zero grams": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "piece_weights": [
+      "Enter the weight of each piece."
+     ]
+    }
+   }
+  },
+  "message": "Enter the weight of each piece."
+ },
+ "a piece weight not a number": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "piece_weights": [
+      "Enter the weight of each piece."
+     ]
+    }
+   }
+  },
+  "message": "Enter the weight of each piece."
+ },
+ "bars without a serial": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0.00",
+  "lines": [
+   {
+    "bars": [
+     [
+      "1.000",
+      "875.0",
+      ""
+     ],
+     [
+      "2.000",
+      "875.0",
+      ""
+     ]
+    ],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "1000.00",
+    "fine_weight_g": "2.6250",
+    "gross_weight_g": "3.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11849.99",
+    "pieces": [
+     "1.000",
+     "2.000"
+    ],
+    "qty": 2
+   }
+  ],
+  "loss": {
+   "gold": "6.1250"
+  },
+  "received": {
+   "gold": "2.6250"
+  },
+  "values": {}
+ },
+ "bulk back with a fixed fee": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "150.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 2020>",
+    "cost_amount": "1150.00",
+    "fine_weight_g": "8.3125",
+    "gross_weight_g": "9.500",
+    "karat": "<Karat 21>",
+    "labour_amount": "150.00",
+    "labour_rate": "15.7895",
+    "line_type": "bulk",
+    "list_making_rate": "0.0000",
+    "metal_value": "37524.96",
+    "pieces": [],
+    "qty": 2
+   }
+  ],
+  "loss": {
+   "gold": "0.4375"
+  },
+  "received": {
+   "gold": "8.3125"
+  },
+  "values": {}
+ },
+ "bulk weight not a number": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "gross_weight_g": [
+      "Enter the total weight."
+     ]
+    }
+   }
+  },
+  "message": "Enter the total weight."
+ },
+ "bulk with a negative count": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 2020>",
+    "cost_amount": "1000.00",
+    "fine_weight_g": "4.3750",
+    "gross_weight_g": "5.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "bulk",
+    "list_making_rate": "0.0000",
+    "metal_value": "19749.98",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {
+   "gold": "4.3750"
+  },
+  "received": {
+   "gold": "4.3750"
+  },
+  "values": {}
+ },
+ "bulk without weight": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "gross_weight_g": [
+      "Enter the total weight."
+     ]
+    }
+   }
+  },
+  "message": "Enter the total weight."
+ },
+ "cast bars and silver": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {
+   "silver": "46.2500"
+  },
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0.00",
+  "lines": [
+   {
+    "bars": [
+     [
+      "2.500",
+      "995.0",
+      "A1"
+     ],
+     [
+      "2.500",
+      "999.9",
+      "A2"
+     ]
+    ],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "90.91",
+    "fine_weight_g": "4.9873",
+    "gross_weight_g": "5.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "22514.08",
+    "pieces": [
+     "2.500",
+     "2.500"
+    ],
+    "qty": 2
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory 2020>",
+    "cost_amount": "909.09",
+    "fine_weight_g": "46.2500",
+    "gross_weight_g": "50.000",
+    "karat": "<Karat 925>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "bulk",
+    "list_making_rate": "0.0000",
+    "metal_value": "0.00",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {
+   "gold": "3.7627"
+  },
+  "received": {
+   "gold": "4.9873",
+   "silver": "46.2500"
+  },
+  "values": {}
+ },
+ "cast bars with their own fineness": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "80.00",
+  "lines": [
+   {
+    "bars": [
+     [
+      "2.500",
+      "995.0",
+      "A1"
+     ],
+     [
+      "2.500",
+      "999.9",
+      "A2"
+     ]
+    ],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "1080.00",
+    "fine_weight_g": "4.9873",
+    "gross_weight_g": "5.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "80.00",
+    "labour_rate": "16.0000",
+    "line_type": "pieces",
+    "list_making_rate": "30.0000",
+    "metal_value": "22514.08",
+    "pieces": [
+     "2.500",
+     "2.500"
+    ],
+    "qty": 2
+   }
+  ],
+  "loss": {
+   "gold": "3.7627"
+  },
+  "received": {
+   "gold": "4.9873"
+  },
+  "values": {}
+ },
+ "fixed fee not a number": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_amount": [
+      "Enter a number."
+     ]
+    }
+   }
+  },
+  "message": "Enter a number."
+ },
+ "labour not a number": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_rate": [
+      "Enter a number."
+     ]
+    }
+   }
+  },
+  "message": "Enter a number."
+ },
+ "more gold back, gain confirmed": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {
+   "gold": "1.7500"
+  },
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 2020>",
+    "cost_amount": "1000.00",
+    "fine_weight_g": "10.5000",
+    "gross_weight_g": "12.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "bulk",
+    "list_making_rate": "0.0000",
+    "metal_value": "47399.95",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {},
+  "received": {
+   "gold": "10.5000"
+  },
+  "values": {}
+ },
+ "more gold back, gain not confirmed": {
+  "code": "MFG_GAIN_UNCONFIRMED",
+  "error": "DomainError",
+  "fields": {},
+  "message": "More gold came back than was sent. Confirm the gain to continue."
+ },
+ "negative fixed fee": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_amount": [
+      "Must not be negative."
+     ]
+    }
+   }
+  },
+  "message": "Must not be negative."
+ },
+ "negative labour": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_rate": [
+      "Must not be negative."
+     ]
+    }
+   }
+  },
+  "message": "Must not be negative."
+ },
+ "negative making charge": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_rate": [
+      "Must not be negative."
+     ]
+    }
+   }
+  },
+  "message": "Must not be negative."
+ },
+ "no piece weights": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "piece_weights": [
+      "Enter the weight of each piece."
+     ]
+    }
+   }
+  },
+  "message": "Enter the weight of each piece."
+ },
+ "nothing back": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": [
+    "Add what came back."
+   ]
+  },
+  "message": "Add what came back."
+ },
+ "only scrap back": {
+  "carried_to_goods": "0",
+  "carried_written_off": "1000.00",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory SCRAP>",
+    "cost_amount": "0",
+    "fine_weight_g": "8.6625",
+    "gross_weight_g": "9.900",
+    "karat": "<Karat 21>",
+    "labour_amount": "0",
+    "labour_rate": "0",
+    "line_type": "scrap",
+    "list_making_rate": "0",
+    "metal_value": "39104.96",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {
+   "gold": "0.0875"
+  },
+  "received": {
+   "gold": "8.6625"
+  },
+  "values": {}
+ },
+ "rings and scrap back": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "300.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "1300.00",
+    "fine_weight_g": "3.7500",
+    "gross_weight_g": "5.000",
+    "karat": "<Karat 18>",
+    "labour_amount": "300.00",
+    "labour_rate": "60.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "16928.56",
+    "pieces": [
+     "5.000"
+    ],
+    "qty": 1
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory SCRAP>",
+    "cost_amount": "0",
+    "fine_weight_g": "1.9688",
+    "gross_weight_g": "2.250",
+    "karat": "<Karat 21>",
+    "labour_amount": "0",
+    "labour_rate": "0",
+    "line_type": "scrap",
+    "list_making_rate": "0",
+    "metal_value": "8887.72",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {
+   "gold": "3.0312"
+  },
+  "received": {
+   "gold": "5.7188"
+  },
+  "values": {}
+ },
+ "rings back with a loss": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "666.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "1666.00",
+    "fine_weight_g": "8.3250",
+    "gross_weight_g": "11.100",
+    "karat": "<Karat 18>",
+    "labour_amount": "666.00",
+    "labour_rate": "60.0000",
+    "line_type": "pieces",
+    "list_making_rate": "250.0000",
+    "metal_value": "37581.39",
+    "pieces": [
+     "5.000",
+     "6.100"
+    ],
+    "qty": 2
+   }
+  ],
+  "loss": {
+   "gold": "0.4250"
+  },
+  "received": {
+   "gold": "8.3250"
+  },
+  "values": {}
+ },
+ "scrap with a count": {
+  "carried_to_goods": "0",
+  "carried_written_off": "1000.00",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory SCRAP>",
+    "cost_amount": "0",
+    "fine_weight_g": "4.3750",
+    "gross_weight_g": "5.000",
+    "karat": "<Karat 21>",
+    "labour_amount": "0",
+    "labour_rate": "0",
+    "line_type": "scrap",
+    "list_making_rate": "0",
+    "metal_value": "19749.98",
+    "pieces": [],
+    "qty": 0
+   }
+  ],
+  "loss": {
+   "gold": "4.3750"
+  },
+  "received": {
+   "gold": "4.3750"
+  },
+  "values": {}
+ },
+ "scrap with labour and a bad fee": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "labour_amount": [
+      "Must not be negative."
+     ]
+    }
+   }
+  },
+  "message": "Must not be negative."
+ },
+ "three equal lines: the last takes what rounding leaves": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "0.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "333.33",
+    "fine_weight_g": "2.4998",
+    "gross_weight_g": "3.333",
+    "karat": "<Karat 18>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11284.80",
+    "pieces": [
+     "3.333"
+    ],
+    "qty": 1
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "333.33",
+    "fine_weight_g": "2.4998",
+    "gross_weight_g": "3.333",
+    "karat": "<Karat 18>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11284.80",
+    "pieces": [
+     "3.333"
+    ],
+    "qty": 1
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "333.34",
+    "fine_weight_g": "2.4998",
+    "gross_weight_g": "3.333",
+    "karat": "<Karat 18>",
+    "labour_amount": "0.00",
+    "labour_rate": "0.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11284.80",
+    "pieces": [
+     "3.333"
+    ],
+    "qty": 1
+   }
+  ],
+  "loss": {
+   "gold": "1.2506"
+  },
+  "received": {
+   "gold": "7.4994"
+  },
+  "values": {}
+ },
+ "three worked lines share the carried cost": {
+  "carried_to_goods": "1000.00",
+  "carried_written_off": "0",
+  "gain": {},
+  "issued": {
+   "gold": "8.7500"
+  },
+  "labour": "100.00",
+  "lines": [
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "366.63",
+    "fine_weight_g": "2.4998",
+    "gross_weight_g": "3.333",
+    "karat": "<Karat 18>",
+    "labour_amount": "33.33",
+    "labour_rate": "10.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11284.80",
+    "pieces": [
+     "3.333"
+    ],
+    "qty": 1
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory 1010>",
+    "cost_amount": "366.63",
+    "fine_weight_g": "2.4998",
+    "gross_weight_g": "3.333",
+    "karat": "<Karat 18>",
+    "labour_amount": "33.33",
+    "labour_rate": "10.0000",
+    "line_type": "pieces",
+    "list_making_rate": "0.0000",
+    "metal_value": "11284.80",
+    "pieces": [
+     "3.333"
+    ],
+    "qty": 1
+   },
+   {
+    "bars": [],
+    "category": "<ItemCategory 2020>",
+    "cost_amount": "366.74",
+    "fine_weight_g": "2.5005",
+    "gross_weight_g": "3.334",
+    "karat": "<Karat 18>",
+    "labour_amount": "33.34",
+    "labour_rate": "10.0000",
+    "line_type": "bulk",
+    "list_making_rate": "0.0000",
+    "metal_value": "11287.96",
+    "pieces": [],
+    "qty": 1
+   }
+  ],
+  "loss": {
+   "gold": "1.2499"
+  },
+  "received": {
+   "gold": "7.5001"
+  },
+  "values": {}
+ },
+ "unknown category": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "category": [
+      "Unknown category."
+     ]
+    }
+   }
+  },
+  "message": "Unknown category."
+ },
+ "unknown karat": {
+  "code": "VALIDATION_ERROR",
+  "error": "ValidationError",
+  "fields": {
+   "lines": {
+    "0": {
+     "karat": [
+      "Choose the karat."
+     ]
+    }
+   }
+  },
+  "message": "Choose the karat."
+ }
+}

@@ -151,8 +151,9 @@ abstraction, and these would add layers without solving a problem we have.
 - **Single responsibility.**
   - A service function does one business act: post an expense, cancel it.
   - A view parses and renders.
-  - Split a function when it has more than one reason to change (a 150-line `quote_sale` has
-    several: TD-10).
+  - Split a function when it has more than one reason to change. `quote_sale` was 150 lines
+    with six reasons; it is now 29 lines calling one named step for each
+    (`apps/sales/services.py`).
 - **Open/closed.**
   - Extend through registries and strategies, not by editing a central list.
   - A new report registers itself; a new market source is a new module.

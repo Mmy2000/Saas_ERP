@@ -81,13 +81,21 @@ Fix these one module at a time, each in its own pull request, behind the existin
 - **Verify:** existing cancel tests unchanged and passing.
 
 ### TD-10
-**`quote_sale` and `plan_receipt` are too large to review safely** (A3). High.
-- **Where:** `apps/sales/services.py:216` (complexity 29); `apps/manufacturing/services.py:326`
-  (32).
-- **Fix:** extract steps (per-line pricing, discount limits, trade-in, totals) into named
-  functions with their own tests. No behaviour change.
-- **First:** characterisation tests that pin today's quotes for representative baskets.
-- **Verify:** those tests pass before and after; complexity under 15.
+**Over-complex functions** (A3). Medium. *`quote_sale` and `plan_receipt` were done on
+2026-10-26* (see the [audit](audit/2026-10-engineering-audit.md#third-pass-2026-10-26)).
+- **Where:** 41 functions above complexity 10:
+  `ruff check apps --select C901 --output-format concise`. The worst:
+  - `reports/statements.py` `run` (25)
+  - `org/dashboard.py` `needs_attention` (24)
+  - `diamonds/parcels.py` `deal` (21)
+  - `diamonds/services.py` `receive` (20)
+  - `audit/views.py` `_describe` (20)
+- **Fix:** one function per pull request, in the same way:
+  1. Record a characterization snapshot from the unchanged code (`tests/snapshot.py`,
+     [testing](standards/testing.md#refactoring-safely-characterization-snapshots)).
+  2. Split the function into named steps.
+  3. Prove the snapshot unchanged, and plant one bug to show it would be caught.
+- **Verify:** the snapshot passes before and after; the function is no longer in the list.
 
 ### TD-11
 **The console has no service layer** (A4). High.
@@ -109,7 +117,7 @@ Fix these one module at a time, each in its own pull request, behind the existin
 | <a id="td-18"></a>TD-18 | HTML instead of the JSON envelope for some API errors (O9) | `apps/core/api/exceptions.py`, `apps/core/tenancy/middleware.py:36-40`, `apps/platform/tenants/middleware.py:68` | JSON fallback for `/api/` paths on 500/404/403/429 | API tests per case |
 | <a id="td-19"></a>TD-19 | Print-document registry imports private view functions by string (A5) | `apps/printing/documents.py:1005-1042` | Each app registers its document types in `ready()`, with a public queryset function | existing printing tests |
 | <a id="td-20"></a>TD-20 | No concurrency tests (T2) | `select_for_update` sites, `apps/core/api/idempotency.py` | A small `transaction=True` helper running two calls in threads with an `Event`; start with selling one piece twice, paying out one box twice, the idempotency in-progress branch | the tests themselves (they must fail if the lock is removed) |
-| <a id="td-21"></a>TD-21 | Missing permission/branch refusal tests; shared OUTBOX state (T3, T4) | treasury, hr, settlements, expenses, manufacturing, repairs; `apps/messaging/tests/test_codes.py:110` | One refusal test per write endpoint; clear OUTBOX in an autouse fixture | — |
+| <a id="td-21"></a>TD-21 | Missing permission/branch refusal tests; shared state between tests: the messaging OUTBOX, and **the active language** (a test that signs in with English leaves English active for the tests after it) (T3, T4) | treasury, hr, settlements, expenses, manufacturing, repairs; `apps/messaging/tests/test_codes.py:110` | One refusal test per write endpoint; an autouse fixture that clears the OUTBOX and calls `translation.activate(settings.LANGUAGE_CODE)` | — |
 | <a id="td-22"></a>TD-22 | Unknown icon name is a 500; static files not cache-busted (F1, F2) | `apps/core/templatetags/ui.py:34`; `config/settings/base.py:165` | Fall back to an empty icon and log; `ManifestStaticFilesStorage` (check the vendored files survive `collectstatic`) | test with an unknown name; deploy check |
 | <a id="td-23"></a>TD-23 | Accessibility gaps; duplicated JS helpers (F3, F4) | diamonds row editors, `data-error-for`; `static/*/js` | Labels (visually hidden where needed), `aria-describedby` set by `forms.js`; move `fail()`/`escapeHtml()` into `core/js/ui.js`; use `api()` in `opening/js/import.js` and `printing/js/designer.js` | e2e checks |
 | <a id="td-26"></a>TD-26 | Nothing in the database stops deleting a posted document header (audit D4: the race is fixed with row locks, the guard is not) | document tables (`apps.core.models.Document` subclasses) | A BEFORE DELETE trigger per document table refusing `status <> 'draft'`, added by a migration operation like `GuardTenantFKs`, checked by the isolation suite | test: deleting a posted invoice row raises in the database |

@@ -499,6 +499,25 @@ def plan_payroll(year: int, month: int, advances: dict[int, object] | None = Non
     return plan
 
 
+def _save_payslips(run: PayrollRun, plan: PayrollPlan) -> None:
+    """One payslip per employee, each taking its bonuses and deductions with it. The plan read
+    them without a lock: one deleted (or paid) meanwhile refuses the whole payroll."""
+    for line in plan.lines:
+        saved = PayrollLine.objects.create(
+            run=run, employee=line.employee, salary=line.salary,
+            commission_basis=line.employee.commission_basis,
+            commission_rate=line.employee.commission_rate,
+            commission_base=quantize(line.commission.base, Decimal("0.001")),
+            commission=line.commission.amount, bonus=line.bonus, deduction=line.deduction,
+            advance=line.advance, net=line.net)
+        linked = PayAdjustment.objects.filter(
+            pk__in=[a.pk for a in line.adjustments], payroll_line__isnull=True,
+        ).update(payroll_line=saved)
+        if linked != len(line.adjustments):
+            raise Conflict(_("A bonus or deduction changed while the payroll was being "
+                             "posted. Prepare it again."), code="HR_ADJUSTMENTS_CHANGED")
+
+
 def post_payroll(year: int, month: int, *, branch_id: int, method: str = TenderKind.CASH,
                  cash_box_id=None, bank_account_id=None, advances=None, note: str = "",
                  actor=None) -> PayrollRun:
@@ -531,20 +550,7 @@ def post_payroll(year: int, month: int, *, branch_id: int, method: str = TenderK
             total_salary=plan.total("salary"), total_commission=plan.total_commission,
             total_bonus=plan.total("bonus"), total_deduction=plan.total("deduction"),
             total_advance=plan.total("advance"), total_net=net)
-        for line in plan.lines:
-            saved = PayrollLine.objects.create(
-                run=run, employee=line.employee, salary=line.salary,
-                commission_basis=line.employee.commission_basis,
-                commission_rate=line.employee.commission_rate,
-                commission_base=quantize(line.commission.base, Decimal("0.001")),
-                commission=line.commission.amount, bonus=line.bonus, deduction=line.deduction,
-                advance=line.advance, net=line.net)
-            linked = PayAdjustment.objects.filter(
-                pk__in=[a.pk for a in line.adjustments], payroll_line__isnull=True,
-            ).update(payroll_line=saved)
-            if linked != len(line.adjustments):  # one was deleted (or paid) meanwhile
-                raise Conflict(_("A bonus or deduction changed while the payroll was being "
-                                 "posted. Prepare it again."), code="HR_ADJUSTMENTS_CHANGED")
+        _save_payslips(run, plan)
 
         home = functional_commodity()
         wages = run.total_salary + run.total_bonus - run.total_deduction

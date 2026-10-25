@@ -103,6 +103,28 @@ Locks are the riskiest code and the least tested (TD-20). Two levels:
    calls in threads, each in its own `tenant_context`. An `Event` holds the first transaction
    open while the second starts. The test must fail when the lock is removed.
 
+## Refactoring safely: characterization snapshots
+
+Before restructuring code that carries business rules, record what it does today, then prove
+the new version does exactly the same. This is how `quote_sale` and `plan_receipt` were split
+(`apps/sales/tests/test_quote_characterization.py`,
+`apps/manufacturing/tests/test_receipt_characterization.py`).
+
+1. **Write scenarios that reach every branch** of the function: each kind of input, each limit,
+   and each error. Return the result or the raised `AppError`. The helper `tests/snapshot.py`
+   turns them into plain JSON and leaves out database ids and dated numbers.
+2. **Pin the language** with `translation.override("en")`. An earlier test can leave another
+   language active (TD-21), and messages are part of the snapshot.
+3. **Record from the unchanged code:** `RECORD_SNAPSHOTS=1 python -m pytest <the test>`. Run it
+   once more without the variable: it must pass, so the scenarios are stable. Read the JSON:
+   every scenario should reach the path it's named for, not fail early.
+4. **Refactor**, and run the test: every scenario must match.
+5. **Plant one bug** in the new code (drop a rule) and check that the snapshot fails, naming a
+   scenario. If it doesn't, a scenario is missing: add it, and record again from the *original*
+   code.
+6. **Commit the snapshot with the refactor.** Later, re-record only for an intended change in
+   behaviour, and review the JSON diff in the pull request.
+
 ## Coverage
 
 There is no coverage tool in the toolchain. The baseline is the set of tests and the gaps listed

@@ -213,16 +213,67 @@ def _find_lot(line: SaleLineInput, branch):
     return lot, balance
 
 
+@dataclass(frozen=True)
+class _Pricing:
+    """What every line of one sale is priced with."""
+
+    branch: Branch
+    board: object
+    home: str  # the company currency
+    max_discount: Decimal  # the seller's limits (1 = 100 % for trusted callers)
+    diamond_discount: Decimal
+    offers: list
+    actor: object = None
+
+
 def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
-    """Price everything and check the payment. Never writes."""
-    branch = Branch.objects.filter(pk=data.branch_id, is_active=True).first()
+    """Price everything and check the payment. Never writes.
+
+    The checks run in this order, and the first problem found is the one reported: the branch,
+    the price board and any reservation, the customer, each line, each trade-in, each payment;
+    then the totals and whether the payments fit the terms."""
+    branch = _active_branch(data.branch_id)
+    reservation, board = _reservation_and_board(data.reservation_id, branch)
+    customer = _sale_customer(data.customer_id)
+    if reservation is not None and (customer is None or customer.pk != reservation.customer_id):
+        message = _("A reservation is sold to its own customer.")
+        raise ValidationError(message, fields={"customer": [message]})
+    home = functional_currency()
+    pricing = _Pricing(
+        branch=branch, board=board, home=home,
+        max_discount=actor.limit(DISCOUNT_LIMIT) if actor is not None else Decimal(1),
+        diamond_discount=(actor.limit(DIAMOND_DISCOUNT_LIMIT) if actor is not None
+                          else Decimal(1)),
+        offers=_running_offers(branch), actor=actor)
+    quote = SaleQuote(branch=branch, board=board, customer=customer, reservation=reservation)
+
+    _price_lines(quote, data.lines, pricing, _reserved_item_ids(reservation))
+    _price_trade_ins(quote, data.trade_ins, actor)
+    _price_payments(quote, data.payments, home)
+    _add_up(quote)
+    _check_payment(quote, data.payment_terms)
+    if not quote.lines:
+        quote.problems.append("SALES_EMPTY")
+    return quote
+
+
+# --- the sale's header ----------------------------------------------------------------------
+
+def _active_branch(branch_id: int) -> Branch:
+    branch = Branch.objects.filter(pk=branch_id, is_active=True).first()
     if branch is None:
         raise ValidationError(_("Unknown branch."), fields={"branch": [_("Unknown branch.")]})
+    return branch
+
+
+def _reservation_and_board(reservation_id: int | None, branch: Branch):
+    """The open reservation being completed (if any), and the board to price with: today's, or
+    the one the reservation locked its prices to."""
     board = current_price_board()
     reservation = None
-    if data.reservation_id:
+    if reservation_id:
         reservation = (Reservation.objects.select_related("price_board", "customer")
-                       .filter(pk=data.reservation_id, branch=branch, status=DocStatus.POSTED,
+                       .filter(pk=reservation_id, branch=branch, status=DocStatus.POSTED,
                                sale__isnull=True).first())
         if reservation is None:
             raise DomainError(_("This reservation is not open."), code="SALES_RESERVATION_CLOSED")
@@ -230,80 +281,102 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
             board = reservation.price_board
     if board is None:
         raise DomainError(_("No gold price has been published yet."), code="PRICING_NO_BOARD")
-    reserved_ids = (frozenset(reservation.lines.values_list("item_id", flat=True))
-                    if reservation else frozenset())
+    return reservation, board
 
-    customer = None
-    if data.customer_id:
-        customer = Party.objects.filter(pk=data.customer_id, is_active=True,
-                                        roles__role=PartyRoleType.CUSTOMER).first()
-        if customer is None:
-            raise ValidationError(_("Unknown customer."),
-                                  fields={"customer": [_("Unknown customer.")]})
 
-    home = functional_currency()
-    max_discount = actor.limit(DISCOUNT_LIMIT) if actor is not None else Decimal(1)
-    diamond_discount = (actor.limit(DIAMOND_DISCOUNT_LIMIT) if actor is not None
-                        else Decimal(1))
-    if reservation is not None and (customer is None or customer.pk != reservation.customer_id):
-        message = _("A reservation is sold to its own customer.")
-        raise ValidationError(message, fields={"customer": [message]})
-    quote = SaleQuote(branch=branch, board=board, customer=customer, reservation=reservation)
+def _reserved_item_ids(reservation) -> frozenset[int]:
+    """Pieces held by the reservation: only completing it may sell them."""
+    if reservation is None:
+        return frozenset()
+    return frozenset(reservation.lines.values_list("item_id", flat=True))
 
-    seen = set()
+
+def _sale_customer(customer_id: int | None) -> Party | None:
+    if not customer_id:
+        return None
+    customer = Party.objects.filter(pk=customer_id, is_active=True,
+                                    roles__role=PartyRoleType.CUSTOMER).first()
+    if customer is None:
+        raise ValidationError(_("Unknown customer."),
+                              fields={"customer": [_("Unknown customer.")]})
+    return customer
+
+
+# --- pieces and bulk gold -------------------------------------------------------------------
+
+def _price_lines(quote: SaleQuote, lines, pricing: _Pricing, reserved_ids) -> None:
+    """Each piece or weight of bulk gold, priced; an error names its line."""
+    seen: set[int] = set()  # pieces already on this sale
     taken: dict[int, list] = defaultdict(lambda: [ZERO, 0])  # per lot: weight, pieces
-    offers = _running_offers(branch)
-    for index, line in enumerate(data.lines):
+    for index, line in enumerate(lines):
         try:
             if line.is_bulk:
-                source, balance = _find_lot(line, branch)
-                deal = deal_for(offers, making=category_making_rate(source.category_id, home),
-                                category_id=source.category_id,
-                                karat_id=source.karat_id) if offers else None
-                priced = quote_bulk(source, balance, board, gross_weight_g=line.gross_weight_g,
-                                    qty=line.qty, discount_rate=line.discount_rate,
-                                    max_discount=max_discount, functional_currency=home,
-                                    deal=deal)
-                used = taken[source.pk]
-                used[0] += priced.gross_weight_g
-                used[1] += line.qty
-                if used[0] > balance.gross_weight_g or used[1] > balance.qty:
-                    raise DomainError(
-                        _("Only %(weight)s g (%(qty)s pieces) of %(name)s here.")
-                        % {"weight": balance.gross_weight_g, "qty": balance.qty,
-                           "name": source.category.name}, code="SALES_BULK_SHORT")
+                source, priced = _price_bulk(line, pricing, taken)
             else:
-                source = _find_item(line, branch, reserved_ids)
-                if source.pk in seen:
-                    raise DomainError(_("Piece %(barcode)s is already on this sale.")
-                                      % {"barcode": source.barcode}, code="SALES_DUPLICATE_ITEM")
-                seen.add(source.pk)
-                if is_diamond(source.category):
-                    _may_sell_diamonds(actor, branch)
-                    priced = quote_label_priced(source, board, discount_rate=line.discount_rate,
-                                                max_discount=diamond_discount)
-                else:
-                    deal = deal_for(
-                        offers, making=list_making_rate(source, home),
-                        category_id=source.category_id, karat_id=source.karat_id,
-                        supplier_id=source.supplier_id, barcode=source.barcode) if offers else None
-                    priced = quote_item(source, board, discount_rate=line.discount_rate,
-                                        max_discount=max_discount, functional_currency=home,
-                                        deal=deal)
+                source, priced = _price_piece(line, pricing, seen, reserved_ids)
         except (DomainError, ValidationError) as exc:
             raise _line_error("lines", index, exc.message, exc.code) from exc
         quote.items.append(source)
         quote.lines.append(priced)
 
-    may_override = actor is None or actor.can("sales.trade_in.override_price", branch)
+
+def _price_bulk(line: SaleLineInput, pricing: _Pricing, taken):
+    """A weight from the branch's lot, at the lot's average cost; all the sale's lines of one
+    lot together may not take more than it holds."""
+    source, balance = _find_lot(line, pricing.branch)
+    deal = deal_for(pricing.offers, making=category_making_rate(source.category_id, pricing.home),
+                    category_id=source.category_id,
+                    karat_id=source.karat_id) if pricing.offers else None
+    priced = quote_bulk(source, balance, pricing.board, gross_weight_g=line.gross_weight_g,
+                        qty=line.qty, discount_rate=line.discount_rate,
+                        max_discount=pricing.max_discount, functional_currency=pricing.home,
+                        deal=deal)
+    used = taken[source.pk]
+    used[0] += priced.gross_weight_g
+    used[1] += line.qty
+    if used[0] > balance.gross_weight_g or used[1] > balance.qty:
+        raise DomainError(
+            _("Only %(weight)s g (%(qty)s pieces) of %(name)s here.")
+            % {"weight": balance.gross_weight_g, "qty": balance.qty,
+               "name": source.category.name}, code="SALES_BULK_SHORT")
+    return source, priced
+
+
+def _price_piece(line: SaleLineInput, pricing: _Pricing, seen: set, reserved_ids):
+    """A piece once per sale: a diamond piece at its label price (with the diamond discount
+    limit), any other at the day's gold price plus its making charge."""
+    source = _find_item(line, pricing.branch, reserved_ids)
+    if source.pk in seen:
+        raise DomainError(_("Piece %(barcode)s is already on this sale.")
+                          % {"barcode": source.barcode}, code="SALES_DUPLICATE_ITEM")
+    seen.add(source.pk)
+    if is_diamond(source.category):
+        _may_sell_diamonds(pricing.actor, pricing.branch)
+        return source, quote_label_priced(source, pricing.board,
+                                          discount_rate=line.discount_rate,
+                                          max_discount=pricing.diamond_discount)
+    deal = deal_for(
+        pricing.offers, making=list_making_rate(source, pricing.home),
+        category_id=source.category_id, karat_id=source.karat_id,
+        supplier_id=source.supplier_id, barcode=source.barcode) if pricing.offers else None
+    return source, quote_item(source, pricing.board, discount_rate=line.discount_rate,
+                              max_discount=pricing.max_discount,
+                              functional_currency=pricing.home, deal=deal)
+
+
+# --- trade-ins and payments -----------------------------------------------------------------
+
+def _price_trade_ins(quote: SaleQuote, trade_ins, actor) -> None:
+    """Old gold taken in, at the board's scrap price (or a price the seller may set)."""
+    may_override = actor is None or actor.can("sales.trade_in.override_price", quote.branch)
     karats = {k.pk: k for k in Karat.objects.select_related("metal").filter(
-        pk__in=[t.karat_id for t in data.trade_ins], is_active=True)}
-    for index, trade in enumerate(data.trade_ins):
+        pk__in=[t.karat_id for t in trade_ins], is_active=True)}
+    for index, trade in enumerate(trade_ins):
         karat = karats.get(trade.karat_id)
         try:
             if karat is None:
                 raise ValidationError(_("Unknown karat."), code="SALES_TRADE_IN_KARAT")
-            priced = quote_trade_in(karat, board, gross_weight_g=trade.gross_weight_g,
+            priced = quote_trade_in(karat, quote.board, gross_weight_g=trade.gross_weight_g,
                                     loss_weight_g=trade.loss_weight_g,
                                     price_override=trade.price_override,
                                     may_override=may_override)
@@ -311,14 +384,19 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
             raise _line_error("trade_ins", index, exc.message, exc.code) from exc
         quote.trade_ins.append((karat, priced))
 
+
+def _price_payments(quote: SaleQuote, payments, home: str) -> None:
+    """Each payment in the company currency at the rate in force. Zero amounts are left out;
+    a reservation's deposit only pays for completing that reservation."""
     currencies = {c.code: c for c in Currency.objects.filter(is_active=True)}
-    for index, payment in enumerate(data.payments):
+    for index, payment in enumerate(payments):
         currency = currencies.get(payment.currency_code)
         if payment.kind not in PaymentKind.values or currency is None:
             raise _line_error("payments", index, _("Unknown payment method."), "SALES_PAYMENT")
         amount = round_money(to_decimal(payment.amount))
         if amount <= 0:
             continue
+        reservation = quote.reservation
         if payment.kind == PaymentKind.DEPOSIT and (
                 reservation is None or currency.code != home
                 or amount > reservation.deposit_amount):
@@ -330,39 +408,43 @@ def quote_sale(data: SaleInput, *, actor=None) -> SaleQuote:
             functional_amount=round_money(amount * fx), reference=payment.reference[:60],
             source=payment))
 
+
+# --- totals and the payment check -----------------------------------------------------------
+
+def _add_up(quote: SaleQuote) -> None:
     quote.total = sum((line.line_total for line in quote.lines), ZERO)
     quote.offer_saving = sum((line.offer_saving for line in quote.lines), ZERO)
     # Cashback goes on the customer's account: without a customer there is none to give.
     quote.cashback = (sum((line.cashback for line in quote.lines), ZERO)
-                      if customer is not None else ZERO)
+                      if quote.customer is not None else ZERO)
     quote.discount = sum((line.discount_amount for line in quote.lines), ZERO)
     quote.subtotal = quote.total + quote.discount
     quote.trade_in = sum((t.amount for _k, t in quote.trade_ins), ZERO)
     quote.paid = sum((p.functional_amount for p in quote.payments), ZERO)
     quote.due = quote.total - quote.trade_in
-    cash_in = sum((p.functional_amount for p in quote.payments if p.kind == PaymentKind.CASH),
-                  ZERO)
-    difference = quote.paid - quote.due
 
-    if data.payment_terms == PaymentTerms.CREDIT:
-        if customer is None:
+
+def _check_payment(quote: SaleQuote, terms: str) -> None:
+    """On account: a customer, and no more paid than due (the rest is their balance). Cash:
+    paid in full, and any change can only come out of cash (or a trade-in worth more than the
+    goods), never from a card or a transfer."""
+    difference = quote.paid - quote.due
+    if terms == PaymentTerms.CREDIT:
+        if quote.customer is None:
             quote.problems.append("SALES_CUSTOMER_REQUIRED")
         if difference > PAYMENT_TOLERANCE:
             quote.problems.append("SALES_OVERPAID")
         quote.balance = max(-difference, ZERO)
-    else:
-        if difference < -PAYMENT_TOLERANCE:
-            quote.remaining = -difference
-            quote.problems.append("SALES_NOT_FULLY_PAID")
-        elif difference > 0:
-            quote.change = difference
-            # Change is handed back in cash: only cash (or a trade-in worth more than the
-            # goods) can produce it, never a card or transfer overpayment.
-            if difference > cash_in + max(-quote.due, ZERO):
-                quote.problems.append("SALES_OVERPAID")
-    if not quote.lines:
-        quote.problems.append("SALES_EMPTY")
-    return quote
+        return
+    if difference < -PAYMENT_TOLERANCE:
+        quote.remaining = -difference
+        quote.problems.append("SALES_NOT_FULLY_PAID")
+    elif difference > 0:
+        quote.change = difference
+        cash_in = sum((p.functional_amount for p in quote.payments
+                       if p.kind == PaymentKind.CASH), ZERO)
+        if difference > cash_in + max(-quote.due, ZERO):
+            quote.problems.append("SALES_OVERPAID")
 
 
 PROBLEM_MESSAGES = {
