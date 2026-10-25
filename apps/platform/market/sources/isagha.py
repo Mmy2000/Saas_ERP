@@ -1,5 +1,10 @@
 """iSagha (market.isagha.com): gold 24/22/21/18 and silver 999, sell and buy per gram.
-Parsing follows the legacy Gweb reader (Cod/gold_sync/isagha)."""
+Parsing follows the legacy Gweb reader (Cod/gold_sync/isagha).
+
+The site restyles its page now and then. In October 2026 the div around the table gained extra
+classes (`class="desktop-table mb-8 …"`) and each price moved into its own tag
+(`<span …>5400</span> ج.م`), so class names are matched as words and cells are read without
+their tags. Both layouts are tested (tests/fixtures/isagha*.html.gz)."""
 
 from __future__ import annotations
 
@@ -15,7 +20,8 @@ SILVER_LABEL = "عيار 999"
 
 
 def _egp(cell: str):
-    match = re.search(r"([\d.,]+)\s*ج\.م", cell)
+    """The amount in pounds in a cell, its tags aside: "5400 ج.م" or "<span>5400</span> ج.م"."""
+    match = re.search(r"([\d.,]+)\s*ج\.م", re.sub(r"<[^>]+>", " ", cell))
     return number(match.group(1)) if match else None
 
 
@@ -41,10 +47,15 @@ def _rows(table: str) -> dict[str, tuple]:
     return rows
 
 
+# A div whose classes include the word: `class="desktop-table"`, `class="desktop-table mb-8 …"`.
+_DESKTOP = r'<div class="(?:[^"]*\s)?desktop-table(?:\s[^"]*)?"[^>]*>'
+_NEXT = r'<div class="(?:[^"]*\s)?(?:desktop-table|mobile-cards)(?:\s[^"]*)?"'
+
+
 def _tables(html: str) -> list[str]:
-    return re.findall(r'<div class="desktop-table"[^>]*>(.*?)</div>\s*(?=<div class="(?:'
-                      r'desktop-table|mobile-cards)")', html, re.DOTALL | re.IGNORECASE) or \
-        re.findall(r'<div class="desktop-table"[^>]*>(.*)', html, re.DOTALL | re.IGNORECASE)
+    """Each price table: from its div to the next table or the mobile cards."""
+    return re.findall(_DESKTOP + r"(.*?)(?=" + _NEXT + ")", html, re.DOTALL | re.IGNORECASE) \
+        or re.findall(_DESKTOP + r"(.*)", html, re.DOTALL | re.IGNORECASE)
 
 
 def parse(html: str, silver_html: str = "") -> Quote:
@@ -57,17 +68,25 @@ def parse(html: str, silver_html: str = "") -> Quote:
         if label in gold_rows:
             quote.gold[karat] = gold_rows[label]
     for page in (html, silver_html):
-        for table in _tables(page or ""):
-            row = _rows(table).get(SILVER_LABEL)
-            if row:
-                quote.silver[999] = row
-                break
-        if quote.silver:
+        row = _silver_row(page)
+        if row:
+            quote.silver[999] = row
             break
     return quote.check(LABEL)
 
 
+def _silver_row(page: str):
+    """Silver 999's (sell, buy) in the page's price tables, or None."""
+    for table in _tables(page or ""):
+        row = _rows(table).get(SILVER_LABEL)
+        if row:
+            return row
+    return None
+
+
 def read() -> Quote:
     html = fetch(URL)
-    silver = "" if SILVER_LABEL in html else fetch(SILVER_URL)
+    # Only a silver row in the price tables counts: the gold page also names "فضة عيار 999"
+    # in a ticker, which once stopped the silver page from being read at all.
+    silver = "" if _silver_row(html) else fetch(SILVER_URL)
     return parse(html, silver)

@@ -36,6 +36,26 @@ def test_the_readers_on_real_pages():
         edahab.parse("<html>maintenance</html>")
 
 
+def test_isagha_in_its_october_2026_layout():
+    """The site restyled its page: extra classes on the table and each price in its own tag
+    (`<span>6300</span> ج.م`). The older layout above must keep working too."""
+    quote = isagha.parse(page("isagha_2026_10"), page("isagha_2026_10_silver"))
+    assert quote.gold == {24: (D("7200"), D("7148.5")), 22: (D("6600"), D("6552.75")),
+                          21: (D("6300"), D("6255")), 18: (D("5400"), D("5361.5"))}
+    assert quote.silver[999] == (D("99.75"), D("97"))
+
+
+def test_isagha_reads_the_silver_page_when_the_gold_table_has_no_silver(monkeypatch):
+    """The gold page names "فضة عيار 999" in a ticker, outside its price table: that must not
+    stop the silver page from being read (live silver came back empty because of it)."""
+    pages = {isagha.URL: page("isagha_2026_10"), isagha.SILVER_URL: page("isagha_2026_10_silver")}
+    fetched = []
+    monkeypatch.setattr(isagha, "fetch", lambda url: fetched.append(url) or pages[url])
+    quote = isagha.read()
+    assert fetched == [isagha.URL, isagha.SILVER_URL]
+    assert quote.silver[999] == (D("99.75"), D("97")) and quote.gold[21][0] == D("6300")
+
+
 def test_implausible_prices_are_refused():
     with pytest.raises(FeedError):
         Quote(gold={24: (D(7000), D(6900))}).check("x")  # no 21K
